@@ -227,7 +227,21 @@ function HomeContent() {
     );
   }
 
-  if (myPets.length === 0 && !loadingMyPets) {
+  if (loadingMyPets) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Header session={session} />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-slate-600">Cargando tus mascotas...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (myPets.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header session={session} />
