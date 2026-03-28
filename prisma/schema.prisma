@@ -1,0 +1,512 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Roles
+enum UserRole {
+  OWNER
+  PROVIDER
+  ADMIN
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  password        String?
+  role            UserRole  @default(OWNER)
+  isBlocked       Boolean   @default(false)
+  emailVerified   DateTime?
+  image           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  owner           Owner?
+  providerProfile ProviderProfile?
+  profile         Profile?     // Legacy - for backward compatibility
+  sentMessages    Message[]  @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  posts           Post[]
+  comments        Comment[]
+  likes           Like[]
+  appointments    Appointment[] // Citas como cliente
+  events          Event[]
+  eventAttendees  EventAttendee[]
+  eventDismissals EventDismissal[]
+  invitationsSent     Invitation[] @relation("InvitationsSent")
+  invitationsReceived Invitation[] @relation("InvitationsReceived")
+  createdGroups       Group[]
+  groupMemberships    GroupMember[]
+  blockedUsers        BlockedUser[] @relation("BlockerUser")
+  blockedByUsers      BlockedUser[] @relation("BlockedUser")
+  reports             Report[]      @relation("ReporterUser")
+  reportedBy          Report[]      @relation("ReportedUser")
+  stores              Store[]
+}
+
+model ProviderProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  businessName  String
+  description   String?
+  location      String
+  rating        Float     @default(0)
+  reviewCount   Int       @default(0)
+  services      Service[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id            String    @id @default(cuid())
+  providerId    String
+  name          String
+  description   String
+  price         Float
+  duration      Int       // en minutos
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  provider      ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+}
+
+model Appointment {
+  id            String    @id @default(cuid())
+  serviceId     String
+  userId        String    // Cliente (Dueño)
+  petId         String
+  date          DateTime
+  status        String    @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet           Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([serviceId])
+}
+
+model Post {
+  id                String    @id @default(cuid())
+  authorId          String
+  petId             String?   // Opcional: post vinculado a mascota
+  postType          String    @default("post") // post, photo, event, question, lost_pet
+  content           String
+  images            String    // JSON array
+  location          String?
+  eventDate         DateTime? // For event posts
+  eventLocation     String?   // For event posts
+  contactPhone      String?   // For lost_pet posts
+  lastSeenLocation  String?   // For lost_pet posts
+  isResolved        Boolean   @default(false) // For lost_pet - mascota encontrada
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  author            User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  pet               Pet?      @relation(fields: [petId], references: [id], onDelete: SetNull)
+  comments          Comment[]
+  likes             Like[]
+  invitations       Invitation[]
+  groupId           String?
+  group             Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  eventId           String?   // Link to actual Event entity
+  event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  postId    String   // Post with type=event
+  inviterId String   // Who sent
+  inviteeId String   // Who receives
+  status    String   @default("pending") // pending, accepted, declined
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  inviter   User     @relation("InvitationsSent", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee   User     @relation("InvitationsReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  postId      String
+  authorId    String
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model Like {
+  id          String    @id @default(cuid())
+  postId      String
+  userId      String
+  createdAt   DateTime  @default(now())
+
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  name        String
+  bio         String
+  age         Int
+  gender      String
+  interests   String
+  location    String
+  images      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Owner {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  name            String
+  phone           String?
+  location        String
+  bio             String?
+  image           String?  // Profile photo URL
+  hasYard         Boolean?
+  hasOtherPets    Boolean?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pets            Pet[]
+}
+
+model PetHealthRecord {
+  id          String   @id @default(cuid())
+  petId       String
+  type        String   // VACCINE, CHECKUP, MEDICATION
+  name        String
+  dueDate     DateTime?
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pet         Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId])
+}
+
+model Pet {
+  id              String   @id @default(cuid())
+  ownerId         String
+  name            String
+  petType         String
+  breed           String?
+  age             Int
+  weight          Float?   // Nuevo campo
+  size            String
+  gender          String
+  vaccinated      Boolean  @default(true)
+  neutered        Boolean  @default(false)
+  energy          String
+  bio             String
+  activities      String
+  location        String
+  images          String
+  thumbnailIndex  Int      @default(0)
+  
+  // Gamification basic
+  level           Int      @default(1)
+  xp              Int      @default(0)
+  totalMatches    Int      @default(0)
+  
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  owner           Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sentSwipes      Swipe[]  @relation("PetSentSwipes")
+  receivedSwipes  Swipe[]  @relation("PetReceivedSwipes")
+  match1          Match[]  @relation("Pet1Matches")
+  match2          Match[]  @relation("Pet2Matches")
+  posts           Post[]
+  appointments    Appointment[]
+  healthRecords   PetHealthRecord[]
+
+  @@unique([ownerId, name], name: "ownerId_name")
+  @@index([ownerId])
+}
+
+model Swipe {
+  id          String   @id @default(cuid())
+  fromId      String   // Legacy - for backward compatibility
+  toId        String   // Legacy - for backward compatibility
+  fromPetId   String?  // New - Pet swiping
+  toPetId     String?  // New - Pet being swiped on
+  isLike      Boolean
+  createdAt   DateTime @default(now())
+
+  fromPet     Pet?      @relation("PetSentSwipes", fields: [fromPetId], references: [id], onDelete: Cascade)
+  toPet       Pet?      @relation("PetReceivedSwipes", fields: [toPetId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@unique([fromPetId, toPetId])
+  @@index([fromPetId])
+  @@index([toPetId])
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  user1Id     String   // Legacy - for backward compatibility
+  user2Id     String   // Legacy - for backward compatibility
+  pet1Id      String?  // New - Pet 1 in match
+  pet2Id      String?  // New - Pet 2 in match
+  createdAt   DateTime @default(now())
+
+  pet1        Pet?      @relation("Pet1Matches", fields: [pet1Id], references: [id], onDelete: Cascade)
+  pet2        Pet?      @relation("Pet2Matches", fields: [pet2Id], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@unique([user1Id, user2Id])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  authorId    String
+  title       String
+  description String?
+  date        DateTime
+  location    String
+  image       String?
+  maxAttendees Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  attendees   EventAttendee[]
+  dismissals  EventDismissal[]
+  groupId     String?
+  group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  posts       Post[]
+}
+
+model EventAttendee {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model EventDismissal {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  matchId     String?
+  groupId     String?
+  senderId    String
+  receiverId  String?
+  content     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  match       Match?   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User?    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([groupId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  image       String?
+  creatorId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  posts       Post[]
+  events      Event[]
+  messages    Message[]
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      String   @default("MEMBER") // MEMBER, ADMIN
+  joinedAt  DateTime @default(now())
+
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model BlockedUser {
+  id          String   @id @default(cuid())
+  blockerId   String
+  blockedId   String
+  createdAt   DateTime @default(now())
+
+  blocker     User     @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked     User     @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+model StoreCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stores      Store[]
+}
+
+model Store {
+  id           String   @id @default(cuid())
+  categoryId   String
+  providerId   String?  // null until admin assigns to a provider
+  name         String
+  slug         String   @unique
+  description  String?
+  phone        String?
+  email        String?
+  address      String?
+  image        String?
+  images       String   @default("[]") // JSON array
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  category     StoreCategory @relation(fields: [categoryId], references: [id])
+  provider     User?         @relation(fields: [providerId], references: [id])
+  services     StoreService[]
+
+  @@index([categoryId])
+  @@index([providerId])
+}
+
+model StoreService {
+  id          String   @id @default(cuid())
+  storeId     String
+  name        String
+  description String
+  price       Float
+  duration    Int      // minutes
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  reportedId  String
+  reason      String   // spam, inappropriate, harassment, other
+  description String?
+  status      String   @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reporter    User     @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported    User     @relation("ReportedUser", fields: [reportedId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([reportedId])
+  @@index([status])
+}
