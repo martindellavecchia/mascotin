@@ -35,7 +35,7 @@ function HomeContent() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMyPets, setLoadingMyPets] = useState(false);
+  const [loadingMyPets, setLoadingMyPets] = useState(true);
   const [errorLoadingPets, setErrorLoadingPets] = useState(false);
   const [matchNotification, setMatchNotification] = useState<string | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
