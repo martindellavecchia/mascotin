@@ -161,3 +161,19 @@ export type UpdateStoreData = z.infer<typeof updateStoreSchema>;
 export type AssignStoreData = z.infer<typeof assignStoreSchema>;
 export type ProviderUpdateStoreData = z.infer<typeof providerUpdateStoreSchema>;
 export type StoreServiceData = z.infer<typeof storeServiceSchema>;
+
+// Provider access request
+export const createProviderRequestSchema = z.object({
+  businessName: z.string().min(2, 'El nombre del negocio es requerido').max(150),
+  location: z.string().min(2, 'La ubicación es requerida').max(200),
+  description: z.string().max(1000).optional(),
+  reason: z.string().min(10, 'Explica por qué quieres ser proveedor (mín. 10 caracteres)').max(1000),
+});
+
+export const reviewProviderRequestSchema = z.object({
+  status: z.enum(['APPROVED', 'REJECTED']),
+  adminNote: z.string().max(500).optional(),
+});
+
+export type CreateProviderRequestData = z.infer<typeof createProviderRequestSchema>;
+export type ReviewProviderRequestData = z.infer<typeof reviewProviderRequestSchema>;

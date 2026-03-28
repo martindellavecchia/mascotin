@@ -192,10 +192,18 @@ export default function Header({ session }: HeaderProps) {
                 <span className="material-symbols-rounded mr-2 text-slate-500">person</span>
                 Ver Perfil
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/provider')}>
-                <span className="material-symbols-rounded mr-2 text-slate-500">storefront</span>
-                Panel de Proveedor
-              </DropdownMenuItem>
+              {userRole === 'PROVIDER' && (
+                <DropdownMenuItem onClick={() => router.push('/provider')}>
+                  <span className="material-symbols-rounded mr-2 text-slate-500">storefront</span>
+                  Panel de Proveedor
+                </DropdownMenuItem>
+              )}
+              {userRole === 'OWNER' && (
+                <DropdownMenuItem onClick={() => router.push('/provider')}>
+                  <span className="material-symbols-rounded mr-2 text-slate-500">add_business</span>
+                  Solicitar ser Proveedor
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => router.push('/profile?edit=true')}>
                 <span className="material-symbols-rounded mr-2 text-slate-500">settings</span>
                 Configuración

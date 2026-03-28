@@ -31,6 +31,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
 interface User {
@@ -63,6 +64,25 @@ interface Provider {
     _count: { services: number; appointments: number };
 }
 
+interface ProviderRequestItem {
+    id: string;
+    businessName: string;
+    description: string | null;
+    location: string;
+    reason: string;
+    status: string;
+    adminNote: string | null;
+    createdAt: string;
+    reviewedAt: string | null;
+    user: {
+        id: string;
+        name: string | null;
+        email: string;
+        image: string | null;
+        role: string;
+    };
+}
+
 interface Pagination {
     page: number;
     limit: number;
@@ -92,6 +112,16 @@ export default function AdminPage() {
     const [newRole, setNewRole] = useState('');
     const [tempPassword, setTempPassword] = useState('');
     const [processing, setProcessing] = useState(false);
+
+    // Provider requests state
+    const [providerRequests, setProviderRequests] = useState<ProviderRequestItem[]>([]);
+    const [loadingRequests, setLoadingRequests] = useState(true);
+    const [requestCounts, setRequestCounts] = useState({ PENDING: 0, APPROVED: 0, REJECTED: 0 });
+    const [requestFilter, setRequestFilter] = useState('PENDING');
+    const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState<ProviderRequestItem | null>(null);
+    const [adminNote, setAdminNote] = useState('');
+    const [reviewProcessing, setReviewProcessing] = useState(false);
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -136,14 +166,65 @@ export default function AdminPage() {
         }
     }, []);
 
+    const fetchProviderRequests = useCallback(async () => {
+        try {
+            setLoadingRequests(true);
+            const params = new URLSearchParams();
+            if (requestFilter) params.set('status', requestFilter);
+            const res = await fetch(`/api/admin/provider-requests?${params.toString()}`);
+            const data = await res.json();
+            if (data.success) {
+                setProviderRequests(data.requests);
+                setRequestCounts(data.counts);
+            }
+        } catch (error) {
+            console.error('Error fetching provider requests:', error);
+        } finally {
+            setLoadingRequests(false);
+        }
+    }, [requestFilter]);
+
+    const handleReviewRequest = async (status: 'APPROVED' | 'REJECTED') => {
+        if (!selectedRequest) return;
+        setReviewProcessing(true);
+        try {
+            const res = await fetch(`/api/admin/provider-requests/${selectedRequest.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, adminNote }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(status === 'APPROVED' ? 'Solicitud aprobada' : 'Solicitud rechazada');
+                setReviewDialogOpen(false);
+                setAdminNote('');
+                fetchProviderRequests();
+                if (status === 'APPROVED') fetchProviders();
+            } else {
+                toast.error(data.error || 'Error al procesar');
+            }
+        } catch (error) {
+            toast.error('Error al procesar');
+        } finally {
+            setReviewProcessing(false);
+        }
+    };
+
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/login');
         } else if (status === 'authenticated') {
             fetchUsers();
             fetchProviders();
+            fetchProviderRequests();
         }
     }, [status, fetchUsers, router]);
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            fetchProviderRequests();
+        }
+    }, [requestFilter, fetchProviderRequests, status]);
 
     const openAction = (user: User, type: 'role' | 'block' | 'password' | 'delete') => {
         setSelectedUser(user);
@@ -258,6 +339,14 @@ export default function AdminPage() {
                     <TabsList className="mb-4">
                         <TabsTrigger value="users">Usuarios</TabsTrigger>
                         <TabsTrigger value="providers">Proveedores</TabsTrigger>
+                        <TabsTrigger value="requests" className="relative">
+                            Solicitudes
+                            {requestCounts.PENDING > 0 && (
+                                <span className="ml-1.5 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                                    {requestCounts.PENDING}
+                                </span>
+                            )}
+                        </TabsTrigger>
                         <TabsTrigger value="stats">Estadísticas</TabsTrigger>
                     </TabsList>
 
@@ -401,6 +490,106 @@ export default function AdminPage() {
                                         </Button>
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="requests">
+                        <Card className="mb-4">
+                            <CardContent className="p-4">
+                                <div className="flex gap-2">
+                                    {(['PENDING', 'APPROVED', 'REJECTED'] as const).map((s) => (
+                                        <Button
+                                            key={s}
+                                            variant={requestFilter === s ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={() => setRequestFilter(s)}
+                                            className={requestFilter === s ? 'bg-teal-500 hover:bg-teal-600' : ''}
+                                        >
+                                            {s === 'PENDING' ? 'Pendientes' : s === 'APPROVED' ? 'Aprobadas' : 'Rechazadas'}
+                                            {' '}({requestCounts[s]})
+                                        </Button>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardContent className="p-0">
+                                {loadingRequests ? (
+                                    <div className="p-8 text-center">
+                                        <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
+                                    </div>
+                                ) : providerRequests.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-400">
+                                        <span className="material-symbols-rounded text-4xl mb-2">inbox</span>
+                                        <p>No hay solicitudes {requestFilter === 'PENDING' ? 'pendientes' : requestFilter === 'APPROVED' ? 'aprobadas' : 'rechazadas'}</p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-slate-50 border-b">
+                                                <tr>
+                                                    <th className="text-left p-4 font-medium text-slate-600">Solicitante</th>
+                                                    <th className="text-left p-4 font-medium text-slate-600">Negocio</th>
+                                                    <th className="text-left p-4 font-medium text-slate-600">Motivo</th>
+                                                    <th className="text-left p-4 font-medium text-slate-600">Fecha</th>
+                                                    <th className="text-right p-4 font-medium text-slate-600">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {providerRequests.map((req) => (
+                                                    <tr key={req.id} className="border-b hover:bg-slate-50">
+                                                        <td className="p-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <Avatar className="h-10 w-10">
+                                                                    {req.user.image ? (
+                                                                        <AvatarImage src={req.user.image} />
+                                                                    ) : (
+                                                                        <AvatarFallback>{req.user.name?.[0] || 'U'}</AvatarFallback>
+                                                                    )}
+                                                                </Avatar>
+                                                                <div>
+                                                                    <p className="font-medium text-slate-800">{req.user.name || 'Sin nombre'}</p>
+                                                                    <p className="text-sm text-slate-500">{req.user.email}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-4">
+                                                            <p className="font-medium text-slate-800">{req.businessName}</p>
+                                                            <p className="text-sm text-slate-500">{req.location}</p>
+                                                        </td>
+                                                        <td className="p-4">
+                                                            <p className="text-sm text-slate-600 max-w-[200px] truncate">{req.reason}</p>
+                                                        </td>
+                                                        <td className="p-4 text-sm text-slate-500">
+                                                            {new Date(req.createdAt).toLocaleDateString('es-AR')}
+                                                        </td>
+                                                        <td className="p-4 text-right">
+                                                            {req.status === 'PENDING' ? (
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="bg-teal-500 hover:bg-teal-600"
+                                                                    onClick={() => {
+                                                                        setSelectedRequest(req);
+                                                                        setAdminNote('');
+                                                                        setReviewDialogOpen(true);
+                                                                    }}
+                                                                >
+                                                                    Revisar
+                                                                </Button>
+                                                            ) : (
+                                                                <Badge className={req.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+                                                                    {req.status === 'APPROVED' ? 'Aprobada' : 'Rechazada'}
+                                                                </Badge>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -604,6 +793,67 @@ export default function AdminPage() {
                                 {processing ? 'Procesando...' : 'Confirmar'}
                             </Button>
                         )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Review Provider Request Dialog */}
+            <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Revisar Solicitud de Proveedor</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div>
+                            <p className="text-sm text-slate-500">Solicitante</p>
+                            <p className="font-medium">{selectedRequest?.user.name || selectedRequest?.user.email}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-slate-500">Negocio</p>
+                            <p className="font-medium">{selectedRequest?.businessName}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-slate-500">Ubicación</p>
+                            <p>{selectedRequest?.location}</p>
+                        </div>
+                        {selectedRequest?.description && (
+                            <div>
+                                <p className="text-sm text-slate-500">Descripción</p>
+                                <p>{selectedRequest.description}</p>
+                            </div>
+                        )}
+                        <div>
+                            <p className="text-sm text-slate-500">Motivo</p>
+                            <p>{selectedRequest?.reason}</p>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-slate-700">Nota del admin (opcional)</label>
+                            <Textarea
+                                placeholder="Agregar nota..."
+                                value={adminNote}
+                                onChange={(e) => setAdminNote(e.target.value)}
+                                rows={2}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                            onClick={() => handleReviewRequest('REJECTED')}
+                            disabled={reviewProcessing}
+                        >
+                            Rechazar
+                        </Button>
+                        <Button
+                            className="bg-teal-500 hover:bg-teal-600"
+                            onClick={() => handleReviewRequest('APPROVED')}
+                            disabled={reviewProcessing}
+                        >
+                            Aprobar
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

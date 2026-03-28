@@ -20,6 +20,12 @@ enum UserRole {
   ADMIN
 }
 
+enum ProviderRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id              String    @id @default(cuid())
   email           String    @unique
@@ -55,6 +61,26 @@ model User {
   reports             Report[]      @relation("ReporterUser")
   reportedBy          Report[]      @relation("ReportedUser")
   stores              Store[]
+  providerRequests    ProviderRequest[]
+}
+
+model ProviderRequest {
+  id            String                @id @default(cuid())
+  userId        String
+  businessName  String
+  description   String?
+  location      String
+  reason        String
+  status        ProviderRequestStatus @default(PENDING)
+  adminNote     String?
+  reviewedAt    DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
 }
 
 model ProviderProfile {

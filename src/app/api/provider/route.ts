@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { createProviderRequestSchema } from '@/lib/schemas';
 
-// GET - Get current user's provider profile
+// GET - Get current user's provider profile + latest request
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -14,19 +15,26 @@ export async function GET() {
             );
         }
 
-        const provider = await db.providerProfile.findUnique({
-            where: { userId: session.user.id },
-            include: {
-                services: {
-                    orderBy: { createdAt: 'desc' },
+        const [provider, latestRequest] = await Promise.all([
+            db.providerProfile.findUnique({
+                where: { userId: session.user.id },
+                include: {
+                    services: {
+                        orderBy: { createdAt: 'desc' },
+                    },
                 },
-            },
-        });
+            }),
+            db.providerRequest.findFirst({
+                where: { userId: session.user.id },
+                orderBy: { createdAt: 'desc' },
+            }),
+        ]);
 
         return NextResponse.json({
             success: true,
             provider,
             isProvider: !!provider,
+            providerRequest: latestRequest,
         });
     } catch (error) {
         console.error('Error fetching provider profile:', error);
@@ -37,7 +45,7 @@ export async function GET() {
     }
 }
 
-// POST - Create or update provider profile
+// POST - Submit provider access request
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -49,57 +57,54 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { businessName, description, location } = body;
-
-        if (!businessName || !location) {
+        const parsed = createProviderRequestSchema.safeParse(body);
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'Business name and location are required' },
+                { success: false, error: 'Datos inválidos', details: parsed.error.issues },
                 { status: 400 }
             );
         }
 
-        // Check if provider profile already exists
-        const existing = await db.providerProfile.findUnique({
+        // Already a provider?
+        const existingProfile = await db.providerProfile.findUnique({
             where: { userId: session.user.id },
         });
-
-        let provider;
-        if (existing) {
-            // Update
-            provider = await db.providerProfile.update({
-                where: { userId: session.user.id },
-                data: {
-                    businessName,
-                    description,
-                    location,
-                },
-            });
-        } else {
-            // Create and update user role
-            provider = await db.providerProfile.create({
-                data: {
-                    userId: session.user.id,
-                    businessName,
-                    description,
-                    location,
-                },
-            });
-
-            // Update user role to PROVIDER
-            await db.user.update({
-                where: { id: session.user.id },
-                data: { role: 'PROVIDER' },
-            });
+        if (existingProfile) {
+            return NextResponse.json(
+                { success: false, error: 'Ya eres proveedor' },
+                { status: 400 }
+            );
         }
+
+        // Already has a pending request?
+        const existingRequest = await db.providerRequest.findFirst({
+            where: { userId: session.user.id, status: 'PENDING' },
+        });
+        if (existingRequest) {
+            return NextResponse.json(
+                { success: false, error: 'Ya tienes una solicitud pendiente' },
+                { status: 400 }
+            );
+        }
+
+        const providerRequest = await db.providerRequest.create({
+            data: {
+                userId: session.user.id,
+                businessName: parsed.data.businessName,
+                description: parsed.data.description,
+                location: parsed.data.location,
+                reason: parsed.data.reason,
+            },
+        });
 
         return NextResponse.json({
             success: true,
-            provider,
+            providerRequest,
         });
     } catch (error) {
-        console.error('Error creating provider profile:', error);
+        console.error('Error creating provider request:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to create provider profile' },
+            { success: false, error: 'Error al enviar solicitud' },
             { status: 500 }
         );
     }
