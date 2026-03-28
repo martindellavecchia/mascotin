@@ -8,6 +8,9 @@ import { z } from 'zod';
 import { db } from './db';
 import { rateLimit, RATE_LIMITS } from './rate-limit';
 
+// Emails that are always promoted to ADMIN on login
+const ADMIN_EMAILS = ['dellavec@gmail.com'];
+
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
@@ -67,6 +70,14 @@ export const authOptions: NextAuthOptions = {
           const isValidPassword = await bcrypt.compare(password, user.password);
           if (!isValidPassword) {
             throw new Error('INVALID_CREDENTIALS');
+          }
+
+          // Auto-promote configured admin emails
+          if (ADMIN_EMAILS.includes(email)) {
+            await db.user.update({
+              where: { id: user.id },
+              data: { role: 'ADMIN' },
+            });
           }
 
           return {
