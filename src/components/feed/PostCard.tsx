@@ -372,7 +372,7 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
                 <div className="bg-gray-50 border-t border-gray-100 px-3 py-2 space-y-2">
                     {loadingComments ? (
                         <div className="flex justify-center py-2">
-                            <span className="material-symbols-rounded animate-spin text-gray-400">progress_activity</span>
+                            <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin"></div>
                         </div>
                     ) : (
                         <div className="space-y-1.5">

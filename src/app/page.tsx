@@ -157,7 +157,7 @@ function HomeContent() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-rounded w-12 h-12 text-teal-500 animate-spin mx-auto mb-4">progress_activity</span>
+          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600">Cargando...</p>
         </div>
       </div>
@@ -405,7 +405,7 @@ export default function Home() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
-        <span className="material-symbols-rounded w-12 h-12 text-teal-500 animate-spin">progress_activity</span>
+        <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
       </div>
     }>
       <HomeContent />

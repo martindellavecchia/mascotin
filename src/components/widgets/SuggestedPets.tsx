@@ -188,7 +188,7 @@ export default function SuggestedPets({ selectedPetId }: SuggestedPetsProps) {
                                 title="Me gusta"
                             >
                                 {actionPetId === pet.id ? (
-                                    <span className="material-symbols-rounded animate-spin text-lg">progress_activity</span>
+                                    <div className="w-4 h-4 border-2 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
                                 ) : (
                                     <span className="material-symbols-rounded text-lg filled">favorite</span>
                                 )}

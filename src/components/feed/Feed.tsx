@@ -135,7 +135,7 @@ export default function Feed({ currentUserId, currentUserImage, pets, selectedPe
                     >
                         {loadingMore ? (
                             <>
-                                <span className="material-symbols-rounded animate-spin mr-2">progress_activity</span>
+                                <div className="w-4 h-4 border-2 border-teal-200 border-t-teal-500 rounded-full animate-spin mr-2"></div>
                                 Cargando...
                             </>
                         ) : (

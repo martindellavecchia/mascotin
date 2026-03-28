@@ -43,7 +43,7 @@ function VerifyEmailContent() {
       {status === 'loading' && (
         <>
           <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
-            <span className="material-symbols-rounded text-3xl animate-spin">progress_activity</span>
+            <div className="w-8 h-8 border-[3px] border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
           </div>
           <h1 className="text-2xl font-extrabold text-slate-800">Verificando email...</h1>
           <p className="text-slate-600">Espera un momento mientras verificamos tu correo.</p>

@@ -144,7 +144,7 @@ function ResetPasswordForm() {
           >
             {loading ? (
               <>
-                <span className="material-symbols-rounded text-lg animate-spin mr-2">progress_activity</span>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                 Guardando...
               </>
             ) : (
