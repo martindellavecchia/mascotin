@@ -15,16 +15,15 @@ export async function sendEmail({ to, subject, html }: EmailOptions): Promise<bo
   const { resendApiKey, from } = getEmailConfig();
 
   if (!resendApiKey) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('RESEND_API_KEY no configurada en producción');
+    // No email provider configured — log and skip
+    console.warn('[Email] RESEND_API_KEY not set, skipping email send');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('========== EMAIL (DEV) ==========');
+      console.log(`To: ${to}`);
+      console.log(`Subject: ${subject}`);
+      console.log(`Body: ${html}`);
+      console.log('===============================');
     }
-
-    // Fallback local para desarrollo y tests
-    console.log('========== EMAIL (DEV) ==========');
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body: ${html}`);
-    console.log('===============================');
     return true;
   }
 

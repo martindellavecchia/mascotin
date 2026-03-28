@@ -47,31 +47,36 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Auto-verify when no email provider is configured
+    const hasEmailProvider = Boolean(process.env.RESEND_API_KEY);
+
     const user = await db.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
+        ...(hasEmailProvider ? {} : { emailVerified: new Date() }),
       },
     } as any);
 
-    // Create email verification token (expires in 24 hours)
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    await db.verificationToken.create({
-      data: {
-        identifier: email,
-        token: verificationToken,
-        expires: new Date(Date.now() + 86400000), // 24 hours
-      },
-    });
+    // Only send verification email if provider is configured
+    if (hasEmailProvider) {
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      await db.verificationToken.create({
+        data: {
+          identifier: email,
+          token: verificationToken,
+          expires: new Date(Date.now() + 86400000), // 24 hours
+        },
+      });
 
-    // Send verification email
-    const emailData = buildVerificationEmail(name, verificationToken);
-    await sendEmail({
-      to: email,
-      subject: emailData.subject,
-      html: emailData.html,
-    });
+      const emailData = buildVerificationEmail(name, verificationToken);
+      await sendEmail({
+        to: email,
+        subject: emailData.subject,
+        html: emailData.html,
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -80,7 +85,9 @@ export async function POST(request: Request) {
         name: user.name,
         email: user.email,
       },
-      message: 'Cuenta creada. Revisa tu email para verificar tu cuenta.',
+      message: hasEmailProvider
+        ? 'Cuenta creada. Revisa tu email para verificar tu cuenta.'
+        : 'Cuenta creada exitosamente.',
     });
   } catch (error) {
     console.error('Error creating account:', error);
