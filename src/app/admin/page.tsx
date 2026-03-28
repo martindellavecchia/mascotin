@@ -85,7 +85,7 @@ export default function AdminPage() {
         totalPages: 0,
     });
     const [search, setSearch] = useState('');
-    const [roleFilter, setRoleFilter] = useState('');
+    const [roleFilter, setRoleFilter] = useState('ALL');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [actionOpen, setActionOpen] = useState(false);
     const [actionType, setActionType] = useState<'role' | 'block' | 'password' | 'delete'>('role');
@@ -101,7 +101,7 @@ export default function AdminPage() {
                 limit: pagination.limit.toString(),
             });
             if (search) params.set('search', search);
-            if (roleFilter) params.set('role', roleFilter);
+            if (roleFilter && roleFilter !== 'ALL') params.set('role', roleFilter);
 
             const res = await fetch(`/api/admin/users?${params.toString()}`);
             const data = await res.json();
@@ -279,7 +279,7 @@ export default function AdminPage() {
                                             <SelectValue placeholder="Todos los roles" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">Todos</SelectItem>
+                                            <SelectItem value="ALL">Todos</SelectItem>
                                             <SelectItem value="OWNER">Usuario</SelectItem>
                                             <SelectItem value="PROVIDER">Proveedor</SelectItem>
                                             <SelectItem value="ADMIN">Admin</SelectItem>
