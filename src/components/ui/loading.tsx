@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
 
 interface LoadingSpinnerProps {
     className?: string;
@@ -11,20 +10,20 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ className, size = 'md', variant = 'teal' }: LoadingSpinnerProps) {
     const sizeClasses = {
-        sm: 'w-4 h-4',
-        md: 'w-8 h-8',
-        lg: 'w-12 h-12',
+        sm: 'w-4 h-4 border-2',
+        md: 'w-8 h-8 border-[3px]',
+        lg: 'w-12 h-12 border-4',
     };
 
     const variantClasses = {
-        teal: 'text-teal-500 border-teal-200 border-t-teal-500',
-        slate: 'text-slate-400 border-slate-200 border-t-slate-400',
-        white: 'text-white border-white/30 border-t-white',
+        teal: 'border-teal-200 border-t-teal-500',
+        slate: 'border-slate-200 border-t-slate-400',
+        white: 'border-white/30 border-t-white',
     };
 
     return (
         <div className={cn('flex items-center justify-center', className)}>
-            <Loader2 className={cn('animate-spin rounded-full border-2', sizeClasses[size], variantClasses[variant])} />
+            <div className={cn('animate-spin rounded-full', sizeClasses[size], variantClasses[variant])} />
         </div>
     );
 }
