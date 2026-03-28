@@ -204,7 +204,7 @@ export default function Header({ session }: HeaderProps) {
                   Solicitar ser Proveedor
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => router.push('/profile?edit=true')}>
+              <DropdownMenuItem onClick={() => router.push('/settings')}>
                 <span className="material-symbols-rounded mr-2 text-slate-500">settings</span>
                 Configuración
               </DropdownMenuItem>

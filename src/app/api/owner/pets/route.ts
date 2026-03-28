@@ -35,6 +35,7 @@ export async function GET() {
                 petType: true,
                 breed: true,
                 images: true,
+                isActive: true,
             },
             orderBy: { createdAt: 'desc' },
         });

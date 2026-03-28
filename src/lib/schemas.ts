@@ -177,3 +177,32 @@ export const reviewProviderRequestSchema = z.object({
 
 export type CreateProviderRequestData = z.infer<typeof createProviderRequestSchema>;
 export type ReviewProviderRequestData = z.infer<typeof reviewProviderRequestSchema>;
+
+// User settings
+export const updateSettingsSchema = z.object({
+  theme: z.enum(['light', 'dark', 'system']).optional(),
+  matchingPaused: z.boolean().optional(),
+  matchDistance: z.number().int().min(1).max(500).optional(),
+  matchPetTypes: z.array(z.enum(['dog', 'cat', 'bird', 'other'])).optional(),
+  matchPetSizes: z.array(z.enum(['small', 'medium', 'large', 'xlarge'])).optional(),
+  notifyMatches: z.boolean().optional(),
+  notifyMessages: z.boolean().optional(),
+  notifyComments: z.boolean().optional(),
+  notifyEvents: z.boolean().optional(),
+  notifyHealth: z.boolean().optional(),
+  profileVisible: z.boolean().optional(),
+  hideResolvedLostPets: z.boolean().optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'La contraseña actual es requerida'),
+  newPassword: z.string().min(6, 'La nueva contraseña debe tener al menos 6 caracteres'),
+});
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, 'La contraseña es requerida para confirmar'),
+});
+
+export type UpdateSettingsData = z.infer<typeof updateSettingsSchema>;
+export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
+export type DeleteAccountData = z.infer<typeof deleteAccountSchema>;
