@@ -3,6 +3,41 @@ import { getServerSession } from 'next-auth';
 import { db as prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
 
+// GET - Get single event
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        }
+
+        const event = await prisma.event.findUnique({
+            where: { id: params.id },
+            include: {
+                author: { select: { id: true, name: true, image: true } },
+                _count: { select: { attendees: true } },
+                attendees: { where: { userId: session.user.id }, select: { id: true } },
+            },
+        });
+
+        if (!event) {
+            return NextResponse.json({ success: false, error: 'Evento no encontrado' }, { status: 404 });
+        }
+
+        return NextResponse.json({
+            success: true,
+            event: {
+                ...event,
+                isAttending: event.attendees.length > 0,
+                attendeeCount: event._count.attendees,
+            },
+        });
+    } catch (error) {
+        console.error('Error fetching event:', error);
+        return NextResponse.json({ success: false, error: 'Error al obtener evento' }, { status: 500 });
+    }
+}
+
 // PUT - Update an event
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {

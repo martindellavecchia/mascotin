@@ -14,9 +14,8 @@ export async function GET() {
     }
 
     const profiles = await db.profile.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { createdAt: 'desc' },
+      take: 50,
     });
 
     return NextResponse.json({

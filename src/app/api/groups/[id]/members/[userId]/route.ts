@@ -30,6 +30,14 @@ export async function DELETE(req: Request, { params }: { params: { id: string, u
             return NextResponse.json({ success: false, error: 'No puedes eliminarte a ti mismo por esta vía' }, { status: 400 });
         }
 
+        // Prevent removing other admins
+        const targetMembership = await prisma.groupMember.findUnique({
+            where: { groupId_userId: { groupId, userId: targetUserId } },
+        });
+        if (targetMembership?.role === 'ADMIN') {
+            return NextResponse.json({ success: false, error: 'No puedes eliminar a otro administrador' }, { status: 403 });
+        }
+
         // Delete the membership
         await prisma.groupMember.delete({
             where: {

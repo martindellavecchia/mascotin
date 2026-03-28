@@ -130,7 +130,7 @@ function ProfileContent() {
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
           <p className="text-gray-500">Cargando perfil...</p>
@@ -143,7 +143,7 @@ function ProfileContent() {
 
   if (!owner) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header session={session} />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Card className="w-full max-w-2xl mx-auto shadow-sm border-0 bg-white">
@@ -167,7 +167,7 @@ function ProfileContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header session={session} />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
@@ -351,7 +351,7 @@ function ProfileContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
           <p className="text-gray-500">Cargando...</p>

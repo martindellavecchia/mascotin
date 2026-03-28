@@ -14,7 +14,7 @@ export default function CommunityPage() {
     const [feedRefreshKey, setFeedRefreshKey] = useState(0);
 
     return (
-        <div className="min-h-screen bg-[#f8fcfa]">
+        <div className="min-h-screen bg-slate-50">
             <Header session={session} />
             <CommunityLayout>
                 <div className="mb-6 flex items-center justify-between">

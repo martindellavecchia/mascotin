@@ -32,6 +32,21 @@
   --state-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
+.dark {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-primary-soft: #134e4a;
+  --state-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.dark body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
 .material-symbols-rounded {
   font-family: 'Material Symbols Rounded';
   font-weight: normal;

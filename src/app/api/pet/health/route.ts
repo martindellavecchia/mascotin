@@ -120,3 +120,74 @@ export async function POST(request: Request) {
         );
     }
 }
+
+// PATCH - Update a health record (mark complete, edit notes)
+export async function PATCH(request: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { recordId, completedAt, notes, dueDate } = body;
+
+        if (!recordId) {
+            return NextResponse.json({ success: false, error: 'recordId is required' }, { status: 400 });
+        }
+
+        const record = await db.petHealthRecord.findUnique({
+            where: { id: recordId },
+            include: { pet: { include: { owner: true } } },
+        });
+
+        if (!record || record.pet.owner.userId !== session.user.id) {
+            return NextResponse.json({ success: false, error: 'Registro no encontrado' }, { status: 404 });
+        }
+
+        const data: Record<string, unknown> = {};
+        if (completedAt !== undefined) data.completedAt = completedAt ? new Date(completedAt) : null;
+        if (notes !== undefined) data.notes = notes;
+        if (dueDate !== undefined) data.dueDate = dueDate ? new Date(dueDate) : null;
+
+        const updated = await db.petHealthRecord.update({ where: { id: recordId }, data });
+
+        return NextResponse.json({ success: true, healthRecord: updated });
+    } catch (error) {
+        console.error('Error updating health record:', error);
+        return NextResponse.json({ success: false, error: 'Error al actualizar registro' }, { status: 500 });
+    }
+}
+
+// DELETE - Delete a health record
+export async function DELETE(request: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const recordId = searchParams.get('recordId');
+
+        if (!recordId) {
+            return NextResponse.json({ success: false, error: 'recordId is required' }, { status: 400 });
+        }
+
+        const record = await db.petHealthRecord.findUnique({
+            where: { id: recordId },
+            include: { pet: { include: { owner: true } } },
+        });
+
+        if (!record || record.pet.owner.userId !== session.user.id) {
+            return NextResponse.json({ success: false, error: 'Registro no encontrado' }, { status: 404 });
+        }
+
+        await db.petHealthRecord.delete({ where: { id: recordId } });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting health record:', error);
+        return NextResponse.json({ success: false, error: 'Error al eliminar registro' }, { status: 500 });
+    }
+}

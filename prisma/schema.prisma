@@ -315,17 +315,16 @@ model Pet {
 
 model Swipe {
   id          String   @id @default(cuid())
-  fromId      String   // Legacy - for backward compatibility
-  toId        String   // Legacy - for backward compatibility
-  fromPetId   String?  // New - Pet swiping
-  toPetId     String?  // New - Pet being swiped on
+  fromId      String   @default("")  // Legacy — kept for data compat
+  toId        String   @default("")  // Legacy — kept for data compat
+  fromPetId   String?
+  toPetId     String?
   isLike      Boolean
   createdAt   DateTime @default(now())
 
   fromPet     Pet?      @relation("PetSentSwipes", fields: [fromPetId], references: [id], onDelete: Cascade)
   toPet       Pet?      @relation("PetReceivedSwipes", fields: [toPetId], references: [id], onDelete: Cascade)
 
-  @@unique([fromId, toId])
   @@unique([fromPetId, toPetId])
   @@index([fromPetId])
   @@index([toPetId])
@@ -333,17 +332,15 @@ model Swipe {
 
 model Match {
   id          String   @id @default(cuid())
-  user1Id     String   // Legacy - for backward compatibility
-  user2Id     String   // Legacy - for backward compatibility
-  pet1Id      String?  // New - Pet 1 in match
-  pet2Id      String?  // New - Pet 2 in match
+  user1Id     String   @default("")  // Legacy — kept for data compat
+  user2Id     String   @default("")  // Legacy — kept for data compat
+  pet1Id      String?
+  pet2Id      String?
   createdAt   DateTime @default(now())
 
   pet1        Pet?      @relation("Pet1Matches", fields: [pet1Id], references: [id], onDelete: Cascade)
   pet2        Pet?      @relation("Pet2Matches", fields: [pet2Id], references: [id], onDelete: Cascade)
   messages    Message[]
-
-  @@unique([user1Id, user2Id])
 }
 
 model Event {
@@ -408,6 +405,7 @@ model Message {
   @@index([matchId])
   @@index([groupId])
   @@index([senderId])
+  @@index([receiverId])
   @@index([createdAt])
 }
 

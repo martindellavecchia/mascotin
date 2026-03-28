@@ -103,8 +103,6 @@ export async function POST(request: Request) {
       // Create new swipe
       await db.swipe.create({
         data: {
-          fromId: sourcePet.owner.userId,
-          toId: targetPet.owner.userId,
           fromPetId,
           toPetId,
           isLike,
@@ -147,8 +145,6 @@ export async function POST(request: Request) {
             // Create new match
             await tx.match.create({
               data: {
-                user1Id: sourcePet.owner.userId,
-                user2Id: targetPet.owner.userId,
                 pet1Id: fromPetId,
                 pet2Id: toPetId,
               },

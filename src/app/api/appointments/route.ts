@@ -89,12 +89,30 @@ export async function POST(request: Request) {
             );
         }
 
+        // Check for conflicting appointment in same time slot (±duration)
+        const service = await db.service.findUnique({ where: { id: serviceId } });
+        if (!service) {
+            return NextResponse.json({ success: false, error: 'Servicio no encontrado' }, { status: 404 });
+        }
+        const appointmentDate = new Date(date);
+        const slotEnd = new Date(appointmentDate.getTime() + service.duration * 60000);
+        const conflict = await db.appointment.findFirst({
+            where: {
+                serviceId,
+                status: { in: ['PENDING', 'CONFIRMED'] },
+                date: { gte: appointmentDate, lt: slotEnd },
+            },
+        });
+        if (conflict) {
+            return NextResponse.json({ success: false, error: 'Ya existe una cita en ese horario' }, { status: 409 });
+        }
+
         const appointment = await db.appointment.create({
             data: {
                 userId: session.user.id,
                 serviceId,
                 petId,
-                date: new Date(date),
+                date: appointmentDate,
                 status: 'PENDING',
             },
             include: {
