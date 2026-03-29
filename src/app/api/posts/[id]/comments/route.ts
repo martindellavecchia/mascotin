@@ -60,8 +60,12 @@ export async function POST(
         const { content } = await req.json();
         const postId = params.id;
 
-        if (!content) {
-            return NextResponse.json({ success: false, error: 'Content is required' }, { status: 400 });
+        if (!content || typeof content !== 'string') {
+            return NextResponse.json({ success: false, error: 'El contenido es requerido' }, { status: 400 });
+        }
+
+        if (content.length > 2000) {
+            return NextResponse.json({ success: false, error: 'El comentario no puede exceder 2000 caracteres' }, { status: 400 });
         }
 
         const comment = await prisma.comment.create({

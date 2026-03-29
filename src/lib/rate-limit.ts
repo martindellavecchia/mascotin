@@ -145,4 +145,6 @@ export const RATE_LIMITS = {
   upload: { maxRequests: 5, windowMs: 60000 },
   /** Email check: 10 per minute */
   emailCheck: { maxRequests: 10, windowMs: 60000 },
+  /** Admin write operations: 20 per minute */
+  adminWrite: { maxRequests: 20, windowMs: 60000 },
 } as const;

@@ -3,10 +3,15 @@ import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { hashToken } from '@/lib/token-hash';
 
 const resetSchema = z.object({
   token: z.string().min(1, 'Token requerido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  password: z.string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .regex(/[A-Z]/, 'La contraseña debe contener al menos una mayúscula')
+    .regex(/[a-z]/, 'La contraseña debe contener al menos una minúscula')
+    .regex(/[0-9]/, 'La contraseña debe contener al menos un número'),
 });
 
 export async function POST(request: Request) {
@@ -31,9 +36,10 @@ export async function POST(request: Request) {
     }
 
     const { token, password } = parsed.data;
+    const hashedToken = hashToken(token);
 
     const verificationToken = await db.verificationToken.findUnique({
-      where: { token },
+      where: { token: hashedToken },
     });
 
     if (!verificationToken || !verificationToken.identifier.startsWith('reset:')) {
@@ -44,7 +50,7 @@ export async function POST(request: Request) {
     }
 
     if (verificationToken.expires < new Date()) {
-      await db.verificationToken.delete({ where: { token } });
+      await db.verificationToken.delete({ where: { token: hashedToken } });
       return NextResponse.json(
         { success: false, error: 'El token ha expirado. Solicita uno nuevo.' },
         { status: 400 }
@@ -62,7 +68,7 @@ export async function POST(request: Request) {
         data: { password: hashedPassword },
       }),
       db.verificationToken.delete({
-        where: { token },
+        where: { token: hashedToken },
       }),
     ]);
 

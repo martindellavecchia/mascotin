@@ -12,8 +12,15 @@ export async function GET(request: Request) {
         const status = searchParams.get('status');
 
         const where: Prisma.ProviderRequestWhereInput = {};
+        const validStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
         if (status && status !== 'ALL') {
-            where.status = status as any;
+            if (!validStatuses.includes(status)) {
+                return NextResponse.json(
+                    { success: false, error: 'Estado inválido' },
+                    { status: 400 }
+                );
+            }
+            where.status = status as 'PENDING' | 'APPROVED' | 'REJECTED';
         }
 
         const [requests, counts] = await Promise.all([

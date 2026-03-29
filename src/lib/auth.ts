@@ -8,12 +8,12 @@ import { z } from 'zod';
 import { db } from './db';
 import { rateLimit, RATE_LIMITS } from './rate-limit';
 
-// Emails that are always promoted to ADMIN on login
-const ADMIN_EMAILS = ['dellavec@gmail.com'];
+// Admin emails from environment variable (comma-separated)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
 });
 
 export const authOptions: NextAuthOptions = {
@@ -72,12 +72,19 @@ export const authOptions: NextAuthOptions = {
             throw new Error('INVALID_CREDENTIALS');
           }
 
-          // Auto-promote configured admin emails
+          // Auto-promote configured admin emails (only if not already ADMIN)
           if (ADMIN_EMAILS.includes(email)) {
-            await db.user.update({
+            const currentUser = await db.user.findUnique({
               where: { id: user.id },
-              data: { role: 'ADMIN' },
+              select: { role: true },
             });
+            if (currentUser && currentUser.role !== 'ADMIN') {
+              await db.user.update({
+                where: { id: user.id },
+                data: { role: 'ADMIN' },
+              });
+              console.warn(`[SECURITY] Auto-promoted ${email} to ADMIN role`);
+            }
           }
 
           return {

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import crypto from 'crypto';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { sendEmail, buildPasswordResetEmail } from '@/lib/email';
+import { hashToken } from '@/lib/token-hash';
 
 export async function POST(request: Request) {
   try {
@@ -41,11 +42,12 @@ export async function POST(request: Request) {
       });
 
       // Create new reset token (expires in 1 hour)
+      // Store hashed token in DB; send raw token to user via email
       const token = crypto.randomBytes(32).toString('hex');
       await db.verificationToken.create({
         data: {
           identifier: `reset:${email}`,
-          token,
+          token: hashToken(token),
           expires: new Date(Date.now() + 3600000), // 1 hour
         },
       });

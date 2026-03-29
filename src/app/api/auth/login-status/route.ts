@@ -14,18 +14,19 @@ export async function POST(req: Request) {
       select: { isBlocked: true, emailVerified: true },
     });
 
+    // Return specific reason only for conditions the user needs to act on.
+    // For non-existent users, return the same generic message to prevent enumeration.
     if (!user) {
       return NextResponse.json({ reason: 'invalid_credentials' });
     }
 
     if (user.isBlocked) {
+      // This is safe to disclose — blocked users need to know why they can't log in
       return NextResponse.json({ reason: 'blocked' });
     }
 
-    if (!user.emailVerified) {
-      return NextResponse.json({ reason: 'email_not_verified' });
-    }
-
+    // Don't differentiate between "unverified" and "invalid credentials"
+    // to avoid confirming account existence
     return NextResponse.json({ reason: 'invalid_credentials' });
   } catch {
     return NextResponse.json({ reason: 'invalid_credentials' });

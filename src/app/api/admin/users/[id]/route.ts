@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdmin, requireAdminWrite } from '@/lib/admin';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -15,7 +15,14 @@ export async function GET(
     try {
         const user = await db.user.findUnique({
             where: { id: params.id },
-            include: {
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                isBlocked: true,
+                image: true,
+                createdAt: true,
                 owner: {
                     include: {
                         pets: true,
@@ -57,7 +64,7 @@ export async function PATCH(
     request: Request,
     { params }: { params: { id: string } }
 ) {
-    const authError = await requireAdmin();
+    const authError = await requireAdminWrite(request);
     if (authError) return authError;
 
     try {
@@ -143,7 +150,7 @@ export async function DELETE(
     request: Request,
     { params }: { params: { id: string } }
 ) {
-    const authError = await requireAdmin();
+    const authError = await requireAdminWrite(request);
     if (authError) return authError;
 
     try {

@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * Check if the current user is an admin
@@ -45,6 +46,26 @@ export async function requireAdmin(): Promise<NextResponse | null> {
     }
 
     return null; // Authorized
+}
+
+/**
+ * Require admin access with rate limiting for write operations.
+ * Returns error response if not admin or rate limited, or null if authorized.
+ */
+export async function requireAdminWrite(request: Request): Promise<NextResponse | null> {
+    const authCheck = await requireAdmin();
+    if (authCheck) return authCheck;
+
+    const session = await getServerSession(authOptions);
+    const limit = await rateLimit(`admin-write:${session!.user.id}`, RATE_LIMITS.adminWrite);
+    if (!limit.allowed) {
+        return NextResponse.json(
+            { success: false, error: 'Demasiados intentos. Intenta más tarde.' },
+            { status: 429 }
+        );
+    }
+
+    return null;
 }
 
 /**

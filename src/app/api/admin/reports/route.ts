@@ -11,11 +11,18 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
-    const limit = searchParams.get('limit');
-    const take = limit ? parseInt(limit) : 50;
+    const limitParam = searchParams.get('limit');
+    const take = Math.min(Math.max(parseInt(limitParam || '50') || 50, 1), 100);
 
     const where: Prisma.ReportWhereInput = {};
+    const validStatuses = ['PENDING', 'REVIEWED', 'RESOLVED', 'DISMISSED'];
     if (status) {
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json(
+          { success: false, error: 'Estado inválido' },
+          { status: 400 }
+        );
+      }
       where.status = status;
     }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdminWrite } from '@/lib/admin';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
@@ -9,7 +9,7 @@ export async function POST(
     request: Request,
     { params }: { params: { id: string } }
 ) {
-    const authError = await requireAdmin();
+    const authError = await requireAdminWrite(request);
     if (authError) return authError;
 
     try {
@@ -34,12 +34,22 @@ export async function POST(
             data: { password: hashedPassword },
         });
 
-        // Note: In production, this should be sent via email, not returned in the response.
-        // For now, we return a masked hint so the admin knows it was reset.
+        // Send temporary password via email if configured, never in the response
+        const hasEmailProvider = Boolean(process.env.RESEND_API_KEY);
+        if (hasEmailProvider) {
+            const { sendEmail } = await import('@/lib/email');
+            await sendEmail({
+                to: user.email,
+                subject: 'mascoTin - Contraseña temporal',
+                html: `<p>Tu contraseña ha sido restablecida por un administrador.</p><p>Tu contraseña temporal es: <strong>${tempPassword}</strong></p><p>Por favor, cámbiala lo antes posible.</p>`,
+            });
+        }
+
         return NextResponse.json({
             success: true,
-            message: `Contraseña restablecida para ${user.email}. La contraseña temporal ha sido generada.`,
-            tempPassword,
+            message: hasEmailProvider
+                ? `Contraseña restablecida. Se envió la contraseña temporal al email ${user.email}.`
+                : `Contraseña restablecida para ${user.email}. La contraseña temporal ha sido generada. Configura RESEND_API_KEY para enviarla por email.`,
         });
     } catch (error) {
         console.error('Error resetting password:', error);

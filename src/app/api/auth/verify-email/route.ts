@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { hashToken } from '@/lib/token-hash';
 
 export async function GET(request: Request) {
   try {
@@ -13,8 +14,10 @@ export async function GET(request: Request) {
       );
     }
 
+    const hashedToken = hashToken(token);
+
     const verificationToken = await db.verificationToken.findUnique({
-      where: { token },
+      where: { token: hashedToken },
     });
 
     if (!verificationToken) {
@@ -33,7 +36,7 @@ export async function GET(request: Request) {
 
     if (verificationToken.expires < new Date()) {
       await db.verificationToken.delete({
-        where: { token },
+        where: { token: hashedToken },
       });
       return NextResponse.json(
         { success: false, error: 'El token ha expirado. Solicita uno nuevo.' },
@@ -47,7 +50,7 @@ export async function GET(request: Request) {
     });
 
     if (!user) {
-      await db.verificationToken.delete({ where: { token } });
+      await db.verificationToken.delete({ where: { token: hashedToken } });
       return NextResponse.json(
         { success: false, error: 'Usuario no encontrado para este token' },
         { status: 400 }
@@ -60,7 +63,7 @@ export async function GET(request: Request) {
         data: { emailVerified: user.emailVerified || new Date() },
       }),
       db.verificationToken.delete({
-        where: { token },
+        where: { token: hashedToken },
       }),
     ]);
 

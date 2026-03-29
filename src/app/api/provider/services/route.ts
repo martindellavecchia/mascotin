@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { storeServiceSchema } from '@/lib/schemas';
 
 // GET - Get all services for current provider
 export async function GET() {
@@ -71,22 +72,24 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { name, description, price, duration } = body;
+        const parsed = storeServiceSchema.safeParse(body);
 
-        if (!name || !description || !price || !duration) {
+        if (!parsed.success) {
             return NextResponse.json(
-                { success: false, error: 'All fields are required' },
+                { success: false, error: 'Datos inválidos', details: parsed.error.issues },
                 { status: 400 }
             );
         }
+
+        const { name, description, price, duration } = parsed.data;
 
         const service = await db.service.create({
             data: {
                 providerId: provider.id,
                 name,
                 description,
-                price: parseFloat(price),
-                duration: parseInt(duration),
+                price,
+                duration,
             },
         });
 

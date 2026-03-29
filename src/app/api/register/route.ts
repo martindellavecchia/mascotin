@@ -5,11 +5,16 @@ import crypto from 'crypto';
 import { z } from 'zod';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { sendEmail, buildVerificationEmail } from '@/lib/email';
+import { hashToken } from '@/lib/token-hash';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  password: z.string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .regex(/[A-Z]/, 'La contraseña debe contener al menos una mayúscula')
+    .regex(/[a-z]/, 'La contraseña debe contener al menos una minúscula')
+    .regex(/[0-9]/, 'La contraseña debe contener al menos un número'),
 });
 
 export async function POST(request: Request) {
@@ -65,7 +70,7 @@ export async function POST(request: Request) {
       await db.verificationToken.create({
         data: {
           identifier: email,
-          token: verificationToken,
+          token: hashToken(verificationToken),
           expires: new Date(Date.now() + 86400000), // 24 hours
         },
       });
