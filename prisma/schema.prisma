@@ -20,6 +20,18 @@ enum UserRole {
   ADMIN
 }
 
+enum NotificationType {
+  MATCH
+  MESSAGE
+  GROUP_MESSAGE
+  COMMENT
+  LIKE
+  APPOINTMENT
+  EVENT_ATTEND
+  PROVIDER_REQUEST
+  GROUP_JOIN
+}
+
 enum ProviderRequestStatus {
   PENDING
   APPROVED
@@ -63,6 +75,8 @@ model User {
   stores              Store[]
   providerRequests    ProviderRequest[]
   settings            UserSettings?
+  notifications       Notification[] @relation("UserNotifications")
+  actedNotifications  Notification[] @relation("ActorNotifications")
 }
 
 model UserSettings {
@@ -84,6 +98,25 @@ model UserSettings {
   updatedAt            DateTime @updatedAt
 
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  actorId     String?
+  type        NotificationType
+  title       String
+  body        String
+  link        String?
+  read        Boolean          @default(false)
+  entityId    String?
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor       User?            @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId, read, createdAt])
+  @@index([userId, createdAt])
 }
 
 model ProviderRequest {

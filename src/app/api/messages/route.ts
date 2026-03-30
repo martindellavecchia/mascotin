@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 // GET - Retrieve messages for a match
 export async function GET(request: Request) {
@@ -151,6 +152,16 @@ export async function POST(request: Request) {
         content: content.trim()
       }
     });
+
+    createNotification({
+      userId: receiverId,
+      actorId: session.user.id,
+      type: 'MESSAGE',
+      title: 'Nuevo mensaje',
+      body: `${session.user.name || 'Alguien'} te envió un mensaje`,
+      link: `/messages?matchId=${matchId}`,
+      entityId: message.id,
+    }).catch(console.error);
 
     return NextResponse.json({
       success: true,

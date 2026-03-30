@@ -23,6 +23,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface HeaderProps {
   session: {
@@ -152,10 +153,7 @@ export default function Header({ session }: HeaderProps) {
             </SheetContent>
           </Sheet>
 
-          <Button variant="ghost" size="icon" className="relative rounded-full text-slate-500 hover:text-teal-600 hover:bg-teal-50" aria-label="Notificaciones">
-            <span className="material-symbols-rounded">notifications</span>
-            <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
-          </Button>
+          <NotificationBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

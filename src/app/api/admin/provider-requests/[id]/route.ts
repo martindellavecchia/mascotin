@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { reviewProviderRequestSchema } from '@/lib/schemas';
+import { createNotification } from '@/lib/notifications';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function PATCH(
     request: Request,
@@ -40,6 +43,8 @@ export async function PATCH(
             );
         }
 
+        const session = await getServerSession(authOptions);
+
         if (parsed.data.status === 'APPROVED') {
             await db.$transaction([
                 db.providerRequest.update({
@@ -63,6 +68,16 @@ export async function PATCH(
                     data: { role: 'PROVIDER' },
                 }),
             ]);
+
+            createNotification({
+                userId: providerRequest.userId,
+                actorId: session?.user?.id || providerRequest.userId,
+                type: 'PROVIDER_REQUEST',
+                title: 'Solicitud aprobada',
+                body: '¡Tu solicitud de proveedor fue aprobada! Ya puedes gestionar tu tienda.',
+                link: '/provider',
+                entityId: id,
+            }).catch(console.error);
         } else {
             await db.providerRequest.update({
                 where: { id },
@@ -72,6 +87,16 @@ export async function PATCH(
                     reviewedAt: new Date(),
                 },
             });
+
+            createNotification({
+                userId: providerRequest.userId,
+                actorId: session?.user?.id || providerRequest.userId,
+                type: 'PROVIDER_REQUEST',
+                title: 'Solicitud rechazada',
+                body: 'Tu solicitud de proveedor fue rechazada.' + (parsed.data.adminNote ? ` Nota: ${parsed.data.adminNote}` : ''),
+                link: '/settings',
+                entityId: id,
+            }).catch(console.error);
         }
 
         const updated = await db.providerRequest.findUnique({

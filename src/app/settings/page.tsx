@@ -487,7 +487,7 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">
-                                    Las notificaciones push se implementarán próximamente. Estas preferencias se guardan para cuando estén disponibles.
+                                    Configura qué notificaciones quieres recibir. Los cambios se aplican de inmediato.
                                 </p>
                                 {[
                                     { key: 'notifyMatches' as const, label: 'Nuevos matches', desc: 'Cuando una mascota hace match con la tuya', icon: 'favorite' },

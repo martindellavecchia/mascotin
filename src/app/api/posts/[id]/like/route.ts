@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export async function POST(
     req: Request,
@@ -39,6 +40,24 @@ export async function POST(
                 return { liked: true };
             }
         });
+
+        if (result.liked) {
+            const post = await prisma.post.findUnique({
+                where: { id: postId },
+                select: { authorId: true },
+            });
+            if (post) {
+                createNotification({
+                    userId: post.authorId,
+                    actorId: userId,
+                    type: 'LIKE',
+                    title: 'Nuevo like',
+                    body: `A ${session.user.name || 'alguien'} le gustó tu publicación`,
+                    link: '/community',
+                    entityId: postId,
+                }).catch(console.error);
+            }
+        }
 
         return NextResponse.json({ success: true, liked: result.liked });
     } catch (error) {

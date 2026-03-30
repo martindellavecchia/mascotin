@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { requireAuth } from '@/lib/api-helpers';
 import { logger } from '@/lib/logger';
+import { createNotification } from '@/lib/notifications';
 
 const log = logger.forRoute('/api/swipe', 'POST');
 
@@ -171,6 +172,17 @@ export async function POST(request: Request) {
 
       matched = matchResult.matched;
       xpGained += matchResult.xpGained;
+
+      if (matched && matchResult.xpGained > 0) {
+        createNotification({
+          userId: targetPet.owner.userId,
+          actorId: session.user.id,
+          type: 'MATCH',
+          title: '¡Nuevo match!',
+          body: `${sourcePet.name} hizo match con ${targetPet.name}`,
+          link: '/messages',
+        }).catch(console.error);
+      }
     }
 
     return NextResponse.json({

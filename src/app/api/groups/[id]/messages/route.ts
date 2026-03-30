@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db as prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
+import { createNotificationBulk } from '@/lib/notifications';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     try {
@@ -70,6 +71,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 sender: { select: { id: true, name: true, image: true } }
             }
         });
+
+        // Notify other group members
+        const members = await prisma.groupMember.findMany({
+            where: { groupId: params.id },
+            select: { userId: true },
+        });
+        createNotificationBulk(
+            members.map(m => m.userId),
+            session.user.id,
+            'GROUP_MESSAGE',
+            'Nuevo mensaje en grupo',
+            `${session.user.name || 'Alguien'} envió un mensaje`,
+            `/community/groups/${params.id}`,
+            message.id,
+        ).catch(console.error);
 
         return NextResponse.json({ success: true, message });
     } catch (error) {

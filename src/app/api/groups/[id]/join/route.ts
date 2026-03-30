@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db as prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
+import { createNotificationBulk } from '@/lib/notifications';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
@@ -27,6 +28,31 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 userId: session.user.id,
             },
         });
+
+        // Notify group admins
+        const [admins, group] = await Promise.all([
+            prisma.groupMember.findMany({
+                where: { groupId: params.id, role: 'ADMIN' },
+                select: { userId: true },
+            }),
+            prisma.group.findUnique({
+                where: { id: params.id },
+                select: { name: true, creatorId: true },
+            }),
+        ]);
+        const adminIds = [...new Set([
+            ...admins.map(a => a.userId),
+            ...(group ? [group.creatorId] : []),
+        ])];
+        createNotificationBulk(
+            adminIds,
+            session.user.id,
+            'GROUP_JOIN',
+            'Nuevo miembro',
+            `${session.user.name || 'Alguien'} se unió a "${group?.name || 'tu grupo'}"`,
+            `/community/groups/${params.id}`,
+            params.id,
+        ).catch(console.error);
 
         return NextResponse.json({ success: true });
     } catch (error) {

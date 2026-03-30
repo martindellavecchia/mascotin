@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 // POST - Toggle attendance for an event
 export async function POST(
@@ -46,6 +47,24 @@ export async function POST(
                     userId: session.user.id,
                 },
             });
+
+            // Notify event creator
+            const event = await db.event.findUnique({
+                where: { id: eventId },
+                select: { authorId: true, title: true },
+            });
+            if (event) {
+                createNotification({
+                    userId: event.authorId,
+                    actorId: session.user.id,
+                    type: 'EVENT_ATTEND',
+                    title: 'Nuevo asistente',
+                    body: `${session.user.name || 'Alguien'} asistirá a "${event.title}"`,
+                    link: '/community/events',
+                    entityId: eventId,
+                }).catch(console.error);
+            }
+
             return NextResponse.json({
                 success: true,
                 attending: true,

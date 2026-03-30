@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { createAppointmentSchema } from '@/lib/schemas';
+import { createNotification } from '@/lib/notifications';
 
 // GET - Get user's upcoming appointments
 export async function GET(request: Request) {
@@ -122,6 +123,19 @@ export async function POST(request: Request) {
                 pet: true,
             },
         });
+
+        // Notify the service provider
+        if (appointment.service.provider) {
+            createNotification({
+                userId: appointment.service.provider.userId,
+                actorId: session.user.id,
+                type: 'APPOINTMENT',
+                title: 'Nueva cita agendada',
+                body: `${session.user.name || 'Un usuario'} agendó una cita para ${appointment.pet.name}`,
+                link: '/provider',
+                entityId: appointment.id,
+            }).catch(console.error);
+        }
 
         return NextResponse.json({
             success: true,

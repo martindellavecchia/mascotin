@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export async function GET(
     req: Request,
@@ -83,6 +84,23 @@ export async function POST(
                 }
             }
         });
+
+        // Notify post author
+        const post = await prisma.post.findUnique({
+            where: { id: postId },
+            select: { authorId: true },
+        });
+        if (post) {
+            createNotification({
+                userId: post.authorId,
+                actorId: session.user.id,
+                type: 'COMMENT',
+                title: 'Nuevo comentario',
+                body: `${session.user.name || 'Alguien'} comentó en tu publicación`,
+                link: '/community',
+                entityId: postId,
+            }).catch(console.error);
+        }
 
         return NextResponse.json({ success: true, comment });
     } catch (error) {

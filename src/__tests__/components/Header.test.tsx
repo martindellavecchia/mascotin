@@ -29,6 +29,12 @@ jest.mock('@/hooks/useFetchWithError', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useNotifications', () => ({
+  useUnreadCount: () => ({ data: 0 }),
+  useNotifications: () => ({ data: [], isLoading: false }),
+  useMarkAsRead: () => ({ mutate: jest.fn() }),
+}));
+
 describe('Header', () => {
   const mockSession = {
     user: {
