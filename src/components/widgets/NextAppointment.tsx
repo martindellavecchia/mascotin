@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { LoadingSpinner, Skeleton } from '@/components/ui/loading';
 
+const VISIBLE_UPCOMING_STATUSES = new Set(['PENDING', 'CONFIRMED']);
+
 interface Appointment {
     id: string;
     date: string;
@@ -80,7 +82,9 @@ export default function NextAppointment() {
         );
     }
 
-    const nextAppointment = appointments[0];
+    const nextAppointment = appointments.find((appointment) =>
+        VISIBLE_UPCOMING_STATUSES.has(appointment.status)
+    );
 
     if (!nextAppointment) {
         return (

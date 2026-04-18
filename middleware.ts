@@ -1,17 +1,15 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import { isAuthPage, isPublicPath } from '@/lib/route-access';
 
 export default withAuth(
   function middleware(req) {
+    const pathname = req.nextUrl.pathname;
     const isLoggedIn = !!req.nextauth.token;
-    const isAuthPage = req.nextUrl.pathname.startsWith('/login') ||
-      req.nextUrl.pathname.startsWith('/register') ||
-      req.nextUrl.pathname.startsWith('/forgot-password') ||
-      req.nextUrl.pathname.startsWith('/reset-password') ||
-      req.nextUrl.pathname.startsWith('/verify-email');
+    const authPage = isAuthPage(pathname);
 
     // Redirigir usuarios autenticados fuera de páginas de auth
-    if (isLoggedIn && isAuthPage) {
+    if (isLoggedIn && authPage) {
       return NextResponse.redirect(new URL('/', req.url));
     }
 
@@ -19,20 +17,14 @@ export default withAuth(
   },
   {
     callbacks: {
-      // Permitir acceso a páginas de auth sin autenticación
+      // Mantener la home pública y dejar pasar assets públicos fuera del middleware.
       authorized: ({ token, req }) => {
-        const isAuthPage = req.nextUrl.pathname.startsWith('/login') ||
-          req.nextUrl.pathname.startsWith('/register') ||
-          req.nextUrl.pathname.startsWith('/forgot-password') ||
-          req.nextUrl.pathname.startsWith('/reset-password') ||
-          req.nextUrl.pathname.startsWith('/verify-email');
-        // Permitir páginas de auth sin token, el resto requiere token
-        return isAuthPage || !!token;
+        return isPublicPath(req.nextUrl.pathname) || !!token;
       },
     },
   }
 );
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|profile-images).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|.*\\..*).*)'],
 };

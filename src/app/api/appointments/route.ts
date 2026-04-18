@@ -4,6 +4,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { createAppointmentSchema } from '@/lib/schemas';
 import { createNotification } from '@/lib/notifications';
+import {
+    getAppointmentConflictWindow,
+    UPCOMING_APPOINTMENT_STATUSES,
+} from '@/lib/appointments';
 
 // GET - Get user's upcoming appointments
 export async function GET(request: Request) {
@@ -19,6 +23,9 @@ export async function GET(request: Request) {
         const appointments = await db.appointment.findMany({
             where: {
                 userId: session.user.id,
+                status: {
+                    in: [...UPCOMING_APPOINTMENT_STATUSES],
+                },
                 date: {
                     gte: new Date(),
                 },
@@ -96,12 +103,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Servicio no encontrado' }, { status: 404 });
         }
         const appointmentDate = new Date(date);
-        const slotEnd = new Date(appointmentDate.getTime() + service.duration * 60000);
+        const { windowStart, windowEnd } = getAppointmentConflictWindow(
+            appointmentDate,
+            service.duration
+        );
         const conflict = await db.appointment.findFirst({
             where: {
                 serviceId,
-                status: { in: ['PENDING', 'CONFIRMED'] },
-                date: { gte: appointmentDate, lt: slotEnd },
+                status: { in: [...UPCOMING_APPOINTMENT_STATUSES] },
+                // Ventana exclusiva para permitir turnos consecutivos sin solaparlos.
+                date: { gt: windowStart, lt: windowEnd },
             },
         });
         if (conflict) {

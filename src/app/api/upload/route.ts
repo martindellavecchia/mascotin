@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
-import path from 'path';
+import sharp from 'sharp';
 
 export const runtime = 'nodejs';
+
+const MAX_INPUT_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_OUTPUT_FILE_SIZE = 600 * 1024;
+const MAX_IMAGE_DIMENSION = 1200;
+const OUTPUT_IMAGE_QUALITY = 78;
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -25,44 +28,53 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'No se recibió ninguna imagen' }, { status: 400 });
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ success: false, error: 'File too large. Max 5MB' }, { status: 400 });
+    if (file.size > MAX_INPUT_FILE_SIZE) {
+      return NextResponse.json({ success: false, error: 'La imagen debe ser menor a 5MB' }, { status: 400 });
     }
 
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ success: false, error: 'Only images allowed' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Solo se permiten imágenes' }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'profile-images', session.user.id);
-
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
+    if (file.type === 'image/svg+xml') {
+      return NextResponse.json({ success: false, error: 'SVG no está permitido en este prototipo' }, { status: 400 });
     }
-
-    // Validar extensión contra lista blanca (fix de seguridad)
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    const ext = file.name.split('.').pop()?.toLowerCase();
-
-    if (!ext || !allowedExtensions.includes(ext)) {
-      return NextResponse.json({ success: false, error: 'Invalid file extension. Allowed: jpg, jpeg, png, gif, webp' }, { status: 400 });
-    }
-
-    const timestamp = Date.now();
-    const filename = `${timestamp}.${ext}`;
-    const filepath = path.join(uploadDir, filename);
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
+    const optimizedBuffer = await sharp(Buffer.from(bytes))
+      .rotate()
+      .resize({
+        width: MAX_IMAGE_DIMENSION,
+        height: MAX_IMAGE_DIMENSION,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .webp({
+        quality: OUTPUT_IMAGE_QUALITY,
+      })
+      .toBuffer();
+
+    if (optimizedBuffer.length > MAX_OUTPUT_FILE_SIZE) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'La imagen sigue siendo muy pesada para este prototipo free. Usa una imagen más liviana.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Persistimos la imagen inline para evitar filesystem efímero y servicios pagos.
+    const dataUrl = `data:image/webp;base64,${optimizedBuffer.toString('base64')}`;
 
     return NextResponse.json({
       success: true,
-      url: `/profile-images/${session.user.id}/${filename}`
+      url: dataUrl,
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Error uploading file' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Error al procesar la imagen' }, { status: 500 });
   }
 }
