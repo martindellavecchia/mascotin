@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import type { HomeAppointmentData, HomeStatsData } from '@/lib/server/home';
 import type { Pet, SwipeResponse } from '@/types';
+import type { Post } from '@/types';
 
 const Feed = dynamic(() => import('@/components/feed/Feed'), {
   ssr: false,
@@ -86,6 +87,9 @@ interface HomeClientShellProps {
   initialSelectedPetId?: string;
   initialStats: HomeStatsData;
   initialNextAppointment: HomeAppointmentData | null;
+  initialFeedPosts: Post[];
+  initialFeedNextCursor: string | null;
+  initialFeedHasMore: boolean;
 }
 
 function getValidTab(value: string | null): HomeTab {
@@ -172,6 +176,9 @@ export default function HomeClientShell({
   initialSelectedPetId,
   initialStats,
   initialNextAppointment,
+  initialFeedPosts,
+  initialFeedNextCursor,
+  initialFeedHasMore,
 }: HomeClientShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -329,7 +336,6 @@ export default function HomeClientShell({
             value={activeTab}
             onValueChange={(value) => {
               const nextTab = value as HomeTab;
-              setActiveTab(nextTab);
               updateUrl(nextTab, selectedPetId);
             }}
             className="w-full"
@@ -367,6 +373,9 @@ export default function HomeClientShell({
                 }
                 pets={myPets}
                 selectedPetId={selectedPetId}
+                initialPosts={initialFeedPosts}
+                initialNextCursor={initialFeedNextCursor}
+                initialHasMore={initialFeedHasMore}
               />
             </TabsContent>
 

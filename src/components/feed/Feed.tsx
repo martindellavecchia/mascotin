@@ -3,16 +3,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Post, Pet } from '@/types';
 import PostCard from './PostCard';
-import EditPostModal from '@/components/community/EditPostModal';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+
+const EditPostModal = dynamic(() => import('@/components/community/EditPostModal'), {
+    ssr: false,
+});
 
 interface ExtendedPost extends Post {
     postType?: string;
     eventDate?: string;
     eventLocation?: string;
-    _count: {
+    _count?: {
         likes: number;
         comments: number;
     };
@@ -23,15 +27,26 @@ interface FeedProps {
     currentUserImage?: string | null;
     pets: Pet[];
     selectedPetId?: string;
+    initialPosts?: ExtendedPost[];
+    initialNextCursor?: string | null;
+    initialHasMore?: boolean;
 }
 
-export default function Feed({ currentUserId, currentUserImage, pets, selectedPetId }: FeedProps) {
-    const [posts, setPosts] = useState<ExtendedPost[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function Feed({
+    currentUserId,
+    currentUserImage,
+    pets,
+    selectedPetId,
+    initialPosts = [],
+    initialNextCursor = null,
+    initialHasMore = false,
+}: FeedProps) {
+    const [posts, setPosts] = useState<ExtendedPost[]>(initialPosts);
+    const [loading, setLoading] = useState(initialPosts.length === 0);
     const [loadingMore, setLoadingMore] = useState(false);
     const [editingPost, setEditingPost] = useState<ExtendedPost | null>(null);
-    const [nextCursor, setNextCursor] = useState<string | null>(null);
-    const [hasMore, setHasMore] = useState(false);
+    const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
+    const [hasMore, setHasMore] = useState(initialHasMore);
     const { fetchWithError } = useFetchWithError();
 
     const fetchPosts = useCallback(async (cursor?: string) => {
@@ -72,8 +87,10 @@ export default function Feed({ currentUserId, currentUserImage, pets, selectedPe
     }, [fetchWithError]);
 
     useEffect(() => {
-        fetchPosts();
-    }, [fetchPosts]);
+        if (initialPosts.length === 0) {
+            fetchPosts();
+        }
+    }, [fetchPosts, initialPosts.length]);
 
     const loadMore = () => {
         if (nextCursor && !loadingMore) {

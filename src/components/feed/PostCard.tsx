@@ -29,7 +29,7 @@ interface ExtendedPost extends Post {
     contactPhone?: string;
     lastSeenLocation?: string;
     isResolved?: boolean;
-    _count: {
+    _count?: {
         likes: number;
         comments: number;
     };

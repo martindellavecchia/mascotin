@@ -2,16 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Header from '@/components/Header';
 
-jest.mock('next/dynamic', () => () => {
-  const MockDynamicComponent = (props: { enabled?: boolean }) => (
-    <button aria-label="Notificaciones" data-enabled={props.enabled ? 'true' : 'false'} />
-  );
-
-  MockDynamicComponent.displayName = 'MockDynamicComponent';
-
-  return MockDynamicComponent;
-});
-
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -31,6 +21,21 @@ jest.mock('next-auth/react', () => ({
     },
     status: 'authenticated',
   }),
+}));
+
+jest.mock('@/components/notifications/NotificationBell', () => ({
+  __esModule: true,
+  default: () => <button aria-label="Notificaciones" />,
+}));
+
+jest.mock('@/components/header/HeaderMobileMenu', () => ({
+  __esModule: true,
+  default: () => <button aria-label="Abrir menú" />,
+}));
+
+jest.mock('@/components/header/HeaderUserMenu', () => ({
+  __esModule: true,
+  default: () => <button aria-label="User menu" />,
 }));
 
 describe('Header', () => {
@@ -95,7 +100,7 @@ describe('Header', () => {
     it('renders user avatar', () => {
       render(<Header session={mockSession} />);
 
-      expect(screen.getByRole('button', { name: '' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /user menu/i })).toBeInTheDocument();
     });
   });
 

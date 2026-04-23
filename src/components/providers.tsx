@@ -1,29 +1,21 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import { Toaster } from '@/components/ui/sonner';
+import dynamic from 'next/dynamic';
 import { ThemeProvider } from 'next-themes';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+
+const SonnerToaster = dynamic(() =>
+  import('@/components/ui/sonner').then((module) => module.Toaster),
+  { ssr: false }
+);
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000,
-        refetchOnWindowFocus: false,
-      },
-    },
-  }));
-
   return (
     <SessionProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true} disableTransitionOnChange={false}>
-          {children}
-        </ThemeProvider>
-        <Toaster />
-      </QueryClientProvider>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true} disableTransitionOnChange={false}>
+        {children}
+        <SonnerToaster />
+      </ThemeProvider>
     </SessionProvider>
   );
 }

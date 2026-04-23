@@ -132,6 +132,7 @@ export default function GroupChat({
     onPoll: pollForNewMessages,
     activeIntervalMs: 5_000,
     idleIntervalMs: 15_000,
+    immediate: false,
   });
 
   useEffect(() => {

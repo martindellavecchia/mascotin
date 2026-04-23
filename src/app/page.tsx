@@ -6,7 +6,9 @@ import HomeClientShell from '@/components/home/HomeClientShell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { authOptions } from '@/lib/auth';
+import { getFeedPage } from '@/lib/server/feed';
 import { getHomeBootstrapData } from '@/lib/server/home';
+import type { Post } from '@/types';
 
 function GuestHome() {
   return (
@@ -120,10 +122,13 @@ export default async function Home({
 
   try {
     const resolvedSearchParams = searchParams ? await searchParams : undefined;
-    const homeData = await getHomeBootstrapData(
-      session.user.id,
-      resolvedSearchParams?.petId
-    );
+    const [homeData, feedPage] = await Promise.all([
+      getHomeBootstrapData(session.user.id, resolvedSearchParams?.petId),
+      getFeedPage({
+        userId: session.user.id,
+        limit: 10,
+      }),
+    ]);
 
     if (homeData.pets.length === 0) {
       return <NoPetsHome session={session} />;
@@ -136,6 +141,9 @@ export default async function Home({
         initialSelectedPetId={homeData.selectedPetId}
         initialStats={homeData.stats}
         initialNextAppointment={homeData.nextAppointment}
+        initialFeedPosts={feedPage.posts as unknown as Post[]}
+        initialFeedNextCursor={feedPage.nextCursor}
+        initialFeedHasMore={feedPage.hasMore}
       />
     );
   } catch (error) {

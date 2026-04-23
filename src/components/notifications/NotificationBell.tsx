@@ -31,11 +31,17 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
   };
 
   const handleMarkAllRead = () => {
-    markAsRead.mutate({ all: true });
+    void markAsRead.mutate({ all: true }).then(() => {
+      void refetchUnreadCount();
+      void refetchNotifications();
+    });
   };
 
   const handleMarkOneRead = (id: string) => {
-    markAsRead.mutate({ ids: [id] });
+    void markAsRead.mutate({ ids: [id] }).then(() => {
+      void refetchUnreadCount();
+      void refetchNotifications();
+    });
   };
 
   return (
