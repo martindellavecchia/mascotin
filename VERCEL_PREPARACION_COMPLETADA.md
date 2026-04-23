@@ -19,7 +19,7 @@ Fecha: 2026-01-02
 
 **DATABASE_URL Configurada**:
 ```
-postgresql://neondb_owner:npg_WVt5lOZy0beL@ep-frosty-credit-acsi2lvj-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+postgresql://<usuario>:<password>@<host>/<database>?sslmode=require&channel_binding=require
 ```
 
 ---
@@ -224,7 +224,7 @@ Route (app)                                 Size  First Load JS
 
 ### Seguridad
 ✅ `DATABASE_URL` NO está en `.gitignore` (está excluida con `.env*`)
-✅ No se han hecho commits con credenciales
+✅ La URL real debe existir solo en `.env`, `.env.local` y variables de entorno del hosting
 ⚠️ NO hacer push de archivos `.env` o `.env.local`
 
 ### Neon Database
