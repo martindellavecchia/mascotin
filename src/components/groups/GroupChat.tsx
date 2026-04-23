@@ -1,197 +1,287 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { mergeMessagesById } from '@/lib/messages';
 import { LoadingSpinner } from '@/components/ui/loading';
+import type { GroupMessage } from '@/types/messages';
 
-interface GroupMessage {
-    id: string;
-    content: string;
-    senderId: string;
-    sender: {
-        id: string;
-        name: string;
-        image?: string | null;
-    };
-    createdAt: string;
+interface GroupMessagePageResponse {
+  messages: GroupMessage[];
+  latestCursor: string | null;
+  hasMoreBefore: boolean;
 }
 
 interface GroupChatProps {
-    groupId: string;
-    currentUserId: string;
-    className?: string;
+  groupId: string;
+  currentUserId: string;
+  className?: string;
 }
 
-export default function GroupChat({ groupId, currentUserId, className }: GroupChatProps) {
-    const [messages, setMessages] = useState<GroupMessage[]>([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [sending, setSending] = useState(false);
-    const { fetchWithError, abort } = useFetchWithError();
-    const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const pollIntervalMs = useRef(2000);
-    const previousMessageCountRef = useRef(0);
-    const isTabVisibleRef = useRef(true);
+export default function GroupChat({
+  groupId,
+  currentUserId,
+  className,
+}: GroupChatProps) {
+  const [messages, setMessages] = useState<GroupMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [latestCursor, setLatestCursor] = useState<string | null>(null);
+  const { fetchWithError, abort } = useFetchWithError();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const emptyConversationCursorRef = useRef<string | null>(null);
 
-    const POLL_INTERVALS = useMemo(() => [2000, 5000, 10000, 15000] as const, []);
+  const isNearBottom = useCallback(() => {
+    const node = scrollContainerRef.current;
 
-    const clearPollTimeout = useCallback(() => {
-        if (pollTimeoutRef.current) {
-            clearTimeout(pollTimeoutRef.current);
-            pollTimeoutRef.current = null;
-        }
-    }, []);
-
-    const schedulePoll = useCallback((fetchFn: () => Promise<void>) => {
-        clearPollTimeout();
-        if (!isTabVisibleRef.current) return;
-        pollTimeoutRef.current = setTimeout(async () => {
-            await fetchFn();
-            schedulePoll(fetchFn);
-        }, pollIntervalMs.current);
-    }, [clearPollTimeout]);
-
-    const resetPollInterval = useCallback(() => {
-        pollIntervalMs.current = POLL_INTERVALS[0];
-    }, [POLL_INTERVALS]);
-
-    const backOffPollInterval = useCallback(() => {
-        const currentIndex = POLL_INTERVALS.indexOf(pollIntervalMs.current as typeof POLL_INTERVALS[number]);
-        const nextIndex = Math.min(currentIndex + 1, POLL_INTERVALS.length - 1);
-        pollIntervalMs.current = POLL_INTERVALS[nextIndex];
-    }, [POLL_INTERVALS]);
-
-    const fetchMessages = useCallback(async () => {
-        const result = await fetchWithError<{ messages: GroupMessage[] }>(`/api/groups/${groupId}/messages`, {
-            showError: false
-        });
-
-        if (result.success && result.data) {
-            const newMessages = result.data.messages || [];
-            const hasNewMessages = newMessages.length > previousMessageCountRef.current;
-            previousMessageCountRef.current = newMessages.length;
-
-            if (hasNewMessages) {
-                resetPollInterval();
-            } else {
-                backOffPollInterval();
-            }
-
-            setMessages(newMessages);
-        }
-    }, [fetchWithError, groupId, resetPollInterval, backOffPollInterval]);
-
-    useEffect(() => {
-        if (!groupId) return;
-
-        setLoading(true);
-        pollIntervalMs.current = POLL_INTERVALS[0];
-        previousMessageCountRef.current = 0;
-        isTabVisibleRef.current = !document.hidden;
-
-        fetchMessages().finally(() => setLoading(false));
-        schedulePoll(fetchMessages);
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'hidden') {
-                isTabVisibleRef.current = false;
-                clearPollTimeout();
-            } else {
-                isTabVisibleRef.current = true;
-                resetPollInterval();
-                fetchMessages();
-                schedulePoll(fetchMessages);
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            clearPollTimeout();
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            abort();
-        };
-    }, [groupId, fetchMessages, abort, schedulePoll, clearPollTimeout, resetPollInterval, POLL_INTERVALS]);
-
-    const handleSend = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newMessage.trim() || sending) return;
-
-        resetPollInterval();
-        schedulePoll(fetchMessages);
-        setSending(true);
-        const tempContent = newMessage.trim();
-        setNewMessage('');
-
-        const result = await fetchWithError<{ message: GroupMessage }>(`/api/groups/${groupId}/messages`, {
-            method: 'POST',
-            body: JSON.stringify({ content: tempContent }),
-            showError: true
-        });
-
-        if (result.success && result.data?.message) {
-            setMessages(prev => [...prev, result.data!.message]);
-        } else {
-            setNewMessage(tempContent);
-        }
-
-        setSending(false);
-    };
-
-    const formatTime = (dateStr: string) => {
-        return new Date(dateStr).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-    };
-
-    if (loading) {
-        return (
-            <Card className={`h-full flex items-center justify-center ${className}`}>
-                <LoadingSpinner size="lg" />
-            </Card>
-        );
+    if (!node) {
+      return true;
     }
 
-    return (
-        <Card className={`h-full flex flex-col ${className}`}>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 && (
-                    <div className="text-center text-slate-400 py-10">
-                        <p>No hay mensajes aún.</p>
-                        <p className="text-xs">¡Inicia la conversación!</p>
-                    </div>
-                )}
-                {messages.map((msg) => {
-                    const isMe = msg.senderId === currentUserId;
-                    return (
-                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[70%] rounded-lg p-3 ${isMe ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-800'}`}>
-                                {!isMe && <p className="text-xs font-bold mb-1 opacity-70">{msg.sender.name}</p>}
-                                <p className="text-sm">{msg.content}</p>
-                                <p className="text-[10px] mt-1 opacity-70 text-right">
-                                    {formatTime(msg.createdAt)}
-                                </p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-            <div className="p-4 border-t bg-white">
-                <form onSubmit={handleSend} className="flex gap-2">
-                    <Input
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Escribe un mensaje..."
-                        className="flex-1"
-                        disabled={sending}
-                    />
-                    <Button type="submit" size="icon" className="bg-teal-500 hover:bg-teal-600" disabled={sending}>
-                        <span className="material-symbols-rounded">{sending ? 'pending' : 'send'}</span>
-                    </Button>
-                </form>
-            </div>
-        </Card>
+    const distanceFromBottom =
+      node.scrollHeight - node.scrollTop - node.clientHeight;
+
+    return distanceFromBottom < 96;
+  }, []);
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, []);
+
+  const applyPage = useCallback(
+    (
+      page: GroupMessagePageResponse,
+      options?: { replace?: boolean; autoScroll?: boolean }
+    ) => {
+      const nextMessages = page.messages || [];
+      const shouldAutoScroll = options?.autoScroll ?? true;
+
+      setMessages((previous) =>
+        options?.replace ? nextMessages : mergeMessagesById(previous, nextMessages)
+      );
+
+      if (page.latestCursor) {
+        setLatestCursor(page.latestCursor);
+        emptyConversationCursorRef.current = null;
+      } else if (options?.replace) {
+        emptyConversationCursorRef.current = new Date().toISOString();
+      }
+
+      if (shouldAutoScroll) {
+        requestAnimationFrame(() => scrollToBottom(options?.replace ? 'auto' : 'smooth'));
+      }
+    },
+    [scrollToBottom]
+  );
+
+  const loadInitialMessages = useCallback(async () => {
+    const result = await fetchWithError<GroupMessagePageResponse>(
+      `/api/groups/${groupId}/messages?limit=50`,
+      {
+        showError: false,
+      }
     );
+
+    if (result.success && result.data) {
+      applyPage(result.data, { replace: true, autoScroll: true });
+    }
+  }, [applyPage, fetchWithError, groupId]);
+
+  const pollForNewMessages = useCallback(async () => {
+    const params = new URLSearchParams({
+      limit: '50',
+    });
+    const cursor = latestCursor || emptyConversationCursorRef.current;
+
+    if (cursor) {
+      params.set('after', cursor);
+    }
+
+    const result = await fetchWithError<GroupMessagePageResponse>(
+      `/api/groups/${groupId}/messages?${params.toString()}`,
+      {
+        showError: false,
+      }
+    );
+
+    if (result.success && result.data) {
+      const incomingMessages = result.data.messages || [];
+
+      if (incomingMessages.length === 0) {
+        if (!latestCursor && !emptyConversationCursorRef.current) {
+          emptyConversationCursorRef.current = new Date().toISOString();
+        }
+        return;
+      }
+
+      applyPage(result.data, {
+        replace: false,
+        autoScroll: isNearBottom(),
+      });
+    }
+  }, [applyPage, fetchWithError, groupId, isNearBottom, latestCursor]);
+
+  const { markActivity } = useAdaptivePolling({
+    enabled: Boolean(groupId) && !loading,
+    onPoll: pollForNewMessages,
+    activeIntervalMs: 5_000,
+    idleIntervalMs: 15_000,
+  });
+
+  useEffect(() => {
+    if (!groupId) {
+      return;
+    }
+
+    setLoading(true);
+    setMessages([]);
+    setLatestCursor(null);
+    emptyConversationCursorRef.current = null;
+
+    loadInitialMessages().finally(() => {
+      setLoading(false);
+    });
+
+    return () => {
+      abort();
+    };
+  }, [abort, groupId, loadInitialMessages]);
+
+  const handleSend = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!newMessage.trim() || sending) return;
+
+    markActivity();
+    setSending(true);
+
+    const messageToSend = newMessage.trim();
+    const tempMessage: GroupMessage = {
+      id: `temp-${Date.now()}`,
+      content: messageToSend,
+      senderId: currentUserId,
+      groupId,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: currentUserId,
+        name: 'Tú',
+        image: null,
+      },
+    };
+
+    setMessages((previous) => [...previous, tempMessage]);
+    setNewMessage('');
+    requestAnimationFrame(() => scrollToBottom('smooth'));
+
+    const result = await fetchWithError<{ message: GroupMessage }>(
+      `/api/groups/${groupId}/messages`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ content: messageToSend }),
+        showError: true,
+      }
+    );
+
+    if (result.success && result.data?.message) {
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === tempMessage.id ? result.data!.message : message
+        )
+      );
+      setLatestCursor(result.data.message.createdAt);
+      emptyConversationCursorRef.current = null;
+    } else {
+      setMessages((previous) =>
+        previous.filter((message) => message.id !== tempMessage.id)
+      );
+      setNewMessage(messageToSend);
+    }
+
+    setSending(false);
+  };
+
+  const formatTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  if (loading) {
+    return (
+      <Card className={`h-full flex items-center justify-center ${className || ''}`}>
+        <LoadingSpinner size="lg" />
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={`h-full flex flex-col ${className || ''}`}>
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
+        {messages.length === 0 && (
+          <div className="text-center text-slate-400 py-10">
+            <p>No hay mensajes aún.</p>
+            <p className="text-xs">¡Inicia la conversación!</p>
+          </div>
+        )}
+        {messages.map((message) => {
+          const isMine = message.senderId === currentUserId;
+
+          return (
+            <div
+              key={message.id}
+              className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[70%] rounded-lg p-3 ${
+                  isMine ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-800'
+                }`}
+              >
+                {!isMine && (
+                  <p className="text-xs font-bold mb-1 opacity-70">
+                    {message.sender.name}
+                  </p>
+                )}
+                <p className="text-sm">{message.content}</p>
+                <p className="text-[10px] mt-1 opacity-70 text-right">
+                  {formatTime(message.createdAt)}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </div>
+      <div className="p-4 border-t bg-white">
+        <form onSubmit={handleSend} className="flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(event) => setNewMessage(event.target.value)}
+            placeholder="Escribe un mensaje..."
+            className="flex-1"
+            disabled={sending}
+          />
+          <Button
+            type="submit"
+            size="icon"
+            className="bg-teal-500 hover:bg-teal-600"
+            disabled={sending}
+          >
+            <span className="material-symbols-rounded">
+              {sending ? 'pending' : 'send'}
+            </span>
+          </Button>
+        </form>
+      </div>
+    </Card>
+  );
 }

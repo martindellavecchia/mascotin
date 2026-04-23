@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePageActivity } from '@/hooks/usePageActivity';
 
 interface NotificationActor {
   id: string;
@@ -22,7 +23,9 @@ export interface Notification {
   actor: NotificationActor | null;
 }
 
-export function useUnreadCount() {
+export function useUnreadCount(enabled: boolean) {
+  const { isActive } = usePageActivity();
+
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: async () => {
@@ -31,8 +34,11 @@ export function useUnreadCount() {
       const data = await res.json();
       return (data.count as number) || 0;
     },
-    refetchInterval: 30_000,
-    staleTime: 15_000,
+    enabled,
+    refetchInterval: isActive ? 60_000 : false,
+    staleTime: 30_000,
+    refetchOnWindowFocus: 'always',
+    refetchOnReconnect: 'always',
   });
 }
 

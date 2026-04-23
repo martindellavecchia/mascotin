@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { db as prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { withImageFields } from '@/lib/media';
 import { createPostSchema } from '@/lib/schemas';
 
 export async function GET(req: Request) {
@@ -88,9 +89,10 @@ export async function GET(req: Request) {
             // Use owner image as fallback if user doesn't have one
             const author = post.author as typeof post.author & { owner?: { image: string | null } };
             const authorImage = author?.image || author?.owner?.image || null;
+            const normalizedPost = withImageFields(post);
 
             return {
-                ...post,
+                ...normalizedPost,
                 author: {
                     ...post.author,
                     image: authorImage,
@@ -99,7 +101,7 @@ export async function GET(req: Request) {
                 isLiked: post.likes.length > 0,
                 likes: undefined, // Remove raw likes array
                 isAttending: post.event ? post.event.attendees.length > 0 : false,
-                eventId: post.event?.id
+                eventId: post.event?.id,
             };
         });
 

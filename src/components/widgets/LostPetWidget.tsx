@@ -12,12 +12,14 @@ interface LostPet {
     id: string;
     content: string;
     images: string;
+    primaryImageUrl?: string | null;
     contactPhone: string | null;
     lastSeenLocation: string | null;
     createdAt: string;
     pet?: {
         name: string;
         images: string;
+        primaryImageUrl?: string | null;
         petType: string;
     };
     author: {
@@ -42,21 +44,6 @@ export default function LostPetWidget() {
             setLostPets(result.data.lostPets);
         }
         setLoading(false);
-    };
-
-    const getImage = (pet: LostPet) => {
-        try {
-            // Try pet images first
-            if (pet.pet?.images) {
-                const petImages = JSON.parse(pet.pet.images);
-                if (petImages[0]) return petImages[0];
-            }
-            // Try post images
-            const postImages = JSON.parse(pet.images || '[]');
-            return postImages[0] || null;
-        } catch {
-            return null;
-        }
     };
 
     if (loading) {
@@ -121,7 +108,7 @@ export default function LostPetWidget() {
             </CardHeader>
             <CardContent className="space-y-3">
                 {lostPets.slice(0, 2).map((pet) => {
-                    const image = getImage(pet);
+                    const image = pet.pet?.primaryImageUrl || pet.primaryImageUrl || null;
                     return (
                         <div
                             key={pet.id}

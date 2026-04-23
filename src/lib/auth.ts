@@ -51,6 +51,12 @@ export const authOptions: NextAuthOptions = {
               password: true,
               isBlocked: true,
               emailVerified: true,
+              role: true,
+              owner: {
+                select: {
+                  image: true,
+                },
+              },
             },
           });
 
@@ -73,16 +79,15 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Auto-promote configured admin emails (only if not already ADMIN)
+          let role = user.role;
+
           if (ADMIN_EMAILS.includes(email)) {
-            const currentUser = await db.user.findUnique({
-              where: { id: user.id },
-              select: { role: true },
-            });
-            if (currentUser && currentUser.role !== 'ADMIN') {
+            if (role !== 'ADMIN') {
               await db.user.update({
                 where: { id: user.id },
                 data: { role: 'ADMIN' },
               });
+              role = 'ADMIN';
               console.warn(`[SECURITY] Auto-promoted ${email} to ADMIN role`);
             }
           }
@@ -92,6 +97,8 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             image: user.image,
+            role,
+            headerImage: user.owner?.image ?? null,
           };
         } catch (error) {
           if (error instanceof Error && [
@@ -111,14 +118,8 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-      }
-      // Refresh role from DB on each token refresh
-      if (token.id) {
-        const dbUser = await db.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true },
-        });
-        if (dbUser) token.role = dbUser.role;
+        token.role = user.role;
+        token.headerImage = user.headerImage ?? null;
       }
       return token;
     },
@@ -126,6 +127,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.headerImage = (token.headerImage as string | null) ?? null;
       }
       return session;
     },

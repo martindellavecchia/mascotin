@@ -1,13 +1,12 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFetchWithError } from '@/hooks/useFetchWithError';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -23,7 +22,23 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import NotificationBell from '@/components/notifications/NotificationBell';
+
+const NotificationBell = dynamic(
+  () => import('@/components/notifications/NotificationBell'),
+  {
+    ssr: false,
+    loading: () => (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative rounded-full text-slate-500 hover:text-teal-600 hover:bg-teal-50"
+        aria-label="Notificaciones"
+      >
+        <span className="material-symbols-rounded">notifications</span>
+      </Button>
+    ),
+  }
+);
 
 interface HeaderProps {
   session: {
@@ -32,41 +47,21 @@ interface HeaderProps {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      role?: string;
+      headerImage?: string | null;
     };
   } | null;
-}
-
-interface OwnerProfile {
-  image?: string;
 }
 
 export default function Header({ session }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [ownerImage, setOwnerImage] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const { fetchWithError } = useFetchWithError();
 
   const userInitials = session?.user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U';
 
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    fetchWithError<{ owner?: OwnerProfile; role: string }>('/api/owner/profile')
-      .then(data => {
-        if (data.success && data.data) {
-          if (data.data.owner?.image) {
-            setOwnerImage(data.data.owner.image);
-          }
-          if (data.data.role) {
-            setUserRole(data.data.role);
-          }
-        }
-      });
-  }, [session?.user?.id, fetchWithError]);
-
   const isActive = (path: string) => pathname === path;
-  const displayImage = ownerImage || session?.user?.image;
+  const displayImage = session?.user?.headerImage || session?.user?.image;
+  const userRole = session?.user?.role || null;
 
   const navLinks = [
     { href: '/', label: 'Dashboard' },
@@ -153,7 +148,7 @@ export default function Header({ session }: HeaderProps) {
             </SheetContent>
           </Sheet>
 
-          <NotificationBell />
+          <NotificationBell enabled={Boolean(session?.user?.id)} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -2,6 +2,16 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Header from '@/components/Header';
 
+jest.mock('next/dynamic', () => () => {
+  const MockDynamicComponent = (props: { enabled?: boolean }) => (
+    <button aria-label="Notificaciones" data-enabled={props.enabled ? 'true' : 'false'} />
+  );
+
+  MockDynamicComponent.displayName = 'MockDynamicComponent';
+
+  return MockDynamicComponent;
+});
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -23,18 +33,6 @@ jest.mock('next-auth/react', () => ({
   }),
 }));
 
-jest.mock('@/hooks/useFetchWithError', () => ({
-  useFetchWithError: () => ({
-    fetchWithError: jest.fn(() => Promise.resolve({ success: true, data: null })),
-  }),
-}));
-
-jest.mock('@/hooks/useNotifications', () => ({
-  useUnreadCount: () => ({ data: 0 }),
-  useNotifications: () => ({ data: [], isLoading: false }),
-  useMarkAsRead: () => ({ mutate: jest.fn() }),
-}));
-
 describe('Header', () => {
   const mockSession = {
     user: {
@@ -42,6 +40,8 @@ describe('Header', () => {
       name: 'Test User',
       email: 'test@example.com',
       image: 'https://example.com/avatar.jpg',
+      role: 'OWNER',
+      headerImage: 'https://example.com/owner-avatar.jpg',
     },
   };
 

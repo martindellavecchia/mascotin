@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
@@ -57,14 +58,6 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
     const [comments, setComments] = useState<Comment[]>([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [newComment, setNewComment] = useState('');
-
-    // Parse images
-    let images: string[] = [];
-    try {
-        images = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
-    } catch (e) {
-        images = [];
-    }
 
     useEffect(() => {
         setIsResolved(post.isResolved || false);
@@ -346,13 +339,13 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
             )}
 
             {/* Images */}
-            {images && images.length > 0 && (
+            {post.primaryImageUrl && (
                 <div className="relative bg-gray-100 w-full h-[280px]">
                     <Image
-                        src={images[0]}
+                        src={post.primaryImageUrl}
                         alt="Contenido de la publicación"
                         fill
-                        unoptimized
+                        unoptimized={shouldUnoptimizeImage(post.primaryImageUrl)}
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 600px"
                     />

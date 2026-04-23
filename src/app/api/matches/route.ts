@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { logger } from '@/lib/logger';
+import { withImageFields } from '@/lib/media';
 
 const log = logger.forRoute('/api/matches', 'GET');
 
@@ -87,10 +88,10 @@ export async function GET(request: Request) {
         const pet1Id = match.pet1Id || '';
         const otherPet = petIds.includes(pet1Id) ? match.pet2 : match.pet1;
         if (!otherPet) return null;
-        return {
+        return withImageFields({
           ...otherPet,
           matchId: match.id
-        };
+        });
       })
       .filter((pet): pet is NonNullable<typeof pet> => pet !== null);
 

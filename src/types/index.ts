@@ -99,6 +99,8 @@ export interface Post {
   petId?: string;
   content: string;
   images: string; // JSON string
+  imageUrls?: string[];
+  primaryImageUrl?: string | null;
   location?: string;
   createdAt: string;
   updatedAt: string;
@@ -140,4 +142,3 @@ export interface Comment {
     image: string | null;
   };
 }
-

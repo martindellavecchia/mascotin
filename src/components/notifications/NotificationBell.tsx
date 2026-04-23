@@ -7,11 +7,28 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnreadCount, useNotifications, useMarkAsRead } from '@/hooks/useNotifications';
 import NotificationItem from './NotificationItem';
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  enabled?: boolean;
+}
+
+export default function NotificationBell({ enabled = true }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
-  const { data: unreadCount = 0 } = useUnreadCount();
-  const { data: notifications = [], isLoading } = useNotifications(open);
+  const { data: unreadCount = 0, refetch: refetchUnreadCount } = useUnreadCount(enabled);
+  const {
+    data: notifications = [],
+    isLoading,
+    refetch: refetchNotifications,
+  } = useNotifications(enabled && open);
   const markAsRead = useMarkAsRead();
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+
+    if (nextOpen) {
+      void refetchUnreadCount();
+      void refetchNotifications();
+    }
+  };
 
   const handleMarkAllRead = () => {
     markAsRead.mutate({ all: true });
@@ -22,7 +39,7 @@ export default function NotificationBell() {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"

@@ -3,16 +3,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { shouldUnoptimizeImage } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-
-interface MatchWithPet {
-    id: string;
-    matchId: string;
-    name: string;
-    breed?: string;
-    images: string;
-}
+import type { MatchWithPet } from '@/types/messages';
 
 interface Group {
     id: string;
@@ -27,7 +21,6 @@ interface ConversationListProps {
     selectedId: string | null;
     selectedType: 'match' | 'group' | null;
     onSelect: (id: string, type: 'match' | 'group') => void;
-    currentUserId: string;
 }
 
 export default function ConversationList({
@@ -35,18 +28,8 @@ export default function ConversationList({
     groups,
     selectedId,
     selectedType,
-    onSelect,
-    currentUserId
+    onSelect
 }: ConversationListProps) {
-    const getFirstImage = (images: string): string | undefined => {
-        try {
-            const parsed = JSON.parse(images);
-            return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : undefined;
-        } catch {
-            return undefined;
-        }
-    };
-
     return (
         <div className="h-full flex flex-col">
             <div className="p-4 border-b border-slate-100">
@@ -82,7 +65,7 @@ export default function ConversationList({
                                 )}
                             >
                                 <Avatar className="w-12 h-12">
-                                    <AvatarImage src={getFirstImage(match.images)} />
+                                    <AvatarImage src={match.primaryImageUrl || undefined} />
                                     <AvatarFallback className="bg-teal-100 text-teal-700">{match.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
@@ -113,7 +96,14 @@ export default function ConversationList({
                             >
                                 <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
                                     {group.image ? (
-                                        <Image src={group.image} alt={group.name} width={48} height={48} unoptimized className="w-full h-full object-cover" />
+                                        <Image
+                                            src={group.image}
+                                            alt={group.name}
+                                            width={48}
+                                            height={48}
+                                            unoptimized={shouldUnoptimizeImage(group.image)}
+                                            className="w-full h-full object-cover"
+                                        />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-teal-100">
                                             <span className="material-symbols-rounded text-teal-300">groups</span>

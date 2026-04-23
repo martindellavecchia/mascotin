@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { withImageFields } from '@/lib/media';
 
 // GET - Get active lost pet posts for widget
 export async function GET(request: Request) {
@@ -38,9 +39,14 @@ export async function GET(request: Request) {
 
         const nextCursor = lostPets.length === limit ? lostPets[lostPets.length - 1].id : null;
 
+        const normalizedLostPets = lostPets.map((lostPet) => ({
+            ...withImageFields(lostPet),
+            pet: lostPet.pet ? withImageFields(lostPet.pet) : null,
+        }));
+
         return NextResponse.json({
             success: true,
-            lostPets,
+            lostPets: normalizedLostPets,
             nextCursor,
         });
     } catch (error) {

@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db as prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
+import {
+    buildMessagePage,
+    clampMessageLimit,
+    parseMessageCursor,
+} from '@/lib/messages';
 import { createNotificationBulk } from '@/lib/notifications';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
@@ -9,6 +14,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(req.url);
+        const rawAfter = searchParams.get('after');
+        const after = parseMessageCursor(rawAfter);
+        const limit = clampMessageLimit(searchParams.get('limit'));
+
+        if (rawAfter && !after) {
+            return NextResponse.json(
+                { success: false, error: 'after must be a valid ISO date' },
+                { status: 400 }
+            );
         }
 
         // Verify user is a member of this group
@@ -23,6 +40,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         const messages = await prisma.message.findMany({
             where: {
                 groupId: params.id,
+                ...(after ? { createdAt: { gt: after } } : {}),
             },
             include: {
                 sender: {
@@ -34,11 +52,17 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                 },
             },
             orderBy: {
-                createdAt: 'asc',
+                createdAt: after ? 'asc' : 'desc',
             },
+            take: after ? limit : limit + 1,
         });
 
-        return NextResponse.json({ success: true, messages });
+        const page = buildMessagePage(messages, {
+            limit,
+            incremental: Boolean(after),
+        });
+
+        return NextResponse.json({ success: true, ...page });
     } catch (error) {
         return NextResponse.json({ success: false, error: 'Error fetching messages' }, { status: 500 });
     }

@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import {
+  buildMessagePage,
+  clampMessageLimit,
+  parseMessageCursor,
+} from '@/lib/messages';
 import { createNotification } from '@/lib/notifications';
 
 // GET - Retrieve messages for a match
@@ -17,12 +22,25 @@ export async function GET(request: Request) {
     }
     const { searchParams } = new URL(request.url);
     const matchId = searchParams.get('matchId');
+    const rawAfter = searchParams.get('after');
+    const after = parseMessageCursor(rawAfter);
+    const limit = clampMessageLimit(searchParams.get('limit'));
 
     if (!matchId) {
       return NextResponse.json(
         {
           success: false,
           error: 'matchId is required'
+        },
+        { status: 400 }
+      );
+    }
+
+    if (rawAfter && !after) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'after must be a valid ISO date'
         },
         { status: 400 }
       );
@@ -59,16 +77,23 @@ export async function GET(request: Request) {
 
     const messages = await db.message.findMany({
       where: {
-        matchId
+        matchId,
+        ...(after ? { createdAt: { gt: after } } : {}),
       },
       orderBy: {
-        createdAt: 'asc'
-      }
+        createdAt: after ? 'asc' : 'desc'
+      },
+      take: after ? limit : limit + 1,
+    });
+
+    const page = buildMessagePage(messages, {
+      limit,
+      incremental: Boolean(after),
     });
 
     return NextResponse.json({
       success: true,
-      messages
+      ...page
     });
   } catch (error) {
     return NextResponse.json(
@@ -150,7 +175,7 @@ export async function POST(request: Request) {
         senderId: session.user.id,
         receiverId,
         content: content.trim()
-      }
+      },
     });
 
     createNotification({
