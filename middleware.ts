@@ -1,6 +1,7 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import { isAuthPage, isPublicPath } from '@/lib/route-access';
+import { getSessionTokenCookieName } from '@/lib/auth-cookies';
 
 export default withAuth(
   function middleware(req) {
@@ -8,7 +9,6 @@ export default withAuth(
     const isLoggedIn = !!req.nextauth.token;
     const authPage = isAuthPage(pathname);
 
-    // Redirigir usuarios autenticados fuera de páginas de auth
     if (isLoggedIn && authPage) {
       return NextResponse.redirect(new URL('/', req.url));
     }
@@ -17,11 +17,16 @@ export default withAuth(
   },
   {
     callbacks: {
-      // Mantener la home pública y dejar pasar assets públicos fuera del middleware.
       authorized: ({ token, req }) => {
         return isPublicPath(req.nextUrl.pathname) || !!token;
       },
     },
+    cookies: {
+      sessionToken: {
+        name: getSessionTokenCookieName(),
+      },
+    },
+    secret: process.env.NEXTAUTH_SECRET,
   }
 );
 

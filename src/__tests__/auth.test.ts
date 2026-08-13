@@ -1,143 +1,158 @@
-import { z } from 'zod';
-
-const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-});
-
-const registerSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-});
+import { loginSchema, registerSchema, passwordSchema } from '@/lib/schemas';
 
 describe('Auth Schemas', () => {
   describe('loginSchema', () => {
     it('validates correct login data', () => {
-      const validData = {
+      const result = loginSchema.safeParse({
         email: 'test@example.com',
         password: 'password123',
-      };
+      });
 
-      const result = loginSchema.safeParse(validData);
       expect(result.success).toBe(true);
     });
 
+    it('accepts extra NextAuth credential fields', () => {
+      const result = loginSchema.safeParse({
+        email: 'test@example.com',
+        password: 'password123',
+        csrfToken: 'token',
+        callbackUrl: 'http://localhost:3000',
+        json: 'true',
+        redirect: 'false',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('trims email whitespace', () => {
+      const result = loginSchema.safeParse({
+        email: '  test@example.com  ',
+        password: 'password123',
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.email).toBe('test@example.com');
+      }
+    });
+
     it('rejects invalid email', () => {
-      const invalidData = {
+      const result = loginSchema.safeParse({
         email: 'not-an-email',
         password: 'password123',
-      };
+      });
 
-      const result = loginSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects short password', () => {
-      const invalidData = {
-        email: 'test@example.com',
-        password: '12345',
-      };
-
-      const result = loginSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
-    });
-
-    it('rejects empty email', () => {
-      const invalidData = {
-        email: '',
-        password: 'password123',
-      };
-
-      const result = loginSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
     });
 
     it('rejects empty password', () => {
-      const validData = {
+      const result = loginSchema.safeParse({
         email: 'test@example.com',
         password: '',
-      };
+      });
 
-      const result = loginSchema.safeParse(validData);
       expect(result.success).toBe(false);
     });
 
+    it('allows existing short passwords so bcrypt can verify them', () => {
+      const result = loginSchema.safeParse({
+        email: 'test@example.com',
+        password: '123456',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
     it('accepts email with special characters', () => {
-      const validData = {
+      const result = loginSchema.safeParse({
         email: 'user.name+tag@example.co.uk',
         password: 'password123',
-      };
+      });
 
-      const result = loginSchema.safeParse(validData);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('passwordSchema', () => {
+    it('rejects passwords shorter than 8 characters', () => {
+      expect(passwordSchema.safeParse('Ab1def').success).toBe(false);
+    });
+
+    it('rejects passwords without an uppercase letter', () => {
+      expect(passwordSchema.safeParse('password1').success).toBe(false);
+    });
+
+    it('rejects passwords without a lowercase letter', () => {
+      expect(passwordSchema.safeParse('PASSWORD1').success).toBe(false);
+    });
+
+    it('rejects passwords without a number', () => {
+      expect(passwordSchema.safeParse('Password').success).toBe(false);
+    });
+
+    it('accepts a strong password', () => {
+      expect(passwordSchema.safeParse('Password1').success).toBe(true);
     });
   });
 
   describe('registerSchema', () => {
     it('validates correct register data', () => {
-      const validData = {
+      const result = registerSchema.safeParse({
         email: 'newuser@example.com',
-        password: 'password123',
+        password: 'Password1',
         name: 'John Doe',
-      };
+      });
 
-      const result = registerSchema.safeParse(validData);
       expect(result.success).toBe(true);
     });
 
     it('rejects short name', () => {
-      const invalidData = {
+      const result = registerSchema.safeParse({
         email: 'newuser@example.com',
-        password: 'password123',
+        password: 'Password1',
         name: 'J',
-      };
+      });
 
-      const result = registerSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
     });
 
     it('rejects email without @', () => {
-      const invalidData = {
+      const result = registerSchema.safeParse({
         email: 'userexample.com',
-        password: 'password123',
+        password: 'Password1',
         name: 'John Doe',
-      };
+      });
 
-      const result = registerSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
     });
 
     it('rejects weak password', () => {
-      const invalidData = {
+      const result = registerSchema.safeParse({
         email: 'newuser@example.com',
         password: '123',
         name: 'John Doe',
-      };
+      });
 
-      const result = registerSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
     });
 
     it('accepts long valid name', () => {
-      const validData = {
+      const result = registerSchema.safeParse({
         email: 'newuser@example.com',
-        password: 'password123',
+        password: 'Password1',
         name: 'Juan Carlos García López',
-      };
+      });
 
-      const result = registerSchema.safeParse(validData);
       expect(result.success).toBe(true);
     });
 
     it('accepts password with special chars', () => {
-      const validData = {
+      const result = registerSchema.safeParse({
         email: 'newuser@example.com',
         password: 'P@ssw0rd!123',
         name: 'John Doe',
-      };
+      });
 
-      const result = registerSchema.safeParse(validData);
       expect(result.success).toBe(true);
     });
   });

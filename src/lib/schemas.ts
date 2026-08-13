@@ -194,13 +194,26 @@ export const updateSettingsSchema = z.object({
   hideResolvedLostPets: z.boolean().optional(),
 });
 
+export const passwordSchema = z.string()
+  .min(8, 'La contraseña debe tener al menos 8 caracteres')
+  .regex(/[A-Z]/, 'La contraseña debe contener al menos una mayúscula')
+  .regex(/[a-z]/, 'La contraseña debe contener al menos una minúscula')
+  .regex(/[0-9]/, 'La contraseña debe contener al menos un número');
+
+export const loginSchema = z.object({
+  email: z.string().trim().email('Email inválido'),
+  password: z.string().min(1, 'La contraseña es requerida'),
+});
+
+export const registerSchema = z.object({
+  name: z.string().trim().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  email: z.string().trim().email('Email inválido'),
+  password: passwordSchema,
+});
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'La contraseña actual es requerida'),
-  newPassword: z.string()
-    .min(8, 'La nueva contraseña debe tener al menos 8 caracteres')
-    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula')
-    .regex(/[a-z]/, 'Debe contener al menos una minúscula')
-    .regex(/[0-9]/, 'Debe contener al menos un número'),
+  newPassword: passwordSchema,
 });
 
 export const deleteAccountSchema = z.object({
@@ -210,3 +223,5 @@ export const deleteAccountSchema = z.object({
 export type UpdateSettingsData = z.infer<typeof updateSettingsSchema>;
 export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 export type DeleteAccountData = z.infer<typeof deleteAccountSchema>;
+export type LoginFormData = z.infer<typeof loginSchema>;
+export type RegisterFormData = z.infer<typeof registerSchema>;

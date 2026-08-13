@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { passwordSchema } from '@/lib/schemas';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,8 +55,9 @@ export default function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres');
+    const passwordCheck = passwordSchema.safeParse(formData.password);
+    if (!passwordCheck.success) {
+      toast.error(passwordCheck.error.issues[0]?.message || 'La contraseña no es válida');
       return;
     }
 
@@ -208,6 +210,9 @@ export default function RegisterPage() {
                 ))}
                 <span className="text-xs text-slate-500 font-medium ml-2">{strengthLabels[passwordStrength] || ''}</span>
               </div>
+              <p className="text-xs text-slate-500 mt-1 ml-1">
+                Mínimo 8 caracteres, con mayúscula, minúscula y número.
+              </p>
             </div>
 
             {/* Confirm Password Input */}

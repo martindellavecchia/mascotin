@@ -1,25 +1,23 @@
 import { NextAuthOptions } from 'next-auth';
-import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import type { Adapter } from 'next-auth/adapters';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
 import { db } from './db';
 import { rateLimit, RATE_LIMITS } from './rate-limit';
+import { loginSchema } from './schemas';
+import { getSessionTokenCookie, shouldUseSecureCookies } from './auth-cookies';
 
-// Admin emails from environment variable (comma-separated)
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
-
-const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-});
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
+  .split(',')
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db) as Adapter,
   session: {
     strategy: 'jwt',
+  },
+  useSecureCookies: shouldUseSecureCookies(),
+  cookies: {
+    sessionToken: getSessionTokenCookie(),
   },
   pages: {
     signIn: '/login',
@@ -34,15 +32,30 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          const { email, password } = loginSchema.parse(credentials);
+          const parsed = loginSchema.safeParse({
+            email: credentials?.email,
+            password: credentials?.password,
+          });
+
+          if (!parsed.success) {
+            return null;
+          }
+
+          const email = parsed.data.email.toLowerCase();
+          const { password } = parsed.data;
 
           const limit = await rateLimit(`auth:${email}`, RATE_LIMITS.auth);
           if (!limit.allowed) {
-            throw new Error('RATE_LIMITED');
+            return null;
           }
 
-          const user = await db.user.findUnique({
-            where: { email },
+          const user = await db.user.findFirst({
+            where: {
+              email: {
+                equals: email,
+                mode: 'insensitive',
+              },
+            },
             select: {
               id: true,
               email: true,
@@ -61,24 +74,18 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user || !user.password) {
-            throw new Error('INVALID_CREDENTIALS');
+            return null;
           }
 
           if (user.isBlocked) {
-            throw new Error('ACCOUNT_BLOCKED');
+            return null;
           }
-
-          // TODO: Re-enable when SMTP is configured
-          // if (!user.emailVerified) {
-          //   throw new Error('EMAIL_NOT_VERIFIED');
-          // }
 
           const isValidPassword = await bcrypt.compare(password, user.password);
           if (!isValidPassword) {
-            throw new Error('INVALID_CREDENTIALS');
+            return null;
           }
 
-          // Auto-promote configured admin emails (only if not already ADMIN)
           let role = user.role;
 
           if (ADMIN_EMAILS.includes(email)) {
@@ -101,15 +108,8 @@ export const authOptions: NextAuthOptions = {
             headerImage: user.owner?.image ?? null,
           };
         } catch (error) {
-          if (error instanceof Error && [
-            'RATE_LIMITED',
-            'INVALID_CREDENTIALS',
-            'ACCOUNT_BLOCKED',
-            'EMAIL_NOT_VERIFIED',
-          ].includes(error.message)) {
-            throw error;
-          }
-          throw new Error('INVALID_CREDENTIALS');
+          console.error('[auth] authorize failed:', error);
+          return null;
         }
       },
     }),
@@ -121,11 +121,14 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.headerImage = user.headerImage ?? null;
       }
+      if (!token.id && token.sub) {
+        token.id = token.sub;
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = (token.id as string) || token.sub || '';
         session.user.role = token.role as string;
         session.user.headerImage = (token.headerImage as string | null) ?? null;
       }
@@ -134,5 +137,3 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
-
-export const auth = NextAuth(authOptions);

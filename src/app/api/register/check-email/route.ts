@@ -24,8 +24,13 @@ export async function GET(request: Request) {
       );
     }
 
-    const existingUser = await db.user.findUnique({
-      where: { email },
+    const existingUser = await db.user.findFirst({
+      where: {
+        email: {
+          equals: email.trim(),
+          mode: 'insensitive',
+        },
+      },
       select: { id: true },
     });
 

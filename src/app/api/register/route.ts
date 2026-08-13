@@ -2,24 +2,13 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { z } from 'zod';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { sendEmail, buildVerificationEmail } from '@/lib/email';
 import { hashToken } from '@/lib/token-hash';
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  password: z.string()
-    .min(8, 'La contraseña debe tener al menos 8 caracteres')
-    .regex(/[A-Z]/, 'La contraseña debe contener al menos una mayúscula')
-    .regex(/[a-z]/, 'La contraseña debe contener al menos una minúscula')
-    .regex(/[0-9]/, 'La contraseña debe contener al menos un número'),
-});
+import { registerSchema } from '@/lib/schemas';
 
 export async function POST(request: Request) {
   try {
-    // Rate limit by IP (or forwarded header)
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
     const limit = await rateLimit(`register:${ip}`, RATE_LIMITS.register);
     if (!limit.allowed) {
@@ -33,14 +22,25 @@ export async function POST(request: Request) {
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Datos inválidos', details: parsed.error.issues },
+        {
+          success: false,
+          error: parsed.error.issues[0]?.message || 'Datos inválidos',
+          details: parsed.error.issues,
+        },
         { status: 400 }
       );
     }
-    const { name, email, password } = parsed.data;
+    const { name, password } = parsed.data;
+    const email = parsed.data.email.toLowerCase();
 
-    const existingUser = await db.user.findUnique({
-      where: { email },
+    const existingUser = await db.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
+      },
+      select: { id: true },
     });
 
     if (existingUser) {
@@ -51,8 +51,6 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Auto-verify when no email provider is configured
     const hasEmailProvider = Boolean(process.env.RESEND_API_KEY);
 
     const user = await db.user.create({
@@ -62,25 +60,28 @@ export async function POST(request: Request) {
         password: hashedPassword,
         ...(hasEmailProvider ? {} : { emailVerified: new Date() }),
       },
-    } as any);
+    });
 
-    // Only send verification email if provider is configured
     if (hasEmailProvider) {
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      await db.verificationToken.create({
-        data: {
-          identifier: email,
-          token: hashToken(verificationToken),
-          expires: new Date(Date.now() + 86400000), // 24 hours
-        },
-      });
+      try {
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        await db.verificationToken.create({
+          data: {
+            identifier: email,
+            token: hashToken(verificationToken),
+            expires: new Date(Date.now() + 86400000),
+          },
+        });
 
-      const emailData = buildVerificationEmail(name, verificationToken);
-      await sendEmail({
-        to: email,
-        subject: emailData.subject,
-        html: emailData.html,
-      });
+        const emailData = buildVerificationEmail(name, verificationToken);
+        await sendEmail({
+          to: email,
+          subject: emailData.subject,
+          html: emailData.html,
+        });
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+      }
     }
 
     return NextResponse.json({

@@ -24,29 +24,32 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        email: email.trim(),
         password,
         redirect: false,
       });
 
-      if (result?.error) {
-        // NextAuth siempre retorna "CredentialsSignin" - consultamos el motivo específico
-        try {
-          const res = await fetch('/api/auth/login-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-          });
-          const data = await res.json();
+      if (!result || result.error || result.ok === false) {
+        if (result?.error === 'Configuration') {
+          setError('El servidor de autenticación no está configurado. Intenta de nuevo más tarde.');
+        } else {
+          try {
+            const res = await fetch('/api/auth/login-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email.trim() }),
+            });
+            const data = await res.json();
 
-          const messages: Record<string, string> = {
-            blocked: 'Tu cuenta ha sido suspendida. Contacta a soporte para más información.',
-            email_not_verified: 'Debes verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
-            invalid_credentials: 'El email o la contraseña son incorrectos.',
-          };
-          setError(messages[data.reason] || messages.invalid_credentials);
-        } catch {
-          setError('El email o la contraseña son incorrectos.');
+            const messages: Record<string, string> = {
+              blocked: 'Tu cuenta ha sido suspendida. Contacta a soporte para más información.',
+              email_not_verified: 'Debes verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
+              invalid_credentials: 'El email o la contraseña son incorrectos.',
+            };
+            setError(messages[data.reason] || messages.invalid_credentials);
+          } catch {
+            setError('El email o la contraseña son incorrectos.');
+          }
         }
       } else {
         toast.success('¡Bienvenido a MascoTin!');

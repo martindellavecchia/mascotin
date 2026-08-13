@@ -9,8 +9,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ reason: 'invalid_credentials' });
     }
 
-    const user = await db.user.findUnique({
-      where: { email },
+    const user = await db.user.findFirst({
+      where: {
+        email: {
+          equals: email.trim(),
+          mode: 'insensitive',
+        },
+      },
       select: { isBlocked: true, emailVerified: true },
     });
 

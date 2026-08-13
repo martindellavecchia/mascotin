@@ -1,7 +1,3 @@
-jest.mock('@auth/prisma-adapter', () => ({
-  PrismaAdapter: jest.fn(() => ({})),
-}));
-
 jest.mock('next-auth', () => ({
   __esModule: true,
   default: jest.fn(() => ({})),
@@ -51,6 +47,22 @@ describe('auth callbacks', () => {
     expect(token.headerImage).toBe('https://example.com/owner.webp');
   });
 
+  it('falls back to token.sub when id is missing', async () => {
+    const jwt = authOptions.callbacks?.jwt;
+
+    const token = await jwt!({
+      token: { sub: 'user-from-sub' },
+      user: undefined as never,
+      account: null,
+      profile: undefined,
+      trigger: 'signIn',
+      isNewUser: false,
+      session: undefined,
+    });
+
+    expect(token.id).toBe('user-from-sub');
+  });
+
   it('projects role and header image into the session payload', async () => {
     const sessionCallback = authOptions.callbacks?.session;
 
@@ -77,5 +89,33 @@ describe('auth callbacks', () => {
     expect(session.user.id).toBe('user-1');
     expect(session.user.role).toBe('ADMIN');
     expect(session.user.headerImage).toBe('https://example.com/admin.webp');
+  });
+
+  it('uses token.sub as session user id when token.id is missing', async () => {
+    const sessionCallback = authOptions.callbacks?.session;
+
+    const session = await sessionCallback!({
+      session: {
+        user: {
+          id: '',
+          email: 'test@example.com',
+        },
+        expires: '2099-01-01T00:00:00.000Z',
+      },
+      token: {
+        sub: 'user-from-sub',
+        role: 'OWNER',
+      } as never,
+      user: {} as never,
+      newSession: undefined,
+      trigger: 'update',
+    });
+
+    expect(session.user.id).toBe('user-from-sub');
+  });
+
+  it('uses JWT sessions without a database adapter', () => {
+    expect(authOptions.session?.strategy).toBe('jwt');
+    expect(authOptions.adapter).toBeUndefined();
   });
 });
