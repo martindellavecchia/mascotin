@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,7 +169,6 @@ export default function ProviderPage() {
     if (loading || status === 'loading') {
         return (
             <div className="min-h-screen bg-slate-50">
-                <Header session={session} />
                 <div className="container mx-auto px-4 py-8 flex justify-center">
                     <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
                 </div>
@@ -182,7 +180,6 @@ export default function ProviderPage() {
     if (provider) {
         return (
             <div className="min-h-screen bg-slate-50">
-                <Header session={session} />
                 <div className="container mx-auto px-4 py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-1">
@@ -310,7 +307,6 @@ export default function ProviderPage() {
     if (isRegistering) {
         return (
             <div className="min-h-screen bg-slate-50">
-                <Header session={session} />
                 <div className="container mx-auto px-4 py-8 max-w-xl">
                     <Card>
                         <CardHeader>
@@ -360,7 +356,6 @@ export default function ProviderPage() {
     if (providerRequest?.status === 'PENDING') {
         return (
             <div className="min-h-screen bg-slate-50">
-                <Header session={session} />
                 <div className="container mx-auto px-4 py-8 max-w-2xl">
                     <Card className="text-center">
                         <CardContent className="p-8">
@@ -386,7 +381,6 @@ export default function ProviderPage() {
     if (providerRequest?.status === 'REJECTED') {
         return (
             <div className="min-h-screen bg-slate-50">
-                <Header session={session} />
                 <div className="container mx-auto px-4 py-8 max-w-2xl">
                     <Card className="text-center">
                         <CardContent className="p-8">
@@ -424,7 +418,6 @@ export default function ProviderPage() {
     // No request yet — show call to action
     return (
         <div className="min-h-screen bg-slate-50">
-            <Header session={session} />
             <div className="container mx-auto px-4 py-8 max-w-2xl">
                 <Card className="text-center">
                     <CardContent className="p-8">

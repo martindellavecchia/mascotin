@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import HomeClientShell from '@/components/home/HomeClientShell';
 
-const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockFetchWithError = jest.fn();
 let mockSearchParams = new URLSearchParams();
@@ -18,7 +17,6 @@ jest.mock('next/dynamic', () => ({
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
-    replace: mockReplace,
     push: mockPush,
   }),
   useSearchParams: () => mockSearchParams,
@@ -28,11 +26,6 @@ jest.mock('@/hooks/useFetchWithError', () => ({
   useFetchWithError: () => ({
     fetchWithError: mockFetchWithError,
   }),
-}));
-
-jest.mock('@/components/Header', () => ({
-  __esModule: true,
-  default: () => <div>Header</div>,
 }));
 
 jest.mock('@/components/DashboardLayout', () => ({
@@ -59,9 +52,29 @@ jest.mock('@/components/HomeStats', () => ({
   default: () => <div>Stats</div>,
 }));
 
+jest.mock('@/components/feed/Feed', () => ({
+  __esModule: true,
+  default: () => <div>Feed</div>,
+}));
+
+jest.mock('@/components/PetProfileSidebar', () => ({
+  __esModule: true,
+  default: () => <div>Sidebar</div>,
+}));
+
 jest.mock('@/components/widgets/NextAppointment', () => ({
   __esModule: true,
   default: () => <div>Next appointment</div>,
+}));
+
+jest.mock('@/components/widgets/LostPetWidget', () => ({
+  __esModule: true,
+  default: () => <div>Lost pets</div>,
+}));
+
+jest.mock('@/components/widgets/SuggestedPets', () => ({
+  __esModule: true,
+  default: () => <div>Suggested pets</div>,
 }));
 
 jest.mock('@/components/home/DeferredVisibilitySection', () => ({
@@ -160,24 +173,23 @@ function buildProps() {
     initialStats: {
       totalPets: 2,
       totalMatches: 0,
-      upcomingAppointments: 0,
-      unreadMessages: 0,
+      totalSwipes: 0,
+      likesReceived: 0,
     },
     initialNextAppointment: null,
     initialFeedPosts: [],
     initialFeedNextCursor: null,
     initialFeedHasMore: false,
-  } as const;
+    initialLostPets: [],
+    initialSuggestions: [],
+    initialHealthRecords: [],
+  };
 }
 
 describe('HomeClientShell', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSearchParams = new URLSearchParams();
-    mockReplace.mockImplementation((url: string) => {
-      const nextUrl = new URL(url, 'http://localhost');
-      mockSearchParams = new URLSearchParams(nextUrl.search);
-    });
     mockFetchWithError.mockImplementation(async (url: string) => {
       if (url === '/api/matches') {
         return { success: true, data: { matches: [] } };
@@ -203,9 +215,8 @@ describe('HomeClientShell', () => {
 
   it('fetches explore data only after opening the explore tab', async () => {
     const user = userEvent.setup();
-    const view = renderShell();
+    renderShell();
     await user.click(screen.getByRole('button', { name: /explorar/i }));
-    view.rerender(<HomeClientShell {...buildProps()} />);
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/pets?currentPetId=pet-1');
@@ -215,13 +226,24 @@ describe('HomeClientShell', () => {
 
   it('fetches matches only after opening the matches tab', async () => {
     const user = userEvent.setup();
-    const view = renderShell();
+    renderShell();
     await user.click(screen.getByRole('button', { name: /matches/i }));
-    view.rerender(<HomeClientShell {...buildProps()} />);
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/matches');
     });
     expect(mockFetchWithError).not.toHaveBeenCalledWith('/api/pets?currentPetId=pet-1');
+  });
+
+  it('updates the URL with history.replaceState instead of router.replace', async () => {
+    const replaceState = jest.spyOn(window.history, 'replaceState');
+    const user = userEvent.setup();
+    renderShell();
+    await user.click(screen.getByRole('button', { name: /explorar/i }));
+
+    expect(replaceState).toHaveBeenCalled();
+    const url = String(replaceState.mock.calls.at(-1)?.[2] || '');
+    expect(url).toContain('tab=explore');
+    replaceState.mockRestore();
   });
 });

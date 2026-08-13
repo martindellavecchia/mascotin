@@ -76,7 +76,7 @@ export function useUnreadCount(enabled: boolean) {
 
     const interval = setInterval(() => {
       void refetch();
-    }, 60_000);
+    }, 120_000);
 
     return () => clearInterval(interval);
   }, [enabled, isActive, refetch]);

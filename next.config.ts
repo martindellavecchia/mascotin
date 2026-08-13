@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['date-fns', 'lucide-react', '@radix-ui/react-dropdown-menu'],
+  },
   images: {
     remotePatterns: [
       {

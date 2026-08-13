@@ -3,22 +3,26 @@
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Header from '@/components/Header';
 import DashboardLayout from '@/components/DashboardLayout';
 import HomeStats from '@/components/HomeStats';
+import Feed from '@/components/feed/Feed';
+import PetProfileSidebar from '@/components/PetProfileSidebar';
 import NextAppointment from '@/components/widgets/NextAppointment';
+import LostPetWidget from '@/components/widgets/LostPetWidget';
+import SuggestedPets from '@/components/widgets/SuggestedPets';
 import DeferredVisibilitySection from '@/components/home/DeferredVisibilitySection';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import type { HomeAppointmentData, HomeStatsData } from '@/lib/server/home';
+import type {
+  HomeAppointmentData,
+  HomeBootstrapSuggestion,
+  HomeLostPetPreview,
+  HomePetHealthSummary,
+  HomeStatsData,
+} from '@/lib/server/home';
 import type { Pet, SwipeResponse } from '@/types';
 import type { Post } from '@/types';
-
-const Feed = dynamic(() => import('@/components/feed/Feed'), {
-  ssr: false,
-  loading: () => <SectionSkeleton rows={2} />,
-});
 
 const MatchesPanel = dynamic(() => import('@/components/MatchesPanel'), {
   ssr: false,
@@ -29,30 +33,6 @@ const ExploreTab = dynamic(() => import('@/components/home/ExploreTab'), {
   ssr: false,
   loading: () => <PanelSkeleton label="Preparando exploración..." tall />,
 });
-
-const SuggestedPets = dynamic(
-  () => import('@/components/widgets/SuggestedPets'),
-  {
-    ssr: false,
-    loading: () => <WidgetSkeleton />,
-  }
-);
-
-const PetProfileSidebar = dynamic(
-  () => import('@/components/PetProfileSidebar'),
-  {
-    ssr: false,
-    loading: () => <SidebarSkeleton />,
-  }
-);
-
-const LostPetWidget = dynamic(
-  () => import('@/components/widgets/LostPetWidget'),
-  {
-    ssr: false,
-    loading: () => <WidgetSkeleton />,
-  }
-);
 
 type HomeTab = 'home' | 'explore' | 'matches';
 
@@ -74,6 +54,9 @@ interface HomeClientShellProps {
   initialFeedPosts: Post[];
   initialFeedNextCursor: string | null;
   initialFeedHasMore: boolean;
+  initialLostPets?: HomeLostPetPreview[];
+  initialSuggestions?: HomeBootstrapSuggestion[];
+  initialHealthRecords?: HomePetHealthSummary[];
 }
 
 function getValidTab(value: string | null): HomeTab {
@@ -84,50 +67,12 @@ function getValidTab(value: string | null): HomeTab {
   return 'home';
 }
 
-function SectionSkeleton({ rows = 1 }: { rows?: number }) {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: rows }).map((_, index) => (
-        <div
-          key={index}
-          className="bg-white p-4 rounded-xl shadow-sm h-40 animate-pulse"
-        >
-          <div className="flex gap-3 mb-4">
-            <div className="w-10 h-10 bg-gray-200 rounded-full" />
-            <div className="space-y-2 flex-1">
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
-            </div>
-          </div>
-          <div className="h-16 bg-gray-200 rounded" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function WidgetSkeleton() {
   return (
     <Card className="p-5">
       <div className="animate-pulse space-y-3">
         <div className="h-4 bg-slate-200 rounded w-1/2"></div>
         <div className="h-16 bg-slate-200 rounded"></div>
-      </div>
-    </Card>
-  );
-}
-
-function SidebarSkeleton() {
-  return (
-    <Card className="p-6">
-      <div className="animate-pulse space-y-4">
-        <div className="w-24 h-24 rounded-full bg-slate-200 mx-auto" />
-        <div className="h-5 bg-slate-200 rounded w-1/2 mx-auto" />
-        <div className="h-4 bg-slate-200 rounded w-2/3 mx-auto" />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="h-16 bg-slate-200 rounded-xl" />
-          <div className="h-16 bg-slate-200 rounded-xl" />
-        </div>
       </div>
     </Card>
   );
@@ -154,6 +99,18 @@ function PanelSkeleton({
   );
 }
 
+function writeShallowHomeUrl(nextTab: HomeTab, nextPetId?: string) {
+  const params = new URLSearchParams();
+  params.set('tab', nextTab);
+
+  if (nextPetId) {
+    params.set('petId', nextPetId);
+  }
+
+  const query = params.toString();
+  window.history.replaceState(null, '', query ? `/?${query}` : '/');
+}
+
 export default function HomeClientShell({
   session,
   initialPets,
@@ -163,6 +120,9 @@ export default function HomeClientShell({
   initialFeedPosts,
   initialFeedNextCursor,
   initialFeedHasMore,
+  initialLostPets = [],
+  initialSuggestions = [],
+  initialHealthRecords = [],
 }: HomeClientShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -170,6 +130,13 @@ export default function HomeClientShell({
   const [activeTab, setActiveTab] = useState<HomeTab>(() =>
     getValidTab(searchParams.get('tab'))
   );
+  const [selectedPetId, setSelectedPetId] = useState<string | undefined>(() => {
+    const fromUrl = searchParams.get('petId');
+    if (fromUrl && initialPets.some((pet) => pet.id === fromUrl)) {
+      return fromUrl;
+    }
+    return initialSelectedPetId || initialPets[0]?.id;
+  });
   const [petsToSwipe, setPetsToSwipe] = useState<Pet[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Pet[]>([]);
@@ -179,36 +146,28 @@ export default function HomeClientShell({
   const [matchNotification, setMatchNotification] = useState<string | null>(null);
   const swipingRef = useRef(false);
   const lastExplorePetIdRef = useRef<string | null>(null);
-
-  const tabParam = searchParams.get('tab');
-  const petIdParam = searchParams.get('petId');
   const myPets = initialPets;
-  const selectedPetId = useMemo(() => {
-    if (petIdParam && myPets.some((pet) => pet.id === petIdParam)) {
-      return petIdParam;
-    }
-
-    return initialSelectedPetId || myPets[0]?.id;
-  }, [initialSelectedPetId, myPets, petIdParam]);
 
   useEffect(() => {
-    const nextTab = getValidTab(tabParam);
-    if (nextTab !== activeTab) {
-      setActiveTab(nextTab);
-    }
-  }, [activeTab, tabParam]);
+    const onPopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setActiveTab(getValidTab(params.get('tab')));
+      const petFromUrl = params.get('petId');
+      if (petFromUrl && myPets.some((pet) => pet.id === petFromUrl)) {
+        setSelectedPetId(petFromUrl);
+      }
+    };
 
-  const updateUrl = (nextTab: HomeTab, nextPetId?: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', nextTab);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [myPets]);
 
+  const syncHomeState = (nextTab: HomeTab, nextPetId?: string) => {
+    setActiveTab(nextTab);
     if (nextPetId) {
-      params.set('petId', nextPetId);
-    } else {
-      params.delete('petId');
+      setSelectedPetId(nextPetId);
     }
-
-    router.replace(`/?${params.toString()}`, { scroll: false });
+    writeShallowHomeUrl(nextTab, nextPetId);
   };
 
   const fetchMatches = async () => {
@@ -285,29 +244,39 @@ export default function HomeClientShell({
     }
   };
 
-  const rightSidebar = (
-    <div className="space-y-6">
-      <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
-        <LostPetWidget />
-      </DeferredVisibilitySection>
-      <NextAppointment appointment={initialNextAppointment} />
-      <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
-        <SuggestedPets selectedPetId={selectedPetId} />
-      </DeferredVisibilitySection>
-    </div>
+  const rightSidebar = useMemo(
+    () => (
+      <div className="space-y-6">
+        <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
+          <LostPetWidget initialPets={initialLostPets as never} />
+        </DeferredVisibilitySection>
+        <NextAppointment appointment={initialNextAppointment} />
+        <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
+          <SuggestedPets
+            selectedPetId={selectedPetId}
+            initialSuggestions={initialSuggestions}
+          />
+        </DeferredVisibilitySection>
+      </div>
+    ),
+    [
+      initialLostPets,
+      initialNextAppointment,
+      selectedPetId,
+      initialSuggestions,
+    ]
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Header session={session} />
-
+    <div className="bg-slate-50">
       <DashboardLayout
         leftSidebar={
           <PetProfileSidebar
             pet={myPets.find((pet) => pet.id === selectedPetId) || null}
             pets={myPets}
             selectedPetId={selectedPetId}
-            onSelectPet={(petId) => updateUrl(activeTab, petId)}
+            initialHealthRecords={initialHealthRecords}
+            onSelectPet={(petId) => syncHomeState(activeTab, petId)}
             onEdit={() => router.push(`/profile?petId=${selectedPetId}`)}
           />
         }
@@ -317,8 +286,7 @@ export default function HomeClientShell({
           <Tabs
             value={activeTab}
             onValueChange={(value) => {
-              const nextTab = value as HomeTab;
-              updateUrl(nextTab, selectedPetId);
+              syncHomeState(value as HomeTab, selectedPetId);
             }}
             className="w-full"
           >

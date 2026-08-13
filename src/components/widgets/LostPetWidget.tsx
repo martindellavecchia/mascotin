@@ -27,15 +27,24 @@ interface LostPet {
     };
 }
 
-export default function LostPetWidget() {
+interface LostPetWidgetProps {
+    initialPets?: LostPet[];
+}
+
+export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
     const router = useRouter();
-    const [lostPets, setLostPets] = useState<LostPet[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [lostPets, setLostPets] = useState<LostPet[]>(initialPets ?? []);
+    const [loading, setLoading] = useState(initialPets === undefined);
     const { fetchWithError } = useFetchWithError();
 
     useEffect(() => {
-        fetchLostPets();
-    }, []);
+        if (initialPets !== undefined) {
+            setLostPets(initialPets);
+            setLoading(false);
+            return;
+        }
+        void fetchLostPets();
+    }, [initialPets]);
 
     const fetchLostPets = async () => {
         const result = await fetchWithError<{ lostPets: LostPet[] }>('/api/posts/lost?limit=3');

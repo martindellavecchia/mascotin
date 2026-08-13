@@ -15,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import Header from '@/components/Header';
 import OwnerForm from '@/components/OwnerForm';
 import PetForm from '@/components/PetForm';
 import { ProfileCard } from '@/components/profile/ProfileCard';
@@ -144,7 +143,6 @@ function ProfileContent() {
   if (!owner) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
-        <Header session={session} />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Card className="w-full max-w-2xl mx-auto shadow-sm border-0 bg-white">
             <CardHeader className="text-center pb-2">
@@ -168,7 +166,6 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header session={session} />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header & Actions */}

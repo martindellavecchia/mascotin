@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -313,7 +312,6 @@ export default function AdminPage() {
     if (loading && users.length === 0) {
         return (
             <div className="min-h-screen bg-slate-50">
-                <Header session={session} />
                 <div className="container mx-auto px-4 py-8 flex justify-center">
                     <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
                 </div>
@@ -323,7 +321,6 @@ export default function AdminPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <Header session={session} />
             <div className="container mx-auto px-4 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <div>

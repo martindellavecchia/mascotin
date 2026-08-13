@@ -213,6 +213,7 @@ model Post {
 
   @@index([authorId])
   @@index([createdAt])
+  @@index([postType, isResolved, createdAt])
 }
 
 model Invitation {
@@ -374,6 +375,9 @@ model Match {
   pet1        Pet?      @relation("Pet1Matches", fields: [pet1Id], references: [id], onDelete: Cascade)
   pet2        Pet?      @relation("Pet2Matches", fields: [pet2Id], references: [id], onDelete: Cascade)
   messages    Message[]
+
+  @@index([pet1Id])
+  @@index([pet2Id])
 }
 
 model Event {

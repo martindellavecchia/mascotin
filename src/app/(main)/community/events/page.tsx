@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import Header from '@/components/Header';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,7 +57,6 @@ export default function CommunityEventsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
-            <Header session={session} />
             <CommunityLayout>
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">

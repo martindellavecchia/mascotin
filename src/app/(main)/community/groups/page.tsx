@@ -2,7 +2,6 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import Header from '@/components/Header';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -72,7 +71,6 @@ export default function GroupsDirectoryPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
-            <Header session={session} />
             <CommunityLayout>
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">

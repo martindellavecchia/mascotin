@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import Header from '@/components/Header';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import EventsFeed from '@/components/community/EventsFeed';
 import LostPetForm from '@/components/community/LostPetForm';
@@ -13,9 +12,22 @@ export default function CommunityPage() {
     const [lostPetFormOpen, setLostPetFormOpen] = useState(false);
     const [feedRefreshKey, setFeedRefreshKey] = useState(0);
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('report') === 'lost') {
+            setLostPetFormOpen(true);
+            params.delete('report');
+            const next = params.toString();
+            window.history.replaceState(
+                null,
+                '',
+                next ? `/community?${next}` : '/community'
+            );
+        }
+    }, []);
+
     return (
-        <div className="min-h-screen bg-slate-50">
-            <Header session={session} />
+        <div className="bg-slate-50">
             <CommunityLayout>
                 <div className="mb-6 flex items-center justify-between">
                     <div>

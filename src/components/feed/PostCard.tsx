@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Post, Comment } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ interface PostCardProps {
     onEdit?: (post: ExtendedPost) => void;
 }
 
-export default function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onEdit }: PostCardProps) {
+function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onEdit }: PostCardProps) {
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [deleting, setDeleting] = useState(false);
@@ -453,3 +453,5 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
         </Card>
     );
 }
+
+export default memo(PostCard);

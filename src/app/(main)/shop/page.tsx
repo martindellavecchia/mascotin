@@ -1,8 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import Header from '@/components/Header';
+import { useEffect, useRef, useState } from 'react';
 import QuickActions from '@/components/widgets/QuickActions';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -50,12 +49,16 @@ export default function ShopPage() {
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [bookingLoading, setBookingLoading] = useState(false);
 
+    const hasLoadedOnce = useRef(false);
+
     useEffect(() => {
         fetchPets();
     }, []);
 
-    const fetchServices = async () => {
-        setLoading(true);
+    const fetchServices = async (showFullLoading: boolean) => {
+        if (showFullLoading || !hasLoadedOnce.current) {
+            setLoading(true);
+        }
         const params = new URLSearchParams();
         if (searchTerm) params.set('search', searchTerm);
         if (minRating && minRating !== '_all') params.set('minRating', minRating);
@@ -66,11 +69,15 @@ export default function ShopPage() {
         if (result.success && result.data) {
             setServices(result.data.services || []);
         }
+        hasLoadedOnce.current = true;
         setLoading(false);
     };
 
     useEffect(() => {
-        fetchServices();
+        const timer = window.setTimeout(() => {
+            void fetchServices(false);
+        }, 300);
+        return () => window.clearTimeout(timer);
     }, [searchTerm, minRating, maxPrice, sortBy]);
 
     const fetchPets = async () => {
@@ -158,7 +165,6 @@ export default function ShopPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <Header session={session} />
 
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

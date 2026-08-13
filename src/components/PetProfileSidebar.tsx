@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pet } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ interface PetProfileSidebarProps {
     pet: Pet | null;
     pets?: Pet[];
     selectedPetId?: string;
+    initialHealthRecords?: HealthRecord[];
     onSelectPet?: (petId: string) => void;
     onEdit?: () => void;
 }
@@ -51,16 +52,31 @@ function getFirstImage(images: string | string[] | undefined | null): string | n
     return null;
 }
 
-export default function PetProfileSidebar({ pet, pets, selectedPetId, onSelectPet, onEdit }: PetProfileSidebarProps) {
+export default function PetProfileSidebar({
+    pet,
+    pets,
+    selectedPetId,
+    initialHealthRecords,
+    onSelectPet,
+    onEdit,
+}: PetProfileSidebarProps) {
     const router = useRouter();
-    const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
+    const [healthRecords, setHealthRecords] = useState<HealthRecord[]>(
+        initialHealthRecords || []
+    );
     const [loadingHealth, setLoadingHealth] = useState(false);
     const { fetchWithError } = useFetchWithError();
+    const seededPetIdRef = useRef<string | null>(
+        initialHealthRecords ? pet?.id || null : null
+    );
 
     useEffect(() => {
-        if (pet?.id) {
-            fetchHealthRecords(pet.id);
+        if (!pet?.id) return;
+        if (seededPetIdRef.current === pet.id) {
+            seededPetIdRef.current = null;
+            return;
         }
+        void fetchHealthRecords(pet.id);
     }, [pet?.id]);
 
     const fetchHealthRecords = async (petId: string) => {

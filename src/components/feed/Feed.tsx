@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Post, Pet } from '@/types';
 import PostCard from './PostCard';
 import dynamic from 'next/dynamic';
@@ -126,20 +126,32 @@ export default function Feed({
         );
     }
 
-    return (
-        <div className="space-y-4">
-            {posts.map(post => (
+    const handleDelete = useCallback((postId: string) => {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+    }, []);
+
+    const handleEdit = useCallback((p: ExtendedPost) => {
+        setEditingPost(p);
+    }, []);
+
+    const postCards = useMemo(
+        () =>
+            posts.map((post) => (
                 <PostCard
                     key={post.id}
                     post={post}
                     currentUserId={currentUserId}
                     currentUserImage={currentUserImage}
-                    onDelete={() => {
-                        setPosts(prev => prev.filter(p => p.id !== post.id));
-                    }}
-                    onEdit={(p) => setEditingPost(p as ExtendedPost)}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
                 />
-            ))}
+            )),
+        [posts, currentUserId, currentUserImage, handleDelete, handleEdit]
+    );
+
+    return (
+        <div className="space-y-4">
+            {postCards}
 
             {/* Load More Button */}
             {hasMore && (

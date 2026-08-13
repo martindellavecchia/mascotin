@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -20,16 +20,29 @@ interface SuggestedPet {
 
 interface SuggestedPetsProps {
     selectedPetId?: string;
+    initialSuggestions?: SuggestedPet[];
 }
 
-export default function SuggestedPets({ selectedPetId }: SuggestedPetsProps) {
-    const [suggestions, setSuggestions] = useState<SuggestedPet[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function SuggestedPets({
+    selectedPetId,
+    initialSuggestions,
+}: SuggestedPetsProps) {
+    const [suggestions, setSuggestions] = useState<SuggestedPet[]>(
+        initialSuggestions || []
+    );
+    const [loading, setLoading] = useState(!initialSuggestions);
     const [actionPetId, setActionPetId] = useState<string | null>(null);
     const { fetchWithError } = useFetchWithError();
+    const hasInitialForPet = useRef(Boolean(initialSuggestions));
 
     useEffect(() => {
-        fetchSuggestions();
+        if (hasInitialForPet.current && initialSuggestions) {
+            hasInitialForPet.current = false;
+            setSuggestions(initialSuggestions);
+            setLoading(false);
+            return;
+        }
+        void fetchSuggestions();
     }, [selectedPetId]);
 
     const fetchSuggestions = async () => {

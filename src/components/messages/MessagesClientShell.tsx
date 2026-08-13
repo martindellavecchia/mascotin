@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useState } from 'react';
-import Header from '@/components/Header';
+import ConversationList from '@/components/messages/ConversationList';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
@@ -28,29 +28,6 @@ const GroupChat = dynamic(() => import('@/components/groups/GroupChat'), {
     </div>
   ),
 });
-
-const ConversationList = dynamic(
-  () => import('@/components/messages/ConversationList'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4 space-y-4">
-        <div className="h-10 bg-slate-200 rounded animate-pulse" />
-        <div className="space-y-3">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="flex gap-3 items-center animate-pulse">
-              <div className="w-12 h-12 rounded-full bg-slate-200" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 bg-slate-200 rounded w-2/3" />
-                <div className="h-3 bg-slate-200 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  }
-);
 
 const QuickActions = dynamic(
   () => import('@/components/widgets/QuickActions'),
@@ -133,6 +110,13 @@ export default function MessagesClientShell({
   const handleSelect = (id: string, type: 'match' | 'group') => {
     setSelectedId(id);
     setSelectedType(type);
+    const params = new URLSearchParams();
+    if (type === 'group') {
+      params.set('groupId', id);
+    } else {
+      params.set('matchId', id);
+    }
+    window.history.replaceState(null, '', `/messages?${params.toString()}`);
   };
 
   const renderContent = () => {
@@ -196,8 +180,7 @@ export default function MessagesClientShell({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header session={session} />
+    <div className="bg-slate-50 flex flex-col">
       <div className="container mx-auto px-4 py-6 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col max-h-[calc(100vh-140px)] lg:max-h-[calc(100vh-120px)]">
           <ConversationList

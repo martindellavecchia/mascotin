@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Header from '@/components/Header';
 import PetForm from '@/components/PetForm';
 import OwnerForm from '@/components/OwnerForm';
 import type { Owner, Pet } from '@/types';
@@ -53,7 +52,6 @@ function CreatePetContent() {
   if (!owner) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
-        <Header session={session} />
         <main className="flex-1 container mx-auto px-4 py-8">
           <Card className="w-full max-w-2xl mx-auto shadow-sm border-0 bg-white">
             <CardHeader className="text-center pb-2">
@@ -82,7 +80,6 @@ function CreatePetContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header session={session} />
       <main className="flex-1 container mx-auto px-4 py-8 flex justify-center">
         <PetOnboardingWizard
           ownerId={owner.id}

@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
-import Header from '@/components/Header';
 import HomeClientShell from '@/components/home/HomeClientShell';
 import { Button } from '@/components/ui/button';
 import { authOptions } from '@/lib/auth';
@@ -91,35 +90,31 @@ function GuestHome() {
   );
 }
 
-function HomeError({ session }: { session: Session }) {
+function HomeError({ session: _session }: { session: Session }) {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header session={session} />
-      <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center">
-        <div className="w-full max-w-md text-center px-4">
-          <span className="material-symbols-rounded text-5xl text-slate-400 mb-4">
-            error
-          </span>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
-            Error al cargar
-          </h2>
-          <p className="text-slate-600 mb-6">
-            No se pudieron cargar tus mascotas. Intenta recargar la página.
-          </p>
-          <Button asChild className="bg-teal-700 hover:bg-teal-800 rounded-lg">
-            <Link href="/">Reintentar</Link>
-          </Button>
-        </div>
-      </main>
-    </div>
+    <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="w-full max-w-md text-center px-4">
+        <span className="material-symbols-rounded text-5xl text-slate-400 mb-4">
+          error
+        </span>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
+          Error al cargar
+        </h2>
+        <p className="text-slate-600 mb-6">
+          No se pudieron cargar tus mascotas. Intenta recargar la página.
+        </p>
+        <Button asChild className="bg-teal-700 hover:bg-teal-800 rounded-lg">
+          <Link href="/">Reintentar</Link>
+        </Button>
+      </div>
+    </main>
   );
 }
 
-function NoPetsHome({ session }: { session: Session }) {
+function NoPetsHome({ session: _session }: { session: Session }) {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header session={session} />
-      <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center">
+    <>
+      <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[60vh]">
         <div className="w-full max-w-md text-center px-4">
           <span className="material-symbols-rounded text-5xl text-teal-600 mb-4 filled">
             pets
@@ -144,7 +139,7 @@ function NoPetsHome({ session }: { session: Session }) {
           <p>MascoTin — Conecta y cuida mejor a tu mascota.</p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
 
@@ -183,6 +178,9 @@ export default async function Home({
         initialFeedPosts={feedPage.posts as unknown as Post[]}
         initialFeedNextCursor={feedPage.nextCursor}
         initialFeedHasMore={feedPage.hasMore}
+        initialLostPets={homeData.lostPets}
+        initialSuggestions={homeData.suggestions}
+        initialHealthRecords={homeData.healthRecords}
       />
     );
   } catch (error) {
