@@ -188,11 +188,6 @@ export default function HomeClientShell({
       void import('@/components/MatchesPanel');
     };
 
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(prefetch, { timeout: 2000 });
-      return () => window.cancelIdleCallback(id);
-    }
-
     const timer = window.setTimeout(prefetch, 800);
     return () => window.clearTimeout(timer);
   }, []);

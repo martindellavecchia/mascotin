@@ -98,6 +98,29 @@ export default function Feed({
         }
     };
 
+    const handleDelete = useCallback((postId: string) => {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+    }, []);
+
+    const handleEdit = useCallback((p: ExtendedPost) => {
+        setEditingPost(p);
+    }, []);
+
+    const postCards = useMemo(
+        () =>
+            posts.map((post) => (
+                <PostCard
+                    key={post.id}
+                    post={post}
+                    currentUserId={currentUserId}
+                    currentUserImage={currentUserImage}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                />
+            )),
+        [posts, currentUserId, currentUserImage, handleDelete, handleEdit]
+    );
+
     if (loading) {
         return (
             <div className="space-y-4">
@@ -125,29 +148,6 @@ export default function Feed({
             </div>
         );
     }
-
-    const handleDelete = useCallback((postId: string) => {
-        setPosts((prev) => prev.filter((p) => p.id !== postId));
-    }, []);
-
-    const handleEdit = useCallback((p: ExtendedPost) => {
-        setEditingPost(p);
-    }, []);
-
-    const postCards = useMemo(
-        () =>
-            posts.map((post) => (
-                <PostCard
-                    key={post.id}
-                    post={post}
-                    currentUserId={currentUserId}
-                    currentUserImage={currentUserImage}
-                    onDelete={handleDelete}
-                    onEdit={handleEdit}
-                />
-            )),
-        [posts, currentUserId, currentUserImage, handleDelete, handleEdit]
-    );
 
     return (
         <div className="space-y-4">
