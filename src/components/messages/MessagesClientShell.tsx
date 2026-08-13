@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ConversationList from '@/components/messages/ConversationList';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
@@ -54,28 +54,62 @@ interface MessagesClientShellProps {
   } | null;
   initialMatches: MatchWithPet[];
   initialGroups: MessageGroupListItem[];
-  initialSelectedId?: string | null;
-  initialSelectedType?: 'match' | 'group' | null;
 }
 
 interface GroupListItem extends MessageGroupListItem {
   isMember?: boolean;
 }
 
+function readMessagesUrlState() {
+  if (typeof window === 'undefined') {
+    return { selectedId: null as string | null, selectedType: null as 'match' | 'group' | null };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const groupId = params.get('groupId');
+  const matchId = params.get('matchId');
+
+  if (groupId) {
+    return { selectedId: groupId, selectedType: 'group' as const };
+  }
+
+  if (matchId) {
+    return { selectedId: matchId, selectedType: 'match' as const };
+  }
+
+  return { selectedId: null, selectedType: null };
+}
+
 export default function MessagesClientShell({
   session,
   initialMatches,
   initialGroups,
-  initialSelectedId = null,
-  initialSelectedType = null,
 }: MessagesClientShellProps) {
   const [matches, setMatches] = useState<MatchWithPet[]>(initialMatches);
   const [groups, setGroups] = useState<MessageGroupListItem[]>(initialGroups);
-  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
-  const [selectedType, setSelectedType] = useState<'match' | 'group' | null>(
-    initialSelectedType
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<'match' | 'group' | null>(null);
+  const urlHydratedRef = useRef(false);
   const { fetchWithError } = useFetchWithError();
+
+  useEffect(() => {
+    if (urlHydratedRef.current) return;
+    urlHydratedRef.current = true;
+    const fromUrl = readMessagesUrlState();
+    setSelectedId(fromUrl.selectedId);
+    setSelectedType(fromUrl.selectedType);
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      const fromUrl = readMessagesUrlState();
+      setSelectedId(fromUrl.selectedId);
+      setSelectedType(fromUrl.selectedType);
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   const fetchDirectory = async () => {
     const [matchesResult, groupsResult] = await Promise.all([

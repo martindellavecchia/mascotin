@@ -5,7 +5,6 @@ import HomeClientShell from '@/components/home/HomeClientShell';
 
 const mockPush = jest.fn();
 const mockFetchWithError = jest.fn();
-let mockSearchParams = new URLSearchParams();
 
 jest.mock('next/dynamic', () => ({
   __esModule: true,
@@ -19,7 +18,6 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
-  useSearchParams: () => mockSearchParams,
 }));
 
 jest.mock('@/hooks/useFetchWithError', () => ({
@@ -189,7 +187,7 @@ function buildProps() {
 describe('HomeClientShell', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSearchParams = new URLSearchParams();
+    window.history.replaceState(null, '', '/');
     mockFetchWithError.mockImplementation(async (url: string) => {
       if (url === '/api/matches') {
         return { success: true, data: { matches: [] } };

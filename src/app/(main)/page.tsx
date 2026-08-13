@@ -143,11 +143,7 @@ function NoPetsHome({ session: _session }: { session: Session }) {
   );
 }
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams?: Promise<{ petId?: string; tab?: string }>;
-}) {
+export default async function Home() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
@@ -155,9 +151,10 @@ export default async function Home({
   }
 
   try {
-    const resolvedSearchParams = searchParams ? await searchParams : undefined;
+    // Intentionally ignore URL searchParams here: reading them opts this RSC
+    // into refetching on every ?tab= / ?petId= change and freezes tab switches.
     const [homeData, feedPage] = await Promise.all([
-      getHomeBootstrapData(session.user.id, resolvedSearchParams?.petId),
+      getHomeBootstrapData(session.user.id),
       getFeedPage({
         userId: session.user.id,
         limit: 10,
