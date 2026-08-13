@@ -232,7 +232,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
                     onChange={field.onChange}
                     className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                   />
-                  <span className="text-lg">🏡</span>
+                  <span className="material-symbols-rounded text-lg text-teal-700">yard</span>
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo patio/jardín</span>
                 </label>
               )}
@@ -252,7 +252,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
                     onChange={field.onChange}
                     className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                   />
-                  <span className="text-lg">🐾</span>
+                  <span className="material-symbols-rounded text-lg text-teal-700">pets</span>
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo otras mascotas</span>
                 </label>
               )}

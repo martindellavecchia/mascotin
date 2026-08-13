@@ -203,7 +203,7 @@ export default function ProviderAppointments() {
                                                     <AvatarImage src={getPetImage(apt.pet)!} />
                                                 ) : (
                                                     <AvatarFallback className="text-xs">
-                                                        {apt.pet.petType === 'dog' ? '🐶' : '🐱'}
+                                                        <span className="material-symbols-rounded text-sm text-teal-700 align-middle">pets</span>
                                                     </AvatarFallback>
                                                 )}
                                             </Avatar>

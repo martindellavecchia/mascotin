@@ -302,7 +302,7 @@ export default function AdminPage() {
     const getRoleBadge = (role: string) => {
         switch (role) {
             case 'ADMIN':
-                return <Badge className="bg-purple-100 text-purple-700">Admin</Badge>;
+                return <Badge className="bg-teal-50 text-teal-800">Admin</Badge>;
             case 'PROVIDER':
                 return <Badge className="bg-teal-100 text-teal-700">Proveedor</Badge>;
             default:
@@ -328,7 +328,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                            <span className="material-symbols-rounded text-purple-500">admin_panel_settings</span>
+                            <span className="material-symbols-rounded text-teal-600">admin_panel_settings</span>
                             Panel de Administración
                         </h1>
                         <p className="text-slate-500">Gestiona usuarios, roles y proveedores</p>
@@ -614,7 +614,7 @@ export default function AdminPage() {
                             </Card>
                             <Card>
                                 <CardContent className="p-6 text-center">
-                                    <span className="material-symbols-rounded text-4xl text-purple-400 mb-2">shield_person</span>
+                                    <span className="material-symbols-rounded text-4xl text-teal-500 mb-2">shield_person</span>
                                     <p className="text-3xl font-bold text-slate-800">
                                         {users.filter(u => u.role === 'ADMIN').length}
                                     </p>

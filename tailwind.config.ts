@@ -2,60 +2,73 @@ import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
-    darkMode: "class",
-    content: [
+  darkMode: "class",
+  content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-   theme: {
-   	extend: {
-    		colors: {
-    			primary: {
-    				DEFAULT: "#13ec80",
-    				foreground: "#064e3b"
-    			},
-    			secondary: "#e8f5e0",
-    			accent: "#4cc9f1",
-    			background: "#f8fcfa",
-    			"background-dark": "#102219",
-    			surface: "#ffffff",
-    			"surface-dark": "#162e22",
-    			"text-main": "#0d1b14",
-    			"text-secondary": "#4c9a73",
-    			"text-muted": "#6b8e7a",
-    			border: "#cfe7db",
-    			"border-dark": "#2a4a3b",
-    			input: "#ffffff",
-    			ring: "#13ec80",
-    			destructive: {
-    				DEFAULT: "#ef4444",
-    				foreground: "#7f1d1d"
-    			},
-    			success: {
-    				DEFAULT: "#10b981",
-    				foreground: "#064e3b"
-    			},
-    			warning: {
-    				DEFAULT: "#f59e0b",
-    				foreground: "#78350f"
-    			},
-    			info: {
-    				DEFAULT: "#3b82f6",
-    				foreground: "#1e3a8a"
-    			},
-    		},
-   		fontFamily: {
-   			"display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
-   		},
-   		borderRadius: {
-   			"DEFAULT": "1rem",
-   			"lg": "2rem",
-   			"xl": "3rem",
-   			"full": "9999px"
-   		}
-   	}
-   },
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "#0d9488",
+          foreground: "#ffffff",
+          hover: "#0f766e",
+          soft: "#ccfbf1",
+        },
+        secondary: {
+          DEFAULT: "#f1f5f9",
+          foreground: "#0f172a",
+        },
+        accent: {
+          DEFAULT: "#f97316",
+          foreground: "#ffffff",
+          hover: "#ea580c",
+        },
+        background: "#f8fafc",
+        "background-dark": "#0f172a",
+        surface: "#ffffff",
+        "surface-dark": "#1e293b",
+        "text-main": "#0f172a",
+        "text-secondary": "#334155",
+        "text-muted": "#64748b",
+        border: "#e2e8f0",
+        "border-dark": "#334155",
+        input: "#ffffff",
+        ring: "#0d9488",
+        destructive: {
+          DEFAULT: "#dc2626",
+          foreground: "#ffffff",
+        },
+        success: {
+          DEFAULT: "#16a34a",
+          foreground: "#ffffff",
+        },
+        warning: {
+          DEFAULT: "#ca8a04",
+          foreground: "#ffffff",
+        },
+        info: {
+          DEFAULT: "#3b82f6",
+          foreground: "#ffffff",
+        },
+      },
+      fontFamily: {
+        display: ["var(--font-plus-jakarta-sans)", "Plus Jakarta Sans", "sans-serif"],
+        sans: ["var(--font-plus-jakarta-sans)", "Plus Jakarta Sans", "sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT: "0.75rem",
+        sm: "0.5rem",
+        md: "0.75rem",
+        lg: "1rem",
+        xl: "1.25rem",
+        full: "9999px",
+      },
+    },
+  },
   plugins: [tailwindcssAnimate],
 };
+
 export default config;

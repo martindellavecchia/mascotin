@@ -189,7 +189,7 @@ export async function POST(request: Request) {
       success: true,
       matched,
       xpGained,
-      message: matched ? '🐾 ¡Match!' : 'Swipe registrado',
+      message: matched ? '¡Match!' : 'Swipe registrado',
     });
   } catch (error) {
     log.error('Error recording swipe', error, userId ? { userId } : undefined);

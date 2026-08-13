@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { Pet } from '@/types';
 import PetCard from '@/components/PetCard';
 import { Card } from '@/components/ui/card';
@@ -23,12 +24,31 @@ export default function ExploreTab({
   onPass,
 }: ExploreTabProps) {
   const currentPet = petsToSwipe[currentIndex];
+  const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(
+    null
+  );
+
+  useEffect(() => {
+    setExitDirection(null);
+  }, [currentIndex, currentPet?.id]);
+
+  const handlePass = () => {
+    if (exitDirection) return;
+    setExitDirection('left');
+    window.setTimeout(() => onPass(), 260);
+  };
+
+  const handleLike = () => {
+    if (exitDirection) return;
+    setExitDirection('right');
+    window.setTimeout(() => onLike(), 260);
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-600">Buscando mascotas cercanas...</p>
         </div>
       </div>
@@ -43,11 +63,11 @@ export default function ExploreTab({
             pets
           </span>
           <p className="text-xl font-semibold text-slate-700 mb-2">
-            ¡No hay más mascotas!
+            No hay más mascotas
           </p>
           <Button
             onClick={onReload}
-            className="bg-teal-600 hover:bg-teal-700 rounded-full px-6 mt-4"
+            className="bg-teal-700 hover:bg-teal-800 rounded-lg px-6 mt-4"
           >
             Buscar de nuevo
           </Button>
@@ -58,24 +78,36 @@ export default function ExploreTab({
 
   return (
     <div className="flex flex-col items-center min-h-[500px]">
-      <div className="w-full max-w-sm relative">
+      <div
+        className={`w-full max-w-sm relative ${
+          exitDirection === 'left'
+            ? 'animate-swipe-out-left'
+            : exitDirection === 'right'
+              ? 'animate-swipe-out-right'
+              : 'animate-fade-in'
+        }`}
+      >
         <PetCard pet={currentPet} />
       </div>
 
       <div className="flex gap-6 mt-6 z-10">
         <Button
-          onClick={onPass}
+          onClick={handlePass}
           size="lg"
-          className="rounded-full h-16 w-16 bg-white hover:bg-rose-50 text-rose-500 border-2 border-rose-100 shadow-lg hover:shadow-xl hover:scale-110 transition-all"
+          disabled={Boolean(exitDirection)}
+          className="rounded-full h-16 w-16 bg-white hover:bg-slate-50 text-slate-600 border-2 border-slate-200 shadow-md transition-colors"
         >
           <span className="material-symbols-rounded text-3xl">close</span>
         </Button>
         <Button
-          onClick={onLike}
+          onClick={handleLike}
           size="lg"
-          className="rounded-full h-16 w-16 bg-teal-500 hover:bg-teal-600 text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all border-4 border-white"
+          disabled={Boolean(exitDirection)}
+          className="rounded-full h-16 w-16 bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-colors border-4 border-white"
         >
-          <span className="material-symbols-rounded text-3xl filled">favorite</span>
+          <span className="material-symbols-rounded text-3xl filled">
+            favorite
+          </span>
         </Button>
       </div>
     </div>

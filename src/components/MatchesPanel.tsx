@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,11 +17,14 @@ interface MatchesPanelProps {
   onRefresh: () => void;
 }
 
-
-
-export default function MatchesPanel({ matches, currentUserId, onRefresh }: MatchesPanelProps) {
+export default function MatchesPanel({
+  matches,
+  currentUserId,
+}: MatchesPanelProps) {
   const [selectedMatch, setSelectedMatch] = useState<Pet | null>(null);
-  const [messages, setMessages] = useState<{ [key: string]: Array<{ content: string; senderId: string; createdAt: string }> }>({});
+  const [messages, setMessages] = useState<{
+    [key: string]: Array<{ content: string; senderId: string; createdAt: string }>;
+  }>({});
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const sendingRef = useRef(false);
@@ -39,20 +42,20 @@ export default function MatchesPanel({ matches, currentUserId, onRefresh }: Matc
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           matchId,
-          content: newMessage
-        })
+          content: newMessage,
+        }),
       });
 
       if (response.ok) {
         const message = {
           content: newMessage,
           senderId: currentUserId,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
 
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          [matchId]: [...(prev[matchId] || []), message]
+          [matchId]: [...(prev[matchId] || []), message],
         }));
         setNewMessage('');
       }
@@ -69,9 +72,9 @@ export default function MatchesPanel({ matches, currentUserId, onRefresh }: Matc
     try {
       const response = await fetch(`/api/messages?matchId=${matchId}`);
       const data = await response.json();
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        [matchId]: data.messages || []
+        [matchId]: data.messages || [],
       }));
     } catch (error) {
       console.error('Error al cargar mensajes:', error);
@@ -87,24 +90,31 @@ export default function MatchesPanel({ matches, currentUserId, onRefresh }: Matc
   };
 
   const selectedMatchId = selectedMatch?.matchId || '';
-  const selectedMessages = selectedMatchId ? (messages[selectedMatchId] || []) : [];
+  const selectedMessages = selectedMatchId
+    ? messages[selectedMatchId] || []
+    : [];
 
   return (
     <div className="h-full flex flex-col">
       {!selectedMatch ? (
-        // Matches List View
         <div className="h-full">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Matches</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">Tus matches</h2>
 
           {matches.length === 0 ? (
-            <Card className="p-8 text-center">
+            <Card className="p-8 text-center border-slate-200 shadow-sm">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center">
-                  <span className="material-symbols-rounded w-8 h-8 text-rose-500">person</span>
+                <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center">
+                  <span className="material-symbols-rounded text-3xl text-teal-600">
+                    favorite
+                  </span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No matches yet</h3>
-                  <p className="text-gray-500">Start swiping to find your perfect match!</p>
+                  <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                    Aún no tienes matches
+                  </h3>
+                  <p className="text-slate-500">
+                    Empieza a explorar para encontrar compañeros.
+                  </p>
                 </div>
               </div>
             </Card>
@@ -114,30 +124,39 @@ export default function MatchesPanel({ matches, currentUserId, onRefresh }: Matc
                 {matches.map((match) => (
                   <Card
                     key={match.id}
-                    className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
+                    className="cursor-pointer hover:border-teal-200 transition-colors border-slate-200 shadow-sm"
                     onClick={() => handleSelectMatch(match)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
-                         <Avatar className="w-16 h-16">
-                           <AvatarImage asChild>
-                              <div className="relative w-full h-full">
-                                <Image
-                                  src={safeParseImages(match.images)[0] || '/placeholder.svg'}
-                                  alt={match.name}
-                                  fill
-                                  className="object-cover rounded-full"
-                                />
-                              </div>
-                           </AvatarImage>
-                          <AvatarFallback className="bg-rose-100 text-rose-600 text-lg font-semibold">
+                        <Avatar className="w-16 h-16">
+                          <AvatarImage asChild>
+                            <div className="relative w-full h-full">
+                              <Image
+                                src={
+                                  safeParseImages(match.images)[0] ||
+                                  '/placeholder.svg'
+                                }
+                                alt={match.name}
+                                fill
+                                className="object-cover rounded-full"
+                              />
+                            </div>
+                          </AvatarImage>
+                          <AvatarFallback className="bg-teal-50 text-teal-700 text-lg font-semibold">
                             {match.name?.[0] || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 truncate">{match.name}</h3>
-                          <p className="text-sm text-gray-500 truncate">{(match.bio || '').substring(0, 50)}...</p>
-                          <p className="text-xs text-rose-500 mt-1">Tap to chat</p>
+                          <h3 className="font-semibold text-slate-900 truncate">
+                            {match.name}
+                          </h3>
+                          <p className="text-sm text-slate-500 truncate">
+                            {(match.bio || '').substring(0, 50)}...
+                          </p>
+                          <p className="text-xs text-teal-700 mt-1">
+                            Toca para chatear
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -148,65 +167,84 @@ export default function MatchesPanel({ matches, currentUserId, onRefresh }: Matc
           )}
         </div>
       ) : (
-        // Chat View
         <div className="h-full flex flex-col">
           <div className="flex items-center gap-4 mb-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSelectedMatch(null)}
-              className="hover:bg-rose-100"
+              className="hover:bg-teal-50"
               aria-label="Volver a la lista de matches"
             >
-              <span className="material-symbols-rounded w-5 h-5">arrow_back</span>
+              <span className="material-symbols-rounded">arrow_back</span>
             </Button>
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10">
                 <AvatarImage asChild>
                   <div className="relative w-full h-full">
                     <Image
-                      src={safeParseImages(selectedMatch.images)[0] || '/placeholder.svg'}
+                      src={
+                        safeParseImages(selectedMatch.images)[0] ||
+                        '/placeholder.svg'
+                      }
                       alt={selectedMatch.name}
                       fill
                       className="object-cover rounded-full"
                     />
                   </div>
                 </AvatarImage>
-                <AvatarFallback className="bg-rose-100 text-rose-600 font-semibold">
+                <AvatarFallback className="bg-teal-50 text-teal-700 font-semibold">
                   {selectedMatch.name[0]}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-gray-900">{selectedMatch.name}</h3>
-                <p className="text-xs text-teal-500">Online</p>
+                <h3 className="font-semibold text-slate-900">
+                  {selectedMatch.name}
+                </h3>
+                <p className="text-xs text-teal-700">En línea</p>
               </div>
             </div>
           </div>
 
-          <Card className="flex-1 flex flex-col overflow-hidden">
+          <Card className="flex-1 flex flex-col overflow-hidden border-slate-200 shadow-sm">
             <CardContent className="p-0 flex-1 flex flex-col">
               <ScrollArea className="flex-1 p-4" aria-live="polite">
                 {selectedMessages.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
-                    <p className="text-lg">Say hi to {selectedMatch.name}! 👋</p>
+                  <div className="text-center text-slate-500 py-8">
+                    <p className="text-base">
+                      Saluda a {selectedMatch.name}
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {selectedMessages.map((msg, idx) => (
                       <div
                         key={idx}
-                        className={`flex ${msg.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${
+                          msg.senderId === currentUserId
+                            ? 'justify-end'
+                            : 'justify-start'
+                        }`}
                       >
                         <div
-                          className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+                          className={`max-w-[70%] px-4 py-2 rounded-lg ${
                             msg.senderId === currentUserId
-                              ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white'
-                              : 'bg-gray-100 text-gray-900'
+                              ? 'bg-teal-700 text-white'
+                              : 'bg-slate-100 text-slate-900'
                           }`}
                         >
                           <p className="text-sm">{msg.content}</p>
-                          <p className={`text-xs mt-1 ${msg.senderId === currentUserId ? 'text-white/70' : 'text-gray-500'}`}>
-                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <p
+                            className={`text-xs mt-1 ${
+                              msg.senderId === currentUserId
+                                ? 'text-white/70'
+                                : 'text-slate-500'
+                            }`}
+                          >
+                            {new Date(msg.createdAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </p>
                         </div>
                       </div>
@@ -215,22 +253,24 @@ export default function MatchesPanel({ matches, currentUserId, onRefresh }: Matc
                 )}
               </ScrollArea>
 
-              <div className="p-4 border-t border-gray-100">
+              <div className="p-4 border-t border-slate-100">
                 <div className="flex gap-2">
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type a message..."
-                    className="flex-1"
+                    placeholder="Escribe un mensaje..."
+                    className="flex-1 rounded-lg"
                     disabled={sending}
                   />
                   <Button
                     onClick={handleSendMessage}
-                    className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
+                    className="bg-teal-700 hover:bg-teal-800 rounded-lg"
                     disabled={!newMessage.trim() || sending}
                   >
-                    <span className="material-symbols-rounded w-4 h-4">{sending ? 'pending' : 'send'}</span>
+                    <span className="material-symbols-rounded">
+                      {sending ? 'pending' : 'send'}
+                    </span>
                   </Button>
                 </div>
               </div>

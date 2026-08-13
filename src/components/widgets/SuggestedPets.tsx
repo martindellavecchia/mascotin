@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
 
 interface SuggestedPet {
     id: string;
@@ -66,9 +67,9 @@ export default function SuggestedPets({ selectedPetId }: SuggestedPetsProps) {
             const data = await res.json();
             if (data.success) {
                 if (isLike && data.matched) {
-                    toast.success('🎉 ¡Match! Conectaste con esta mascota');
+                    toast.success('¡Match! Conectaste con esta mascota');
                 } else if (isLike) {
-                    toast.success('❤️ Like enviado');
+                    toast.success('Like enviado');
                 }
                 // Remove from suggestions
                 setSuggestions(prev => prev.filter(p => p.id !== toPetId));
@@ -80,10 +81,6 @@ export default function SuggestedPets({ selectedPetId }: SuggestedPetsProps) {
         } finally {
             setActionPetId(null);
         }
-    };
-
-    const getPetEmoji = (petType: string) => {
-        return petType === 'dog' ? '🐕' : petType === 'cat' ? '🐱' : '🐾';
     };
 
     if (loading) {
@@ -145,22 +142,24 @@ export default function SuggestedPets({ selectedPetId }: SuggestedPetsProps) {
                                 {pet.image ? (
                                     <AvatarImage src={pet.image} alt={pet.name} />
                                 ) : (
-                                    <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white text-lg">
-                                        {getPetEmoji(pet.petType)}
+                                    <AvatarFallback className="bg-teal-600 text-white">
+                                        <span className="material-symbols-rounded text-xl filled">
+                                            {getPetTypeIcon(pet.petType)}
+                                        </span>
                                     </AvatarFallback>
                                 )}
                             </Avatar>
-                            {/* Pet Type Badge */}
-                            <span className="absolute -bottom-1 -right-1 text-sm bg-white rounded-full shadow-sm border border-slate-100 w-5 h-5 flex items-center justify-center">
-                                {getPetEmoji(pet.petType)}
+                            <span className="absolute -bottom-1 -right-1 bg-white rounded-full shadow-sm border border-slate-100 w-5 h-5 flex items-center justify-center">
+                                <span className="material-symbols-rounded text-[12px] text-teal-700">
+                                    {getPetTypeIcon(pet.petType)}
+                                </span>
                             </span>
                         </div>
 
-                        {/* Pet Info */}
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm text-slate-800 truncate">{pet.name}</p>
                             <p className="text-xs text-slate-500 truncate">
-                                {pet.breed || pet.petType} • {pet.matchReason}
+                                {pet.breed || getPetTypeLabel(pet.petType)} • {pet.matchReason}
                             </p>
                         </div>
 
@@ -182,7 +181,7 @@ export default function SuggestedPets({ selectedPetId }: SuggestedPetsProps) {
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="text-pink-500 hover:bg-pink-50 hover:text-pink-600 transition-all h-8 w-8"
+                                className="text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition-all h-8 w-8"
                                 onClick={() => handleSwipe(pet.id, true)}
                                 disabled={actionPetId === pet.id}
                                 title="Me gusta"

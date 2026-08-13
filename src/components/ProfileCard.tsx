@@ -26,7 +26,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
     <Card className="overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow duration-300">
       <CardContent className="p-0">
         {/* Image Section */}
-        <div className="relative w-full aspect-[3/4] overflow-hidden bg-gradient-to-br from-rose-100 to-pink-100">
+        <div className="relative w-full aspect-[3/4] overflow-hidden bg-teal-50">
           <Image
             src={mainImage}
             alt={profile.name}
@@ -60,14 +60,14 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-600 font-medium">
                 <span className="material-symbols-rounded w-4 h-4">local_offer</span>
-                <span className="text-sm">Interests</span>
+                <span className="text-sm">Intereses</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {interests.map((interest: string, index: number) => (
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="bg-rose-100 text-rose-700 hover:bg-rose-200"
+                    className="bg-teal-50 text-teal-800 hover:bg-teal-100"
                   >
                     {interest.trim()}
                   </Badge>

@@ -139,7 +139,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess }: LostPetFo
                             <SelectContent>
                                 {pets.map(pet => (
                                     <SelectItem key={pet.id} value={pet.id}>
-                                        {pet.petType === 'dog' ? '🐕' : '🐱'} {pet.name}
+                                        {pet.name}
                                     </SelectItem>
                                 ))}
                                 <SelectItem value="_none">No es mi mascota / Otra</SelectItem>

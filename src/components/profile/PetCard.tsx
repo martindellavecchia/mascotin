@@ -88,15 +88,16 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="h-8 w-8 bg-white/90 hover:bg-white text-rose-500 rounded-full shadow-sm backdrop-blur-sm"
+                        className="h-8 w-8 bg-white/90 hover:bg-white text-red-600 rounded-full shadow-sm backdrop-blur-sm"
                         onClick={() => onDelete(pet)}
                     >
                         <span className="material-symbols-rounded text-sm">delete</span>
                     </Button>
                 </div>
                 <div className="absolute bottom-3 left-3 flex gap-2">
-                    <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white">
-                        {pet.petType === 'dog' ? '🐕' : pet.petType === 'cat' ? '🐱' : '🐾'} {pet.petType}
+                    <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1">
+                        <span className="material-symbols-rounded text-sm text-teal-700">pets</span>
+                        {pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Otro'}
                     </Badge>
                     {pet.breed && (
                         <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white">

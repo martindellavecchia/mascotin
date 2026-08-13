@@ -131,7 +131,7 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
                             disabled={loading}
                             className="bg-teal-500 hover:bg-teal-600 text-white px-8"
                         >
-                            {loading ? 'Creando...' : 'Finalizar! 🎉'}
+                            {loading ? 'Creando...' : 'Finalizar'}
                         </Button>
                     )}
                 </div>

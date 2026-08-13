@@ -67,10 +67,10 @@ describe('Header', () => {
       expect(screen.getByText(/mascotin/i)).toBeInTheDocument();
     });
 
-    it('renders dashboard link', () => {
+    it('renders home link', () => {
       render(<Header session={mockSession} />);
 
-      expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /inicio/i })).toBeInTheDocument();
     });
 
     it('renders community link', () => {

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Pet } from '@/types';
 import Image from 'next/image';
 import { safeParseImages, safeParseActivities } from '@/lib/utils';
+import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
 
 interface PetCardProps {
   pet: Pet;
@@ -19,15 +20,6 @@ export default function PetCard({ pet }: PetCardProps) {
    const showImage = mainImage && mainImage.startsWith('http');
 
      const activities = Array.isArray(pet.activities) ? pet.activities : safeParseActivities(pet.activities);
-
-   const getPetIcon = () => {
-    switch (pet.petType) {
-      case 'dog': return '🐕';
-      case 'cat': return '🐱';
-      case 'bird': return '🐦';
-      default: return '🐾';
-    }
-  };
 
   const getEnergyColor = () => {
      switch (pet.energy) {
@@ -49,10 +41,9 @@ export default function PetCard({ pet }: PetCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow duration-300">
+    <Card className="overflow-hidden shadow-md border-slate-200">
       <CardContent className="p-0">
-        {/* Image Section */}
-         <div className="relative w-full aspect-[3/4] overflow-hidden bg-gradient-to-br from-primary/20 to-teal-500/20">
+         <div className="relative w-full aspect-[3/4] overflow-hidden bg-slate-100">
           {showImage ? (
             <Image
               src={mainImage}
@@ -67,15 +58,21 @@ export default function PetCard({ pet }: PetCardProps) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="material-symbols-rounded text-6xl">pets</span>
+              <span className="material-symbols-rounded text-6xl text-teal-600">
+                {getPetTypeIcon(pet.petType)}
+              </span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-          {/* Pet Icon and Name Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
             <div className="flex items-center gap-3 mb-2">
-              <div><span className="material-symbols-rounded text-4xl" aria-label={`Tipo de mascota: ${pet.petType === 'dog' ? 'perro' : pet.petType === 'cat' ? 'gato' : pet.petType === 'bird' ? 'ave' : 'mascota'}`} role="img">pets</span></div>
+              <span
+                className="material-symbols-rounded text-3xl filled"
+                aria-label={`Tipo de mascota: ${getPetTypeLabel(pet.petType)}`}
+              >
+                {getPetTypeIcon(pet.petType)}
+              </span>
               <h2 className="text-3xl font-bold">
                 {pet.name}, {pet.age}
               </h2>
@@ -86,11 +83,10 @@ export default function PetCard({ pet }: PetCardProps) {
             </div>
           </div>
 
-           {/* Level Badge */}
-           <div className="absolute top-4 right-4 bg-gradient-to-br from-warning to-amber-700 text-white px-3 py-1 rounded-full shadow-lg">
+           <div className="absolute top-4 right-4 bg-slate-900/70 text-white px-3 py-1 rounded-lg">
             <div className="flex items-center gap-1">
               <span className="material-symbols-rounded text-sm">emoji_events</span>
-              <span className="font-bold text-sm">Nivel {pet.level}</span>
+              <span className="font-semibold text-sm">Nivel {pet.level}</span>
             </div>
           </div>
         </div>
@@ -147,7 +143,8 @@ export default function PetCard({ pet }: PetCardProps) {
            <div className="flex gap-2 pt-2 border-t border-border-light dark:border-border-dark">
              {pet.vaccinated && (
                <Badge variant="secondary" className="bg-success/20 text-success-foreground text-xs">
-                 💉 Vacunado
+                 <span className="material-symbols-rounded text-xs mr-1">vaccines</span>
+                 Vacunado
                </Badge>
              )}
             {pet.neutered && (

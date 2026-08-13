@@ -2,6 +2,7 @@
 import type { Pet } from '@/types';
 import Image from 'next/image';
 import { safeParseImages } from '@/lib/utils';
+import { getPetTypeIcon } from '@/lib/petTypeIcon';
 
 interface PetSelectorProps {
   pets: Pet[];
@@ -33,15 +34,6 @@ function getFirstImage(imagesJson: string | null | undefined): string {
 }
 
 export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew }: PetSelectorProps) {
-  const getPetIcon = (petType: string) => {
-    switch (petType) {
-      case 'dog': return '🐕';
-      case 'cat': return '🐱';
-      case 'bird': return '🐦';
-      default: return '🐾';
-    }
-  };
-
   if (pets.length === 0) {
     return (
       <div className="bg-gradient-to-r from-secondary to-white border border-border rounded-xl p-4 text-center shadow-sm">
@@ -97,7 +89,9 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
                       }}
                     />
                   ) : (
-                    <span className="material-symbols-rounded text-4xl">pets</span>
+                    <span className="material-symbols-rounded text-4xl text-teal-600">
+                      {getPetTypeIcon(pet.petType)}
+                    </span>
                   )}
                 </div>
 

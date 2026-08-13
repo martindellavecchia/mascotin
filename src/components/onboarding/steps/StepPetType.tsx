@@ -1,8 +1,8 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { getPetTypeIcon } from '@/lib/petTypeIcon';
 
 interface StepPetTypeProps {
     value: string;
@@ -11,37 +11,41 @@ interface StepPetTypeProps {
 
 export default function StepPetType({ value, onChange }: StepPetTypeProps) {
     const types = [
-        { id: 'dog', label: 'Perro', emoji: '🐕', color: 'bg-blue-50 border-blue-200 hover:border-blue-400' },
-        { id: 'cat', label: 'Gato', emoji: '🐱', color: 'bg-orange-50 border-orange-200 hover:border-orange-400' },
-        { id: 'bird', label: 'Ave', emoji: '🐦', color: 'bg-yellow-50 border-yellow-200 hover:border-yellow-400' },
-        { id: 'other', label: 'Otro', emoji: '🐾', color: 'bg-gray-50 border-gray-200 hover:border-gray-400' },
+        { id: 'dog', label: 'Perro', color: 'bg-teal-50 border-teal-200 hover:border-teal-500' },
+        { id: 'cat', label: 'Gato', color: 'bg-slate-50 border-slate-200 hover:border-teal-500' },
+        { id: 'bird', label: 'Ave', color: 'bg-slate-50 border-slate-200 hover:border-teal-500' },
+        { id: 'other', label: 'Otro', color: 'bg-slate-50 border-slate-200 hover:border-teal-500' },
     ];
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Empecemos!</h2>
-                <p className="text-gray-600">¿Qué tipo de mascota tienes?</p>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Empecemos</h2>
+                <p className="text-slate-600">¿Qué tipo de mascota tienes?</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 {types.map((type) => (
                     <motion.button
                         key={type.id}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => onChange(type.id)}
                         className={cn(
-                            "relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all h-40",
+                            "relative flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all h-40",
                             type.color,
-                            value === type.id ? 'ring-2 ring-teal-500 ring-offset-2 border-transparent scale-105 shadow-md' : 'opacity-80 hover:opacity-100'
+                            value === type.id
+                              ? 'ring-2 ring-teal-600 ring-offset-2 border-teal-600 shadow-sm'
+                              : 'opacity-90 hover:opacity-100'
                         )}
                     >
-                        <span className="text-5xl mb-3">{type.emoji}</span>
-                        <span className="font-bold text-gray-700">{type.label}</span>
+                        <span className="material-symbols-rounded text-5xl mb-3 text-teal-700">
+                          {getPetTypeIcon(type.id)}
+                        </span>
+                        <span className="font-semibold text-slate-800">{type.label}</span>
                         {value === type.id && (
-                            <div className="absolute top-3 right-3 bg-teal-500 text-white rounded-full p-1">
-                                <span className="material-symbols-rounded text-sm font-bold">check</span>
+                            <div className="absolute top-3 right-3 bg-teal-600 text-white rounded-full p-1">
+                                <span className="material-symbols-rounded text-sm">check</span>
                             </div>
                         )}
                     </motion.button>

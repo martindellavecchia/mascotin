@@ -14,8 +14,8 @@ export function StatsCard({ petsCount, matchesCount }: StatsCardProps) {
                         <p className="text-2xl font-bold text-teal-600">{petsCount}</p>
                         <p className="text-xs text-gray-500">Mascotas</p>
                     </div>
-                    <div className="p-3 bg-rose-50 rounded-xl">
-                        <p className="text-2xl font-bold text-rose-500">{matchesCount}</p>
+                    <div className="p-3 bg-slate-50 rounded-xl">
+                        <p className="text-2xl font-bold text-teal-700">{matchesCount}</p>
                         <p className="text-xs text-gray-500">Matches</p>
                     </div>
                 </div>

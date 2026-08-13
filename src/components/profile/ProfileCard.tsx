@@ -39,13 +39,15 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
                 </div>
                 <div className="flex flex-wrap justify-center gap-2 mt-4">
                     {owner.hasYard && (
-                        <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100">
-                            🏡 Tiene patio
+                        <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 gap-1">
+                            <span className="material-symbols-rounded text-sm">yard</span>
+                            Tiene patio
                         </Badge>
                     )}
                     {owner.hasOtherPets && (
-                        <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100">
-                            🐾 Otras mascotas
+                        <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 gap-1">
+                            <span className="material-symbols-rounded text-sm">pets</span>
+                            Otras mascotas
                         </Badge>
                     )}
                 </div>

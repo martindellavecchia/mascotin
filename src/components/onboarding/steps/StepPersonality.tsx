@@ -5,18 +5,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface StepPersonalityProps {
-    data: any;
-    updateData: (data: any) => void;
+    data: {
+      energy?: string;
+      activities?: string[];
+      bio?: string;
+      [key: string]: unknown;
+    };
+    updateData: (data: Record<string, unknown>) => void;
 }
 
 export default function StepPersonality({ data, updateData }: StepPersonalityProps) {
     const activitiesList = [
-        { id: 'walk', label: 'Pasear', emoji: '🚶' },
-        { id: 'play', label: 'Jugar', emoji: '🎾' },
-        { id: 'fetch', label: 'Buscar', emoji: '🦴' },
-        { id: 'swim', label: 'Nadar', emoji: '🏊' },
-        { id: 'nap', label: 'Dormir', emoji: '💤' },
-        { id: 'socialize', label: 'Socializar', emoji: '🐕' },
+        { id: 'walk', label: 'Pasear', icon: 'directions_walk' },
+        { id: 'play', label: 'Jugar', icon: 'sports_tennis' },
+        { id: 'fetch', label: 'Buscar', icon: 'toys' },
+        { id: 'swim', label: 'Nadar', icon: 'pool' },
+        { id: 'nap', label: 'Dormir', icon: 'bedtime' },
+        { id: 'socialize', label: 'Socializar', icon: 'groups' },
     ];
 
     const toggleActivity = (id: string) => {
@@ -31,37 +36,38 @@ export default function StepPersonality({ data, updateData }: StepPersonalityPro
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Personalidad</h2>
-                <p className="text-sm text-gray-500">¿Cómo es en el día a día?</p>
+                <h2 className="text-xl font-bold text-slate-900">Personalidad</h2>
+                <p className="text-sm text-slate-500">¿Cómo es en el día a día?</p>
             </div>
 
             <div className="space-y-2">
-                <Label>Nivel de Energía</Label>
+                <Label>Nivel de energía</Label>
                 <Select value={data.energy} onValueChange={(val) => updateData({ energy: val })}>
                     <SelectTrigger>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="low">😴 Baja (Tranquilo)</SelectItem>
-                        <SelectItem value="medium">🙂 Media (Equilibrado)</SelectItem>
-                        <SelectItem value="high">⚡ Alta (Inquieto)</SelectItem>
+                        <SelectItem value="low">Baja (tranquilo)</SelectItem>
+                        <SelectItem value="medium">Media (equilibrado)</SelectItem>
+                        <SelectItem value="high">Alta (inquieto)</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
             <div className="space-y-2">
-                <Label>Actividades Favoritas</Label>
+                <Label>Actividades favoritas</Label>
                 <div className="grid grid-cols-3 gap-2">
                     {activitiesList.map(act => (
                         <button
                             key={act.id}
+                            type="button"
                             onClick={() => toggleActivity(act.id)}
                             className={`p-2 rounded-lg border text-sm flex flex-col items-center gap-1 transition-all ${data.activities?.includes(act.id)
-                                    ? 'bg-teal-50 border-teal-500 text-teal-700'
-                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                    ? 'bg-teal-50 border-teal-600 text-teal-700'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                                 }`}
                         >
-                            <span className="text-xl">{act.emoji}</span>
+                            <span className="material-symbols-rounded text-xl text-teal-700">{act.icon}</span>
                             <span>{act.label}</span>
                         </button>
                     ))}
@@ -69,7 +75,7 @@ export default function StepPersonality({ data, updateData }: StepPersonalityPro
             </div>
 
             <div className="space-y-2">
-                <Label>Biografía Corta</Label>
+                <Label>Biografía corta</Label>
                 <Textarea
                     placeholder="Le gusta perseguir mariposas y dormir al sol..."
                     value={data.bio}

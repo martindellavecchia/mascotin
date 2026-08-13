@@ -120,7 +120,7 @@ export default function LostPetWidget() {
                                     <AvatarImage src={image} className="object-cover" />
                                 ) : (
                                     <AvatarFallback className="bg-red-100 text-red-600 text-xl rounded-lg">
-                                        🐾
+                                        <span className="material-symbols-rounded text-teal-700">pets</span>
                                     </AvatarFallback>
                                 )}
                             </Avatar>

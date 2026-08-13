@@ -45,14 +45,15 @@ export function normalizeImages(images: string | string[] | null | undefined): s
     return parseImages(images).filter(Boolean);
 }
 
+/** @deprecated Use getPetTypeIcon from @/lib/petTypeIcon */
 export function getPetEmoji(petType: string): string {
     switch (petType) {
-        case 'dog': return '🐕';
-        case 'cat': return '🐱';
-        case 'bird': return '🐦';
-        case 'fish': return '🐠';
-        case 'rabbit': return '🐰';
-        default: return '🐾';
+        case 'dog': return 'dog';
+        case 'cat': return 'cat';
+        case 'bird': return 'bird';
+        case 'fish': return 'fish';
+        case 'rabbit': return 'rabbit';
+        default: return 'pet';
     }
 }
 

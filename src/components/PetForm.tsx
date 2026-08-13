@@ -237,10 +237,10 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="dog">🐕 Perro</SelectItem>
-                    <SelectItem value="cat">🐱 Gato</SelectItem>
-                    <SelectItem value="bird">🐦 Pájaro</SelectItem>
-                    <SelectItem value="other">🐾 Otro</SelectItem>
+                    <SelectItem value="dog">Perro</SelectItem>
+                    <SelectItem value="cat">Gato</SelectItem>
+                    <SelectItem value="bird">Ave</SelectItem>
+                    <SelectItem value="other">Otro</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -451,18 +451,18 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
           <Label className="text-gray-700 font-medium">Actividades Favoritas</Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
-              { id: 'walk', label: 'Pasear', emoji: '🚶' },
-              { id: 'play', label: 'Jugar', emoji: '🎾' },
-              { id: 'fetch', label: 'Buscar', emoji: '🦴' },
-              { id: 'swim', label: 'Nadar', emoji: '🏊' },
-              { id: 'socialize', label: 'Socializar', emoji: '🐕' },
-              { id: 'groom', label: 'Aseo', emoji: '✨' },
-              { id: 'training', label: 'Entrenar', emoji: '🎓' }
+              { id: 'walk', label: 'Pasear', icon: 'directions_walk' },
+              { id: 'play', label: 'Jugar', icon: 'sports_tennis' },
+              { id: 'fetch', label: 'Buscar', icon: 'toys' },
+              { id: 'swim', label: 'Nadar', icon: 'pool' },
+              { id: 'socialize', label: 'Socializar', icon: 'groups' },
+              { id: 'groom', label: 'Aseo', icon: 'content_cut' },
+              { id: 'training', label: 'Entrenar', icon: 'school' }
             ].map((activity) => (
               <label
                 key={activity.id}
                 className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${form.watch('activities')?.includes(activity.id as ActivityOption)
-                  ? 'bg-teal-50 border-emerald-300 text-teal-700'
+                  ? 'bg-teal-50 border-teal-300 text-teal-700'
                   : 'bg-white border-gray-200 hover:border-gray-300 text-gray-700'
                   }`}
               >
@@ -480,7 +480,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                   }}
                   className="w-4 h-4 rounded border-gray-300 accent-teal-500"
                 />
-                <span className="text-lg">{activity.emoji}</span>
+                <span className="material-symbols-rounded text-lg text-teal-700">{activity.icon}</span>
                 <span className="text-sm font-medium">{activity.label}</span>
               </label>
             ))}
@@ -490,7 +490,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
 
         <div>
           <Label>Imágenes ({images.length}/6)</Label>
-          <p className="text-xs text-gray-500 mb-2">Haz clic en ⭐ para seleccionar la foto de perfil</p>
+          <p className="text-xs text-gray-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
           <div className="mt-2 grid grid-cols-3 gap-4">
             {images.map((image, index) => (
               <div

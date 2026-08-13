@@ -92,7 +92,7 @@ export default function HeaderUserMenu({ session }: HeaderUserMenuProps) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/admin')}>
-              <span className="material-symbols-rounded mr-2 text-purple-500">
+              <span className="material-symbols-rounded mr-2 text-teal-600">
                 admin_panel_settings
               </span>
               Panel Admin

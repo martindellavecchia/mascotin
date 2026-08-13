@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
 import type { HomeStatsData } from '@/lib/server/home';
 
 interface HomeStatsProps {
@@ -10,59 +9,44 @@ interface HomeStatsProps {
 export default function HomeStats({ stats }: HomeStatsProps) {
   const statItems = [
     {
-      label: 'Mis Mascotas',
+      label: 'Mascotas',
       value: stats.totalPets,
       icon: 'pets',
-      color: 'text-teal-500',
-      bgColor: 'bg-teal-50',
     },
     {
       label: 'Matches',
       value: stats.totalMatches,
       icon: 'favorite',
-      color: 'text-rose-500',
-      bgColor: 'bg-rose-50',
     },
     {
       label: 'Swipes',
       value: stats.totalSwipes,
       icon: 'swipe',
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-50',
     },
     {
-      label: 'Likes Recibidos',
+      label: 'Likes',
       value: stats.likesReceived,
       icon: 'star',
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {statItems.map((item, index) => (
-        <Card
+    <div className="hidden sm:grid grid-cols-4 gap-3">
+      {statItems.map((item) => (
+        <div
           key={item.label}
-          className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 bg-white shadow-sm"
-          style={{ animationDelay: `${index * 100}ms` }}
+          className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5"
         >
-          <CardContent className="p-5 flex items-center gap-4">
-            <div
-              className={`p-3 rounded-2xl ${item.bgColor} group-hover:scale-110 transition-transform duration-300`}
-            >
-              <span
-                className={`material-symbols-rounded text-2xl ${item.color}`}
-              >
-                {item.icon}
-              </span>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-gray-800">{item.value}</p>
-              <p className="text-sm text-gray-500 font-medium">{item.label}</p>
-            </div>
-          </CardContent>
-        </Card>
+          <span className="material-symbols-rounded text-xl text-teal-600">
+            {item.icon}
+          </span>
+          <div className="min-w-0">
+            <p className="text-lg font-semibold text-slate-900 leading-none">
+              {item.value}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">{item.label}</p>
+          </div>
+        </div>
       ))}
     </div>
   );

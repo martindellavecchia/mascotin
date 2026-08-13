@@ -23,7 +23,7 @@ const COLOR_MAP: Record<string, string> = {
   COMMENT: 'text-teal-500',
   LIKE: 'text-orange-500',
   APPOINTMENT: 'text-green-500',
-  EVENT_ATTEND: 'text-purple-500',
+  EVENT_ATTEND: 'text-teal-600',
   PROVIDER_REQUEST: 'text-amber-600',
   GROUP_JOIN: 'text-cyan-500',
 };

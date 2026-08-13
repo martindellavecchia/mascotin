@@ -1,9 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
 import Header from '@/components/Header';
 import HomeClientShell from '@/components/home/HomeClientShell';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { authOptions } from '@/lib/auth';
 import { getFeedPage } from '@/lib/server/feed';
@@ -12,34 +12,81 @@ import type { Post } from '@/types';
 
 function GuestHome() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="material-symbols-rounded text-5xl text-white filled">
-              pets
+    <div className="min-h-screen bg-slate-950 text-white">
+      <section className="relative min-h-[100svh] flex flex-col">
+        <Image
+          src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1920&h=1080&fit=crop"
+          alt="Dos perros jugando al aire libre"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/30" />
+
+        <header className="relative z-10 px-6 sm:px-10 pt-6 sm:pt-8">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
+              <span className="material-symbols-rounded text-white text-2xl filled">
+                pets
+              </span>
+            </div>
+            <span className="text-2xl sm:text-3xl font-bold tracking-tight">
+              MascoTin
             </span>
           </div>
+        </header>
+
+        <div className="relative z-10 flex-1 flex flex-col justify-end px-6 sm:px-10 pb-16 sm:pb-20 max-w-3xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-4 animate-fade-in">
+            Compañía real para tu mascota
+          </h1>
+          <p className="text-lg sm:text-xl text-white/85 max-w-xl mb-8 leading-relaxed">
+            Empareja, comparte en comunidad y encuentra servicios — todo en un solo lugar.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              asChild
+              className="h-12 px-8 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold text-base"
+            >
+              <Link href="/register">Crear cuenta</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-12 px-8 rounded-lg border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white font-semibold text-base"
+            >
+              <Link href="/login">Iniciar sesión</Link>
+            </Button>
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">
-          Bienvenido a MascoTin
-        </h2>
-        <p className="text-slate-600 mb-6">
-          Inicia sesión para encontrar amigos peludos para tu mascota
-        </p>
-        <Button asChild className="w-full bg-teal-600 hover:bg-teal-700">
-          <Link href="/login">Iniciar Sesión</Link>
-        </Button>
-        <p className="mt-4 text-sm text-slate-600">
-          ¿No tienes cuenta?{' '}
-          <Link
-            href="/register"
-            className="text-rose-500 hover:underline font-semibold"
-          >
-            Regístrate
-          </Link>
-        </p>
-      </Card>
+      </section>
+
+      <section className="relative bg-slate-50 text-slate-900">
+        <div className="container mx-auto px-6 sm:px-10 py-16 sm:py-20 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Un espacio pensado para dueños y mascotas
+            </h2>
+            <p className="text-slate-600 text-lg leading-relaxed">
+              Descubre perfiles cercanos, conversa tras un match y participa en una
+              comunidad que entiende el día a día con animales.
+            </p>
+          </div>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+            <Image
+              src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&h=900&fit=crop"
+              alt="Persona con su perro en casa"
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+        <footer className="border-t border-slate-200 py-6">
+          <div className="container mx-auto px-6 text-center text-slate-500 text-sm">
+            © {new Date().getFullYear()} MascoTin
+          </div>
+        </footer>
+      </section>
     </div>
   );
 }
@@ -49,24 +96,20 @@ function HomeError({ session }: { session: Session }) {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header session={session} />
       <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-md shadow-2xl p-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="material-symbols-rounded text-4xl text-white filled">
-                error
-              </span>
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">
+        <div className="w-full max-w-md text-center px-4">
+          <span className="material-symbols-rounded text-5xl text-slate-400 mb-4">
+            error
+          </span>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
             Error al cargar
           </h2>
           <p className="text-slate-600 mb-6">
             No se pudieron cargar tus mascotas. Intenta recargar la página.
           </p>
-          <Button asChild className="w-full bg-teal-600 hover:bg-teal-700">
+          <Button asChild className="bg-teal-700 hover:bg-teal-800 rounded-lg">
             <Link href="/">Reintentar</Link>
           </Button>
-        </Card>
+        </div>
       </main>
     </div>
   );
@@ -77,32 +120,28 @@ function NoPetsHome({ session }: { session: Session }) {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header session={session} />
       <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-md shadow-2xl p-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="material-symbols-rounded text-4xl text-white filled">
-                pets
-              </span>
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">
-            ¡Registra tu Primera Mascota!
+        <div className="w-full max-w-md text-center px-4">
+          <span className="material-symbols-rounded text-5xl text-teal-600 mb-4 filled">
+            pets
+          </span>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
+            Registra tu primera mascota
           </h2>
           <p className="text-slate-600 mb-6">
             Para comenzar a encontrar amigos para tu mascota, primero necesitas
             registrarla.
           </p>
-          <Button asChild className="w-full bg-teal-600 hover:bg-teal-700">
+          <Button asChild className="bg-teal-700 hover:bg-teal-800 rounded-lg">
             <Link href="/create-pet">
-              <span className="material-symbols-rounded mr-2">add_circle</span>
-              Registrar Mascota
+              <span className="material-symbols-rounded mr-2">add</span>
+              Registrar mascota
             </Link>
           </Button>
-        </Card>
+        </div>
       </main>
-      <footer className="bg-white border-t border-slate-200 py-4 mt-auto">
+      <footer className="border-t border-slate-200 py-4 mt-auto">
         <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
-          <p>MascoTin - Conecta y cuida mejor a tu mascota.</p>
+          <p>MascoTin — Conecta y cuida mejor a tu mascota.</p>
         </div>
       </footer>
     </div>

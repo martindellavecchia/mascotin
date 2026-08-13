@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import Image from 'next/image';
 import { passwordSchema } from '@/lib/schemas';
 
 export default function RegisterPage() {
@@ -29,10 +29,12 @@ export default function RegisterPage() {
     setEmailAvailable(null);
 
     try {
-      const response = await fetch(`/api/register/check-email?email=${encodeURIComponent(email)}`);
+      const response = await fetch(
+        `/api/register/check-email?email=${encodeURIComponent(email)}`
+      );
       const data = await response.json();
       setEmailAvailable(data.available);
-    } catch (error) {
+    } catch {
       setEmailAvailable(null);
     } finally {
       setCheckingEmail(false);
@@ -43,7 +45,8 @@ export default function RegisterPage() {
     if (password.length === 0) return 0;
     if (password.length < 6) return 1;
     if (password.length < 8) return 2;
-    if (/[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password)) return 4;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password))
+      return 4;
     return 3;
   };
 
@@ -57,7 +60,9 @@ export default function RegisterPage() {
 
     const passwordCheck = passwordSchema.safeParse(formData.password);
     if (!passwordCheck.success) {
-      toast.error(passwordCheck.error.issues[0]?.message || 'La contraseña no es válida');
+      toast.error(
+        passwordCheck.error.issues[0]?.message || 'La contraseña no es válida'
+      );
       return;
     }
 
@@ -82,12 +87,12 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('¡Cuenta creada exitosamente! Ahora inicia sesión.');
+        toast.success('Cuenta creada. Ahora inicia sesión.');
         router.push('/login');
       } else {
         toast.error(data.error || 'Error al crear cuenta');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al crear cuenta');
     } finally {
       setLoading(false);
@@ -96,252 +101,214 @@ export default function RegisterPage() {
 
   const passwordStrength = getPasswordStrength(formData.password);
   const strengthLabels = ['', 'Débil', 'Media', 'Fuerte', 'Muy fuerte'];
-  const strengthColors = ['bg-slate-200', 'bg-red-500', 'bg-amber-500', 'bg-teal-500', 'bg-emerald-500'];
+  const strengthColors = [
+    'bg-slate-200',
+    'bg-red-500',
+    'bg-amber-500',
+    'bg-teal-600',
+    'bg-teal-700',
+  ];
 
   return (
     <div className="flex min-h-screen w-full flex-row">
-      {/* Left Column: Form Section */}
       <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-12 lg:px-20 xl:px-24 bg-slate-50 relative">
-        {/* Header Logo */}
-        <header className="absolute top-0 left-0 w-full p-6 sm:p-8 lg:p-10 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-3 text-slate-800 cursor-pointer group">
-            <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600 group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300">
-              <span className="material-symbols-rounded text-2xl">pets</span>
+        <header className="absolute top-0 left-0 w-full p-6 sm:p-8 lg:p-10">
+          <Link href="/" className="flex items-center gap-2.5 text-slate-900">
+            <div className="flex items-center justify-center size-10 rounded-lg bg-teal-600 text-white">
+              <span className="material-symbols-rounded text-2xl filled">pets</span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
+            <span className="text-xl font-bold tracking-tight">MascoTin</span>
           </Link>
         </header>
 
-        <div className="w-full max-w-[440px] mx-auto mt-16 sm:mt-0">
-          {/* Headings */}
-          <div className="mb-8 space-y-3">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-800 leading-[1.15]">
-              Únete a nuestra <span className="text-teal-500">comunidad</span>
+        <div className="w-full max-w-[420px] mx-auto mt-16 sm:mt-0">
+          <div className="mb-8 space-y-2">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
+              Crea tu cuenta
             </h1>
-            <p className="text-slate-600 text-base font-medium leading-relaxed">
-              Conecta con los mejores cuidadores y servicios para el bienestar integral de tu mascota.
+            <p className="text-slate-600 text-base leading-relaxed">
+              Regístrate para emparejar mascotas, unirte a la comunidad y descubrir servicios.
             </p>
           </div>
 
-          {/* Register Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Name Input */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="fullname">Nombre completo</label>
-              <div className="relative">
-                <Input
-                  id="fullname"
-                  type="text"
-                  placeholder="Ej. María Pérez"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  disabled={loading}
-                  className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  <span className="material-symbols-rounded">person</span>
-                </span>
-              </div>
+              <label className="text-sm font-medium text-slate-700" htmlFor="name">
+                Nombre completo
+              </label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Ej. María Pérez"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                disabled={loading}
+                className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 text-base focus-visible:ring-teal-600/30"
+              />
             </div>
 
-            {/* Email Input */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="email">Correo electrónico</label>
-              <div className="relative">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="hola@mascotin.com"
-                  value={formData.email}
-                  onChange={(e) => {
-                    setFormData({ ...formData, email: e.target.value });
-                    checkEmailAvailability(e.target.value);
-                  }}
-                  required
-                  disabled={loading}
-                  className={`w-full rounded-2xl bg-white border h-14 px-4 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none ${emailAvailable === false ? 'border-red-500' : emailAvailable === true ? 'border-teal-500' : 'border-slate-200'
-                    }`}
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  <span className="material-symbols-rounded">mail</span>
-                </span>
-              </div>
+              <label className="text-sm font-medium text-slate-700" htmlFor="email">
+                Correo electrónico
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="hola@mascotin.com"
+                value={formData.email}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  checkEmailAvailability(e.target.value);
+                }}
+                required
+                disabled={loading}
+                className={`w-full rounded-lg bg-white border h-12 px-4 text-base focus-visible:ring-teal-600/30 ${
+                  emailAvailable === false
+                    ? 'border-red-500'
+                    : emailAvailable === true
+                      ? 'border-teal-600'
+                      : 'border-slate-200'
+                }`}
+              />
               {checkingEmail && (
-                <p className="text-xs text-slate-500 mt-1 ml-1">Verificando email...</p>
+                <p className="text-xs text-slate-500">Verificando email...</p>
               )}
               {emailAvailable === false && (
-                <p className="text-xs text-red-500 mt-1 ml-1">Este email ya está registrado</p>
+                <p className="text-xs text-red-600">Este email ya está registrado</p>
               )}
               {emailAvailable === true && (
-                <p className="text-xs text-teal-500 mt-1 ml-1">✓ Email disponible</p>
+                <p className="text-xs text-teal-700">Email disponible</p>
               )}
             </div>
 
-            {/* Password Input */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="password">Contraseña</label>
+              <label className="text-sm font-medium text-slate-700" htmlFor="password">
+                Contraseña
+              </label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   required
                   disabled={loading}
-                  className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 pr-12 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
+                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-12 text-base focus-visible:ring-teal-600/30"
                 />
                 <button
                   type="button"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  <span className="material-symbols-rounded">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                  <span className="material-symbols-rounded">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
                 </button>
               </div>
-              {/* Password strength indicator */}
-              <div className="flex gap-1 pl-1 mt-2">
+              <div className="flex gap-1 items-center mt-2">
                 {[1, 2, 3, 4].map((level) => (
                   <div
                     key={level}
-                    className={`h-1.5 flex-1 rounded-full transition-colors ${level <= passwordStrength ? strengthColors[passwordStrength] : 'bg-slate-200'}`}
-                  ></div>
+                    className={`h-1.5 flex-1 rounded-full transition-colors ${
+                      level <= passwordStrength
+                        ? strengthColors[passwordStrength]
+                        : 'bg-slate-200'
+                    }`}
+                  />
                 ))}
-                <span className="text-xs text-slate-500 font-medium ml-2">{strengthLabels[passwordStrength] || ''}</span>
+                <span className="text-xs text-slate-500 ml-2">
+                  {strengthLabels[passwordStrength] || ''}
+                </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 ml-1">
+              <p className="text-xs text-slate-500">
                 Mínimo 8 caracteres, con mayúscula, minúscula y número.
               </p>
             </div>
 
-            {/* Confirm Password Input */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="confirmPassword">Confirmar contraseña</label>
+              <label
+                className="text-sm font-medium text-slate-700"
+                htmlFor="confirmPassword"
+              >
+                Confirmar contraseña
+              </label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, confirmPassword: e.target.value })
+                  }
                   required
                   disabled={loading}
-                  className={`w-full rounded-2xl bg-white border h-14 px-4 pr-12 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none ${formData.confirmPassword && formData.password !== formData.confirmPassword
+                  className={`w-full rounded-lg bg-white border h-12 px-4 pr-12 text-base focus-visible:ring-teal-600/30 ${
+                    formData.confirmPassword &&
+                    formData.password !== formData.confirmPassword
                       ? 'border-red-500'
-                      : formData.confirmPassword && formData.password === formData.confirmPassword
-                        ? 'border-teal-500'
+                      : formData.confirmPassword &&
+                          formData.password === formData.confirmPassword
+                        ? 'border-teal-600'
                         : 'border-slate-200'
-                    }`}
+                  }`}
                 />
                 <button
                   type="button"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={
+                    showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                  }
                 >
-                  <span className="material-symbols-rounded">{showConfirmPassword ? 'visibility_off' : 'visibility'}</span>
+                  <span className="material-symbols-rounded">
+                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                  </span>
                 </button>
               </div>
-              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="text-xs text-red-500 mt-1 ml-1">Las contraseñas no coinciden</p>
-              )}
-              {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                <p className="text-xs text-teal-500 mt-1 ml-1">✓ Las contraseñas coinciden</p>
-              )}
+              {formData.confirmPassword &&
+                formData.password !== formData.confirmPassword && (
+                  <p className="text-xs text-red-600">Las contraseñas no coinciden</p>
+                )}
             </div>
 
-            {/* Submit Button */}
-            <div className="pt-2">
-              <Button
-                type="submit"
-                className="group relative flex w-full h-14 items-center justify-center overflow-hidden rounded-full bg-teal-500 hover:bg-teal-600 text-white font-bold text-lg tracking-wide transition-all shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 active:translate-y-0"
-                disabled={loading}
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  {loading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Creando cuenta...
-                    </>
-                  ) : (
-                    <>
-                      Crear cuenta
-                      <span className="material-symbols-rounded text-xl transition-transform group-hover:translate-x-1">arrow_forward</span>
-                    </>
-                  )}
-                </span>
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-semibold text-base mt-2"
+              disabled={loading}
+            >
+              {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+            </Button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-8 text-center space-y-4">
-            <p className="text-sm font-medium text-slate-600">
-              ¿Ya tienes una cuenta? <Link className="text-teal-600 font-bold hover:text-teal-700 underline decoration-2 decoration-transparent hover:decoration-teal-500 transition-all" href="/login">Inicia sesión</Link>
-            </p>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
-              Al registrarte, aceptas nuestros <a className="underline hover:text-slate-700" href="#">Términos de Servicio</a> y <a className="underline hover:text-slate-700" href="#">Política de Privacidad</a>.
-            </p>
-          </div>
+          <p className="mt-8 text-center text-sm text-slate-600">
+            ¿Ya tienes una cuenta?{' '}
+            <Link className="text-teal-700 font-semibold hover:text-teal-800" href="/login">
+              Inicia sesión
+            </Link>
+          </p>
         </div>
       </div>
 
-      {/* Right Column: Visual/Hero Section */}
       <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] relative bg-slate-900 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=1200&fit=crop"
-            alt="Familia feliz con perro en jardín"
-            fill
-            className="object-cover object-center opacity-80"
-            priority
-          />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent"></div>
-        </div>
-
-        {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col justify-end p-16 w-full">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl max-w-xl shadow-2xl">
-            <div className="flex gap-1 mb-4 text-amber-400">
-              <span className="material-symbols-rounded filled">star</span>
-              <span className="material-symbols-rounded filled">star</span>
-              <span className="material-symbols-rounded filled">star</span>
-              <span className="material-symbols-rounded filled">star</span>
-              <span className="material-symbols-rounded filled">star</span>
-            </div>
-            <blockquote className="text-2xl md:text-3xl font-bold text-white leading-snug mb-6">
-              "Encontrar cuidadores confiables cambió completamente mi rutina diaria con mi perro."
-            </blockquote>
-            <div className="flex items-center gap-4">
-              <div className="size-12 rounded-full ring-2 ring-teal-400 p-0.5 bg-white">
-                <Image
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
-                  alt="Retrato de Carlos"
-                  width={48}
-                  height={48}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-white font-bold text-lg">Carlos Rodríguez</p>
-                <p className="text-teal-300 text-sm font-medium">Dueño de Bruno (Labrador)</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Decorative Feature badges */}
-          <div className="flex gap-4 mt-8">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium">
-              <span className="material-symbols-rounded text-teal-400 text-lg">verified_user</span>
-              Verificación de identidad
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium">
-              <span className="material-symbols-rounded text-teal-400 text-lg">health_and_safety</span>
-              Seguro veterinario incluido
-            </div>
-          </div>
+        <Image
+          src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&h=1600&fit=crop"
+          alt="Persona con su perro al aire libre"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" />
+        <div className="relative z-10 flex flex-col justify-end p-12 xl:p-16 w-full">
+          <p className="text-white text-4xl font-bold tracking-tight mb-2">MascoTin</p>
+          <p className="text-white/85 text-lg max-w-md leading-relaxed">
+            Empieza hoy: matches, comunidad y servicios pensados para tu mascota.
+          </p>
         </div>
       </div>
     </div>

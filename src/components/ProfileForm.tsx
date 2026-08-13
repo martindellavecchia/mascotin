@@ -251,7 +251,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
           <Label>Imágenes ({images.length}/6)</Label>
           <div className="mt-2 grid grid-cols-3 gap-4">
             {images.map((image, index) => (
-              <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-rose-100">
+              <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-slate-100">
                 <Image src={image} alt={`Foto ${index + 1}`} fill className="object-cover" />
                 <Button
                   type="button"
@@ -266,13 +266,13 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
             ))}
 
             {images.length < 6 && (
-              <div className="aspect-square rounded-lg border-2 border-dashed border-rose-300 flex items-center justify-center bg-rose-50">
+              <div className="aspect-square rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50">
                 <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex items-center justify-center">
                   {uploading ? (
-                    <span className="material-symbols-rounded w-8 h-8 text-rose-500 animate-spin">pending</span>
+                    <span className="material-symbols-rounded w-8 h-8 text-teal-600 animate-spin">pending</span>
                   ) : (
                     <>
-                      <span className="material-symbols-rounded w-8 h-8 mx-auto mb-2 text-rose-500">upload</span>
+                      <span className="material-symbols-rounded w-8 h-8 mx-auto mb-2 text-teal-600">upload</span>
                       <p className="text-sm text-gray-600">Subir foto</p>
                     </>
                   )}
@@ -293,7 +293,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
           </p>
         </div>
 
-        <Button type="submit" className="w-full bg-gradient-to-r from-rose-500 to-pink-500" disabled={loading || uploading}>
+        <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading || uploading}>
           {loading ? (
             <>
               <span className="material-symbols-rounded w-4 h-4 mr-2 animate-spin">pending</span>

@@ -87,7 +87,7 @@ export function ImageUploadSection({
   return (
     <div>
       <Label>Imágenes ({images.length}/6)</Label>
-      <p className="text-xs text-gray-500 mb-2">Haz clic en ⭐ para seleccionar la foto de perfil</p>
+      <p className="text-xs text-gray-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
       <div className="mt-2 grid grid-cols-3 gap-4">
         {images.map((image, index) => (
           <div

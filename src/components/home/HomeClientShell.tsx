@@ -46,22 +46,6 @@ const PetProfileSidebar = dynamic(
   }
 );
 
-const QuickActions = dynamic(
-  () => import('@/components/widgets/QuickActions'),
-  {
-    ssr: false,
-    loading: () => <WidgetSkeleton />,
-  }
-);
-
-const PetPairingWidget = dynamic(
-  () => import('@/components/widgets/PetPairingWidget'),
-  {
-    ssr: false,
-    loading: () => <WidgetSkeleton />,
-  }
-);
-
 const LostPetWidget = dynamic(
   () => import('@/components/widgets/LostPetWidget'),
   {
@@ -306,9 +290,7 @@ export default function HomeClientShell({
       <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
         <LostPetWidget />
       </DeferredVisibilitySection>
-      <QuickActions />
       <NextAppointment appointment={initialNextAppointment} />
-      <PetPairingWidget />
       <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
         <SuggestedPets selectedPetId={selectedPetId} />
       </DeferredVisibilitySection>
@@ -340,24 +322,24 @@ export default function HomeClientShell({
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white shadow-sm border border-slate-200 rounded-xl p-1">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border border-slate-200 rounded-lg p-1 h-auto">
               <TabsTrigger
                 value="home"
-                className="data-[state=active]:bg-teal-600 data-[state=active]:text-white rounded-lg transition-all gap-2"
+                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
               >
                 <span className="material-symbols-rounded text-lg">home</span>
                 Feed
               </TabsTrigger>
               <TabsTrigger
                 value="explore"
-                className="data-[state=active]:bg-teal-600 data-[state=active]:text-white rounded-lg transition-all gap-2"
+                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
               >
                 <span className="material-symbols-rounded text-lg">explore</span>
                 Explorar
               </TabsTrigger>
               <TabsTrigger
                 value="matches"
-                className="data-[state=active]:bg-teal-600 data-[state=active]:text-white rounded-lg transition-all gap-2"
+                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
               >
                 <span className="material-symbols-rounded text-lg">favorite</span>
                 Matches
@@ -406,20 +388,20 @@ export default function HomeClientShell({
       </DashboardLayout>
 
       {matchNotification && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[60]">
-          <Card className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-8 py-4 shadow-2xl border-none">
+        <div className="fixed top-20 left-1/2 z-[60] animate-match-in">
+          <div className="bg-teal-700 text-white px-6 py-3.5 rounded-lg shadow-lg border border-teal-600">
             <div className="flex items-center gap-3">
-              <span className="material-symbols-rounded w-8 h-8 animate-pulse text-3xl filled">
+              <span className="material-symbols-rounded text-2xl filled">
                 favorite
               </span>
               <div>
-                <p className="text-lg font-bold">¡It's a Match!</p>
-                <p className="text-sm opacity-90">
+                <p className="text-base font-semibold">¡Es un match!</p>
+                <p className="text-sm text-teal-100">
                   Conectaste con {matchNotification}
                 </p>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 

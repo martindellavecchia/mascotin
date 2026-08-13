@@ -186,9 +186,9 @@ export default function ShopPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="_all">Todos</SelectItem>
-                                        <SelectItem value="4.5">⭐ 4.5+</SelectItem>
-                                        <SelectItem value="4">⭐ 4.0+</SelectItem>
-                                        <SelectItem value="3.5">⭐ 3.5+</SelectItem>
+                                        <SelectItem value="4.5">4.5+</SelectItem>
+                                        <SelectItem value="4">4.0+</SelectItem>
+                                        <SelectItem value="3.5">3.5+</SelectItem>
                                     </SelectContent>
                                 </Select>
 

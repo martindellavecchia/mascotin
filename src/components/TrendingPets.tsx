@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { safeParseImages } from '@/lib/utils';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
 
 export default function TrendingPets() {
     const router = useRouter();
@@ -26,18 +27,9 @@ export default function TrendingPets() {
         if (result.success && result.data) {
             setPets(result.data.pets || []);
         } else {
-            toast.error('Error al cargar mascotas trending');
+            toast.error('Error al cargar mascotas en tendencia');
         }
         setLoading(false);
-    };
-
-    const getPetIcon = (petType: string) => {
-        switch (petType) {
-            case 'dog': return '🐕';
-            case 'cat': return '🐱';
-            case 'bird': return '🐦';
-            default: return '🐾';
-        }
     };
 
     if (loading) {
@@ -46,7 +38,7 @@ export default function TrendingPets() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <span className="material-symbols-rounded w-5 h-5 text-orange-500">trending_up</span>
-                        Mascotas Trending
+                        Mascotas en tendencia
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -68,12 +60,12 @@ export default function TrendingPets() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <span className="material-symbols-rounded w-5 h-5 text-orange-500">trending_up</span>
-                        Mascotas Trending
+                        Mascotas en tendencia
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-gray-500 text-center py-8">
-                        Aún no hay mascotas trending. ¡Sé el primero en registrar una!
+                        Aún no hay mascotas en tendencia. Sé el primero en registrar una.
                     </p>
                 </CardContent>
             </Card>
@@ -85,7 +77,7 @@ export default function TrendingPets() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <span className="material-symbols-rounded w-5 h-5 text-orange-500">trending_up</span>
-                    Mascotas Trending 🔥
+                    Mascotas en tendencia
                 </CardTitle>
             </CardHeader>
             <CardContent>
@@ -117,17 +109,18 @@ export default function TrendingPets() {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
-                                            <span className="material-symbols-rounded text-4xl">pets</span>
+                                            <span className="material-symbols-rounded text-4xl text-teal-600">
+                                              {getPetTypeIcon(pet.petType)}
+                                            </span>
                                         </div>
                                     )}
-                                    {/* Ranking badge */}
                                     {index < 3 && (
-                                        <div className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-600'
+                                        <div className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${index === 0 ? 'bg-amber-500' : index === 1 ? 'bg-slate-400' : 'bg-amber-700'
                                             }`}>
                                             {index + 1}
                                         </div>
                                     )}
-                                    <div className="absolute top-2 right-2 bg-yellow-400 text-white px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <div className="absolute top-2 right-2 bg-slate-900/70 text-white px-2 py-0.5 rounded-md text-xs font-semibold flex items-center gap-1">
                                         <span className="material-symbols-rounded text-xs">emoji_events</span>
                                         {pet.level}
                                     </div>
@@ -135,8 +128,8 @@ export default function TrendingPets() {
                                 <CardContent className="p-3">
                                     <h3 className="font-semibold text-sm truncate">{pet.name}</h3>
                                     <div className="flex items-center justify-between mt-1">
-                                        <span className="text-xs text-gray-500 capitalize">{pet.petType}</span>
-                                        <Badge variant="outline" className="text-xs bg-rose-50 text-rose-600">
+                                        <span className="text-xs text-gray-500">{getPetTypeLabel(pet.petType)}</span>
+                                        <Badge variant="outline" className="text-xs bg-teal-50 text-teal-700">
                                             <span className="material-symbols-rounded text-xs mr-1">favorite</span>
                                             {pet.totalMatches}
                                         </Badge>

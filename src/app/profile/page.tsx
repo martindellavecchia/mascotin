@@ -337,7 +337,7 @@ function ProfileContent() {
             <AlertDialogAction
               onClick={handleDeletePet}
               disabled={isDeleting}
-              className="bg-rose-500 hover:bg-rose-600 text-white border-0"
+              className="bg-red-600 hover:bg-red-700 text-white border-0"
             >
               {isDeleting ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>

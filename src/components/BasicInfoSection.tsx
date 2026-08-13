@@ -37,10 +37,10 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="dog">🐕 Perro</SelectItem>
-                  <SelectItem value="cat">🐱 Gato</SelectItem>
-                  <SelectItem value="bird">🐦 Pájaro</SelectItem>
-                  <SelectItem value="other">🐾 Otro</SelectItem>
+                  <SelectItem value="dog">Perro</SelectItem>
+                  <SelectItem value="cat">Gato</SelectItem>
+                  <SelectItem value="bird">Ave</SelectItem>
+                  <SelectItem value="other">Otro</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

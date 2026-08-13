@@ -212,7 +212,10 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
                     <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-sm text-gray-900">{post.author?.name || 'Usuario'}</span>
                         {post.pet && (
-                            <span className="text-xs text-gray-500">con {post.pet.name}{post.pet?.petType === 'dog' ? '🐕' : post.pet?.petType === 'cat' ? '🐈' : '🐾'}</span>
+                            <span className="text-xs text-gray-500 inline-flex items-center gap-0.5">
+                              con {post.pet.name}
+                              <span className="material-symbols-rounded text-sm text-teal-600">pets</span>
+                            </span>
                         )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -254,9 +257,9 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
             {/* Post Type Badge */}
             {post.postType && post.postType !== 'post' && (
                 <div className="px-3 pb-1">
-                    <Badge className={`text-[10px] py-0.5 ${post.postType === 'event' ? 'bg-purple-100 text-purple-700' :
-                        post.postType === 'question' ? 'bg-orange-100 text-orange-700' :
-                            post.postType === 'photo' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
+                    <Badge className={`text-[10px] py-0.5 ${post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
+                        post.postType === 'question' ? 'bg-orange-50 text-orange-700' :
+                            post.postType === 'photo' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
                         }`}>
                         <span className="material-symbols-rounded text-sm mr-1">
                             {post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : 'photo_camera'}
@@ -275,23 +278,23 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
 
             {/* Event Info */}
             {post.postType === 'event' && post.eventDate && (
-                <div className="mx-3 mb-2 p-2.5 bg-purple-50 rounded-lg border border-purple-100">
+                <div className="mx-3 mb-2 p-2.5 bg-teal-50 rounded-lg border border-teal-100">
                     <div className="flex items-center gap-3">
                         <div className="flex flex-col items-center bg-white px-2 py-1.5 rounded-md">
-                            <span className="text-[10px] text-purple-600 font-bold uppercase">
+                            <span className="text-[10px] text-teal-700 font-bold uppercase">
                                 {format(new Date(post.eventDate), 'MMM', { locale: es })}
                             </span>
-                            <span className="text-xl font-bold text-purple-700">
+                            <span className="text-xl font-bold text-teal-800">
                                 {format(new Date(post.eventDate), 'd')}
                             </span>
                         </div>
                         <div className="flex-1">
-                            <div className="flex items-center gap-1 text-sm text-purple-700">
+                            <div className="flex items-center gap-1 text-sm text-teal-800">
                                 <span className="material-symbols-rounded text-lg">schedule</span>
                                 {format(new Date(post.eventDate), 'HH:mm')}
                             </div>
                             {post.eventLocation && (
-                                <div className="flex items-center gap-1 text-sm text-purple-600 mt-1">
+                                <div className="flex items-center gap-1 text-sm text-teal-700 mt-1">
                                     <span className="material-symbols-rounded text-lg">location_on</span>
                                     {post.eventLocation}
                                 </div>
@@ -300,7 +303,7 @@ export default function PostCard({ post, currentUserId, currentUserImage, onLike
                         {post.eventId && (
                             <Button
                                 size="sm"
-                                className={`${isAttending ? 'bg-green-600 hover:bg-green-700' : 'bg-purple-600 hover:bg-purple-700'} text-white transition-colors`}
+                                className={`${isAttending ? 'bg-teal-800 hover:bg-teal-900' : 'bg-teal-700 hover:bg-teal-800'} text-white transition-colors`}
                                 onClick={handleAttend}
                             >
                                 {isAttending ? (
