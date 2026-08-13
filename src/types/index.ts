@@ -28,6 +28,12 @@ export interface Owner {
   updatedAt: string;
 }
 
+export interface PetOwnerPreview {
+  name: string;
+  location: string;
+  image?: string | null;
+}
+
 // New Pet type (for MascotT-In)
 export interface Pet {
   id: string;
@@ -58,7 +64,7 @@ export interface Pet {
   updatedAt: string;
 
   // Optional for display
-  owner?: Owner;
+  owner?: PetOwnerPreview;
   matchId?: string;
 }
 

@@ -23,9 +23,10 @@ interface HeaderUserMenuProps {
       headerImage?: string | null;
     };
   } | null;
+  showLabel?: boolean;
 }
 
-export default function HeaderUserMenu({ session }: HeaderUserMenuProps) {
+export default function HeaderUserMenu({ session, showLabel = false }: HeaderUserMenuProps) {
   const router = useRouter();
   const userInitials =
     session?.user?.name?.split(' ').map((name: string) => name[0]).join('') || 'U';
@@ -35,7 +36,11 @@ export default function HeaderUserMenu({ session }: HeaderUserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-10 w-10 rounded-full p-0">
+        <Button
+          variant="ghost"
+          className={showLabel ? 'h-auto max-w-[170px] justify-start gap-3 rounded-xl px-2 py-2' : 'h-10 w-10 rounded-full p-0'}
+          aria-label="Menú de usuario"
+        >
           <Avatar className="h-10 w-10">
             {displayImage ? (
               <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
@@ -45,6 +50,14 @@ export default function HeaderUserMenu({ session }: HeaderUserMenuProps) {
               </AvatarFallback>
             )}
           </Avatar>
+          {showLabel && (
+            <span className="hidden min-w-0 text-left lg:block">
+              <span className="block truncate text-sm font-semibold text-slate-900">
+                {session?.user?.name || 'Mi perfil'}
+              </span>
+              <span className="block text-xs font-normal text-teal-700">Cuenta activa</span>
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
@@ -30,7 +29,7 @@ export default function HeaderMobileMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden rounded-full text-slate-500 hover:text-teal-600 hover:bg-teal-50"
+          className="lg:hidden rounded-full text-slate-500 hover:text-teal-600 hover:bg-teal-50"
           aria-label="Abrir menú"
         >
           <span className="material-symbols-rounded">menu</span>
@@ -41,15 +40,6 @@ export default function HeaderMobileMenu({
           <SheetTitle>Navegación</SheetTitle>
         </SheetHeader>
         <div className="px-4 pb-4 space-y-4">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-rounded text-lg">
-              search
-            </span>
-            <Input
-              placeholder="Buscar..."
-              className="pl-10 bg-slate-100 border-0 rounded-full h-10 text-sm"
-            />
-          </div>
           <nav className="space-y-1">
             {navLinks.map((link) => (
               <SheetClose key={link.href} asChild>

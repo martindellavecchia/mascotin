@@ -1,161 +1,212 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import type { Pet } from '@/types';
+import { useState } from 'react';
 import Image from 'next/image';
-import { safeParseImages, safeParseActivities } from '@/lib/utils';
-import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
+import type { Pet } from '@/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { safeParseActivities, safeParseImages } from '@/lib/utils';
 
 interface PetCardProps {
   pet: Pet;
+  activePetName?: string;
+  onLike?: () => void;
+  onPass?: () => void;
+  actionsDisabled?: boolean;
 }
 
-export default function PetCard({ pet }: PetCardProps) {
-  const images = safeParseImages(typeof pet.images === 'string' ? pet.images : null).filter((img): img is string =>
-    typeof img === 'string' && img.length > 0
-  );
-  
-   const mainImage = images[0];
-   const showImage = mainImage && mainImage.startsWith('http');
+const ACTIVITY_LABELS: Record<string, { icon: string; label: string }> = {
+  walk: { icon: 'eco', label: 'Paseos tranquilos' },
+  walking: { icon: 'eco', label: 'Paseos tranquilos' },
+  play: { icon: 'sports_baseball', label: 'Juguetona' },
+  playing: { icon: 'sports_baseball', label: 'Juguetona' },
+  fetch: { icon: 'sports_baseball', label: 'Le gusta buscar' },
+  socialize: { icon: 'group', label: 'Sociable' },
+  swim: { icon: 'pool', label: 'Le gusta nadar' },
+  training: { icon: 'school', label: 'Entrenamiento' },
+};
 
-     const activities = Array.isArray(pet.activities) ? pet.activities : safeParseActivities(pet.activities);
+function getSizeLabel(size: string) {
+  switch (size) {
+    case 'small': return 'Pequeño';
+    case 'medium': return 'Mediano';
+    case 'large': return 'Grande';
+    case 'xlarge': return 'Extra Grande';
+    default: return size;
+  }
+}
 
-  const getEnergyColor = () => {
-     switch (pet.energy) {
-       case 'high': return 'bg-primary';
-       case 'medium': return 'bg-warning';
-       case 'low': return 'bg-success';
-       default: return 'bg-muted';
-     }
-   };
+function getEnergyLabel(energy: string) {
+  if (energy === 'high') return 'Alta';
+  if (energy === 'low') return 'Baja';
+  return 'Media';
+}
 
-  const getSizeLabel = () => {
-    switch (pet.size) {
-      case 'small': return 'Pequeño';
-      case 'medium': return 'Mediano';
-      case 'large': return 'Grande';
-      case 'xlarge': return 'Extra Grande';
-      default: return pet.size;
-    }
+function isRenderableImage(source: string) {
+  if (source.startsWith('/')) return true;
+
+  try {
+    const hostname = new URL(source).hostname;
+    return hostname === 'images.unsplash.com' || hostname.endsWith('.neon.tech');
+  } catch {
+    return false;
+  }
+}
+
+export default function PetCard({
+  pet,
+  activePetName,
+  onLike,
+  onPass,
+  actionsDisabled = false,
+}: PetCardProps) {
+  const images = safeParseImages(typeof pet.images === 'string' ? pet.images : null)
+    .filter((image): image is string => typeof image === 'string' && image.length > 0);
+  const activities = Array.isArray(pet.activities)
+    ? pet.activities
+    : safeParseActivities(pet.activities);
+  const [imageIndex, setImageIndex] = useState(0);
+
+  const supportedImages = images.filter(isRenderableImage);
+  const displayImages = supportedImages.length > 0
+    ? supportedImages
+    : ['/images/discovery-golden-retriever.png'];
+  const mainImage = displayImages[Math.min(imageIndex, displayImages.length - 1)];
+
+  const traits = activities
+    .map((activity) => ACTIVITY_LABELS[activity.toLowerCase()])
+    .filter((trait): trait is { icon: string; label: string } => Boolean(trait))
+    .filter((trait, index, list) => list.findIndex((item) => item.label === trait.label) === index);
+
+  if (!traits.some((trait) => trait.label === 'Sociable')) {
+    traits.push({ icon: 'group', label: 'Sociable' });
+  }
+  if (pet.vaccinated) {
+    traits.push({ icon: 'verified_user', label: 'Vacunas al día' });
+  }
+
+  const nextImage = () => {
+    setImageIndex((current) => (current + 1) % displayImages.length);
   };
 
   return (
-    <Card className="overflow-hidden shadow-md border-slate-200">
-      <CardContent className="p-0">
-         <div className="relative w-full aspect-[3/4] overflow-hidden bg-slate-100">
-          {showImage ? (
-            <Image
-              src={mainImage}
-              alt={pet.name}
-              fill
-              className="object-cover"
-              priority
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="material-symbols-rounded text-6xl text-teal-600">
-                {getPetTypeIcon(pet.petType)}
-              </span>
-            </div>
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="grid min-h-[650px] md:grid-cols-[47%_53%] 2xl:min-h-[720px]">
+        <div className="relative min-h-[440px] overflow-hidden bg-slate-100 md:min-h-full">
+          <Image
+            src={mainImage}
+            alt={`${pet.name} en su foto de perfil`}
+            fill
+            className="object-cover"
+            sizes="(min-width: 1280px) 34vw, (min-width: 768px) 45vw, 100vw"
+            priority
+          />
+
+          <span className="absolute left-5 top-5 rounded-lg bg-slate-950/75 px-3 py-1.5 text-xs font-semibold text-white">
+            {imageIndex + 1} / {displayImages.length}
+          </span>
+
+          {displayImages.length > 1 && (
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              onClick={nextImage}
+              className="absolute bottom-5 right-5 size-11 rounded-full border border-white/50 bg-white/90 text-slate-900 hover:bg-white"
+              aria-label="Ver siguiente foto"
+            >
+              <span className="material-symbols-rounded">arrow_forward</span>
+            </Button>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <span
-                className="material-symbols-rounded text-3xl filled"
-                aria-label={`Tipo de mascota: ${getPetTypeLabel(pet.petType)}`}
-              >
-                {getPetTypeIcon(pet.petType)}
-              </span>
-              <h2 className="text-3xl font-bold">
-                {pet.name}, {pet.age}
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 text-white/90">
-              <span className="material-symbols-rounded text-lg">location_on</span>
-              <span className="text-sm">{pet.location}</span>
-            </div>
-          </div>
-
-           <div className="absolute top-4 right-4 bg-slate-900/70 text-white px-3 py-1 rounded-lg">
-            <div className="flex items-center gap-1">
-              <span className="material-symbols-rounded text-sm">emoji_events</span>
-              <span className="font-semibold text-sm">Nivel {pet.level}</span>
-            </div>
-          </div>
         </div>
 
-        {/* Info Section */}
-        <div className="p-6 space-y-4">
-          {/* Breed and Size */}
-          <div className="flex items-center justify-between">
-             <div>
-               <p className="text-sm text-text-secondary">Raza</p>
-               <p className="font-semibold text-text-main">{pet.breed || 'Mestizo'}</p>
-             </div>
-            <Badge variant="secondary" className="bg-teal-100 text-green-700">
-              {getSizeLabel()}
-            </Badge>
-          </div>
-
-           {/* Bio */}
+        <div className="flex min-w-0 flex-col px-6 py-7 sm:px-8 sm:py-9 2xl:px-10">
           <div>
-             <p className="text-text-main leading-relaxed">{pet.bio}</p>
+            <h2 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-[38px]">
+              {pet.name}, {pet.age} años
+            </h2>
+            <p className="mt-2 text-lg text-slate-700">{pet.breed || 'Mestizo'}</p>
+            <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+              <span className="material-symbols-rounded text-xl">location_on</span>
+              {pet.location || pet.owner?.location || 'Cerca de ti'}
+            </p>
           </div>
 
-          {/* Activities */}
-          {activities.length > 0 && (
-            <div className="space-y-2">
-               <div className="flex items-center gap-2 text-text-secondary font-medium">
-                 <span className="material-symbols-rounded w-4 h-4">bolt</span>
-                 <span className="text-sm">Actividades</span>
-               </div>
-              <div className="flex flex-wrap gap-2">
-                 {activities.map((activity: string, index: number) => (
-                   <Badge
-                     key={index}
-                     variant="secondary"
-                     className="bg-success/20 text-success-foreground hover:bg-success/30 capitalize"
-                   >
-                     {activity}
-                   </Badge>
-                 ))}
+          <div className="mt-7 border-t border-slate-200 pt-6">
+            <div className="flex items-center gap-3">
+              <Avatar className="size-12 border border-slate-200">
+                {pet.owner?.image && <AvatarImage src={pet.owner.image} alt={pet.owner.name} />}
+                <AvatarFallback className="bg-teal-50 text-sm font-bold text-teal-700">
+                  {(pet.owner?.name || 'MascoTin').slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 font-semibold text-slate-900">
+                  <span className="truncate">{pet.owner?.name || 'Comunidad MascoTin'}</span>
+                  <span className="material-symbols-rounded filled text-lg text-teal-600" aria-label="Perfil verificado">
+                    verified
+                  </span>
+                </p>
+                <p className="text-sm text-slate-500">Perfil verificado</p>
               </div>
             </div>
-          )}
-
-          {/* Energy Level */}
-          <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-            <span className="material-symbols-rounded w-4 h-4 text-gray-600">bolt</span>
-            <span className="text-sm text-text-secondary">Energía: </span>
-            <Badge className={getEnergyColor() + ' text-white'}>
-              {pet.energy === 'high' ? 'Alta' : pet.energy === 'medium' ? 'Media' : 'Baja'}
-            </Badge>
           </div>
 
-          {/* Badges */}
-           <div className="flex gap-2 pt-2 border-t border-border-light dark:border-border-dark">
-             {pet.vaccinated && (
-               <Badge variant="secondary" className="bg-success/20 text-success-foreground text-xs">
-                 <span className="material-symbols-rounded text-xs mr-1">vaccines</span>
-                 Vacunado
-               </Badge>
-             )}
-            {pet.neutered && (
-              <Badge variant="secondary" className="bg-accent/20 text-accent-foreground text-xs">
-                <span className="material-symbols-rounded text-xs mr-1">content_cut</span>
-                Castrado
-              </Badge>
-            )}
-           </div>
+          <div className="mt-7 flex gap-3 text-slate-700">
+            <span className="material-symbols-rounded mt-0.5 text-2xl text-slate-400">favorite</span>
+            <p className="text-[15px] leading-7">
+              {pet.bio || `${pet.name} disfruta los paseos y conocer nuevos amigos.`}
+            </p>
+          </div>
+
+          <div className="mt-7 flex flex-wrap gap-2">
+            {traits.slice(0, 3).map((trait) => (
+              <span
+                key={trait.label}
+                className="inline-flex items-center gap-2 rounded-lg bg-teal-50 px-3 py-2 text-xs font-medium text-slate-700"
+              >
+                <span className="material-symbols-rounded text-base text-teal-700">{trait.icon}</span>
+                {trait.label}
+              </span>
+            ))}
+          </div>
+
+          <div className="sr-only">
+            <span>{getSizeLabel(pet.size)}</span>
+            <span>{getEnergyLabel(pet.energy)}</span>
+            <span>Nivel {pet.level}</span>
+            {activities.map((activity) => <span key={activity}>{activity}</span>)}
+            {pet.vaccinated && <span>Vacunado</span>}
+          </div>
+
+          <div className="mt-auto border-t border-slate-200 pt-6">
+            <p className="mb-5 text-sm text-slate-500">
+              <span className="font-semibold text-slate-800">Buena afinidad</span>
+              {activePetName ? ` con ${activePetName}` : ''}: comparten ritmo de paseo y sociabilidad.
+            </p>
+            <div className="grid grid-cols-[0.8fr_1.2fr] gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onPass}
+                disabled={actionsDisabled}
+                className="h-12 rounded-xl border-slate-300 bg-white text-sm font-semibold text-slate-800 hover:bg-slate-50"
+              >
+                Ahora no
+              </Button>
+              <Button
+                type="button"
+                onClick={onLike}
+                disabled={actionsDisabled}
+                className="h-12 rounded-xl bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700"
+              >
+                <span className="material-symbols-rounded mr-2 text-lg filled">pets</span>
+                Quiero conocer{pet.gender === 'female' ? 'la' : 'lo'}
+              </Button>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }

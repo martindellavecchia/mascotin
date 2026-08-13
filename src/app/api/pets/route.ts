@@ -103,6 +103,15 @@ export async function GET(request: Request) {
     const pets = await db.pet.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      include: {
+        owner: {
+          select: {
+            name: true,
+            location: true,
+            image: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({

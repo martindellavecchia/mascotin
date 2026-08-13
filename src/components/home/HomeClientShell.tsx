@@ -6,11 +6,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import HomeStats from '@/components/HomeStats';
 import Feed from '@/components/feed/Feed';
-import PetProfileSidebar from '@/components/PetProfileSidebar';
 import NextAppointment from '@/components/widgets/NextAppointment';
 import LostPetWidget from '@/components/widgets/LostPetWidget';
 import SuggestedPets from '@/components/widgets/SuggestedPets';
 import DeferredVisibilitySection from '@/components/home/DeferredVisibilitySection';
+import CommunitySidebar from '@/components/home/CommunitySidebar';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
@@ -130,6 +130,7 @@ function writeShallowHomeUrl(nextTab: HomeTab, nextPetId?: string) {
 
   const query = params.toString();
   window.history.replaceState(window.history.state, '', query ? `/?${query}` : '/');
+  window.dispatchEvent(new Event('mascotin:home-tab'));
 }
 
 export default function HomeClientShell({
@@ -143,7 +144,6 @@ export default function HomeClientShell({
   initialFeedHasMore,
   initialLostPets = [],
   initialSuggestions = [],
-  initialHealthRecords = [],
 }: HomeClientShellProps) {
   const router = useRouter();
   const { fetchWithError } = useFetchWithError();
@@ -162,6 +162,7 @@ export default function HomeClientShell({
   const swipingRef = useRef(false);
   const lastExplorePetIdRef = useRef<string | null>(null);
   const urlHydratedRef = useRef(false);
+  const activePet = myPets.find((pet) => pet.id === selectedPetId) || myPets[0];
 
   useEffect(() => {
     if (urlHydratedRef.current) return;
@@ -179,7 +180,11 @@ export default function HomeClientShell({
     };
 
     window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
+    window.addEventListener('mascotin:home-tab', onPopState);
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('mascotin:home-tab', onPopState);
+    };
   }, [initialSelectedPetId, myPets]);
 
   useEffect(() => {
@@ -289,41 +294,38 @@ export default function HomeClientShell({
   };
 
   const rightSidebar = useMemo(
-    () => (
-      <div className="space-y-6">
+    () => activeTab === 'explore' || activeTab === 'matches' ? (
+      <CommunitySidebar
+        session={session}
+        matches={matches}
+        suggestions={initialSuggestions}
+        onOpenMatches={() => syncHomeState('matches', selectedPetId)}
+      />
+    ) : (
+      <div className="space-y-6 pt-[94px]">
         <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
           <LostPetWidget initialPets={initialLostPets as never} />
         </DeferredVisibilitySection>
         <NextAppointment appointment={initialNextAppointment} />
         <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
-          <SuggestedPets
-            selectedPetId={selectedPetId}
-            initialSuggestions={initialSuggestions}
-          />
+          <SuggestedPets selectedPetId={selectedPetId} initialSuggestions={initialSuggestions} />
         </DeferredVisibilitySection>
       </div>
     ),
     [
+      activeTab,
       initialLostPets,
       initialNextAppointment,
-      selectedPetId,
       initialSuggestions,
+      matches,
+      selectedPetId,
+      session,
     ]
   );
 
   return (
-    <div className="bg-slate-50">
+    <div className="min-h-screen bg-[#fbfaf7]">
       <DashboardLayout
-        leftSidebar={
-          <PetProfileSidebar
-            pet={myPets.find((pet) => pet.id === selectedPetId) || null}
-            pets={myPets}
-            selectedPetId={selectedPetId}
-            initialHealthRecords={initialHealthRecords}
-            onSelectPet={(petId) => syncHomeState(activeTab, petId)}
-            onEdit={() => router.push(`/profile?petId=${selectedPetId}`)}
-          />
-        }
         rightSidebar={rightSidebar}
       >
         <div className="w-full">
@@ -334,7 +336,7 @@ export default function HomeClientShell({
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white border border-slate-200 rounded-lg p-1 h-auto">
+            <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-xl border border-slate-200 bg-white p-1 lg:hidden">
               <TabsTrigger
                 value="home"
                 className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
@@ -359,6 +361,23 @@ export default function HomeClientShell({
             </TabsList>
 
             <TabsContent value="home" className="space-y-6 mt-0">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                <div>
+                  <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Inicio</h1>
+                  <p className="mt-2 text-slate-500">Todo lo que está pasando en la comunidad de {activePet?.name}.</p>
+                </div>
+                {activePet && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/profile?petId=${activePet.id}`)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:border-teal-200"
+                  >
+                    <span className="material-symbols-rounded text-teal-700 filled">pets</span>
+                    {activePet.name}
+                    <span className="material-symbols-rounded text-lg text-slate-400">expand_more</span>
+                  </button>
+                )}
+              </div>
               <HomeStats stats={initialStats} />
               <Feed
                 currentUserId={session?.user?.id}
@@ -378,6 +397,7 @@ export default function HomeClientShell({
                 petsToSwipe={petsToSwipe}
                 currentIndex={currentIndex}
                 loading={exploreLoading}
+                activePet={activePet}
                 onReload={() => void fetchPetsForSwipe(true)}
                 onLike={() => void handleSwipe(true)}
                 onPass={() => void handleSwipe(false)}
@@ -385,6 +405,10 @@ export default function HomeClientShell({
             </TabsContent>
 
             <TabsContent value="matches" className="mt-0">
+              <div className="mb-7">
+                <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Tu círculo</h1>
+                <p className="mt-2 text-slate-500">Las conexiones que nacieron en la plaza.</p>
+              </div>
               {matchesLoading && !hasLoadedMatches ? (
                 <PanelSkeleton label="Cargando matches..." />
               ) : (
@@ -417,14 +441,6 @@ export default function HomeClientShell({
         </div>
       )}
 
-      <footer className="bg-white border-t border-slate-200 py-6 mt-auto">
-        <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
-          <p>
-            © {new Date().getFullYear()} MascoTin. Plataforma para el bienestar
-            de tu mascota.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

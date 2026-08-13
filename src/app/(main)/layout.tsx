@@ -16,7 +16,7 @@ export default async function MainLayout({
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header session={session} />
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 lg:pl-[260px]">{children}</div>
     </div>
   );
 }

@@ -12,22 +12,14 @@ export default function DashboardLayout({
     rightSidebar
 }: DashboardLayoutProps) {
     return (
-        <div className="container mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-80px)]">
-            {/* Left Sidebar - Pet Profile & Navigation */}
-            <aside className="w-full lg:w-[280px] hidden lg:block shrink-0 space-y-6">
-                <div className="sticky top-24 space-y-6">
-                    {leftSidebar}
-                </div>
-            </aside>
-
-            {/* Main Content - Feed */}
-            <main className="flex-1 min-w-0">
+        <div className="mx-auto grid min-h-[calc(100vh-64px)] w-full max-w-[1500px] grid-cols-1 gap-7 px-4 py-6 sm:px-6 lg:min-h-screen lg:px-8 lg:py-8 xl:grid-cols-[minmax(0,1fr)_270px] 2xl:gap-10 2xl:px-10">
+            {leftSidebar && <div className="sr-only">{leftSidebar}</div>}
+            <main className="min-w-0">
                 {children}
             </main>
 
-            {/* Right Sidebar - Widgets & Actions */}
-            <aside className="w-full xl:w-[320px] hidden xl:block shrink-0 space-y-6">
-                <div className="sticky top-24 space-y-6">
+            <aside className="hidden min-w-0 xl:block">
+                <div className="sticky top-8 space-y-6">
                     {rightSidebar}
                 </div>
             </aside>
