@@ -44,6 +44,18 @@ export function shouldUnoptimizeImage(src?: string | null): boolean {
   return Boolean(src?.startsWith('data:'));
 }
 
+export function isRenderableImage(source?: string | null): boolean {
+  if (!source) return false;
+  if (source.startsWith('/') || source.startsWith('data:image/')) return true;
+
+  try {
+    const hostname = new URL(source).hostname;
+    return hostname === 'images.unsplash.com' || hostname.endsWith('.neon.tech');
+  } catch {
+    return false;
+  }
+}
+
 export function withImageFields<T extends { images?: string | string[] | null }>(
   entity: T
 ): T & { imageUrls: string[]; primaryImageUrl: string | null } {

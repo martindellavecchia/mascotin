@@ -9,27 +9,35 @@ export const COMPATIBILITY_LABELS: Record<string, string> = {
   unknown: 'No sé',
 };
 
-const COMPATIBILITY_QUESTIONS = [
-  { key: 'goodWithKids', label: '¿Se lleva bien con niños?' },
-  { key: 'goodWithDogs', label: '¿Se lleva bien con otros perros?' },
-  { key: 'goodWithCats', label: '¿Se lleva bien con gatos?' },
-  { key: 'goodWithStrangers', label: '¿Se lleva bien con extraños?' },
-] as const;
-
-const INTENT_OPTIONS = [
+export const INTENT_OPTIONS = [
   { id: 'walk', label: 'Compañero de paseo' },
   { id: 'play', label: 'Juego' },
   { id: 'social', label: 'Socializar' },
-  { id: 'sit', label: 'Cuidado mutuo' },
+  { id: 'sit', label: 'Cuidado temporal' },
 ] as const;
 
-const TEMPERAMENT_OPTIONS = [
+export const TEMPERAMENT_OPTIONS = [
   { id: 'sociable', label: 'Sociable' },
   { id: 'playful', label: 'Juguetón' },
   { id: 'calm', label: 'Tranquilo' },
   { id: 'independent', label: 'Independiente' },
   { id: 'territorial', label: 'Territorial' },
   { id: 'anxious', label: 'Ansioso' },
+] as const;
+
+export const TEMPERAMENT_LABELS = Object.fromEntries(
+  TEMPERAMENT_OPTIONS.map((option) => [option.id, option.label])
+) as Record<string, string>;
+
+export const INTENT_LABELS = Object.fromEntries(
+  INTENT_OPTIONS.map((option) => [option.id, option.label])
+) as Record<string, string>;
+
+const COMPATIBILITY_QUESTIONS = [
+  { key: 'goodWithKids', label: '¿Se lleva bien con niños?' },
+  { key: 'goodWithDogs', label: '¿Se lleva bien con otros perros?' },
+  { key: 'goodWithCats', label: '¿Se lleva bien con gatos?' },
+  { key: 'goodWithStrangers', label: '¿Se lleva bien con extraños?' },
 ] as const;
 
 interface CompatibilityFieldsProps {
@@ -64,7 +72,7 @@ export default function CompatibilityFields({ data, onChange }: CompatibilityFie
               onValueChange={(value) => onChange(question.key, value)}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Elegir" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="yes">Sí</SelectItem>
@@ -97,7 +105,7 @@ export default function CompatibilityFields({ data, onChange }: CompatibilityFie
       </div>
 
       <div className="space-y-2">
-        <Label>Qué busca en un match</Label>
+        <Label>Qué busca</Label>
         <div className="grid grid-cols-2 gap-2">
           {INTENT_OPTIONS.map((option) => (
             <button

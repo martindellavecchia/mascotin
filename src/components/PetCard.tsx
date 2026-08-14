@@ -6,6 +6,7 @@ import type { Pet } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 import { safeParseActivities, safeParseImages } from '@/lib/utils';
 
 interface PetCardProps {
@@ -41,17 +42,6 @@ function getEnergyLabel(energy: string) {
   if (energy === 'high') return 'Alta';
   if (energy === 'low') return 'Baja';
   return 'Media';
-}
-
-function isRenderableImage(source: string) {
-  if (source.startsWith('/')) return true;
-
-  try {
-    const hostname = new URL(source).hostname;
-    return hostname === 'images.unsplash.com' || hostname.endsWith('.neon.tech');
-  } catch {
-    return false;
-  }
 }
 
 export default function PetCard({
@@ -101,6 +91,7 @@ export default function PetCard({
             className="object-cover"
             sizes="(min-width: 1280px) 34vw, (min-width: 768px) 45vw, 100vw"
             priority
+            unoptimized={shouldUnoptimizeImage(mainImage)}
           />
 
           <span className="absolute left-5 top-5 rounded-lg bg-slate-950/75 px-3 py-1.5 text-xs font-semibold text-white">

@@ -9,7 +9,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Pet } from '@/types';
 import Image from 'next/image';
 import { safeParseImages } from '@/lib/utils';
+import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
+
+const FALLBACK_MATCH_IMAGE = '/images/discovery-golden-retriever.png';
+
+function matchImageSrc(images: string | string[] | null | undefined) {
+  const primary = getPrimaryImageUrl(images) || safeParseImages(images)[0] || null;
+  return isRenderableImage(primary) ? primary! : FALLBACK_MATCH_IMAGE;
+}
 
 interface MatchesPanelProps {
   matches: Pet[];
@@ -133,13 +141,11 @@ export default function MatchesPanel({
                           <AvatarImage asChild>
                             <div className="relative w-full h-full">
                               <Image
-                                src={
-                                  safeParseImages(match.images)[0] ||
-                                  '/placeholder.svg'
-                                }
+                                src={matchImageSrc(match.images)}
                                 alt={match.name}
                                 fill
                                 className="object-cover rounded-full"
+                                unoptimized={shouldUnoptimizeImage(matchImageSrc(match.images))}
                               />
                             </div>
                           </AvatarImage>
@@ -183,13 +189,11 @@ export default function MatchesPanel({
                 <AvatarImage asChild>
                   <div className="relative w-full h-full">
                     <Image
-                      src={
-                        safeParseImages(selectedMatch.images)[0] ||
-                        '/placeholder.svg'
-                      }
+                      src={matchImageSrc(selectedMatch.images)}
                       alt={selectedMatch.name}
                       fill
                       className="object-cover rounded-full"
+                      unoptimized={shouldUnoptimizeImage(matchImageSrc(selectedMatch.images))}
                     />
                   </div>
                 </AvatarImage>

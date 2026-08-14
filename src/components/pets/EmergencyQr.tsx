@@ -1,31 +1,82 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export default function EmergencyQr({ token }: { token?: string | null }) {
   const [src, setSrc] = useState<string | null>(null);
+  const [publicUrl, setPublicUrl] = useState('');
 
   useEffect(() => {
     if (!token) return;
     const origin = window.location.origin;
+    const url = `${origin}/p/${token}`;
+    setPublicUrl(url);
     void import('qrcode').then(async (qrcode) => {
-      const dataUrl = await qrcode.toDataURL(`${origin}/p/${token}`, { margin: 1, width: 220 });
+      const dataUrl = await qrcode.toDataURL(url, { margin: 1, width: 220 });
       setSrc(dataUrl);
     });
   }, [token]);
 
   if (!token) return null;
 
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast.success('Enlace copiado');
+    } catch {
+      toast.error('No se pudo copiar el enlace');
+    }
+  };
+
+  const shareLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'QR de emergencia MascoTin',
+          text: 'Escaneá o abrí este enlace si encontrás a mi mascota.',
+          url: publicUrl,
+        });
+        return;
+      } catch {
+        // User cancelled or share failed — fall back to copy.
+      }
+    }
+    await copyLink();
+  };
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
-      <p className="mb-3 text-sm font-medium text-slate-700">QR de emergencia</p>
+      <p className="mb-1 text-sm font-medium text-slate-700">QR de emergencia</p>
+      <p className="mb-3 text-xs text-slate-500">
+        Quien lo escanee ve solo el contacto de emergencia que vos habilitaste.
+      </p>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt="QR de emergencia" className="mx-auto" />
       ) : (
         <p className="text-sm text-slate-500">Generando código...</p>
       )}
-      <p className="mt-2 text-xs text-slate-400">Escanealo para ver contacto de emergencia.</p>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+        {src ? (
+          <Button type="button" variant="outline" size="sm" asChild>
+            <a href={src} download="mascotin-qr.png">
+              Descargar PNG
+            </a>
+          </Button>
+        ) : (
+          <Button type="button" variant="outline" size="sm" disabled>
+            Descargar PNG
+          </Button>
+        )}
+        <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
+          Copiar enlace
+        </Button>
+        <Button type="button" size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => void shareLink()}>
+          Compartir
+        </Button>
+      </div>
     </div>
   );
 }

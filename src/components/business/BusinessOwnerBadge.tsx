@@ -15,14 +15,14 @@ export default function BusinessOwnerBadge({ className, compact = false }: Busin
         <TooltipTrigger asChild>
           <span
             className={cn(
-              'absolute -bottom-1 -right-1 z-10 flex items-center justify-center rounded-full border-2 border-white bg-teal-600 text-white shadow-sm',
+              'absolute -bottom-1 -right-1 z-10 flex items-center justify-center overflow-hidden rounded-full border-2 border-white bg-teal-600 text-white shadow-sm',
               compact ? 'h-4 w-4' : 'h-5 w-5',
               className
             )}
             role="img"
             aria-label="Owner de negocio verificado"
           >
-            <span className={cn('material-symbols-rounded', compact ? 'text-[10px]' : 'text-xs')}>
+            <span className={cn('material-symbols-rounded leading-none', compact ? 'text-[10px]' : 'text-[12px]')}>
               storefront
             </span>
           </span>

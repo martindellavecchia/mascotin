@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Pet } from '@/types';
 import type { HomeBootstrapSuggestion } from '@/lib/server/home';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
 interface CommunitySidebarProps {
   session: {
@@ -24,18 +25,6 @@ const FALLBACK_PETS = [
   { id: 'lola', name: 'Lola', breed: 'Caniche toy', image: '/images/circle-apricot-poodle.png', meta: 'Conectaron hace 3 días' },
   { id: 'simba', name: 'Simba', breed: 'Border collie', image: '/images/circle-border-collie.png', meta: 'Conectaron esta semana' },
 ];
-
-function isRenderableImage(source: string | null) {
-  if (!source) return false;
-  if (source.startsWith('/')) return true;
-
-  try {
-    const hostname = new URL(source).hostname;
-    return hostname === 'images.unsplash.com' || hostname.endsWith('.neon.tech');
-  } catch {
-    return false;
-  }
-}
 
 export default function CommunitySidebar({
   session,
@@ -95,7 +84,14 @@ export default function CommunitySidebar({
             >
               <div className="relative size-12 shrink-0 overflow-hidden rounded-full bg-slate-100">
                 {imageSource ? (
-                  <Image src={imageSource} alt={pet.name} fill className="object-cover" sizes="48px" />
+                  <Image
+                    src={imageSource}
+                    alt={pet.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                    unoptimized={shouldUnoptimizeImage(imageSource)}
+                  />
                 ) : (
                   <span className="material-symbols-rounded flex size-full items-center justify-center text-teal-600">pets</span>
                 )}
