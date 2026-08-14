@@ -44,7 +44,7 @@ describe('PetForm', () => {
     it('renders gender selector', () => {
       render(<PetForm {...defaultProps} />);
 
-      expect(screen.getByRole('combobox', { name: /género/i })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /sexo/i })).toBeInTheDocument();
     });
 
     it('renders energy selector', () => {

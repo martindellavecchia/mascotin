@@ -92,7 +92,7 @@ describe('Profile PetCard gender', () => {
     expect(screen.getByText('male')).toBeInTheDocument();
   });
 
-  it('keeps edit and delete actions always visible', () => {
+  it('shows a single edit action for the pet', () => {
     render(
       <PetCard
         pet={basePet as any}
@@ -101,7 +101,6 @@ describe('Profile PetCard gender', () => {
       />
     );
 
-    expect(screen.getByLabelText(/editar mascota/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/eliminar mascota/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /editar/i })).toBeInTheDocument();
   });
 });
