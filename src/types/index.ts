@@ -122,6 +122,7 @@ export interface Post {
     id: string;
     name: string | null;
     image: string | null;
+    isBusinessOwner?: boolean;
   };
   pet?: {
     id: string;
@@ -146,5 +147,6 @@ export interface Comment {
   author: {
     name: string | null;
     image: string | null;
+    isBusinessOwner?: boolean;
   };
 }

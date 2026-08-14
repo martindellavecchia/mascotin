@@ -23,7 +23,12 @@ export async function GET(
                             select: {
                                 image: true,
                             }
-                        }
+                        },
+                        stores: {
+                            where: { isActive: true },
+                            select: { id: true },
+                            take: 1,
+                        },
                     }
                 }
             }
@@ -31,12 +36,13 @@ export async function GET(
 
         // Transform to use owner image as fallback
         const formattedComments = comments.map(comment => {
-            const author = comment.author as typeof comment.author & { owner?: { image: string | null } };
+            const author = comment.author as typeof comment.author & { owner?: { image: string | null }; stores?: { id: string }[] };
             return {
                 ...comment,
                 author: {
                     name: author.name,
                     image: author.image || author.owner?.image || null,
+                    isBusinessOwner: (author.stores?.length ?? 0) > 0,
                 },
             };
         });
@@ -79,7 +85,12 @@ export async function POST(
                 author: {
                     select: {
                         name: true,
-                        image: true
+                        image: true,
+                        stores: {
+                            where: { isActive: true },
+                            select: { id: true },
+                            take: 1,
+                        },
                     }
                 }
             }
@@ -102,7 +113,17 @@ export async function POST(
             }).catch(console.error);
         }
 
-        return NextResponse.json({ success: true, comment });
+        return NextResponse.json({
+            success: true,
+            comment: {
+                ...comment,
+                author: {
+                    name: comment.author.name,
+                    image: comment.author.image,
+                    isBusinessOwner: comment.author.stores.length > 0,
+                },
+            },
+        });
     } catch (error) {
         console.error('Error creating comment:', error);
         return NextResponse.json({ success: false, error: 'Error interno del servidor' }, { status: 500 });

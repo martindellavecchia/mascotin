@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { providerUpdateStoreSchema, storeServiceSchema } from '@/lib/schemas';
+import { createUniqueStoreSlug, parseStoreImages } from '@/lib/stores';
+import { getStoreTrustSummary } from '@/lib/store-reputation';
 
 // GET - Get my store details
 export async function GET(
@@ -17,6 +19,18 @@ export async function GET(
       include: {
         category: true,
         services: { orderBy: { createdAt: 'desc' } },
+        bookingServices: {
+          include: { _count: { select: { appointments: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+        reviews: {
+          where: { status: 'PUBLISHED' },
+          include: {
+            author: { select: { id: true, name: true, image: true } },
+            _count: { select: { helpfulVotes: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -27,7 +41,14 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, store });
+    return NextResponse.json({
+      success: true,
+      store: {
+        ...store,
+        images: parseStoreImages(store.images),
+        trust: getStoreTrustSummary(store.ratingAverage, store.reviewCount),
+      },
+    });
   } catch (error) {
     console.error('Error fetching store:', error);
     return NextResponse.json(
@@ -65,9 +86,27 @@ export async function PATCH(
       );
     }
 
+    if (parsed.data.categoryId) {
+      const category = await db.storeCategory.findFirst({
+        where: { id: parsed.data.categoryId, isActive: true },
+        select: { id: true },
+      });
+      if (!category) {
+        return NextResponse.json(
+          { success: false, error: 'La categoría seleccionada no existe' },
+          { status: 400 }
+        );
+      }
+    }
+
     const updateData: Record<string, unknown> = { ...parsed.data };
     if (parsed.data.images) {
       updateData.images = JSON.stringify(parsed.data.images);
+    }
+    if (parsed.data.name && parsed.data.name !== store.name) {
+      updateData.slug = await db.$transaction((tx) =>
+        createUniqueStoreSlug(tx, parsed.data.name!, store.id)
+      );
     }
 
     const updated = await db.store.update({
@@ -76,10 +115,21 @@ export async function PATCH(
       include: {
         category: { select: { id: true, name: true } },
         services: { orderBy: { createdAt: 'desc' } },
+        bookingServices: {
+          include: { _count: { select: { appointments: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
-    return NextResponse.json({ success: true, store: updated });
+    return NextResponse.json({
+      success: true,
+      store: {
+        ...updated,
+        images: parseStoreImages(updated.images),
+        trust: getStoreTrustSummary(updated.ratingAverage, updated.reviewCount),
+      },
+    });
   } catch (error) {
     console.error('Error updating store:', error);
     return NextResponse.json(
@@ -117,10 +167,25 @@ export async function POST(
       );
     }
 
-    const service = await db.storeService.create({
+    const provider = await db.providerProfile.findUnique({
+      where: { userId: auth.session.user.id },
+      select: { id: true },
+    });
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, error: 'Perfil de proveedor no encontrado' },
+        { status: 403 }
+      );
+    }
+
+    const service = await db.service.create({
       data: {
         storeId: params.id,
-        ...parsed.data,
+        providerId: provider.id,
+        name: parsed.data.name,
+        description: parsed.data.description,
+        price: parsed.data.price,
+        duration: parsed.data.duration,
       },
     });
 

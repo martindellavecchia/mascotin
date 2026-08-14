@@ -77,6 +77,9 @@ model User {
   settings            UserSettings?
   notifications       Notification[] @relation("UserNotifications")
   actedNotifications  Notification[] @relation("ActorNotifications")
+  storeReviews         StoreReview[]
+  helpfulReviewVotes   ReviewHelpful[]
+  reviewReports        ReviewReport[]
 }
 
 model UserSettings {
@@ -156,6 +159,7 @@ model ProviderProfile {
 model Service {
   id            String    @id @default(cuid())
   providerId    String
+  storeId       String?
   name          String
   description   String
   price         Float
@@ -164,7 +168,10 @@ model Service {
   updatedAt     DateTime  @updatedAt
 
   provider      ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  store         Store?          @relation(fields: [storeId], references: [id], onDelete: SetNull)
   appointments  Appointment[]
+
+  @@index([storeId])
 }
 
 model Appointment {
@@ -180,6 +187,7 @@ model Appointment {
   service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   pet           Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+  review        StoreReview?
 
   @@index([userId])
   @@index([serviceId])
@@ -537,27 +545,86 @@ model StoreCategory {
 }
 
 model Store {
-  id           String   @id @default(cuid())
-  categoryId   String
-  providerId   String?  // null until admin assigns to a provider
-  name         String
-  slug         String   @unique
-  description  String?
-  phone        String?
-  email        String?
-  address      String?
-  image        String?
-  images       String   @default("[]") // JSON array
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  categoryId    String
+  providerId    String?  // null until admin assigns to a provider
+  name          String
+  slug          String   @unique
+  description   String?
+  phone         String?
+  email         String?
+  address       String?
+  image         String?
+  images        String   @default("[]") // JSON array
+  isActive      Boolean  @default(true)
+  ratingAverage Float    @default(0)
+  reviewCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  category     StoreCategory @relation(fields: [categoryId], references: [id])
-  provider     User?         @relation(fields: [providerId], references: [id])
-  services     StoreService[]
+  category        StoreCategory  @relation(fields: [categoryId], references: [id])
+  provider        User?          @relation(fields: [providerId], references: [id])
+  services        StoreService[]
+  bookingServices Service[]
+  reviews         StoreReview[]
 
   @@index([categoryId])
   @@index([providerId])
+}
+
+model StoreReview {
+  id              String    @id @default(cuid())
+  storeId         String
+  authorId        String
+  appointmentId   String    @unique
+  rating          Int
+  comment         String?
+  status          String    @default("PUBLISHED") // PUBLISHED, HIDDEN
+  businessReply   String?
+  businessReplyAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  store        Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  author       User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  appointment  Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  helpfulVotes ReviewHelpful[]
+  reports      ReviewReport[]
+
+  @@unique([storeId, authorId])
+  @@index([storeId, status, createdAt])
+  @@index([authorId])
+}
+
+model ReviewHelpful {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review StoreReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([userId])
+}
+
+model ReviewReport {
+  id          String   @id @default(cuid())
+  reviewId    String
+  reporterId  String
+  reason      String
+  description String?
+  status      String   @default("PENDING") // PENDING, REVIEWED, DISMISSED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  review   StoreReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporter User        @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, reporterId])
+  @@index([status, createdAt])
+  @@index([reporterId])
 }
 
 model StoreService {

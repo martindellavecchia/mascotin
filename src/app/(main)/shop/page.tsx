@@ -1,354 +1,233 @@
 'use client';
 
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useEffect, useRef, useState } from 'react';
-import QuickActions from '@/components/widgets/QuickActions';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { useFetchWithError } from '@/hooks/useFetchWithError';
 
-interface Service {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    duration: number;
-    provider: {
-        id: string;
-        businessName: string;
-        location: string;
-        rating: number;
-        reviewCount: number;
-    };
+interface Category {
+  id: string;
+  name: string;
 }
 
-interface Pet {
-    id: string;
-    name: string;
+interface StoreCard {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  address: string | null;
+  image: string | null;
+  category: Category;
+  ratingAverage: number;
+  reviewCount: number;
+  trust: { label: string; description: string; tone: string };
+  services: Array<{ id: string; name: string; price: number; duration: number }>;
 }
+
+const trustClasses: Record<string, string> = {
+  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  teal: 'bg-teal-50 text-teal-700 border-teal-200',
+  amber: 'bg-amber-50 text-amber-700 border-amber-200',
+  rose: 'bg-rose-50 text-rose-700 border-rose-200',
+  slate: 'bg-slate-50 text-slate-600 border-slate-200',
+};
 
 export default function ShopPage() {
-    const { data: session } = useSession();
-    const [services, setServices] = useState<Service[]>([]);
-    const [pets, setPets] = useState<Pet[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [minRating, setMinRating] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
-    const [sortBy, setSortBy] = useState('rating');
-    const { fetchWithError } = useFetchWithError();
+  const { data: session } = useSession();
+  const [stores, setStores] = useState<StoreCard[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [search, setSearch] = useState('');
+  const [categoryId, setCategoryId] = useState('_all');
+  const [minRating, setMinRating] = useState('_all');
+  const [sortBy, setSortBy] = useState('recommended');
+  const [loading, setLoading] = useState(true);
 
-    const [bookingOpen, setBookingOpen] = useState(false);
-    const [selectedService, setSelectedService] = useState<Service | null>(null);
-    const [selectedPetId, setSelectedPetId] = useState<string>('');
-    const [selectedDate, setSelectedDate] = useState<string>('');
-    const [bookingLoading, setBookingLoading] = useState(false);
+  useEffect(() => {
+    fetch('/api/store-categories')
+      .then((response) => response.json())
+      .then((data) => data.success && setCategories(data.categories))
+      .catch((error) => console.error('Error fetching categories:', error));
+  }, []);
 
-    const hasLoadedOnce = useRef(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      const params = new URLSearchParams({ sortBy });
+      if (search.trim()) params.set('search', search.trim());
+      if (categoryId !== '_all') params.set('categoryId', categoryId);
+      if (minRating !== '_all') params.set('minRating', minRating);
 
-    useEffect(() => {
-        fetchPets();
-    }, []);
+      try {
+        const response = await fetch(`/api/stores?${params}`, { signal: controller.signal });
+        const data = await response.json();
+        if (data.success) setStores(data.stores);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') console.error('Error fetching stores:', error);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }, 250);
 
-    const fetchServices = async (showFullLoading: boolean) => {
-        if (showFullLoading || !hasLoadedOnce.current) {
-            setLoading(true);
-        }
-        const params = new URLSearchParams();
-        if (searchTerm) params.set('search', searchTerm);
-        if (minRating && minRating !== '_all') params.set('minRating', minRating);
-        if (maxPrice && maxPrice !== '_all') params.set('maxPrice', maxPrice);
-        if (sortBy) params.set('sortBy', sortBy);
-
-        const result = await fetchWithError<{ services: Service[] }>(`/api/services?${params.toString()}`);
-        if (result.success && result.data) {
-            setServices(result.data.services || []);
-        }
-        hasLoadedOnce.current = true;
-        setLoading(false);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
     };
+  }, [search, categoryId, minRating, sortBy]);
 
-    useEffect(() => {
-        const timer = window.setTimeout(() => {
-            void fetchServices(false);
-        }, 300);
-        return () => window.clearTimeout(timer);
-    }, [searchTerm, minRating, maxPrice, sortBy]);
-
-    const fetchPets = async () => {
-        const result = await fetchWithError<{ pets: Pet[] }>('/api/pet/mine');
-        if (result.success && result.data) {
-            setPets(result.data.pets || []);
-        }
-    };
-
-    const openBookingModal = (service: Service) => {
-        setSelectedService(service);
-        setSelectedPetId(pets[0]?.id || '');
-        setSelectedDate('');
-        setBookingOpen(true);
-    };
-
-    const handleBooking = async () => {
-        if (!selectedService || !selectedPetId || !selectedDate) {
-            toast.error('Completa todos los campos');
-            return;
-        }
-
-        setBookingLoading(true);
-        try {
-            const response = await fetch('/api/appointments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    serviceId: selectedService.id,
-                    petId: selectedPetId,
-                    date: selectedDate,
-                }),
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                toast.success('¡Cita reservada exitosamente!');
-                setBookingOpen(false);
-            } else {
-                toast.error(data.error || 'Error al reservar');
-            }
-        } catch (error) {
-            toast.error('Error al reservar la cita');
-        } finally {
-            setBookingLoading(false);
-        }
-    };
-
-    const filteredServices = services.filter(s =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.provider.businessName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const getServiceIcon = (name: string) => {
-        const lower = name.toLowerCase();
-        if (lower.includes('vet') || lower.includes('vacun')) return 'vaccines';
-        if (lower.includes('paseo') || lower.includes('walk')) return 'directions_walk';
-        if (lower.includes('groom') || lower.includes('baño') || lower.includes('corte')) return 'content_cut';
-        if (lower.includes('hotel') || lower.includes('guard')) return 'hotel';
-        return 'pets';
-    };
-
-    const getServiceColor = (name: string) => {
-        const lower = name.toLowerCase();
-        if (lower.includes('vet') || lower.includes('vacun')) return 'bg-teal-50 text-teal-600';
-        if (lower.includes('paseo') || lower.includes('walk')) return 'bg-orange-50 text-orange-600';
-        if (lower.includes('groom') || lower.includes('baño')) return 'bg-pink-50 text-pink-600';
-        return 'bg-blue-50 text-blue-600';
-    };
-
-    // Generate next 7 days for date selection
-    const getNextDays = () => {
-        const days = [];
-        for (let i = 1; i <= 7; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() + i);
-            date.setHours(10, 0, 0, 0);
-            days.push({
-                value: date.toISOString(),
-                label: date.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }) + ' 10:00',
-            });
-        }
-        return days;
-    };
-
-    return (
-        <div className="min-h-screen bg-slate-50">
-
-            <div className="container mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Main Content */}
-                    <div className="lg:col-span-3">
-                        <div className="mb-8 text-center">
-                            <h1 className="text-3xl font-bold text-slate-800 mb-2">Servicios para tu Mascota</h1>
-                            <p className="text-slate-600">Encuentra veterinarios, paseadores y más.</p>
-
-                            <div className="max-w-xl mx-auto mt-6 relative">
-                                <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                                <Input
-                                    placeholder="Buscar servicios..."
-                                    className="pl-12 h-12 rounded-full shadow-sm border-slate-200"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-
-                            {/* Filter Bar */}
-                            <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-                                <Select value={minRating} onValueChange={setMinRating}>
-                                    <SelectTrigger className="w-[140px] bg-white">
-                                        <SelectValue placeholder="Rating mínimo" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="_all">Todos</SelectItem>
-                                        <SelectItem value="4.5">4.5+</SelectItem>
-                                        <SelectItem value="4">4.0+</SelectItem>
-                                        <SelectItem value="3.5">3.5+</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={maxPrice} onValueChange={setMaxPrice}>
-                                    <SelectTrigger className="w-[140px] bg-white">
-                                        <SelectValue placeholder="Precio máx" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="_all">Sin límite</SelectItem>
-                                        <SelectItem value="2000">Hasta $2.000</SelectItem>
-                                        <SelectItem value="3500">Hasta $3.500</SelectItem>
-                                        <SelectItem value="5000">Hasta $5.000</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={sortBy} onValueChange={setSortBy}>
-                                    <SelectTrigger className="w-[160px] bg-white">
-                                        <SelectValue placeholder="Ordenar por" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="rating">Mejor valorado</SelectItem>
-                                        <SelectItem value="price_asc">Precio: menor</SelectItem>
-                                        <SelectItem value="price_desc">Precio: mayor</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        {loading ? (
-                            <div className="flex justify-center py-12">
-                                <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
-                            </div>
-                        ) : filteredServices.length === 0 ? (
-                            <Card className="max-w-md mx-auto">
-                                <CardContent className="p-8 text-center">
-                                    <span className="material-symbols-rounded text-5xl text-slate-300 mb-4">store</span>
-                                    <h3 className="font-semibold text-slate-800 mb-2">No hay servicios disponibles</h3>
-                                    <p className="text-sm text-slate-500">
-                                        {searchTerm ? 'Intenta con otra búsqueda' : 'Los proveedores aún no han publicado servicios'}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {filteredServices.map((service) => (
-                                    <Card key={service.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                                        <CardContent className="p-0">
-                                            <div className="p-5">
-                                                <div className="flex items-start gap-3 mb-4">
-                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${getServiceColor(service.name)}`}>
-                                                        <span className="material-symbols-rounded text-xl">{getServiceIcon(service.name)}</span>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <h3 className="font-bold text-slate-800">{service.name}</h3>
-                                                        <p className="text-sm text-slate-500">{service.provider.businessName}</p>
-                                                    </div>
-                                                </div>
-
-                                                <p className="text-sm text-slate-600 mb-4 line-clamp-2">{service.description}</p>
-
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <span className="text-amber-500 material-symbols-rounded text-sm filled">star</span>
-                                                    <span className="text-sm font-medium">{service.provider.rating.toFixed(1)}</span>
-                                                    <span className="text-sm text-slate-400">({service.provider.reviewCount} reseñas)</span>
-                                                    <Badge variant="outline" className="ml-auto text-xs">
-                                                        {service.duration} min
-                                                    </Badge>
-                                                </div>
-
-                                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                                    <div>
-                                                        <span className="text-2xl font-bold text-teal-600">${service.price.toLocaleString()}</span>
-                                                    </div>
-                                                    <Button
-                                                        className="bg-teal-500 hover:bg-teal-600"
-                                                        onClick={() => openBookingModal(service)}
-                                                    >
-                                                        Reservar
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right Sidebar: Quick Actions */}
-                    <div className="lg:col-span-1 hidden lg:block">
-                        <div className="sticky top-24">
-                            <QuickActions />
-                        </div>
-                    </div>
-                </div>
+  return (
+    <main className="min-h-screen bg-slate-50">
+      <section className="border-b border-slate-200 bg-white">
+        <div className="container mx-auto px-4 py-10 md:py-14">
+          <div className="mx-auto max-w-3xl text-center">
+            <Badge className="mb-4 border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-50">
+              Profesionales de la comunidad
+            </Badge>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Negocios confiables para tu mascota
+            </h1>
+            <p className="mt-3 text-base text-slate-600 md:text-lg">
+              Descubrí servicios por categoría y decidí con reseñas verificadas de clientes reales.
+            </p>
+            <div className="relative mx-auto mt-7 max-w-2xl">
+              <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar negocio, servicio o zona"
+                className="h-12 rounded-2xl border-slate-200 bg-white pl-12 shadow-sm"
+              />
             </div>
+          </div>
 
-            {/* Booking Modal */}
-            <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Reservar Cita</DialogTitle>
-                    </DialogHeader>
-
-                    {selectedService && (
-                        <div className="space-y-4 py-4">
-                            <div className="bg-slate-50 rounded-lg p-4">
-                                <p className="font-semibold text-slate-800">{selectedService.name}</p>
-                                <p className="text-sm text-slate-500">{selectedService.provider.businessName}</p>
-                                <p className="text-lg font-bold text-teal-600 mt-2">${selectedService.price.toLocaleString()}</p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Mascota</label>
-                                <Select value={selectedPetId} onValueChange={setSelectedPetId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona una mascota" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {pets.map(pet => (
-                                            <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Fecha y hora</label>
-                                <Select value={selectedDate} onValueChange={setSelectedDate}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona fecha" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {getNextDays().map(day => (
-                                            <SelectItem key={day.value} value={day.value}>{day.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    )}
-
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setBookingOpen(false)}>Cancelar</Button>
-                        <Button
-                            className="bg-teal-500 hover:bg-teal-600"
-                            onClick={handleBooking}
-                            disabled={bookingLoading || !selectedPetId || !selectedDate}
-                        >
-                            {bookingLoading ? 'Reservando...' : 'Confirmar Reserva'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+          <div className="mx-auto mt-5 flex max-w-4xl flex-wrap items-center justify-center gap-3">
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger className="w-[210px] bg-white">
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all">Todas las categorías</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={minRating} onValueChange={setMinRating}>
+              <SelectTrigger className="w-[170px] bg-white">
+                <SelectValue placeholder="Calificación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all">Cualquier rating</SelectItem>
+                <SelectItem value="4.5">4,5 o más</SelectItem>
+                <SelectItem value="4">4,0 o más</SelectItem>
+                <SelectItem value="3">3,0 o más</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[190px] bg-white">
+                <SelectValue placeholder="Orden" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recommended">Más recomendados</SelectItem>
+                <SelectItem value="rating">Mejor calificados</SelectItem>
+                <SelectItem value="reviews">Más reseñados</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-    );
+      </section>
+
+      <section className="container mx-auto px-4 py-8 md:py-10">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Recomendados en MascoTin</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              El orden combina la nota y la cantidad de experiencias verificadas.
+            </p>
+          </div>
+          {session?.user?.role === 'PROVIDER' && (
+            <Button asChild variant="outline" className="hidden border-teal-200 text-teal-700 sm:inline-flex">
+              <Link href="/provider">Administrar mi negocio</Link>
+            </Button>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-label="Cargando negocios">
+            {[0, 1, 2].map((item) => <div key={item} className="h-80 animate-pulse rounded-2xl bg-slate-200" />)}
+          </div>
+        ) : stores.length === 0 ? (
+          <Card className="border-dashed border-slate-300 bg-white">
+            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
+              <span className="material-symbols-rounded text-5xl text-slate-300">storefront</span>
+              <h3 className="mt-3 text-lg font-semibold text-slate-900">Todavía no hay negocios con esos filtros</h3>
+              <p className="mt-1 max-w-md text-sm text-slate-500">Probá otra búsqueda o publicá tu negocio desde el panel de proveedor.</p>
+              <Button asChild className="mt-5 bg-teal-600 hover:bg-teal-700">
+                <Link href="/provider">Ir al panel de proveedor</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {stores.map((store) => (
+              <Link key={store.id} href={`/shop/${store.slug}`} className="group block">
+                <Card className="h-full overflow-hidden border-slate-200 bg-white transition duration-200 group-hover:-translate-y-0.5 group-hover:border-teal-200 group-hover:shadow-lg">
+                  <div className="relative h-36 bg-gradient-to-br from-teal-100 via-cyan-50 to-orange-50">
+                    {store.image ? (
+                      <img src={store.image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="material-symbols-rounded absolute left-6 top-6 text-6xl text-teal-700/30">storefront</span>
+                    )}
+                    <Badge className="absolute left-4 top-4 border-white/70 bg-white/90 text-slate-700 shadow-sm hover:bg-white">
+                      {store.category.name}
+                    </Badge>
+                  </div>
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-lg font-bold text-slate-900 group-hover:text-teal-700">{store.name}</h3>
+                        {store.address && (
+                          <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
+                            <span className="material-symbols-rounded text-sm">location_on</span>
+                            {store.address}
+                          </p>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="flex items-center justify-end gap-1 font-bold text-slate-900">
+                          <span className="material-symbols-rounded text-base text-amber-500">star</span>
+                          {store.reviewCount ? store.ratingAverage.toFixed(1) : 'Nuevo'}
+                        </p>
+                        <p className="text-xs text-slate-400">{store.reviewCount} reseñas</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={`mt-3 ${trustClasses[store.trust.tone] || trustClasses.slate}`}>
+                      {store.trust.label}
+                    </Badge>
+                    <p className="mt-3 line-clamp-2 min-h-10 text-sm leading-relaxed text-slate-600">
+                      {store.description || 'Servicios profesionales para el cuidado de tu mascota.'}
+                    </p>
+                    <div className="mt-4 border-t border-slate-100 pt-4">
+                      {store.services[0] ? (
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <span className="truncate text-slate-600">Desde {store.services[0].name}</span>
+                          <span className="font-bold text-teal-700">${store.services[0].price.toLocaleString('es-AR')}</span>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-slate-400">Próximamente publicará sus servicios</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
 }

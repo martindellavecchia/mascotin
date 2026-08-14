@@ -137,6 +137,8 @@ export const assignStoreSchema = z.object({
 
 // Store customization (provider)
 export const providerUpdateStoreSchema = z.object({
+  categoryId: z.string().min(1, 'La categoría es requerida').optional(),
+  name: z.string().trim().min(2, 'El nombre es requerido').max(150).optional(),
   description: z.string().max(1000).optional(),
   phone: z.string().max(20).optional(),
   email: z.string().email('Email inválido').optional(),
@@ -145,12 +147,40 @@ export const providerUpdateStoreSchema = z.object({
   images: z.array(z.string()).max(10).optional(),
 });
 
+export const providerCreateStoreSchema = z.object({
+  categoryId: z.string().min(1, 'La categoría es requerida'),
+  name: z.string().trim().min(2, 'El nombre es requerido').max(150),
+  description: z.string().trim().min(20, 'La descripción debe tener al menos 20 caracteres').max(1000),
+  phone: z.string().trim().max(20).optional(),
+  email: z.string().trim().email('Email inválido').optional().or(z.literal('')),
+  address: z.string().trim().max(300).optional(),
+  image: z.string().trim().url('Imagen inválida').optional().or(z.literal('')),
+});
+
+export const storeReviewSchema = z.object({
+  rating: z.number().int().min(1, 'Elegí una calificación').max(5),
+  comment: z.string().trim().min(20, 'La reseña debe tener al menos 20 caracteres').max(1000).optional().or(z.literal('')),
+});
+
+export const businessReplySchema = z.object({
+  businessReply: z.string().trim().min(2, 'La respuesta es demasiado corta').max(1000),
+});
+
+export const reviewReportSchema = z.object({
+  reason: z.enum(['spam', 'inappropriate', 'conflict_of_interest', 'other']),
+  description: z.string().trim().max(500).optional(),
+});
+
+export const reviewModerationSchema = z.object({
+  status: z.enum(['PUBLISHED', 'HIDDEN']),
+});
+
 // Store services (admin or provider)
 export const storeServiceSchema = z.object({
   name: z.string().min(2, 'El nombre es requerido').max(150),
   description: z.string().min(5, 'La descripción debe tener al menos 5 caracteres').max(1000),
-  price: z.number().positive('El precio debe ser positivo'),
-  duration: z.number().int().positive('La duración debe ser positiva'),
+  price: z.coerce.number().positive('El precio debe ser positivo'),
+  duration: z.coerce.number().int().positive('La duración debe ser positiva'),
   isActive: z.boolean().optional(),
 });
 
@@ -160,7 +190,9 @@ export type CreateStoreData = z.infer<typeof createStoreSchema>;
 export type UpdateStoreData = z.infer<typeof updateStoreSchema>;
 export type AssignStoreData = z.infer<typeof assignStoreSchema>;
 export type ProviderUpdateStoreData = z.infer<typeof providerUpdateStoreSchema>;
+export type ProviderCreateStoreData = z.infer<typeof providerCreateStoreSchema>;
 export type StoreServiceData = z.infer<typeof storeServiceSchema>;
+export type StoreReviewData = z.infer<typeof storeReviewSchema>;
 
 // Provider access request
 export const createProviderRequestSchema = z.object({

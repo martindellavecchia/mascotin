@@ -42,6 +42,11 @@ export async function getFeedPage({
               image: true,
             },
           },
+          stores: {
+            where: { isActive: true },
+            select: { id: true },
+            take: 1,
+          },
         },
       },
       pet: {
@@ -88,6 +93,7 @@ export async function getFeedPage({
   const formattedPosts = posts.map((post) => {
     const author = post.author as typeof post.author & {
       owner?: { image: string | null };
+      stores?: { id: string }[];
     };
     const authorImage = author?.image || author?.owner?.image || null;
     const normalizedPost = withImageFields(post);
@@ -97,7 +103,9 @@ export async function getFeedPage({
       author: {
         ...post.author,
         image: authorImage,
+        isBusinessOwner: (author.stores?.length ?? 0) > 0,
         owner: undefined,
+        stores: undefined,
       },
       isLiked: post.likes.length > 0,
       likes: undefined,

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import ProviderAppointments from '@/components/provider/ProviderAppointments';
+import BusinessManagement from '@/components/provider/BusinessManagement';
 
 interface ProviderProfile {
     id: string;
@@ -220,6 +221,7 @@ export default function ProviderPage() {
                                 <TabsList className="mb-4">
                                     <TabsTrigger value="appointments">Citas</TabsTrigger>
                                     <TabsTrigger value="services">Servicios</TabsTrigger>
+                                    <TabsTrigger value="business">Mi negocio</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="appointments">
                                     <ProviderAppointments />
@@ -261,6 +263,9 @@ export default function ProviderPage() {
                                             ))}
                                         </div>
                                     )}
+                                </TabsContent>
+                                <TabsContent value="business">
+                                    <BusinessManagement />
                                 </TabsContent>
                             </Tabs>
                         </div>

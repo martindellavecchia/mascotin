@@ -147,4 +147,8 @@ export const RATE_LIMITS = {
   emailCheck: { maxRequests: 10, windowMs: 60000 },
   /** Admin write operations: 20 per minute */
   adminWrite: { maxRequests: 20, windowMs: 60000 },
+  /** Store reviews and edits: 10 per minute */
+  review: { maxRequests: 10, windowMs: 60000 },
+  /** Review reports: 5 per 10 minutes */
+  reviewReport: { maxRequests: 5, windowMs: 600000 },
 } as const;

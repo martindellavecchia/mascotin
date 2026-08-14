@@ -9,7 +9,11 @@ jest.mock('next-auth/providers/credentials', () => ({
 }));
 
 jest.mock('@/lib/db', () => ({
-  db: {},
+  db: {
+    store: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
+  },
 }));
 
 jest.mock('@/lib/rate-limit', () => ({
@@ -86,9 +90,14 @@ describe('auth callbacks', () => {
       trigger: 'update',
     });
 
-    expect(session.user.id).toBe('user-1');
-    expect(session.user.role).toBe('ADMIN');
-    expect(session.user.headerImage).toBe('https://example.com/admin.webp');
+    const sessionUser = session.user as {
+      id: string;
+      role?: string;
+      headerImage?: string | null;
+    };
+    expect(sessionUser.id).toBe('user-1');
+    expect(sessionUser.role).toBe('ADMIN');
+    expect(sessionUser.headerImage).toBe('https://example.com/admin.webp');
   });
 
   it('uses token.sub as session user id when token.id is missing', async () => {
@@ -111,7 +120,7 @@ describe('auth callbacks', () => {
       trigger: 'update',
     });
 
-    expect(session.user.id).toBe('user-from-sub');
+    expect((session.user as { id: string }).id).toBe('user-from-sub');
   });
 
   it('uses JWT sessions without a database adapter', () => {

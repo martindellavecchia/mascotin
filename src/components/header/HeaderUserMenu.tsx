@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
 
 interface HeaderUserMenuProps {
   session: {
@@ -21,6 +22,7 @@ interface HeaderUserMenuProps {
       image?: string | null;
       role?: string;
       headerImage?: string | null;
+      isBusinessOwner?: boolean;
     };
   } | null;
   showLabel?: boolean;
@@ -41,15 +43,18 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
           className={showLabel ? 'h-auto max-w-[170px] justify-start gap-3 rounded-xl px-2 py-2' : 'h-10 w-10 rounded-full p-0'}
           aria-label="Menú de usuario"
         >
-          <Avatar className="h-10 w-10">
-            {displayImage ? (
-              <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
-            ) : (
-              <AvatarFallback className="bg-teal-500 text-white font-semibold">
-                {userInitials}
-              </AvatarFallback>
-            )}
-          </Avatar>
+          <span className="relative shrink-0">
+            <Avatar className="h-10 w-10">
+              {displayImage ? (
+                <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
+              ) : (
+                <AvatarFallback className="bg-teal-500 text-white font-semibold">
+                  {userInitials}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            {session?.user?.isBusinessOwner && <BusinessOwnerBadge />}
+          </span>
           {showLabel && (
             <span className="hidden min-w-0 text-left lg:block">
               <span className="block truncate text-sm font-semibold text-slate-900">
@@ -62,15 +67,18 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-3 py-2 flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            {displayImage ? (
-              <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
-            ) : (
-              <AvatarFallback className="bg-teal-500 text-white font-semibold">
-                {userInitials}
-              </AvatarFallback>
-            )}
-          </Avatar>
+          <span className="relative shrink-0">
+            <Avatar className="h-10 w-10">
+              {displayImage ? (
+                <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
+              ) : (
+                <AvatarFallback className="bg-teal-500 text-white font-semibold">
+                  {userInitials}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            {session?.user?.isBusinessOwner && <BusinessOwnerBadge />}
+          </span>
           <div>
             <p className="text-sm font-semibold">{session?.user?.name}</p>
             <p className="text-xs text-slate-500">{session?.user?.email}</p>

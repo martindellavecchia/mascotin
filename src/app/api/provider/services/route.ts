@@ -82,10 +82,15 @@ export async function POST(request: Request) {
         }
 
         const { name, description, price, duration } = parsed.data;
+        const store = await db.store.findFirst({
+            where: { providerId: session.user.id, isActive: true },
+            select: { id: true },
+        });
 
         const service = await db.service.create({
             data: {
                 providerId: provider.id,
+                storeId: store?.id,
                 name,
                 description,
                 price,

@@ -3,6 +3,7 @@
 import { memo, useState, useEffect } from 'react';
 import { Post, Comment } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -204,10 +205,13 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             )}
             {/* Header */}
             <div className="px-3 py-2.5 flex items-center gap-2.5">
-                <Avatar className="h-8 w-8 border border-gray-100">
-                    <AvatarImage src={post.author?.image || undefined} />
-                    <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
+                <span className="relative shrink-0">
+                    <Avatar className="h-8 w-8 border border-gray-100">
+                        <AvatarImage src={post.author?.image || undefined} />
+                        <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                    {post.author?.isBusinessOwner && <BusinessOwnerBadge compact />}
+                </span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-sm text-gray-900">{post.author?.name || 'Usuario'}</span>
@@ -374,10 +378,13 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         <div className="space-y-1.5">
                             {comments.map(comment => (
                                 <div key={comment.id} className="flex gap-1.5 text-xs">
-                                    <Avatar className="h-6 w-6 mt-0.5">
-                                        <AvatarImage src={comment.author.image || undefined} />
-                                        <AvatarFallback>{comment.author.name?.[0]}</AvatarFallback>
-                                    </Avatar>
+                                    <span className="relative mt-0.5 shrink-0">
+                                        <Avatar className="h-6 w-6">
+                                            <AvatarImage src={comment.author.image || undefined} />
+                                            <AvatarFallback>{comment.author.name?.[0]}</AvatarFallback>
+                                        </Avatar>
+                                        {comment.author.isBusinessOwner && <BusinessOwnerBadge compact className="-bottom-1.5 -right-1.5" />}
+                                    </span>
                                     <div className="bg-white px-2 py-1 rounded-lg text-xs">
                                         <span className="font-semibold mr-1">{comment.author.name}</span>
                                         <span className="text-gray-700">{comment.content}</span>
