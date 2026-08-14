@@ -58,10 +58,10 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
                         <button
                             type="button"
                             onClick={() => setImages(images.filter((_, i) => i !== idx))}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-sm"
+                            className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-red-500 text-white shadow-sm"
                             aria-label="Eliminar foto"
                         >
-                            <span className="material-symbols-rounded text-sm block">close</span>
+                            <span className="material-symbols-rounded text-[16px] leading-none">close</span>
                         </button>
                     </div>
                 ))}
