@@ -654,18 +654,19 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                   type="button"
                   variant={thumbnailIndex === index ? "default" : "outline"}
                   size="icon"
-                  className={`absolute top-2 left-2 h-7 w-7 ${thumbnailIndex === index ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-white/80 hover:bg-yellow-100'}`}
+                  className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${thumbnailIndex === index ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-white/80 hover:bg-yellow-100'}`}
                   onClick={() => setThumbnailIndex(index)}
                   title="Usar como foto de perfil"
+                  aria-label="Usar como foto de perfil"
                 >
-                  <span className={`material-symbols-rounded h-4 w-4 ${thumbnailIndex === index ? 'text-white filled' : 'text-gray-500'}`}>star</span>
+                  <span className={`material-symbols-rounded text-[16px] leading-none ${thumbnailIndex === index ? 'text-white filled' : 'text-slate-500'}`}>star</span>
                 </Button>
                 {/* Delete button */}
                 <Button
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 h-6 w-6"
+                  className="absolute top-2 right-2 size-7 gap-0 rounded-full p-0"
                   onClick={() => {
                     const newImages = images.filter((_, i) => i !== index);
                     setImages(newImages);
@@ -677,8 +678,9 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                       setThumbnailIndex(thumbnailIndex - 1);
                     }
                   }}
+                  aria-label="Eliminar foto"
                 >
-                  <span className="material-symbols-rounded h-3 w-3">close</span>
+                  <span className="material-symbols-rounded text-[16px] leading-none">close</span>
                 </Button>
                 {thumbnailIndex === index && (
                   <div className="absolute bottom-0 left-0 right-0 bg-yellow-400 text-white text-xs text-center py-1 font-medium">
