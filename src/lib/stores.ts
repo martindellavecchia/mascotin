@@ -1,5 +1,7 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { DEFAULT_STORE_CATEGORIES } from '@/lib/store-reputation';
+
+type StoreDbClient = PrismaClient | Prisma.TransactionClient;
 
 export function slugifyStoreName(value: string): string {
   return value
@@ -24,7 +26,7 @@ export function parseStoreImages(value: string | null | undefined): string[] {
 }
 
 export async function createUniqueStoreSlug(
-  client: Prisma.TransactionClient,
+  client: StoreDbClient,
   name: string,
   excludeStoreId?: string
 ): Promise<string> {
@@ -49,7 +51,7 @@ export async function createUniqueStoreSlug(
 }
 
 export async function ensureDefaultStoreCategories(
-  client: Prisma.TransactionClient
+  client: StoreDbClient
 ): Promise<void> {
   await Promise.all(
     DEFAULT_STORE_CATEGORIES.map((category) =>
@@ -63,7 +65,7 @@ export async function ensureDefaultStoreCategories(
 }
 
 export async function recalculateStoreRating(
-  client: Prisma.TransactionClient,
+  client: StoreDbClient,
   storeId: string
 ): Promise<{ ratingAverage: number; reviewCount: number }> {
   const aggregate = await client.storeReview.aggregate({

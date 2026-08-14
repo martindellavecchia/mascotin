@@ -6,20 +6,51 @@ import { Button } from "@/components/ui/button";
 
 interface AboutCardProps {
     bio?: string;
+    onEdit?: () => void;
 }
 
-export function AboutCard({ bio }: AboutCardProps) {
+function isEmptyBio(bio?: string): boolean {
+    if (!bio) return true;
+    const trimmed = bio.trim();
+    if (trimmed.length < 5) return true;
+    if (/^(\w)\1+$/.test(trimmed)) return true;
+    return false;
+}
+
+export function AboutCard({ bio, onEdit }: AboutCardProps) {
     const [expanded, setExpanded] = useState(false);
+    const empty = isEmptyBio(bio);
 
-    // Data Cleanup Logic
-    let displayBio = bio;
-
-    // Detectar basura como "11111111" o muy corto
-    if (!displayBio || displayBio.length < 5 || /^(\w)\1+$/.test(displayBio)) {
-        // Si es basura o muy corto, usar un default amigable
-        displayBio = "¡Hola! Soy un amante de los animales. Me encanta pasar tiempo con mis mascotas y conocer nuevos amigos peludos. Cuido mucho los detalles y la seguridad.";
+    if (empty) {
+        return (
+            <Card className="shadow-sm border-0 bg-white">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <span className="material-symbols-rounded text-teal-500">info</span>
+                        Sobre mí
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-gray-500 text-sm mb-3">
+                        Aún no has escrito tu biografía. Cuéntales a otros dueños un poco sobre ti.
+                    </p>
+                    {onEdit && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 p-0 h-auto font-medium"
+                            onClick={onEdit}
+                        >
+                            <span className="material-symbols-rounded text-base mr-1">edit</span>
+                            Editar biografía
+                        </Button>
+                    )}
+                </CardContent>
+            </Card>
+        );
     }
 
+    const displayBio = bio!.trim();
     const isLongText = displayBio.length > 150;
     const content = expanded ? displayBio : displayBio.slice(0, 150) + (isLongText ? '...' : '');
 

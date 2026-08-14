@@ -29,13 +29,13 @@ export default function CommunityPage() {
     return (
         <div className="bg-slate-50">
             <CommunityLayout>
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-800">Comunidad</h1>
-                        <p className="text-gray-600">Eventos, grupos y debates cercanos</p>
+                        <h1 className="text-2xl font-bold text-slate-800">Comunidad</h1>
+                        <p className="text-slate-600">Eventos, grupos y debates cercanos</p>
                     </div>
                     <Button
-                        className="bg-red-500 hover:bg-red-600 text-white"
+                        className="w-full bg-red-500 text-white hover:bg-red-600 sm:w-auto"
                         onClick={() => setLostPetFormOpen(true)}
                     >
                         <span className="material-symbols-rounded mr-2">emergency</span>

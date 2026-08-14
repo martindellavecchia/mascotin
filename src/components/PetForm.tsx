@@ -111,6 +111,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       allergies: initialData?.allergies || '',
       specialNeeds: initialData?.specialNeeds || '',
       vetClinicName: initialData?.vetClinicName || '',
+      sharePhoneOnScan: initialData?.sharePhoneOnScan ?? false,
+      shareVetOnScan: initialData?.shareVetOnScan ?? false,
     },
   });
 
@@ -291,7 +293,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
           />
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <FormField
             control={form.control}
             name="age"
@@ -414,7 +416,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                     onChange={field.onChange}
                     className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                   />
-                  <span className="text-lg">✅</span>
+                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-gray-400'}`}>vaccines</span>
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Vacunado</span>
                 </label>
               )}
@@ -434,7 +436,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                     onChange={field.onChange}
                     className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                   />
-                  <span className="text-lg">⚖️</span>
+                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-gray-400'}`}>medical_services</span>
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Castrado</span>
                 </label>
               )}
@@ -582,6 +584,61 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
           />
         </div>
 
+        <div className="space-y-3">
+          <Label className="text-gray-700 font-medium">Privacidad al escanear QR</Label>
+          <p className="text-xs text-gray-500">Controla qué datos se muestran en el pasaporte público</p>
+          <div className="flex flex-col gap-3">
+            <FormField
+              control={form.control}
+              name="sharePhoneOnScan"
+              render={({ field }) => (
+                <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
+                  ? 'bg-teal-50 border-teal-300'
+                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}>
+                  <input
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                  />
+                  <span className="material-symbols-rounded text-xl text-teal-600">phone</span>
+                  <div>
+                    <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>
+                      Compartir teléfono
+                    </span>
+                    <span className="text-xs text-gray-500">Mostrar tu número al escanear el pasaporte</span>
+                  </div>
+                </label>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="shareVetOnScan"
+              render={({ field }) => (
+                <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
+                  ? 'bg-teal-50 border-teal-300'
+                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}>
+                  <input
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                  />
+                  <span className="material-symbols-rounded text-xl text-teal-600">local_hospital</span>
+                  <div>
+                    <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>
+                      Compartir veterinaria
+                    </span>
+                    <span className="text-xs text-gray-500">Mostrar la clínica de cabecera al escanear</span>
+                  </div>
+                </label>
+              )}
+            />
+          </div>
+        </div>
+
         <div>
           <Label>Imágenes ({images.length}/6)</Label>
           <p className="text-xs text-gray-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
@@ -601,7 +658,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                   onClick={() => setThumbnailIndex(index)}
                   title="Usar como foto de perfil"
                 >
-                  <span className={`material-symbols-rounded h-4 w-4 ${thumbnailIndex === index ? 'text-white fill-white' : 'text-gray-500'}`}>star</span>
+                  <span className={`material-symbols-rounded h-4 w-4 ${thumbnailIndex === index ? 'text-white filled' : 'text-gray-500'}`}>star</span>
                 </Button>
                 {/* Delete button */}
                 <Button
@@ -633,12 +690,12 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
 
             {images.length < 6 && (
               <div className="aspect-square rounded-lg border-2 border-dashed border-green-300 flex items-center justify-center bg-teal-50">
-                <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex items-center justify-center">
+                <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
                   {uploading ? (
                     <span className="material-symbols-rounded w-8 h-8 text-teal-500 animate-spin">pending</span>
                   ) : (
                     <>
-                      <span className="material-symbols-rounded w-8 h-8 mx-auto mb-2 text-teal-500">upload</span>
+                      <span className="material-symbols-rounded w-8 h-8 mb-2 text-teal-500">upload</span>
                       <p className="text-sm text-gray-600">Subir foto</p>
                     </>
                   )}
@@ -659,16 +716,29 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
           </p>
         </div>
 
-        <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading}>
-          {loading ? (
-            <>
-              <span className="material-symbols-rounded w-4 h-4 mr-2 animate-spin">pending</span>
-              {initialData?.id ? 'Actualizando...' : 'Guardando...'}
-            </>
-          ) : (
-            initialData?.id ? 'Actualizar Mascota' : 'Guardar Mascota'
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={onCancel}
+              disabled={loading || uploading}
+            >
+              Cancelar
+            </Button>
           )}
-        </Button>
+          <Button type="submit" className="w-full flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading}>
+            {loading ? (
+              <>
+                <span className="material-symbols-rounded w-4 h-4 mr-2 animate-spin">pending</span>
+                {initialData?.id ? 'Actualizando...' : 'Guardando...'}
+              </>
+            ) : (
+              initialData?.id ? 'Actualizar Mascota' : 'Guardar Mascota'
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { parseJsonStringArray } from '@/lib/json-array';
 import { getStoreTrustSummary } from '@/lib/store-reputation';
 import { parseStoreImages } from '@/lib/stores';
 
@@ -89,6 +90,7 @@ export async function GET(
         address: store.address,
         image: store.image,
         images: parseStoreImages(store.images),
+        tags: parseJsonStringArray(store.tags),
         category: store.category,
         owner: store.provider
           ? {

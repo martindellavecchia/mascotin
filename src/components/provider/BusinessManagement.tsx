@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { STORE_PLACE_TAGS, STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
 
 interface Category { id: string; name: string }
 interface Store {
@@ -23,6 +24,7 @@ interface Store {
   email: string | null;
   address: string | null;
   image: string | null;
+  tags?: string[];
   ratingAverage: number;
   reviewCount: number;
   trust: { label: string; description: string };
@@ -44,6 +46,7 @@ export default function BusinessManagement() {
     email: '',
     address: '',
     image: '',
+    tags: [] as string[],
   });
 
   const hydrateForm = (value: Store) => {
@@ -55,6 +58,7 @@ export default function BusinessManagement() {
       email: value.email || '',
       address: value.address || '',
       image: value.image || '',
+      tags: Array.isArray(value.tags) ? value.tags : [],
     });
   };
 
@@ -85,6 +89,15 @@ export default function BusinessManagement() {
 
   const setField = (field: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const toggleTag = (tag: StorePlaceTag) => {
+    setForm((current) => ({
+      ...current,
+      tags: current.tags.includes(tag)
+        ? current.tags.filter((item) => item !== tag)
+        : [...current.tags, tag],
+    }));
   };
 
   const save = async () => {
@@ -151,6 +164,28 @@ export default function BusinessManagement() {
           <div><label className="mb-1.5 block text-sm font-medium text-slate-700">Descripción *</label><Textarea value={form.description} onChange={(event) => setField('description', event.target.value)} placeholder="Contá qué hacen, su experiencia y qué los diferencia..." rows={4} /><p className="mt-1 text-xs text-slate-400">Mínimo 20 caracteres al crear el negocio.</p></div>
           <div className="grid gap-4 sm:grid-cols-2"><div><label className="mb-1.5 block text-sm font-medium text-slate-700">Teléfono</label><Input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="+54 11..." /></div><div><label className="mb-1.5 block text-sm font-medium text-slate-700">Email</label><Input type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} placeholder="contacto@negocio.com" /></div></div>
           <div><label className="mb-1.5 block text-sm font-medium text-slate-700">Dirección o zona</label><Input value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Palermo, Buenos Aires" /></div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Etiquetas pet-friendly</label>
+            <div className="flex flex-wrap gap-2">
+              {STORE_PLACE_TAGS.map((tag) => {
+                const selected = form.tags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                      selected
+                        ? 'border-teal-500 bg-teal-50 text-teal-800'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200'
+                    }`}
+                  >
+                    {STORE_PLACE_TAG_LABELS[tag]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div><label className="mb-1.5 block text-sm font-medium text-slate-700">URL de imagen</label><Input value={form.image} onChange={(event) => setField('image', event.target.value)} placeholder="https://..." /></div>
           <div className="flex justify-end border-t border-slate-100 pt-4"><Button className="bg-teal-600 hover:bg-teal-700" onClick={() => void save()} disabled={saving || !form.categoryId || !form.name.trim() || !form.description.trim()}>{saving ? 'Guardando...' : store ? 'Guardar cambios' : 'Publicar negocio'}</Button></div>
         </CardContent>

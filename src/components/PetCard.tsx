@@ -82,8 +82,8 @@ export default function PetCard({
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="grid min-h-[650px] md:grid-cols-[47%_53%] 2xl:min-h-[720px]">
-        <div className="relative min-h-[440px] overflow-hidden bg-slate-100 md:min-h-full">
+      <div className="grid min-h-0 max-h-[calc(100dvh-11rem)] md:min-h-[560px] md:max-h-none md:grid-cols-[47%_53%] 2xl:min-h-[720px]">
+        <div className="relative min-h-[220px] overflow-hidden bg-slate-100 sm:min-h-[280px] md:min-h-full">
           <Image
             src={mainImage}
             alt={`${pet.name} en su foto de perfil`}

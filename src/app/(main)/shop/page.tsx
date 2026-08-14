@@ -109,7 +109,7 @@ export default function ShopPage() {
 
           <div className="mx-auto mt-5 flex max-w-4xl flex-wrap items-center justify-center gap-3">
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger className="w-[210px] bg-white">
+              <SelectTrigger className="w-full bg-white sm:w-[210px]">
                 <SelectValue placeholder="Categoría" />
               </SelectTrigger>
               <SelectContent>
@@ -120,7 +120,7 @@ export default function ShopPage() {
               </SelectContent>
             </Select>
             <Select value={minRating} onValueChange={setMinRating}>
-              <SelectTrigger className="w-[170px] bg-white">
+              <SelectTrigger className="w-full bg-white sm:w-[170px]">
                 <SelectValue placeholder="Calificación" />
               </SelectTrigger>
               <SelectContent>
@@ -131,7 +131,7 @@ export default function ShopPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[190px] bg-white">
+              <SelectTrigger className="w-full bg-white sm:w-[190px]">
                 <SelectValue placeholder="Orden" />
               </SelectTrigger>
               <SelectContent>

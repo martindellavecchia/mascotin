@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import ConversationList from '@/components/messages/ConversationList';
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
@@ -153,14 +154,20 @@ export default function MessagesClientShell({
     window.history.replaceState(null, '', `/messages?${params.toString()}`);
   };
 
+  const clearSelection = () => {
+    setSelectedId(null);
+    setSelectedType(null);
+    window.history.replaceState(null, '', '/messages');
+  };
+
   const renderContent = () => {
     if (!selectedId || !selectedType) {
       return (
-        <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-50/50">
-          <span className="material-symbols-rounded text-6xl mb-4 text-slate-300">
+        <div className="flex h-full flex-col items-center justify-center bg-slate-50/50 p-8 text-center text-slate-400">
+          <span className="material-symbols-rounded mb-4 text-6xl text-slate-300">
             chat_bubble
           </span>
-          <h3 className="text-xl font-semibold text-slate-600 mb-2">
+          <h3 className="mb-2 text-xl font-semibold text-slate-600">
             Tus Mensajes
           </h3>
           <p>Selecciona una conversación o grupo para comenzar a chatear.</p>
@@ -172,9 +179,19 @@ export default function MessagesClientShell({
       const group = groups.find((item) => item.id === selectedId);
 
       return (
-        <div className="flex flex-col h-full">
-          <div className="p-4 border-b bg-white flex items-center gap-3 shadow-sm z-10">
-            <div className="w-10 h-10 rounded-lg bg-slate-200 overflow-hidden">
+        <div className="flex h-full flex-col">
+          <div className="z-10 flex items-center gap-3 border-b bg-white p-4 shadow-sm">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={clearSelection}
+              aria-label="Volver a conversaciones"
+            >
+              <span className="material-symbols-rounded">arrow_back</span>
+            </Button>
+            <div className="h-10 w-10 overflow-hidden rounded-lg bg-slate-200">
               {group?.image && (
                 <Image
                   src={group.image}
@@ -182,7 +199,7 @@ export default function MessagesClientShell({
                   width={40}
                   height={40}
                   unoptimized={shouldUnoptimizeImage(group.image)}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               )}
             </div>
@@ -191,11 +208,11 @@ export default function MessagesClientShell({
               <p className="text-xs text-slate-500">Grupo de Interés</p>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden p-4 bg-slate-50">
+          <div className="flex-1 overflow-hidden bg-slate-50 p-4">
             <GroupChat
               groupId={selectedId}
               currentUserId={session?.user?.id || ''}
-              className="shadow-none border-0 bg-transparent"
+              className="border-0 bg-transparent shadow-none"
             />
           </div>
         </div>
@@ -205,18 +222,41 @@ export default function MessagesClientShell({
     const match = matches.find((item) => item.matchId === selectedId);
 
     return (
-      <ChatWindow
-        matchId={selectedId}
-        currentUserId={session?.user?.id || ''}
-        otherPet={match}
-      />
+      <div className="flex h-full flex-col">
+        <div className="flex items-center gap-2 border-b bg-white p-2 lg:hidden">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={clearSelection}
+            aria-label="Volver a conversaciones"
+          >
+            <span className="material-symbols-rounded">arrow_back</span>
+          </Button>
+          <span className="text-sm font-medium text-slate-700">Conversación</span>
+        </div>
+        <div className="min-h-0 flex-1">
+          <ChatWindow
+            matchId={selectedId}
+            currentUserId={session?.user?.id || ''}
+            otherPet={match}
+          />
+        </div>
+      </div>
     );
   };
 
+  const showList = !selectedId;
+  const showChat = Boolean(selectedId);
+
   return (
-    <div className="bg-slate-50 flex flex-col">
-      <div className="container mx-auto px-4 py-6 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col max-h-[calc(100vh-140px)] lg:max-h-[calc(100vh-120px)]">
+    <div className="flex flex-col bg-slate-50">
+      <div className="container mx-auto grid flex-1 grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-4">
+        <div
+          className={`flex max-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm lg:max-h-[calc(100vh-120px)] ${
+            showChat ? 'hidden lg:flex' : 'flex'
+          }`}
+        >
           <ConversationList
             matches={matches}
             groups={groups}
@@ -226,11 +266,15 @@ export default function MessagesClientShell({
           />
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col max-h-[calc(100vh-140px)] lg:max-h-[calc(100vh-120px)]">
+        <div
+          className={`lg:col-span-2 max-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm lg:max-h-[calc(100vh-120px)] ${
+            showList ? 'hidden lg:flex' : 'flex'
+          }`}
+        >
           {renderContent()}
         </div>
 
-        <div className="lg:col-span-1 hidden lg:block max-h-[calc(100vh-140px)] lg:max-h-[calc(100vh-120px)] overflow-y-auto">
+        <div className="lg:col-span-1 hidden max-h-[calc(100vh-140px)] overflow-y-auto lg:block lg:max-h-[calc(100vh-120px)]">
           <QuickActions />
         </div>
       </div>

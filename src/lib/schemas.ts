@@ -174,6 +174,7 @@ export const providerCreateStoreSchema = z.object({
   email: z.string().trim().email('Email inválido').optional().or(z.literal('')),
   address: z.string().trim().max(300).optional(),
   image: z.string().trim().url('Imagen inválida').optional().or(z.literal('')),
+  tags: z.array(z.string()).max(10).optional(),
 });
 
 export const storeReviewSchema = z.object({

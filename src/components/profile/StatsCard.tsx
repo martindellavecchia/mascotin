@@ -16,7 +16,7 @@ export function StatsCard({ petsCount, matchesCount }: StatsCardProps) {
                     </div>
                     <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-2xl font-bold text-teal-700">{matchesCount}</p>
-                        <p className="text-xs text-gray-500">Matches</p>
+                        <p className="text-xs text-gray-500">Coincidencias</p>
                     </div>
                 </div>
             </CardContent>

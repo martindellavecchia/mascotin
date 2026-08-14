@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
@@ -18,12 +18,13 @@ interface PetOnboardingWizardProps {
     onCancel: () => void;
 }
 
+const VALID_ACTIVITIES = ['walk', 'play', 'fetch', 'swim', 'socialize', 'groom', 'training'] as const;
+
 export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: PetOnboardingWizardProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const totalSteps = 6;
 
-    // Form Data State
     const [formData, setFormData] = useState({
         petType: '',
         name: '',
@@ -47,12 +48,32 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
         matchIntent: [] as string[],
     });
 
+    useEffect(() => {
+        let cancelled = false;
+
+        async function prefillLocation() {
+            try {
+                const res = await fetch('/api/owner/profile');
+                if (!res.ok) return;
+                const data = await res.json();
+                const ownerLocation = data?.owner?.location;
+                if (!cancelled && typeof ownerLocation === 'string' && ownerLocation.trim()) {
+                    setFormData(prev => prev.location ? prev : { ...prev, location: ownerLocation.trim() });
+                }
+            } catch {
+                // Location will be validated at submit
+            }
+        }
+
+        prefillLocation();
+        return () => { cancelled = true; };
+    }, []);
+
     const updateData = (data: Partial<typeof formData>) => {
         setFormData(prev => ({ ...prev, ...data }));
     };
 
     const nextStep = () => {
-        // Validation
         if (currentStep === 1 && !formData.petType) return toast.error('Selecciona un tipo de mascota');
         if (currentStep === 2 && (!formData.name || !formData.gender)) return toast.error('Completa los campos requeridos');
 
@@ -66,14 +87,46 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
     const handleSubmit = async () => {
         if (formData.images.length === 0) return toast.error('Sube al menos una foto');
 
+        const bio = (formData.bio || '').trim();
+        if (bio.length < 10) {
+            return toast.error('La biografía debe tener al menos 10 caracteres');
+        }
+
+        let location = (formData.location || '').trim();
+        if (!location) {
+            try {
+                const res = await fetch('/api/owner/profile');
+                if (res.ok) {
+                    const data = await res.json();
+                    const ownerLocation = data?.owner?.location;
+                    if (typeof ownerLocation === 'string' && ownerLocation.trim()) {
+                        location = ownerLocation.trim();
+                        updateData({ location });
+                    }
+                }
+            } catch {
+                // fall through to error toast
+            }
+        }
+
+        if (!location) {
+            return toast.error('La ubicación es requerida. Completa tu perfil de dueño primero.');
+        }
+
+        const activities = formData.activities.filter((a) =>
+            (VALID_ACTIVITIES as readonly string[]).includes(a)
+        );
+
         setLoading(true);
         try {
             const payload = {
                 ...formData,
+                bio,
+                location,
                 ownerId,
                 images: JSON.stringify(formData.images),
                 thumbnailIndex: 0,
-                activities: formData.activities, // Already an array
+                activities,
                 weight: Number(formData.weight),
                 age: Number(formData.age)
             };
@@ -101,7 +154,6 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
 
     return (
         <div className="w-full max-w-lg mx-auto">
-            {/* Progress Bar */}
             <div className="mb-8">
                 <div className="flex justify-between text-xs text-teal-600 font-medium mb-2">
                     <span>Paso {currentStep} de {totalSteps}</span>

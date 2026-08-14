@@ -79,6 +79,19 @@ describe('Header', () => {
       expect(screen.getByRole('link', { name: /comunidad/i })).toBeInTheDocument();
     });
 
+    it('renders events link', () => {
+      render(<Header session={mockSession} />);
+
+      expect(screen.getByRole('link', { name: /eventos/i })).toBeInTheDocument();
+    });
+
+    it('renders alerts and map links', () => {
+      render(<Header session={mockSession} />);
+
+      expect(screen.getByRole('link', { name: /alertas/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /mapa/i })).toBeInTheDocument();
+    });
+
     it('renders services link', () => {
       render(<Header session={mockSession} />);
 

@@ -20,8 +20,9 @@ export default function StepPersonality({ data, updateData }: StepPersonalityPro
         { id: 'play', label: 'Jugar', icon: 'sports_tennis' },
         { id: 'fetch', label: 'Buscar', icon: 'toys' },
         { id: 'swim', label: 'Nadar', icon: 'pool' },
-        { id: 'nap', label: 'Dormir', icon: 'bedtime' },
         { id: 'socialize', label: 'Socializar', icon: 'groups' },
+        { id: 'groom', label: 'Aseo', icon: 'content_cut' },
+        { id: 'training', label: 'Entrenar', icon: 'school' },
     ];
 
     const toggleActivity = (id: string) => {

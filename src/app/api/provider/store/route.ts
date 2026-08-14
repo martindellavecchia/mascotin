@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
+import { parseJsonStringArray } from '@/lib/json-array';
+import { resolveCoordinates } from '@/lib/pet-payload';
 import { providerCreateStoreSchema } from '@/lib/schemas';
 import { createUniqueStoreSlug, ensureDefaultStoreCategories, parseStoreImages } from '@/lib/stores';
 import { getStoreTrustSummary } from '@/lib/store-reputation';
@@ -37,6 +39,7 @@ export async function GET() {
       stores: stores.map((store) => ({
         ...store,
         images: parseStoreImages(store.images),
+        tags: parseJsonStringArray(store.tags),
         trust: getStoreTrustSummary(store.ratingAverage, store.reviewCount),
       })),
     });
@@ -85,6 +88,10 @@ export async function POST(request: Request) {
       );
     }
 
+    const coords = parsed.data.address
+      ? await resolveCoordinates(parsed.data.address)
+      : null;
+
     const store = await db.$transaction(async (tx) => {
       await ensureDefaultStoreCategories(tx);
       const category = await tx.storeCategory.findFirst({
@@ -105,6 +112,9 @@ export async function POST(request: Request) {
           email: parsed.data.email || null,
           address: parsed.data.address || null,
           image: parsed.data.image || null,
+          tags: JSON.stringify(parsed.data.tags || []),
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
         },
         include: { category: { select: { id: true, name: true } } },
       });
@@ -123,6 +133,7 @@ export async function POST(request: Request) {
         store: {
           ...store,
           images: [],
+          tags: parseJsonStringArray(store.tags),
           bookingServices: [],
           reviews: [],
           trust: getStoreTrustSummary(0, 0),

@@ -113,11 +113,26 @@ export default function Header({ session }: HeaderProps) {
     { href: '/', label: 'Inicio', icon: 'home', tab: 'home' as const },
     { href: '/?tab=explore', label: 'Descubrir', icon: 'search', tab: 'explore' as const },
     { href: '/community', label: 'Comunidad', icon: 'groups' },
+    { href: '/community/events', label: 'Eventos', icon: 'calendar_month' },
     { href: '/alerts', label: 'Alertas', icon: 'emergency' },
     { href: '/adoptions', label: 'Adopciones', icon: 'volunteer_activism' },
     { href: '/map', label: 'Mapa', icon: 'map' },
     { href: '/messages', label: 'Mensajes', icon: 'chat_bubble' },
   ];
+
+  const mobileNavLinks = [
+    ...navLinks,
+    { href: '/shop', label: 'Servicios', icon: 'storefront' },
+  ];
+
+  const isNavActive = (href: string, tab?: 'home' | 'explore') => {
+    const path = href.split('?')[0];
+    if (path === '/') return isActive('/', tab);
+    if (path === '/shop') return pathname.startsWith('/shop');
+    if (path === '/community/events') return pathname.startsWith('/community/events');
+    if (path === '/community') return pathname === '/community';
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
 
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:h-screen lg:w-[260px] lg:border-b-0 lg:border-r">
@@ -129,19 +144,19 @@ export default function Header({ session }: HeaderProps) {
           <span className="text-[22px] font-bold tracking-[-0.03em] text-slate-950">MascoTin</span>
         </Link>
 
-        <nav className="hidden lg:flex lg:flex-1 lg:flex-col lg:gap-2 lg:pt-12">
+        <nav className="hidden min-h-0 lg:flex lg:flex-1 lg:flex-col lg:gap-1 lg:overflow-y-auto lg:pt-10">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               onClick={(event) => handleHomeNavigation(event, link.tab)}
               className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-colors ${
-                isActive(link.href.split('?')[0], link.tab)
+                isNavActive(link.href, link.tab)
                   ? 'bg-teal-50 text-teal-700'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'
               }`}
             >
-              <span className={`material-symbols-rounded text-[21px] ${isActive(link.href.split('?')[0], link.tab) ? 'filled' : ''}`}>
+              <span className={`material-symbols-rounded text-[21px] ${isNavActive(link.href, link.tab) ? 'filled' : ''}`}>
                 {link.icon}
               </span>
               {link.label}
@@ -151,7 +166,7 @@ export default function Header({ session }: HeaderProps) {
           <Link
             href="/shop"
             className={`flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-colors ${
-              pathname === '/shop'
+              pathname.startsWith('/shop')
                 ? 'bg-teal-50 text-teal-700'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'
             }`}
@@ -162,7 +177,7 @@ export default function Header({ session }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-1 sm:gap-2 lg:flex-col lg:items-stretch lg:border-t lg:border-slate-100 lg:pt-5">
-          <HeaderMobileMenu navLinks={navLinks} />
+          <HeaderMobileMenu navLinks={mobileNavLinks} />
           <div className="lg:flex lg:items-center lg:justify-between lg:px-1">
             <NotificationBell enabled={Boolean(session?.user?.id)} />
             <HeaderUserMenu session={session} showLabel />

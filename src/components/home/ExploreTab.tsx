@@ -65,14 +65,14 @@ export default function ExploreTab({
       </div>
 
       {loading ? (
-        <div className="flex min-h-[650px] items-center justify-center rounded-2xl border border-slate-200 bg-white">
+        <div className="flex min-h-[min(650px,calc(100dvh-12rem))] items-center justify-center rounded-2xl border border-slate-200 bg-white">
           <div className="text-center">
             <div className="mx-auto mb-4 size-11 animate-spin rounded-full border-4 border-teal-100 border-t-teal-600" />
             <p className="text-sm font-medium text-slate-600">Buscando mascotas cercanas...</p>
           </div>
         </div>
       ) : currentIndex >= petsToSwipe.length || !currentPet ? (
-        <div className="flex min-h-[650px] items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <div className="flex min-h-[min(650px,calc(100dvh-12rem))] items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <div className="max-w-sm">
             <span className="material-symbols-rounded filled text-6xl text-teal-200">pets</span>
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Ya conociste a todos por aquí</h2>

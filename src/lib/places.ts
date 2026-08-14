@@ -13,6 +13,14 @@ export const STORE_PLACE_TAGS = [
 
 export type StorePlaceTag = (typeof STORE_PLACE_TAGS)[number];
 
+export const STORE_PLACE_TAG_LABELS: Record<StorePlaceTag, string> = {
+  terraza: 'Terraza',
+  indoor: 'Interior',
+  bebedero: 'Bebedero',
+  menu_mascotas: 'Menú mascotas',
+  '24hs': '24 hs',
+};
+
 export function isPlaceReviewCategory(name?: string | null): boolean {
   if (!name) return false;
   return PLACE_REVIEW_CATEGORY_NAMES.includes(

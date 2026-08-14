@@ -60,7 +60,7 @@ export default function CommunitySidebar({
   const userImage = session?.user?.headerImage || session?.user?.image;
 
   return (
-    <div className="pt-[102px]">
+    <div className="pt-4 lg:pt-8">
       <section aria-labelledby="circle-title">
         <div className="flex items-center justify-between">
           <h2 id="circle-title" className="text-lg font-bold tracking-tight text-slate-900">Tu círculo</h2>

@@ -187,7 +187,7 @@ function ProfileContent() {
             {/* Left Column: Owner Info */}
             <div className="lg:col-span-1 space-y-6">
               <ProfileCard owner={owner} email={session.user.email || ''} />
-              <AboutCard bio={owner.bio} />
+              <AboutCard bio={owner.bio} onEdit={() => setShowOwnerForm(true)} />
               <StatsCard petsCount={pets.length} matchesCount={matches.length} />
             </div>
 
@@ -284,18 +284,21 @@ function ProfileContent() {
 
       {/* Pet Form Modal (Create/Edit) */}
       {showPetForm && owner && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-0 bg-white relative">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <Card className="w-full max-w-full sm:max-w-2xl h-full sm:h-auto max-h-full sm:max-h-[90vh] overflow-y-auto shadow-2xl border-0 bg-white relative rounded-none sm:rounded-xl">
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-4 rounded-full hover:bg-gray-100"
-              onClick={() => setShowPetForm(false)}
+              className="absolute right-4 top-4 rounded-full hover:bg-gray-100 z-10"
+              onClick={() => {
+                setShowPetForm(false);
+                setEditingPet(null);
+              }}
             >
               <span className="material-symbols-rounded text-gray-500">close</span>
             </Button>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900">
+              <CardTitle className="text-2xl font-bold text-gray-900 pr-10">
                 {editingPet ? 'Editar Mascota' : 'Registrar Nueva Mascota'}
               </CardTitle>
             </CardHeader>
@@ -310,8 +313,12 @@ function ProfileContent() {
                     setPets([newPet, ...pets]);
                   }
                   setShowPetForm(false);
+                  setEditingPet(null);
                 }}
-                onCancel={() => setShowPetForm(false)}
+                onCancel={() => {
+                  setShowPetForm(false);
+                  setEditingPet(null);
+                }}
               />
             </CardContent>
           </Card>

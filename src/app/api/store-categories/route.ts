@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { ensureDefaultStoreCategories } from '@/lib/stores';
 
 export async function GET() {
   try {
+    await ensureDefaultStoreCategories(db);
+
     const categories = await db.storeCategory.findMany({
       where: { isActive: true },
       select: { id: true, name: true, description: true },

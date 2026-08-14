@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -15,31 +14,14 @@ interface PetCardProps {
 }
 
 export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
-    // Data Cleanup Logic
     const petImages = safeParseImages(pet.images).filter((img): img is string =>
         typeof img === 'string' && img.length > 0
     );
 
-    let thumbnailIdx = pet.thumbnailIndex ?? 0;
-    let thumbnailImage = petImages[thumbnailIdx] || petImages[0];
-
-    // 1. Fix "Rocco" meme image (placeholder logic)
-    // Force placeholder for Rocco as requested by user, regardless of current image content
-    // to ensure the meme (french fries) is removed.
-    if (pet.name === "Rocco") {
-        thumbnailImage = "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3";
-    }
-
+    const thumbnailIdx = pet.thumbnailIndex ?? 0;
+    const thumbnailImage = petImages[thumbnailIdx] || petImages[0];
     const showImage = Boolean(thumbnailImage) && (thumbnailImage.startsWith('http') || thumbnailImage.startsWith('/'));
 
-    // 2. Fix unrealistic age
-    let displayAge = pet.age;
-    if (pet.petType === 'dog' && pet.age > 14) {
-        displayAge = 8; // Cap unrealistic age to a sensible default
-    }
-
-    // 3. Fix duplicate attributes "Medium Medium"
-    // Assuming 'size' might be incorrectly stored as "Medium Medium" or similar
     let displaySize = pet.size;
     if (displaySize && displaySize.includes(' ')) {
         const parts = displaySize.split(' ');
@@ -48,19 +30,20 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
         }
     }
 
-    // Traducciones
     const sizeLabels: Record<string, string> = {
         small: 'Pequeño',
         medium: 'Mediano',
         large: 'Grande',
         xlarge: 'Extra Grande',
-        'Medium': 'Mediano', // Handle potentially capitalized bad data
+        'Medium': 'Mediano',
     };
 
     const genderLabels: Record<string, string> = {
         male: 'Macho',
         female: 'Hembra'
     };
+
+    const genderIcon = pet.gender === 'male' ? 'male' : 'female';
 
     return (
         <div className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all duration-300">
@@ -77,12 +60,13 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         <span className="material-symbols-rounded text-6xl text-gray-300">pets</span>
                     </div>
                 )}
-                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute top-3 right-3 flex gap-2">
                     <Button
                         size="icon"
                         variant="secondary"
                         className="h-8 w-8 bg-white/90 hover:bg-white text-teal-600 rounded-full shadow-sm backdrop-blur-sm"
                         onClick={() => onEdit(pet)}
+                        aria-label="Editar mascota"
                     >
                         <span className="material-symbols-rounded text-sm">edit</span>
                     </Button>
@@ -91,17 +75,18 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         variant="secondary"
                         className="h-8 w-8 bg-white/90 hover:bg-white text-red-600 rounded-full shadow-sm backdrop-blur-sm"
                         onClick={() => onDelete(pet)}
+                        aria-label="Eliminar mascota"
                     >
                         <span className="material-symbols-rounded text-sm">delete</span>
                     </Button>
                 </div>
-                <div className="absolute bottom-3 left-3 flex gap-2">
-                    <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1">
+                <div className="absolute bottom-3 left-3 flex gap-2 max-w-[calc(100%-1.5rem)]">
+                    <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1 shrink-0">
                         <span className="material-symbols-rounded text-sm text-teal-700">pets</span>
                         {pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Otro'}
                     </Badge>
                     {pet.breed && (
-                        <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white">
+                        <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white max-w-[9rem] truncate">
                             {pet.breed}
                         </Badge>
                     )}
@@ -114,11 +99,11 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         <div className="flex flex-wrap gap-2 text-sm text-gray-500">
                             <span className="flex items-center gap-1">
                                 <span className="material-symbols-rounded text-base">cake</span>
-                                {displayAge} años
+                                {pet.age} años
                             </span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                                <span className="material-symbols-rounded text-base">female</span>
+                                <span className="material-symbols-rounded text-base">{genderIcon}</span>
                                 {genderLabels[pet.gender] || pet.gender}
                             </span>
                             <span>•</span>
@@ -145,7 +130,6 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     )}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100">
                     <Button
                         className="w-full bg-teal-50 hover:bg-teal-100 text-teal-700 border-0 shadow-none"
@@ -160,7 +144,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     >
                         <Link href={`/pets/${pet.id}`}>
                             <span className="material-symbols-rounded text-lg mr-2">visibility</span>
-                            Ver Ficha
+                            Ver pasaporte
                         </Link>
                     </Button>
                 </div>

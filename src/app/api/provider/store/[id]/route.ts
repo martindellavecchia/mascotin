@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
+import { parseJsonStringArray } from '@/lib/json-array';
+import { resolveCoordinates } from '@/lib/pet-payload';
 import { providerUpdateStoreSchema, storeServiceSchema } from '@/lib/schemas';
 import { createUniqueStoreSlug, parseStoreImages } from '@/lib/stores';
 import { getStoreTrustSummary } from '@/lib/store-reputation';
@@ -46,6 +48,7 @@ export async function GET(
       store: {
         ...store,
         images: parseStoreImages(store.images),
+        tags: parseJsonStringArray(store.tags),
         trust: getStoreTrustSummary(store.ratingAverage, store.reviewCount),
       },
     });
@@ -103,13 +106,21 @@ export async function PATCH(
     if (parsed.data.images) {
       updateData.images = JSON.stringify(parsed.data.images);
     }
-    if (parsed.data.tags) {
+    if (parsed.data.tags !== undefined) {
       updateData.tags = JSON.stringify(parsed.data.tags);
     }
     if (parsed.data.name && parsed.data.name !== store.name) {
       updateData.slug = await db.$transaction((tx) =>
         createUniqueStoreSlug(tx, parsed.data.name!, store.id)
       );
+    }
+
+    if (parsed.data.address !== undefined) {
+      const coords = parsed.data.address
+        ? await resolveCoordinates(parsed.data.address)
+        : null;
+      updateData.latitude = coords?.latitude ?? null;
+      updateData.longitude = coords?.longitude ?? null;
     }
 
     const updated = await db.store.update({
@@ -130,6 +141,7 @@ export async function PATCH(
       store: {
         ...updated,
         images: parseStoreImages(updated.images),
+        tags: parseJsonStringArray(updated.tags),
         trust: getStoreTrustSummary(updated.ratingAverage, updated.reviewCount),
       },
     });

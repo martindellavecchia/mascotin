@@ -302,7 +302,7 @@ export default function HomeClientShell({
         onOpenMatches={() => syncHomeState('matches', selectedPetId)}
       />
     ) : (
-      <div className="space-y-6 pt-[94px]">
+      <div className="space-y-6 pt-2 lg:pt-4">
         <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
           <LostPetWidget initialPets={initialLostPets as never} />
         </DeferredVisibilitySection>
@@ -324,7 +324,7 @@ export default function HomeClientShell({
   );
 
   return (
-    <div className="min-h-screen bg-[#fbfaf7]">
+    <div className="min-h-screen bg-slate-50">
       <DashboardLayout
         rightSidebar={rightSidebar}
       >
@@ -349,14 +349,14 @@ export default function HomeClientShell({
                 className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
               >
                 <span className="material-symbols-rounded text-lg">explore</span>
-                Explorar
+                Descubrir
               </TabsTrigger>
               <TabsTrigger
                 value="matches"
                 className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
               >
                 <span className="material-symbols-rounded text-lg">favorite</span>
-                Matches
+                Coincidencias
               </TabsTrigger>
             </TabsList>
 

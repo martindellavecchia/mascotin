@@ -87,14 +87,15 @@ function AlertsPageContent() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Alertas</h1>
           <p className="text-slate-500">Mascotas perdidas, encontradas y avistamientos.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => {
               setFormMode('found');
               setFormOpen(true);
@@ -103,7 +104,7 @@ function AlertsPageContent() {
             Reportar encontrada
           </Button>
           <Button
-            className="bg-red-500 hover:bg-red-600"
+            className="w-full bg-red-500 hover:bg-red-600 sm:w-auto"
             onClick={() => {
               setFormMode('lost');
               setFormOpen(true);

@@ -151,28 +151,44 @@ function AdoptionsContent() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        {listings.map((listing) => {
-          const image = getPrimaryImageUrl(listing.pet.images);
-          return (
-            <Card key={listing.id}>
-              <CardContent className="p-4 space-y-3">
-                {image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image} alt={listing.pet.name} className="h-40 w-full rounded-xl object-cover" />
-                )}
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold">{listing.pet.name}</h2>
-                  <Badge>{listing.status}</Badge>
-                </div>
-                <p className="text-sm text-slate-600">{listing.character}</p>
-                {listing.pet.goodWithKids === 'yes' && <Badge variant="outline">Bien con niños</Badge>}
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={`/adoptions/${listing.id}`}>Ver ficha</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {listings.length === 0 ? (
+          <Card className="border-dashed md:col-span-2">
+            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
+              <span className="material-symbols-rounded text-5xl text-slate-300">pets</span>
+              <h3 className="mt-3 text-lg font-semibold text-slate-900">Todavía no hay fichas de adopción</h3>
+              <p className="mt-1 max-w-md text-sm text-slate-500">
+                Cuando alguien publique una mascota en adopción, va a aparecer acá. También podés armar tu perfil de adoptante o publicar una ficha.
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <Button variant="outline" onClick={() => setShowProfile(true)}>Perfil adoptante</Button>
+                <Button onClick={() => setShowCreate(true)}>Publicar ficha</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          listings.map((listing) => {
+            const image = getPrimaryImageUrl(listing.pet.images);
+            return (
+              <Card key={listing.id}>
+                <CardContent className="p-4 space-y-3">
+                  {image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={image} alt={listing.pet.name} className="h-40 w-full rounded-xl object-cover" />
+                  )}
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold">{listing.pet.name}</h2>
+                    <Badge>{listing.status}</Badge>
+                  </div>
+                  <p className="text-sm text-slate-600">{listing.character}</p>
+                  {listing.pet.goodWithKids === 'yes' && <Badge variant="outline">Bien con niños</Badge>}
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/adoptions/${listing.id}`}>Ver ficha</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );

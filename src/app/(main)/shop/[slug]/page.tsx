@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
 
 interface StoreService {
   id: string;
@@ -45,6 +46,7 @@ interface StoreDetail {
   email: string | null;
   address: string | null;
   image: string | null;
+  tags?: string[];
   category: { id: string; name: string };
   owner: { id: string; name: string | null; image: string | null } | null;
   ratingAverage: number;
@@ -254,6 +256,11 @@ export default function StoreDetailPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">{store.category.name}</Badge>
                 <Badge variant="outline" className={trustClasses[store.trust.tone] || trustClasses.slate}>{store.trust.label}</Badge>
+                {(store.tags || []).map((tag) => (
+                  <Badge key={tag} variant="outline">
+                    {STORE_PLACE_TAG_LABELS[tag as StorePlaceTag] || tag}
+                  </Badge>
+                ))}
               </div>
               <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">{store.name}</h1>
               <p className="mt-2 max-w-2xl text-slate-600">{store.description}</p>
