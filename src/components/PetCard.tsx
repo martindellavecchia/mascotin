@@ -59,44 +59,49 @@ export default function PetCard({
   const [imageIndex, setImageIndex] = useState(0);
 
   const supportedImages = images.filter(isRenderableImage);
-  const displayImages = supportedImages.length > 0
-    ? supportedImages
-    : ['/images/discovery-golden-retriever.png'];
-  const mainImage = displayImages[Math.min(imageIndex, displayImages.length - 1)];
+  const displayImages = supportedImages;
+  const mainImage = displayImages[Math.min(imageIndex, Math.max(displayImages.length - 1, 0))];
+  const hasImage = Boolean(mainImage);
 
   const traits = activities
     .map((activity) => ACTIVITY_LABELS[activity.toLowerCase()])
     .filter((trait): trait is { icon: string; label: string } => Boolean(trait))
     .filter((trait, index, list) => list.findIndex((item) => item.label === trait.label) === index);
 
-  if (!traits.some((trait) => trait.label === 'Sociable')) {
-    traits.push({ icon: 'group', label: 'Sociable' });
-  }
   if (pet.vaccinated) {
     traits.push({ icon: 'verified_user', label: 'Vacunas al día' });
   }
 
   const nextImage = () => {
+    if (displayImages.length === 0) return;
     setImageIndex((current) => (current + 1) % displayImages.length);
   };
 
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="grid min-h-0 max-h-[calc(100dvh-11rem)] md:min-h-[560px] md:max-h-none md:grid-cols-[47%_53%] 2xl:min-h-[720px]">
-        <div className="relative min-h-[220px] overflow-hidden bg-slate-100 sm:min-h-[280px] md:min-h-full">
-          <Image
-            src={mainImage}
-            alt={`${pet.name} en su foto de perfil`}
-            fill
-            className="object-cover"
-            sizes="(min-width: 1280px) 34vw, (min-width: 768px) 45vw, 100vw"
-            priority
-            unoptimized={shouldUnoptimizeImage(mainImage)}
-          />
+      <div className="grid min-h-0 max-h-[calc(100dvh-11rem)] md:min-h-[480px] md:max-h-none md:grid-cols-[47%_53%] 2xl:min-h-[640px]">
+        <div className="relative min-h-[200px] overflow-hidden bg-slate-100 sm:min-h-[240px] md:min-h-full">
+          {hasImage ? (
+            <Image
+              src={mainImage}
+              alt={`${pet.name} en su foto de perfil`}
+              fill
+              className="object-cover"
+              sizes="(min-width: 1280px) 34vw, (min-width: 768px) 45vw, 100vw"
+              priority
+              unoptimized={shouldUnoptimizeImage(mainImage)}
+            />
+          ) : (
+            <div className="flex h-full min-h-[200px] items-center justify-center text-slate-300 sm:min-h-[240px]">
+              <span className="material-symbols-rounded text-7xl">pets</span>
+            </div>
+          )}
 
-          <span className="absolute left-5 top-5 rounded-lg bg-slate-950/75 px-3 py-1.5 text-xs font-semibold text-white">
-            {imageIndex + 1} / {displayImages.length}
-          </span>
+          {hasImage && (
+            <span className="absolute left-5 top-5 rounded-lg bg-slate-950/75 px-3 py-1.5 text-xs font-semibold text-white">
+              {imageIndex + 1} / {displayImages.length}
+            </span>
+          )}
 
           {displayImages.length > 1 && (
             <Button
@@ -133,13 +138,10 @@ export default function PetCard({
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 font-semibold text-slate-900">
-                  <span className="truncate">{pet.owner?.name || 'Comunidad MascoTin'}</span>
-                  <span className="material-symbols-rounded filled text-lg text-teal-600" aria-label="Perfil verificado">
-                    verified
-                  </span>
+                <p className="truncate font-semibold text-slate-900">
+                  {pet.owner?.name || 'Comunidad MascoTin'}
                 </p>
-                <p className="text-sm text-slate-500">Perfil verificado</p>
+                <p className="text-sm text-slate-500">Dueño en MascoTin</p>
               </div>
             </div>
           </div>

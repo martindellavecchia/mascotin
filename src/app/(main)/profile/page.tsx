@@ -132,7 +132,7 @@ function ProfileContent() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
-          <p className="text-gray-500">Cargando perfil...</p>
+          <p className="text-slate-500">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -149,8 +149,8 @@ function ProfileContent() {
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="material-symbols-rounded text-3xl text-teal-600">person_add</span>
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">Completa tu Perfil</CardTitle>
-              <p className="text-gray-500 mt-2">Cuéntanos sobre ti para comenzar</p>
+              <CardTitle className="text-2xl font-bold text-slate-900">Completa tu Perfil</CardTitle>
+              <p className="text-slate-500 mt-2">Cuéntanos sobre ti para comenzar</p>
             </CardHeader>
             <CardContent>
               <OwnerForm
@@ -171,8 +171,8 @@ function ProfileContent() {
           {/* Header & Actions */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-              <p className="text-gray-500 mt-1">Gestiona tu información y mascotas</p>
+              <h1 className="text-3xl font-bold text-slate-900">Mi Perfil</h1>
+              <p className="text-slate-500 mt-1">Gestiona tu información y mascotas</p>
             </div>
             <Button
               onClick={() => setShowOwnerForm(true)}
@@ -193,50 +193,46 @@ function ProfileContent() {
 
             {/* Middle Column: Pets */}
             <div className="lg:col-span-2 space-y-6">
-              <Card className="shadow-sm border-0 bg-white">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <span className="material-symbols-rounded text-teal-500">pets</span>
-                      Mis Mascotas
-                    </CardTitle>
-                    <Button
-                      onClick={() => {
-                        setEditingPet(null);
-                        setShowPetForm(true);
-                      }}
-                      className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-4"
-                    >
-                      <span className="material-symbols-rounded text-lg mr-1">add</span>
-                      Agregar
-                    </Button>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    <span className="material-symbols-rounded text-teal-500">pets</span>
+                    Mis Mascotas
+                  </h2>
+                  <Button
+                    onClick={() => {
+                      setEditingPet(null);
+                      setShowPetForm(true);
+                    }}
+                    className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-4"
+                  >
+                    <span className="material-symbols-rounded text-lg mr-1">add</span>
+                    Agregar
+                  </Button>
+                </div>
+                {pets.length === 0 ? (
+                  <EmptyState
+                    onAddPet={() => {
+                      setEditingPet(null);
+                      setShowPetForm(true);
+                    }}
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {pets.map((pet) => (
+                      <PetCard
+                        key={pet.id}
+                        pet={pet}
+                        onEdit={(p) => {
+                          setEditingPet(p);
+                          setShowPetForm(true);
+                        }}
+                        onDelete={(p) => setDeletingPet(p)}
+                      />
+                    ))}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {pets.length === 0 ? (
-                    <EmptyState
-                      onAddPet={() => {
-                        setEditingPet(null);
-                        setShowPetForm(true);
-                      }}
-                    />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {pets.map((pet) => (
-                        <PetCard
-                          key={pet.id}
-                          pet={pet}
-                          onEdit={(p) => {
-                            setEditingPet(p);
-                            setShowPetForm(true);
-                          }}
-                          onDelete={(p) => setDeletingPet(p)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                )}
+              </div>
             </div>
 
             {/* Right Sidebar: Quick Actions */}
@@ -258,13 +254,13 @@ function ProfileContent() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-4 rounded-full hover:bg-gray-100"
+              className="absolute right-4 top-4 rounded-full hover:bg-slate-100"
               onClick={() => setShowOwnerForm(false)}
             >
-              <span className="material-symbols-rounded text-gray-500">close</span>
+              <span className="material-symbols-rounded text-slate-500">close</span>
             </Button>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900">Editar Perfil de Dueño</CardTitle>
+              <CardTitle className="text-2xl font-bold text-slate-900">Editar Perfil de Dueño</CardTitle>
             </CardHeader>
             <CardContent>
               <OwnerForm
@@ -289,16 +285,16 @@ function ProfileContent() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-4 rounded-full hover:bg-gray-100 z-10"
+              className="absolute right-4 top-4 rounded-full hover:bg-slate-100 z-10"
               onClick={() => {
                 setShowPetForm(false);
                 setEditingPet(null);
               }}
             >
-              <span className="material-symbols-rounded text-gray-500">close</span>
+              <span className="material-symbols-rounded text-slate-500">close</span>
             </Button>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900 pr-10">
+              <CardTitle className="text-2xl font-bold text-slate-900 pr-10">
                 {editingPet ? 'Editar Mascota' : 'Registrar Nueva Mascota'}
               </CardTitle>
             </CardHeader>
@@ -329,15 +325,15 @@ function ProfileContent() {
       <AlertDialog open={!!deletingPet} onOpenChange={(open) => !open && setDeletingPet(null)}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900">¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500">
+            <AlertDialogTitle className="text-slate-900">¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500">
               Esta acción no se puede deshacer. Se eliminará permanentemente a
-              <span className="font-bold text-gray-900"> {deletingPet?.name} </span>
+              <span className="font-bold text-slate-900"> {deletingPet?.name} </span>
               y toda su información.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-0">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-0">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeletePet}
               disabled={isDeleting}
@@ -358,7 +354,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
-          <p className="text-gray-500">Cargando...</p>
+          <p className="text-slate-500">Cargando...</p>
         </div>
       </div>
     }>

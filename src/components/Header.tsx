@@ -14,7 +14,7 @@ const NotificationBell = dynamic(
       <Button
         variant="ghost"
         size="icon"
-        className="relative rounded-lg text-slate-500 hover:text-teal-700 hover:bg-teal-50"
+        className="relative rounded-xl text-slate-500 hover:text-teal-600 hover:bg-teal-50"
         aria-label="Notificaciones"
       >
         <span className="material-symbols-rounded">notifications</span>
@@ -31,7 +31,7 @@ const HeaderMobileMenu = dynamic(
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden rounded-lg text-slate-500 hover:text-teal-700 hover:bg-teal-50"
+        className="lg:hidden rounded-xl text-slate-500 hover:text-teal-600 hover:bg-teal-50"
         aria-label="Abrir menú"
       >
         <span className="material-symbols-rounded">menu</span>

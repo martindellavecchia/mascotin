@@ -92,7 +92,7 @@ export default function CompatibilityFields({ data, onChange }: CompatibilityFie
               key={option.id}
               type="button"
               onClick={() => toggleList('temperament', option.id)}
-              className={`rounded-full border px-3 py-1.5 text-sm ${
+              className={`rounded-lg border px-3 py-1.5 text-sm ${
                 data.temperament?.includes(option.id)
                   ? 'border-teal-600 bg-teal-50 text-teal-700'
                   : 'border-slate-200 text-slate-600'

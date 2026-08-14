@@ -10,11 +10,13 @@ interface StepDetailsProps {
 }
 
 export default function StepDetails({ data, updateData }: StepDetailsProps) {
+    const isFemale = data.gender === 'female';
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Detalles Físicos</h2>
-                <p className="text-sm text-gray-500">Para encontrarle los mejores amigos</p>
+                <h2 className="text-xl font-bold text-slate-900">Detalles Físicos</h2>
+                <p className="text-sm text-slate-500">Para encontrarle los mejores amigos</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -56,23 +58,45 @@ export default function StepDetails({ data, updateData }: StepDetailsProps) {
             <div className="space-y-3 pt-2">
                 <Label>Salud</Label>
                 <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50 flex-1">
+                    <label
+                        className={`flex items-center gap-3 cursor-pointer px-4 py-3 border rounded-lg flex-1 transition-all ${
+                            data.vaccinated
+                                ? 'bg-teal-50 border-teal-300'
+                                : 'bg-white border-slate-200 hover:border-slate-300'
+                        }`}
+                    >
                         <input
                             type="checkbox"
                             checked={data.vaccinated}
                             onChange={(e) => updateData({ vaccinated: e.target.checked })}
-                            className="accent-teal-500 w-4 h-4"
+                            className="sr-only"
                         />
-                        <span className="text-sm">Vacunado</span>
+                        <span className={`material-symbols-rounded text-xl ${data.vaccinated ? 'text-teal-600' : 'text-slate-400'}`}>
+                            vaccines
+                        </span>
+                        <span className={`text-sm font-medium ${data.vaccinated ? 'text-teal-700' : 'text-slate-700'}`}>
+                            {isFemale ? 'Vacunada' : 'Vacunado'}
+                        </span>
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-gray-50 flex-1">
+                    <label
+                        className={`flex items-center gap-3 cursor-pointer px-4 py-3 border rounded-lg flex-1 transition-all ${
+                            data.neutered
+                                ? 'bg-teal-50 border-teal-300'
+                                : 'bg-white border-slate-200 hover:border-slate-300'
+                        }`}
+                    >
                         <input
                             type="checkbox"
                             checked={data.neutered}
                             onChange={(e) => updateData({ neutered: e.target.checked })}
-                            className="accent-teal-500 w-4 h-4"
+                            className="sr-only"
                         />
-                        <span className="text-sm">Castrado</span>
+                        <span className={`material-symbols-rounded text-xl ${data.neutered ? 'text-teal-600' : 'text-slate-400'}`}>
+                            medical_services
+                        </span>
+                        <span className={`text-sm font-medium ${data.neutered ? 'text-teal-700' : 'text-slate-700'}`}>
+                            {isFemale ? 'Castrada' : 'Castrado'}
+                        </span>
                     </label>
                 </div>
             </div>

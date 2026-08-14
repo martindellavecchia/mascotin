@@ -47,8 +47,8 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Fotos</h2>
-                <p className="text-sm text-gray-500">¡Muestra lo adorable que es! ({images.length}/{MAX_PHOTOS})</p>
+                <h2 className="text-xl font-bold text-slate-900">Fotos</h2>
+                <p className="text-sm text-slate-500">¡Muestra lo adorable que es! ({images.length}/{MAX_PHOTOS})</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -67,13 +67,13 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
                 ))}
 
                 {images.length < MAX_PHOTOS && (
-                    <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-teal-300 flex flex-col items-center justify-center cursor-pointer hover:bg-teal-50 transition-colors bg-teal-50/50">
                         {uploading ? (
-                            <span className="material-symbols-rounded animate-spin text-teal-500">hourglass_empty</span>
+                            <span className="material-symbols-rounded text-[24px] leading-none animate-spin text-teal-500">progress_activity</span>
                         ) : (
                             <>
-                                <span className="material-symbols-rounded text-gray-400 text-3xl mb-2">add_a_photo</span>
-                                <span className="text-xs text-gray-500">Subir Foto</span>
+                                <span className="material-symbols-rounded text-teal-500 text-[32px] leading-none mb-2">add_a_photo</span>
+                                <span className="text-xs text-slate-500">Subir Foto</span>
                             </>
                         )}
                         <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />

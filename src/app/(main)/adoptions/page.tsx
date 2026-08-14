@@ -7,7 +7,9 @@ import { Suspense } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getPrimaryImageUrl } from '@/lib/media';
 import { toast } from 'sonner';
@@ -82,28 +84,41 @@ function AdoptionsContent() {
       </div>
 
       {showProfile && (
-        <Card className="p-4 space-y-3">
-          <select
-            className="h-10 rounded-md border px-3"
+        <Card className="space-y-3 p-4">
+          <Select
             value={profile.housingType}
-            onChange={(event) => setProfile({ ...profile, housingType: event.target.value })}
+            onValueChange={(value) => setProfile({ ...profile, housingType: value })}
           >
-            <option value="apartment">Departamento</option>
-            <option value="house">Casa</option>
-            <option value="other">Otro</option>
-          </select>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={profile.hasYard} onChange={(e) => setProfile({ ...profile, hasYard: e.target.checked })} />Tengo patio</label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={profile.hasKids} onChange={(e) => setProfile({ ...profile, hasKids: e.target.checked })} />Hay niños en casa</label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={profile.hasOtherPets} onChange={(e) => setProfile({ ...profile, hasOtherPets: e.target.checked })} />Tengo otras mascotas</label>
-          <select
-            className="h-10 rounded-md border px-3"
+            <SelectTrigger className="w-full"><SelectValue placeholder="Tipo de vivienda" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="apartment">Departamento</SelectItem>
+              <SelectItem value="house">Casa</SelectItem>
+              <SelectItem value="other">Otro</SelectItem>
+            </SelectContent>
+          </Select>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <Checkbox checked={profile.hasYard} onCheckedChange={(checked) => setProfile({ ...profile, hasYard: checked === true })} />
+            Tengo patio
+          </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <Checkbox checked={profile.hasKids} onCheckedChange={(checked) => setProfile({ ...profile, hasKids: checked === true })} />
+            Hay niños en casa
+          </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <Checkbox checked={profile.hasOtherPets} onCheckedChange={(checked) => setProfile({ ...profile, hasOtherPets: checked === true })} />
+            Tengo otras mascotas
+          </label>
+          <Select
             value={profile.experience}
-            onChange={(event) => setProfile({ ...profile, experience: event.target.value })}
+            onValueChange={(value) => setProfile({ ...profile, experience: value })}
           >
-            <option value="none">Sin experiencia</option>
-            <option value="some">Algo de experiencia</option>
-            <option value="experienced">Experiencia alta</option>
-          </select>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Experiencia" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sin experiencia</SelectItem>
+              <SelectItem value="some">Algo de experiencia</SelectItem>
+              <SelectItem value="experienced">Experiencia alta</SelectItem>
+            </SelectContent>
+          </Select>
           <Input placeholder="Horas disponibles" value={profile.hoursAvailable} onChange={(e) => setProfile({ ...profile, hoursAvailable: e.target.value })} />
           <Textarea placeholder="Notas" value={profile.notes} onChange={(e) => setProfile({ ...profile, notes: e.target.value })} />
           <Button onClick={async () => {
@@ -119,15 +134,18 @@ function AdoptionsContent() {
       )}
 
       {showCreate && (
-        <Card className="p-4 space-y-3">
-          <select
-            className="h-10 rounded-md border px-3"
-            value={listingForm.petId}
-            onChange={(event) => setListingForm({ ...listingForm, petId: event.target.value })}
+        <Card className="space-y-3 p-4">
+          <Select
+            value={listingForm.petId || undefined}
+            onValueChange={(value) => setListingForm({ ...listingForm, petId: value })}
           >
-            <option value="">Elegí una mascota</option>
-            {pets.map((pet) => <option key={pet.id} value={pet.id}>{pet.name}</option>)}
-          </select>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Elegí una mascota" /></SelectTrigger>
+            <SelectContent>
+              {pets.map((pet) => (
+                <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Textarea placeholder="Carácter" value={listingForm.character} onChange={(e) => setListingForm({ ...listingForm, character: e.target.value })} />
           <Input placeholder="Necesidades especiales" value={listingForm.specialNeeds} onChange={(e) => setListingForm({ ...listingForm, specialNeeds: e.target.value })} />
           <Input placeholder="Requisitos para el hogar" value={listingForm.requirements} onChange={(e) => setListingForm({ ...listingForm, requirements: e.target.value })} />

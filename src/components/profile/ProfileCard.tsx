@@ -9,15 +9,14 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ owner, email }: ProfileCardProps) {
-    // Data Cleanup Logic
     const location = owner.location === "Buenos Airs" ? "Buenos Aires" : owner.location;
     const initials = owner.name.split(' ').map((n) => n[0]).join('');
 
     return (
         <Card className="shadow-sm border-0 bg-white overflow-hidden">
-            <div className="h-24 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
+            <div className="h-24 bg-teal-100"></div>
             <CardContent className="pt-0 pb-6 px-6 -mt-12">
-                <Avatar className="w-24 h-24 border-4 border-white shadow-lg mx-auto">
+                <Avatar className="w-24 h-24 border-4 border-white mx-auto">
                     {owner.image ? (
                         <AvatarImage src={owner.image} alt={owner.name} className="object-cover" />
                     ) : (
@@ -27,8 +26,8 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
                     )}
                 </Avatar>
                 <div className="text-center mt-4">
-                    <h2 className="text-xl font-bold text-gray-900">{owner.name}</h2>
-                    {email && <p className="text-gray-500 text-sm">{email}</p>}
+                    <h2 className="text-xl font-bold text-slate-900">{owner.name}</h2>
+                    {email && <p className="text-slate-500 text-sm">{email}</p>}
 
                     {location && (
                         <div className="flex items-center justify-center gap-1 mt-2 text-teal-600">

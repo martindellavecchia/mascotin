@@ -52,7 +52,6 @@ export function ImageUploadSection({
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
           toast.error(`Error al subir imagen: ${response.status}`);
           continue;
         }
@@ -87,35 +86,37 @@ export function ImageUploadSection({
   return (
     <div>
       <Label>Imágenes ({images.length}/6)</Label>
-      <p className="text-xs text-gray-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
+      <p className="text-xs text-slate-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
       <div className="mt-2 grid grid-cols-3 gap-4">
         {images.map((image, index) => (
           <div
             key={index}
-            className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${thumbnailIndex === index ? 'ring-4 ring-yellow-400' : ''}`}
+            className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${thumbnailIndex === index ? 'ring-4 ring-teal-500' : ''}`}
           >
             <Image src={image} alt={`Foto ${index + 1}`} fill className="object-cover" />
             <Button
               type="button"
               variant={thumbnailIndex === index ? "default" : "outline"}
               size="icon"
-              className={`absolute top-2 left-2 h-7 w-7 ${thumbnailIndex === index ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-white/80 hover:bg-yellow-100'}`}
+              className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${thumbnailIndex === index ? 'bg-teal-500 hover:bg-teal-600' : 'bg-white/80 hover:bg-teal-50'}`}
               onClick={() => setThumbnailIndex(index)}
               title="Usar como foto de perfil"
+              aria-label="Usar como foto de perfil"
             >
-              <span className={`material-symbols-rounded h-4 w-4 ${thumbnailIndex === index ? 'text-white fill-white' : 'text-gray-500'}`}>star</span>
+              <span className={`material-symbols-rounded text-[16px] leading-none ${thumbnailIndex === index ? 'text-white filled' : 'text-slate-500'}`}>star</span>
             </Button>
             <Button
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute top-2 right-2 h-6 w-6"
+              className="absolute top-2 right-2 size-7 gap-0 rounded-full p-0"
               onClick={() => removeImage(index)}
+              aria-label="Eliminar foto"
             >
-              <span className="material-symbols-rounded h-3 w-3">close</span>
+              <span className="material-symbols-rounded text-[16px] leading-none">close</span>
             </Button>
             {thumbnailIndex === index && (
-              <div className="absolute bottom-0 left-0 right-0 bg-yellow-400 text-white text-xs text-center py-1 font-medium">
+              <div className="absolute bottom-0 left-0 right-0 bg-teal-500 text-white text-xs text-center py-1 font-medium">
                 Foto de perfil
               </div>
             )}
@@ -123,14 +124,14 @@ export function ImageUploadSection({
         ))}
 
         {images.length < 6 && (
-          <div className="aspect-square rounded-lg border-2 border-dashed border-green-300 flex items-center justify-center bg-teal-50">
-            <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex items-center justify-center">
+          <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
+            <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
               {uploading ? (
-                <span className="material-symbols-rounded w-8 h-8 text-teal-500 animate-spin">pending</span>
+                <span className="material-symbols-rounded text-[24px] leading-none text-teal-500 animate-spin">progress_activity</span>
               ) : (
                 <>
-                  <span className="material-symbols-rounded w-8 h-8 mx-auto mb-2 text-teal-500">upload</span>
-                  <p className="text-sm text-gray-600">Subir foto</p>
+                  <span className="material-symbols-rounded text-[32px] leading-none mb-2 text-teal-500">upload</span>
+                  <p className="text-sm text-slate-600">Subir foto</p>
                 </>
               )}
               <input
@@ -145,7 +146,7 @@ export function ImageUploadSection({
           </div>
         )}
       </div>
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-slate-500 mt-2">
         Máximo 6 imágenes. Formatos: JPG, PNG. Máximo 5MB por imagen.
       </p>
     </div>

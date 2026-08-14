@@ -50,7 +50,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         <Button
           variant="ghost"
           size="icon"
-          className="relative rounded-full text-slate-500 hover:text-teal-600 hover:bg-teal-50"
+          className="relative rounded-xl text-slate-500 hover:text-teal-600 hover:bg-teal-50"
           aria-label="Notificaciones"
         >
           <span className="material-symbols-rounded">notifications</span>

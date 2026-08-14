@@ -44,10 +44,11 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
     };
 
     const genderIcon = pet.gender === 'male' ? 'male' : 'female';
+    const isFemale = pet.gender === 'female';
 
     return (
-        <div className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all duration-300">
-            <div className="relative h-48 bg-gray-100">
+        <div className="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-md transition-all duration-300">
+            <div className="relative h-48 bg-slate-100">
                 {showImage ? (
                     <Image
                         src={thumbnailImage}
@@ -56,20 +57,11 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                        <span className="material-symbols-rounded text-6xl text-gray-300">pets</span>
+                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                        <span className="material-symbols-rounded text-6xl text-slate-300">pets</span>
                     </div>
                 )}
                 <div className="absolute top-3 right-3 flex gap-2">
-                    <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-8 w-8 bg-white/90 hover:bg-white text-teal-600 rounded-full shadow-sm backdrop-blur-sm"
-                        onClick={() => onEdit(pet)}
-                        aria-label="Editar mascota"
-                    >
-                        <span className="material-symbols-rounded text-sm">edit</span>
-                    </Button>
                     <Button
                         size="icon"
                         variant="secondary"
@@ -81,12 +73,12 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     </Button>
                 </div>
                 <div className="absolute bottom-3 left-3 flex gap-2 max-w-[calc(100%-1.5rem)]">
-                    <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1 shrink-0">
+                    <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1 shrink-0">
                         <span className="material-symbols-rounded text-sm text-teal-700">pets</span>
                         {pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Otro'}
                     </Badge>
                     {pet.breed && (
-                        <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm hover:bg-white max-w-[9rem] truncate">
+                        <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm shadow-sm hover:bg-white max-w-[9rem] truncate">
                             {pet.breed}
                         </Badge>
                     )}
@@ -95,8 +87,8 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
             <div className="p-5">
                 <div className="flex justify-between items-start mb-3">
                     <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{pet.name}</h3>
-                        <div className="flex flex-wrap gap-2 text-sm text-gray-500">
+                        <h3 className="text-xl font-bold text-slate-900 mb-1">{pet.name}</h3>
+                        <div className="flex flex-wrap gap-2 text-sm text-slate-500">
                             <span className="flex items-center gap-1">
                                 <span className="material-symbols-rounded text-base">cake</span>
                                 {pet.age} años
@@ -119,18 +111,18 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     {pet.vaccinated && (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-teal-50 text-teal-700 text-xs font-medium">
                             <span className="material-symbols-rounded text-sm">vaccines</span>
-                            Vacunado
+                            {isFemale ? 'Vacunada' : 'Vacunado'}
                         </span>
                     )}
                     {pet.neutered && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-teal-50 text-teal-700 text-xs font-medium border border-teal-200">
                             <span className="material-symbols-rounded text-sm">medical_services</span>
-                            Castrado
+                            {isFemale ? 'Castrada' : 'Castrado'}
                         </span>
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100">
+                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-100">
                     <Button
                         className="w-full bg-teal-50 hover:bg-teal-100 text-teal-700 border-0 shadow-none"
                         onClick={() => onEdit(pet)}
@@ -139,7 +131,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         Editar
                     </Button>
                     <Button
-                        className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border-0 shadow-none"
+                        className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 border-0 shadow-none"
                         asChild
                     >
                         <Link href={`/pets/${pet.id}`}>

@@ -226,17 +226,17 @@ export default function PetPassportPage() {
 
           <div className="flex flex-wrap gap-2">
             {pet.vaccinated && (
-              <Badge className="bg-teal-50 text-teal-700 hover:bg-teal-50">
+              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">
                 {vaccinatedLabel(pet.gender)}
               </Badge>
             )}
             {pet.neutered && (
-              <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50">
+              <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
                 {neuteredLabel(pet.gender)}
               </Badge>
             )}
             {intents.map((intent) => (
-              <Badge key={intent} className="bg-amber-50 text-amber-800 hover:bg-amber-50">
+              <Badge key={intent} variant="outline" className="border-teal-200 text-teal-800">
                 {INTENT_LABELS[intent] || intent}
               </Badge>
             ))}

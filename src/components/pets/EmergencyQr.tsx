@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function EmergencyQr({ token }: { token?: string | null }) {
   const [src, setSrc] = useState<string | null>(null);
@@ -35,48 +36,52 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
       try {
         await navigator.share({
           title: 'QR de emergencia MascoTin',
-          text: 'Escaneá o abrí este enlace si encontrás a mi mascota.',
+          text: 'Abrí este enlace si encontrás a mi mascota.',
           url: publicUrl,
         });
         return;
       } catch {
-        // User cancelled or share failed — fall back to copy.
+        // cancelled
       }
     }
     await copyLink();
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
-      <p className="mb-1 text-sm font-medium text-slate-700">QR de emergencia</p>
-      <p className="mb-3 text-xs text-slate-500">
-        Quien lo escanee ve solo el contacto de emergencia que vos habilitaste.
-      </p>
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="QR de emergencia" className="mx-auto" />
-      ) : (
-        <p className="text-sm text-slate-500">Generando código...</p>
-      )}
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+    <Card>
+      <CardHeader className="pb-2 text-center">
+        <CardTitle className="text-base">QR de emergencia</CardTitle>
+        <p className="text-xs font-normal text-slate-500">
+          Quien lo escanee ve solo el contacto de emergencia que habilitaste.
+        </p>
+      </CardHeader>
+      <CardContent className="text-center">
         {src ? (
-          <Button type="button" variant="outline" size="sm" asChild>
-            <a href={src} download="mascotin-qr.png">
-              Descargar PNG
-            </a>
-          </Button>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt="QR de emergencia" className="mx-auto rounded-lg border border-slate-100" />
         ) : (
-          <Button type="button" variant="outline" size="sm" disabled>
-            Descargar PNG
-          </Button>
+          <p className="text-sm text-slate-500">Generando código...</p>
         )}
-        <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
-          Copiar enlace
-        </Button>
-        <Button type="button" size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => void shareLink()}>
-          Compartir
-        </Button>
-      </div>
-    </div>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          {src ? (
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href={src} download="mascotin-qr.png">
+                Descargar PNG
+              </a>
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="sm" disabled>
+              Descargar PNG
+            </Button>
+          )}
+          <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
+            Copiar enlace
+          </Button>
+          <Button type="button" size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => void shareLink()}>
+            Compartir
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

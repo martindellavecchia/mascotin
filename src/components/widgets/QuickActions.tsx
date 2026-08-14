@@ -12,11 +12,10 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
     const router = useRouter();
 
     const actions = [
-        { icon: 'favorite', label: 'Match', color: 'bg-rose-50 text-rose-600', href: '/?tab=explore' },
-        { icon: 'vaccines', label: 'Vet', color: 'bg-teal-50 text-teal-600', href: '/shop' },
-        { icon: 'directions_walk', label: 'Paseo', color: 'bg-orange-50 text-orange-600', href: '/shop' },
-        { icon: 'store', label: 'Tienda', color: 'bg-blue-50 text-blue-600', href: '/shop' },
-        { icon: 'content_cut', label: 'Grooming', color: 'bg-pink-50 text-pink-600', href: '/shop' },
+        { icon: 'search', label: 'Descubrir', color: 'bg-teal-50 text-teal-700', href: '/?tab=explore' },
+        { icon: 'storefront', label: 'Servicios', color: 'bg-slate-100 text-slate-700', href: '/shop' },
+        { icon: 'emergency', label: 'Alertas', color: 'bg-slate-100 text-slate-700', href: '/alerts' },
+        { icon: 'calendar_month', label: 'Eventos', color: 'bg-teal-50 text-teal-700', href: '/community/events' },
     ];
 
     if (compact) {
@@ -48,7 +47,7 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
                 </CardHeader>
             )}
             <CardContent className={!showTitle ? 'pt-4' : ''}>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {actions.map((action) => (
                         <button
                             key={action.label}

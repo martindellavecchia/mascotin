@@ -156,12 +156,12 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     return (
-        <Card className={`mb-2 shadow-sm overflow-hidden ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : 'border-gray-100 bg-white'}`}>
+        <Card className={`mb-2 shadow-sm overflow-hidden ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : 'border-slate-100 bg-white'}`}>
             {/* Lost Pet Banner */}
             {post.postType === 'lost_pet' && (
-                <div className={`px-3 py-1.5 flex items-center justify-between text-sm ${isResolved ? 'bg-gradient-to-r from-green-500 to-teal-500' : 'bg-gradient-to-r from-red-500 to-orange-500'}`}>
+                <div className={`px-3 py-1.5 flex items-center justify-between text-sm border-b ${isResolved ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'}`}>
                     <div className="flex items-center gap-1.5 text-white">
-                        <span className={`material-symbols-rounded ${isResolved ? '' : 'animate-pulse'}`}>
+                        <span className="material-symbols-rounded">
                             {isResolved ? 'check_circle' : 'emergency'}
                         </span>
                         <span className="text-sm font-bold">
@@ -206,7 +206,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {/* Header */}
             <div className="px-3 py-2.5 flex items-center gap-2.5">
                 <span className="relative shrink-0">
-                    <Avatar className="h-8 w-8 border border-gray-100">
+                    <Avatar className="h-8 w-8 border border-slate-100">
                         <AvatarImage src={post.author?.image || undefined} />
                         <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
@@ -214,15 +214,15 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 </span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm text-gray-900">{post.author?.name || 'Usuario'}</span>
+                        <span className="font-semibold text-sm text-slate-900">{post.author?.name || 'Usuario'}</span>
                         {post.pet && (
-                            <span className="text-xs text-gray-500 inline-flex items-center gap-0.5">
+                            <span className="text-xs text-slate-500 inline-flex items-center gap-0.5">
                               con {post.pet.name}
                               <span className="material-symbols-rounded text-sm text-teal-600">pets</span>
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: es })}</span>
                         {post.location && (
                             <>
@@ -239,7 +239,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 {currentUserId && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
                                 <span className="material-symbols-rounded">more_horiz</span>
                             </Button>
                         </DropdownMenuTrigger>
@@ -304,7 +304,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Content */}
             <div className="px-3 pb-2">
-                <p className={`whitespace-pre-wrap text-sm leading-relaxed ${post.postType === 'question' ? 'font-medium text-gray-900' : 'text-gray-700'}`}>
+                <p className={`whitespace-pre-wrap text-sm leading-relaxed ${post.postType === 'question' ? 'font-medium text-slate-900' : 'text-slate-700'}`}>
                     {post.content}
                 </p>
             </div>
@@ -376,7 +376,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Images */}
             {post.primaryImageUrl && (
-                <div className="relative bg-gray-100 w-full h-[280px]">
+                <div className="relative bg-slate-100 w-full h-[280px]">
                     <Image
                         src={post.primaryImageUrl}
                         alt="Contenido de la publicación"
@@ -390,7 +390,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Footer / Stats */}
             {(likeCount > 0 || (post._count?.comments || 0) > 0) && (
-                <div className="px-3 py-1 flex justify-between text-[10px] text-gray-400">
+                <div className="px-3 py-1 flex justify-between text-[10px] text-slate-400">
                     <span>{likeCount} likes</span>
                     <span>{comments.length || post._count?.comments || 0} comentarios</span>
                 </div>
@@ -398,10 +398,10 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Comments Section */}
             {showComments && (
-                <div className="bg-gray-50 border-t border-gray-100 px-3 py-2 space-y-2">
+                <div className="bg-slate-50 border-t border-slate-100 px-3 py-2 space-y-2">
                     {loadingComments ? (
                         <div className="flex justify-center py-2">
-                            <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-400 rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-400 rounded-full animate-spin"></div>
                         </div>
                     ) : (
                         <div className="space-y-1.5">
@@ -416,7 +416,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                     </span>
                                     <div className="bg-white px-2 py-1 rounded-lg text-xs">
                                         <span className="font-semibold mr-1">{comment.author.name}</span>
-                                        <span className="text-gray-700">{comment.content}</span>
+                                        <span className="text-slate-700">{comment.content}</span>
                                     </div>
                                 </div>
                             ))}
@@ -435,7 +435,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             <input
                                 type="text"
                                 placeholder="Escribe un comentario..."
-                                className="w-full rounded-full border border-gray-200 pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:border-teal-400"
+                                className="w-full rounded-full border border-slate-200 pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:border-teal-400"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => {
@@ -448,7 +448,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             <button
                                 onClick={handleAddComment}
                                 disabled={!newComment.trim()}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-500 disabled:opacity-50"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-500 disabled:opacity-50"
                             >
                                 <span className="material-symbols-rounded text-[20px]">send</span>
                             </button>
@@ -458,10 +458,10 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             )}
 
             {/* Actions */}
-            <div className="px-1 py-0.5 flex items-center border-t border-gray-50">
+            <div className="px-1 py-0.5 flex items-center border-t border-slate-50">
                 <Button
                     variant="ghost"
-                    className={`flex-1 gap-2 ${isLiked ? 'text-red-500 hover:text-red-600 hover:bg-red-50' : 'text-gray-500 hover:text-gray-600'}`}
+                    className={`flex-1 gap-2 ${isLiked ? 'text-teal-600 hover:text-teal-700 hover:bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
                     onClick={handleLike}
                     aria-label={isLiked ? 'Quitar me gusta' : 'Me gusta'}
                     aria-pressed={isLiked}
@@ -472,7 +472,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
                 <Button
                     variant="ghost"
-                    className={`flex-1 gap-2 ${showComments ? 'text-teal-500 bg-teal-50' : 'text-gray-500 hover:text-gray-600'}`}
+                    className={`flex-1 gap-2 ${showComments ? 'text-teal-500 bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
                     onClick={() => setShowComments(!showComments)}
                     aria-label={showComments ? 'Ocultar comentarios' : 'Mostrar comentarios'}
                     aria-expanded={showComments}
@@ -481,7 +481,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     <span className="text-xs">Comentar</span>
                 </Button>
 
-                <Button variant="ghost" size="sm" className="flex-1 gap-1 text-gray-500 hover:text-gray-600 h-8">
+                <Button variant="ghost" size="sm" className="flex-1 gap-1 text-slate-500 hover:text-slate-600 h-8">
                     <span className="material-symbols-rounded text-[16px]">share</span>
                     <span className="text-xs">Compartir</span>
                 </Button>

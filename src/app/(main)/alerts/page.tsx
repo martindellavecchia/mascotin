@@ -104,7 +104,8 @@ function AlertsPageContent() {
             Reportar encontrada
           </Button>
           <Button
-            className="w-full bg-red-500 hover:bg-red-600 sm:w-auto"
+            variant="outline"
+            className="w-full border-red-200 text-red-700 hover:bg-red-50 sm:w-auto"
             onClick={() => {
               setFormMode('lost');
               setFormOpen(true);

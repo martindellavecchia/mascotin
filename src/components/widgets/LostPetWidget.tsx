@@ -105,12 +105,12 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
     }
 
     return (
-        <Card className="border-red-200 bg-gradient-to-br from-red-50 to-orange-50">
+        <Card className="border-red-200 bg-red-50/40">
             <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-red-700">
-                    <span className="material-symbols-rounded animate-pulse">emergency</span>
+                    <span className="material-symbols-rounded">emergency</span>
                     Mascotas Perdidas
-                    <Badge className="bg-red-500 text-white text-xs ml-auto">
+                    <Badge className="bg-red-100 text-red-700 text-xs ml-auto">
                         {lostPets.length}
                     </Badge>
                 </CardTitle>
@@ -164,8 +164,9 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
                         Ver todas
                     </Button>
                     <Button
+                        variant="outline"
                         size="sm"
-                        className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                        className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
                         onClick={() => router.push('/alerts?report=lost')}
                     >
                         <span className="material-symbols-rounded mr-1 text-sm">add_alert</span>

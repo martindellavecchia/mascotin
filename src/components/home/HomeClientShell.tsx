@@ -342,7 +342,7 @@ export default function HomeClientShell({
                 className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
               >
                 <span className="material-symbols-rounded text-lg">home</span>
-                Feed
+                Inicio
               </TabsTrigger>
               <TabsTrigger
                 value="explore"

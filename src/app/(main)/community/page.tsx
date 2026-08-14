@@ -35,7 +35,8 @@ export default function CommunityPage() {
                         <p className="text-slate-600">Eventos, grupos y debates cercanos</p>
                     </div>
                     <Button
-                        className="w-full bg-red-500 text-white hover:bg-red-600 sm:w-auto"
+                        variant="outline"
+                        className="w-full border-red-200 text-red-700 hover:bg-red-50 sm:w-auto"
                         onClick={() => setLostPetFormOpen(true)}
                     >
                         <span className="material-symbols-rounded mr-2">emergency</span>

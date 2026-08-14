@@ -127,13 +127,13 @@ export default function Feed({
                 {[1, 2].map(i => (
                     <div key={i} className="bg-white p-4 rounded-xl shadow-sm h-40 animate-pulse">
                         <div className="flex gap-3 mb-4">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                            <div className="w-10 h-10 bg-slate-200 rounded-full" />
                             <div className="space-y-2 flex-1">
-                                <div className="h-4 bg-gray-200 rounded w-1/3" />
-                                <div className="h-3 bg-gray-200 rounded w-1/4" />
+                                <div className="h-4 bg-slate-200 rounded w-1/3" />
+                                <div className="h-3 bg-slate-200 rounded w-1/4" />
                             </div>
                         </div>
-                        <div className="h-16 bg-gray-200 rounded" />
+                        <div className="h-16 bg-slate-200 rounded" />
                     </div>
                 ))}
             </div>
@@ -142,9 +142,9 @@ export default function Feed({
 
     if (posts.length === 0) {
         return (
-            <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-gray-100">
-                <span className="material-symbols-rounded text-4xl text-gray-300 mb-2">post_add</span>
-                <p className="text-gray-500">No hay publicaciones aún.</p>
+            <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-slate-100">
+                <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">post_add</span>
+                <p className="text-slate-500">No hay publicaciones aún.</p>
             </div>
         );
     }

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sheet';
 
 interface HeaderMobileMenuProps {
-  navLinks: Array<{ href: string; label: string; tab?: 'home' | 'explore' }>;
+  navLinks: Array<{ href: string; label: string; icon?: string; tab?: 'home' | 'explore' }>;
 }
 
 export default function HeaderMobileMenu({
@@ -57,12 +57,17 @@ export default function HeaderMobileMenu({
               <SheetClose key={`${link.label}-${link.href}`} asChild>
                 <Link
                   href={link.href}
-                  className={`block rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                     isActive(link.href, link.tab)
                       ? 'bg-teal-50 text-teal-700'
                       : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
+                  {link.icon && (
+                    <span className={`material-symbols-rounded text-[20px] ${isActive(link.href, link.tab) ? 'filled' : ''}`}>
+                      {link.icon}
+                    </span>
+                  )}
                   {link.label}
                 </Link>
               </SheetClose>

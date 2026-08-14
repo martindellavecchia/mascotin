@@ -31,7 +31,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-gray-500 text-sm mb-3">
+                    <p className="text-slate-500 text-sm mb-3">
                         Aún no has escrito tu biografía. Cuéntales a otros dueños un poco sobre ti.
                     </p>
                     {onEdit && (
@@ -64,14 +64,14 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                     <span className="material-symbols-rounded text-teal-500">info</span>
                     Sobre mí
                     {isLongText && (
-                        <span className="material-symbols-rounded text-gray-400 text-sm ml-auto">
+                        <span className="material-symbols-rounded text-slate-400 text-sm ml-auto">
                             {expanded ? 'expand_less' : 'expand_more'}
                         </span>
                     )}
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-gray-600 leading-relaxed transition-all duration-300">
+                <p className="text-slate-600 leading-relaxed transition-all duration-300">
                     {content}
                 </p>
 

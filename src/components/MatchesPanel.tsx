@@ -1,21 +1,37 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Pet } from '@/types';
-import Image from 'next/image';
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
-import { toast } from 'sonner';
 
-const FALLBACK_MATCH_IMAGE = '/images/discovery-golden-retriever.png';
-
-function matchImageSrc(images: string | string[] | null | undefined) {
+function MatchAvatar({ images, name }: { images: string | string[] | null | undefined; name: string }) {
   const primary = getPrimaryImageUrl(images);
-  return isRenderableImage(primary) ? primary! : FALLBACK_MATCH_IMAGE;
+  const src = isRenderableImage(primary) ? primary : null;
+
+  return (
+    <Avatar className="h-16 w-16">
+      {src ? (
+        <AvatarImage asChild>
+          <div className="relative h-full w-full">
+            <Image
+              src={src}
+              alt={name}
+              fill
+              className="rounded-full object-cover"
+              unoptimized={shouldUnoptimizeImage(src)}
+            />
+          </div>
+        </AvatarImage>
+      ) : null}
+      <AvatarFallback className="bg-teal-50 text-lg font-semibold text-teal-700">
+        {name?.[0] || '?'}
+      </AvatarFallback>
+    </Avatar>
+  );
 }
 
 interface MatchesPanelProps {
@@ -24,262 +40,57 @@ interface MatchesPanelProps {
   onRefresh: () => void;
 }
 
-export default function MatchesPanel({
-  matches,
-  currentUserId,
-}: MatchesPanelProps) {
-  const [selectedMatch, setSelectedMatch] = useState<Pet | null>(null);
-  const [messages, setMessages] = useState<{
-    [key: string]: Array<{ content: string; senderId: string; createdAt: string }>;
-  }>({});
-  const [newMessage, setNewMessage] = useState('');
-  const [sending, setSending] = useState(false);
-  const sendingRef = useRef(false);
+export default function MatchesPanel({ matches }: MatchesPanelProps) {
+  const router = useRouter();
 
-  const handleSendMessage = async () => {
-    if (sendingRef.current) return;
-    if (!selectedMatch || !newMessage.trim() || !selectedMatch.matchId) return;
-    const matchId = selectedMatch.matchId;
-
-    sendingRef.current = true;
-    setSending(true);
-    try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          matchId,
-          content: newMessage,
-        }),
-      });
-
-      if (response.ok) {
-        const message = {
-          content: newMessage,
-          senderId: currentUserId,
-          createdAt: new Date().toISOString(),
-        };
-
-        setMessages((prev) => ({
-          ...prev,
-          [matchId]: [...(prev[matchId] || []), message],
-        }));
-        setNewMessage('');
-      }
-    } catch (error) {
-      console.error('Error al enviar mensaje:', error);
-      toast.error('Error al enviar mensaje');
-    } finally {
-      sendingRef.current = false;
-      setSending(false);
-    }
+  const openChat = (match: Pet) => {
+    if (!match.matchId) return;
+    router.push(`/messages?matchId=${match.matchId}`);
   };
-
-  const fetchMessages = async (matchId: string) => {
-    try {
-      const response = await fetch(`/api/messages?matchId=${matchId}`);
-      const data = await response.json();
-      setMessages((prev) => ({
-        ...prev,
-        [matchId]: data.messages || [],
-      }));
-    } catch (error) {
-      console.error('Error al cargar mensajes:', error);
-      toast.error('Error al cargar mensajes');
-    }
-  };
-
-  const handleSelectMatch = (match: Pet) => {
-    setSelectedMatch(match);
-    if (match.matchId) {
-      fetchMessages(match.matchId);
-    }
-  };
-
-  const selectedMatchId = selectedMatch?.matchId || '';
-  const selectedMessages = selectedMatchId
-    ? messages[selectedMatchId] || []
-    : [];
 
   return (
-    <div className="h-full flex flex-col">
-      {!selectedMatch ? (
-        <div className="h-full">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Tus matches</h2>
-
-          {matches.length === 0 ? (
-            <Card className="p-8 text-center border-slate-200 shadow-sm">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center">
-                  <span className="material-symbols-rounded text-3xl text-teal-600">
-                    favorite
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                    Aún no tienes matches
-                  </h3>
-                  <p className="text-slate-500">
-                    Empieza a explorar para encontrar compañeros.
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ) : (
-            <ScrollArea className="h-[calc(100vh-250px)]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {matches.map((match) => (
-                  <Card
-                    key={match.id}
-                    className="cursor-pointer hover:border-teal-200 transition-colors border-slate-200 shadow-sm"
-                    onClick={() => handleSelectMatch(match)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="w-16 h-16">
-                          <AvatarImage asChild>
-                            <div className="relative w-full h-full">
-                              <Image
-                                src={matchImageSrc(match.images)}
-                                alt={match.name}
-                                fill
-                                className="object-cover rounded-full"
-                                unoptimized={shouldUnoptimizeImage(matchImageSrc(match.images))}
-                              />
-                            </div>
-                          </AvatarImage>
-                          <AvatarFallback className="bg-teal-50 text-teal-700 text-lg font-semibold">
-                            {match.name?.[0] || '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-slate-900 truncate">
-                            {match.name}
-                          </h3>
-                          <p className="text-sm text-slate-500 truncate">
-                            {(match.bio || '').substring(0, 50)}...
-                          </p>
-                          <p className="text-xs text-teal-700 mt-1">
-                            Toca para chatear
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
+    <div className="h-full">
+      {matches.length === 0 ? (
+        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
+          <span className="material-symbols-rounded text-5xl text-slate-300">favorite</span>
+          <h3 className="mt-4 text-lg font-semibold text-slate-800">Todavía no hay coincidencias</h3>
+          <p className="mt-2 max-w-sm text-sm text-slate-500">
+            Cuando hagas match, van a aparecer acá para chatear en Mensajes.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push('/?tab=explore')}
+            className="mt-6 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
+          >
+            Ir a Descubrir
+          </button>
         </div>
       ) : (
-        <div className="h-full flex flex-col">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSelectedMatch(null)}
-              className="hover:bg-teal-50"
-              aria-label="Volver a la lista de matches"
-            >
-              <span className="material-symbols-rounded">arrow_back</span>
-            </Button>
-            <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10">
-                <AvatarImage asChild>
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={matchImageSrc(selectedMatch.images)}
-                      alt={selectedMatch.name}
-                      fill
-                      className="object-cover rounded-full"
-                      unoptimized={shouldUnoptimizeImage(matchImageSrc(selectedMatch.images))}
-                    />
+        <ScrollArea className="h-[calc(100vh-220px)]">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {matches.map((match) => (
+              <Card
+                key={match.id}
+                className="cursor-pointer border-slate-200 shadow-sm transition-colors hover:border-teal-200"
+                onClick={() => openChat(match)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <MatchAvatar images={match.images} name={match.name} />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold text-slate-900">{match.name}</h3>
+                      <p className="truncate text-sm text-slate-500">
+                        {(match.bio || 'Nueva conexión').substring(0, 50)}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-teal-700">Abrir chat</p>
+                    </div>
+                    <span className="material-symbols-rounded text-slate-400">chevron_right</span>
                   </div>
-                </AvatarImage>
-                <AvatarFallback className="bg-teal-50 text-teal-700 font-semibold">
-                  {selectedMatch.name[0]}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-semibold text-slate-900">
-                  {selectedMatch.name}
-                </h3>
-                <p className="text-xs text-teal-700">En línea</p>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          <Card className="flex-1 flex flex-col overflow-hidden border-slate-200 shadow-sm">
-            <CardContent className="p-0 flex-1 flex flex-col">
-              <ScrollArea className="flex-1 p-4" aria-live="polite">
-                {selectedMessages.length === 0 ? (
-                  <div className="text-center text-slate-500 py-8">
-                    <p className="text-base">
-                      Saluda a {selectedMatch.name}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {selectedMessages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex ${
-                          msg.senderId === currentUserId
-                            ? 'justify-end'
-                            : 'justify-start'
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[70%] px-4 py-2 rounded-lg ${
-                            msg.senderId === currentUserId
-                              ? 'bg-teal-700 text-white'
-                              : 'bg-slate-100 text-slate-900'
-                          }`}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                          <p
-                            className={`text-xs mt-1 ${
-                              msg.senderId === currentUserId
-                                ? 'text-white/70'
-                                : 'text-slate-500'
-                            }`}
-                          >
-                            {new Date(msg.createdAt).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-
-              <div className="p-4 border-t border-slate-100">
-                <div className="flex gap-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Escribe un mensaje..."
-                    className="flex-1 rounded-lg"
-                    disabled={sending}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    className="bg-teal-700 hover:bg-teal-800 rounded-lg"
-                    disabled={!newMessage.trim() || sending}
-                  >
-                    <span className="material-symbols-rounded">
-                      {sending ? 'pending' : 'send'}
-                    </span>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

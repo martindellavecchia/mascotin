@@ -239,7 +239,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
                   {...field}
                 />
               </FormControl>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-slate-500">
                 Escribe tus intereses separados por comas
               </p>
               <FormMessage />
@@ -257,23 +257,24 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 h-6 w-6"
+                  className="absolute top-2 right-2 size-7 gap-0 rounded-full p-0"
                   onClick={() => removeImage(index)}
+                  aria-label="Eliminar foto"
                 >
-                  <span className="material-symbols-rounded h-3 w-3">close</span>
+                  <span className="material-symbols-rounded text-[16px] leading-none">close</span>
                 </Button>
               </div>
             ))}
 
             {images.length < 6 && (
-              <div className="aspect-square rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50">
-                <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex items-center justify-center">
+              <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
+                <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
                   {uploading ? (
-                    <span className="material-symbols-rounded w-8 h-8 text-teal-600 animate-spin">pending</span>
+                    <span className="material-symbols-rounded text-[24px] leading-none text-teal-600 animate-spin">progress_activity</span>
                   ) : (
                     <>
-                      <span className="material-symbols-rounded w-8 h-8 mx-auto mb-2 text-teal-600">upload</span>
-                      <p className="text-sm text-gray-600">Subir foto</p>
+                      <span className="material-symbols-rounded text-[32px] leading-none mb-2 text-teal-600">upload</span>
+                      <p className="text-sm text-slate-600">Subir foto</p>
                     </>
                   )}
                   <input
@@ -288,7 +289,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-slate-500 mt-2">
             Máximo 6 imágenes. Formatos: JPG, PNG. Máximo 5MB por imagen.
           </p>
         </div>
@@ -296,7 +297,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
         <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading || uploading}>
           {loading ? (
             <>
-              <span className="material-symbols-rounded w-4 h-4 mr-2 animate-spin">pending</span>
+              <span className="material-symbols-rounded text-[16px] leading-none mr-2 animate-spin">progress_activity</span>
               Guardando...
             </>
           ) : (

@@ -358,11 +358,11 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Género</FormLabel>
+                <FormLabel>Sexo</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Género" />
+                      <SelectValue placeholder="Sexo" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -400,24 +400,26 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
         />
 
         <div className="space-y-3">
-          <Label className="text-gray-700 font-medium">Estado de Salud</Label>
+          <Label className="text-slate-700 font-medium">Estado de Salud</Label>
           <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
               name="vaccinated"
               render={({ field }) => (
                 <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
-                  ? 'bg-teal-50 border-emerald-300'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  ? 'bg-teal-50 border-teal-300'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}>
                   <input
                     type="checkbox"
                     checked={field.value}
                     onChange={field.onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                    className="sr-only"
                   />
-                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-gray-400'}`}>vaccines</span>
-                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Vacunado</span>
+                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-slate-400'}`}>vaccines</span>
+                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
+                    {form.watch('gender') === 'female' ? 'Vacunada' : 'Vacunado'}
+                  </span>
                 </label>
               )}
             />
@@ -427,17 +429,19 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
               name="neutered"
               render={({ field }) => (
                 <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
-                  ? 'bg-teal-50 border-emerald-300'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  ? 'bg-teal-50 border-teal-300'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}>
                   <input
                     type="checkbox"
                     checked={field.value}
                     onChange={field.onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                    className="sr-only"
                   />
-                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-gray-400'}`}>medical_services</span>
-                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Castrado</span>
+                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-slate-400'}`}>medical_services</span>
+                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
+                    {form.watch('gender') === 'female' ? 'Castrada' : 'Castrado'}
+                  </span>
                 </label>
               )}
             />
@@ -478,7 +482,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
         />
 
         <div className="space-y-3">
-          <Label className="text-gray-700 font-medium">Actividades Favoritas</Label>
+          <Label className="text-slate-700 font-medium">Actividades Favoritas</Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
               { id: 'walk', label: 'Pasear', icon: 'directions_walk' },
@@ -493,7 +497,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                 key={activity.id}
                 className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${form.watch('activities')?.includes(activity.id as ActivityOption)
                   ? 'bg-teal-50 border-teal-300 text-teal-700'
-                  : 'bg-white border-gray-200 hover:border-gray-300 text-gray-700'
+                  : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
                   }`}
               >
                 <input
@@ -508,18 +512,18 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                       form.setValue('activities', current.filter((a) => a !== activity.id));
                     }
                   }}
-                  className="w-4 h-4 rounded border-gray-300 accent-teal-500"
+                  className="sr-only"
                 />
                 <span className="material-symbols-rounded text-lg text-teal-700">{activity.icon}</span>
                 <span className="text-sm font-medium">{activity.label}</span>
               </label>
             ))}
           </div>
-          <p className="text-xs text-gray-500 mt-2">Selecciona al menos una actividad</p>
+          <p className="text-xs text-slate-500 mt-2">Selecciona al menos una actividad</p>
         </div>
 
         <div className="space-y-3">
-          <Label className="text-gray-700 font-medium">Pasaporte y compatibilidad</Label>
+          <Label className="text-slate-700 font-medium">Pasaporte y compatibilidad</Label>
           <CompatibilityFields
             data={{
               goodWithKids: form.watch('goodWithKids'),
@@ -585,8 +589,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
         </div>
 
         <div className="space-y-3">
-          <Label className="text-gray-700 font-medium">Privacidad al escanear QR</Label>
-          <p className="text-xs text-gray-500">Controla qué datos se muestran en el pasaporte público</p>
+          <Label className="text-slate-700 font-medium">Privacidad al escanear QR</Label>
+          <p className="text-xs text-slate-500">Controla qué datos se muestran en el pasaporte público</p>
           <div className="flex flex-col gap-3">
             <FormField
               control={form.control}
@@ -594,20 +598,20 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
               render={({ field }) => (
                 <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
                   ? 'bg-teal-50 border-teal-300'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}>
                   <input
                     type="checkbox"
                     checked={field.value}
                     onChange={field.onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                    className="sr-only"
                   />
                   <span className="material-symbols-rounded text-xl text-teal-600">phone</span>
                   <div>
-                    <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>
+                    <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
                       Compartir teléfono
                     </span>
-                    <span className="text-xs text-gray-500">Mostrar tu número al escanear el pasaporte</span>
+                    <span className="text-xs text-slate-500">Mostrar tu número al escanear el pasaporte</span>
                   </div>
                 </label>
               )}
@@ -618,20 +622,20 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
               render={({ field }) => (
                 <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
                   ? 'bg-teal-50 border-teal-300'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}>
                   <input
                     type="checkbox"
                     checked={field.value}
                     onChange={field.onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                    className="sr-only"
                   />
                   <span className="material-symbols-rounded text-xl text-teal-600">local_hospital</span>
                   <div>
-                    <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>
+                    <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
                       Compartir veterinaria
                     </span>
-                    <span className="text-xs text-gray-500">Mostrar la clínica de cabecera al escanear</span>
+                    <span className="text-xs text-slate-500">Mostrar la clínica de cabecera al escanear</span>
                   </div>
                 </label>
               )}
@@ -641,27 +645,25 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
 
         <div>
           <Label>Imágenes ({images.length}/6)</Label>
-          <p className="text-xs text-gray-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
+          <p className="text-xs text-slate-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
           <div className="mt-2 grid grid-cols-3 gap-4">
             {images.map((image, index) => (
               <div
                 key={index}
-                className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${thumbnailIndex === index ? 'ring-4 ring-yellow-400' : ''}`}
+                className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${thumbnailIndex === index ? 'ring-4 ring-teal-500' : ''}`}
               >
                 <Image src={image} alt={`Foto ${index + 1}`} fill className="object-cover" />
-                {/* Thumbnail selector */}
                 <Button
                   type="button"
                   variant={thumbnailIndex === index ? "default" : "outline"}
                   size="icon"
-                  className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${thumbnailIndex === index ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-white/80 hover:bg-yellow-100'}`}
+                  className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${thumbnailIndex === index ? 'bg-teal-500 hover:bg-teal-600' : 'bg-white/80 hover:bg-teal-50'}`}
                   onClick={() => setThumbnailIndex(index)}
                   title="Usar como foto de perfil"
                   aria-label="Usar como foto de perfil"
                 >
                   <span className={`material-symbols-rounded text-[16px] leading-none ${thumbnailIndex === index ? 'text-white filled' : 'text-slate-500'}`}>star</span>
                 </Button>
-                {/* Delete button */}
                 <Button
                   type="button"
                   variant="destructive"
@@ -671,7 +673,6 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                     const newImages = images.filter((_, i) => i !== index);
                     setImages(newImages);
                     form.setValue('images', newImages);
-                    // Adjust thumbnail index if needed
                     if (thumbnailIndex >= newImages.length) {
                       setThumbnailIndex(Math.max(0, newImages.length - 1));
                     } else if (thumbnailIndex > index) {
@@ -683,7 +684,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                   <span className="material-symbols-rounded text-[16px] leading-none">close</span>
                 </Button>
                 {thumbnailIndex === index && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-yellow-400 text-white text-xs text-center py-1 font-medium">
+                  <div className="absolute bottom-0 left-0 right-0 bg-teal-500 text-white text-xs text-center py-1 font-medium">
                     Foto de perfil
                   </div>
                 )}
@@ -691,14 +692,14 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
             ))}
 
             {images.length < 6 && (
-              <div className="aspect-square rounded-lg border-2 border-dashed border-green-300 flex items-center justify-center bg-teal-50">
+              <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
                 <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
                   {uploading ? (
-                    <span className="material-symbols-rounded w-8 h-8 text-teal-500 animate-spin">pending</span>
+                    <span className="material-symbols-rounded text-[24px] leading-none text-teal-500 animate-spin">progress_activity</span>
                   ) : (
                     <>
-                      <span className="material-symbols-rounded w-8 h-8 mb-2 text-teal-500">upload</span>
-                      <p className="text-sm text-gray-600">Subir foto</p>
+                      <span className="material-symbols-rounded text-[32px] leading-none mb-2 text-teal-500">upload</span>
+                      <p className="text-sm text-slate-600">Subir foto</p>
                     </>
                   )}
                   <input
@@ -713,7 +714,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-slate-500 mt-2">
             Máximo 6 imágenes. Formatos: JPG, PNG. Máximo 5MB por imagen.
           </p>
         </div>
@@ -733,7 +734,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
           <Button type="submit" className="w-full flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading}>
             {loading ? (
               <>
-                <span className="material-symbols-rounded w-4 h-4 mr-2 animate-spin">pending</span>
+                <span className="material-symbols-rounded text-[16px] leading-none mr-2 animate-spin">progress_activity</span>
                 {initialData?.id ? 'Actualizando...' : 'Guardando...'}
               </>
             ) : (

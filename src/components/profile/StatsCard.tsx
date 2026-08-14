@@ -12,11 +12,11 @@ export function StatsCard({ petsCount, matchesCount }: StatsCardProps) {
                 <div className="grid grid-cols-2 gap-4 text-center">
                     <div className="p-3 bg-teal-50 rounded-xl">
                         <p className="text-2xl font-bold text-teal-600">{petsCount}</p>
-                        <p className="text-xs text-gray-500">Mascotas</p>
+                        <p className="text-xs text-slate-500">Mascotas</p>
                     </div>
-                    <div className="p-3 bg-slate-50 rounded-xl">
-                        <p className="text-2xl font-bold text-teal-700">{matchesCount}</p>
-                        <p className="text-xs text-gray-500">Coincidencias</p>
+                    <div className="p-3 bg-teal-50 rounded-xl">
+                        <p className="text-2xl font-bold text-teal-600">{matchesCount}</p>
+                        <p className="text-xs text-slate-500">Coincidencias</p>
                     </div>
                 </div>
             </CardContent>
