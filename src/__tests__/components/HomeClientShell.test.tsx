@@ -214,7 +214,7 @@ describe('HomeClientShell', () => {
   it('fetches explore data only after opening the explore tab', async () => {
     const user = userEvent.setup();
     renderShell();
-    await user.click(screen.getByRole('button', { name: /explorar/i }));
+    await user.click(screen.getByRole('button', { name: /descubrir/i }));
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/pets?currentPetId=pet-1');
@@ -225,7 +225,7 @@ describe('HomeClientShell', () => {
   it('fetches matches only after opening the matches tab', async () => {
     const user = userEvent.setup();
     renderShell();
-    await user.click(screen.getByRole('button', { name: /matches/i }));
+    await user.click(screen.getByRole('button', { name: /coincidencias/i }));
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/matches');
@@ -237,7 +237,7 @@ describe('HomeClientShell', () => {
     const replaceState = jest.spyOn(window.history, 'replaceState');
     const user = userEvent.setup();
     renderShell();
-    await user.click(screen.getByRole('button', { name: /explorar/i }));
+    await user.click(screen.getByRole('button', { name: /descubrir/i }));
 
     expect(replaceState).toHaveBeenCalled();
     const url = String(replaceState.mock.calls.at(-1)?.[2] || '');

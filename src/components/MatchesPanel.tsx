@@ -8,14 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Pet } from '@/types';
 import Image from 'next/image';
-import { safeParseImages } from '@/lib/utils';
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 
 const FALLBACK_MATCH_IMAGE = '/images/discovery-golden-retriever.png';
 
 function matchImageSrc(images: string | string[] | null | undefined) {
-  const primary = getPrimaryImageUrl(images) || safeParseImages(images)[0] || null;
+  const primary = getPrimaryImageUrl(images);
   return isRenderableImage(primary) ? primary! : FALLBACK_MATCH_IMAGE;
 }
 
