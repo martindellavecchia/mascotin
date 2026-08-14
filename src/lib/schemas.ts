@@ -25,6 +25,18 @@ export const petSchema = z.object({
   images: z.array(z.string())
     .min(1, "Al menos una imagen es requerida")
     .max(6, "Máximo 6 imágenes"),
+  goodWithKids: z.enum(['yes', 'no', 'unknown']).optional(),
+  goodWithDogs: z.enum(['yes', 'no', 'unknown']).optional(),
+  goodWithCats: z.enum(['yes', 'no', 'unknown']).optional(),
+  goodWithStrangers: z.enum(['yes', 'no', 'unknown']).optional(),
+  temperament: z.array(z.enum(['sociable', 'territorial', 'anxious', 'playful', 'calm', 'independent'])).optional(),
+  microchipId: z.string().max(50).optional(),
+  allergies: z.string().max(300).optional(),
+  specialNeeds: z.string().max(500).optional(),
+  vetClinicName: z.string().max(120).optional(),
+  matchIntent: z.array(z.enum(['walk', 'play', 'social', 'sit'])).optional(),
+  sharePhoneOnScan: z.boolean().optional(),
+  shareVetOnScan: z.boolean().optional(),
 });
 
 export const ownerSchema = z.object({
@@ -51,6 +63,7 @@ export const createEventSchema = z.object({
   image: z.string().optional(),
   maxAttendees: z.number().int().positive().optional(),
   groupId: z.string().optional(),
+  category: z.enum(['paseo', 'feria', 'adopcion', 'no_convencionales', 'otro']).optional(),
 });
 
 export const createAppointmentSchema = z.object({
@@ -64,7 +77,7 @@ export const createPostSchema = z.object({
   petId: z.string().optional(),
   images: z.array(z.string()).max(10).optional(),
   location: z.string().max(200).optional(),
-  postType: z.enum(['post', 'event', 'lost_pet', 'found_pet']).default('post'),
+  postType: z.enum(['post', 'photo', 'event', 'lost_pet', 'found_pet', 'question', 'recommendation']).default('post'),
   eventDate: z.string().optional(),
   eventLocation: z.string().max(200).optional(),
   contactPhone: z.string().max(20).optional(),
@@ -73,6 +86,8 @@ export const createPostSchema = z.object({
 
 export const createReportSchema = z.object({
   reportedId: z.string().min(1, "El usuario reportado es requerido"),
+  targetType: z.enum(['USER', 'POST', 'COMMENT', 'ALERT']).default('USER'),
+  targetId: z.string().optional(),
   reason: z.enum(['spam', 'inappropriate', 'harassment', 'other'], {
     message: "El motivo es requerido",
   }),
@@ -129,6 +144,9 @@ export const updateStoreSchema = z.object({
   image: z.string().optional(),
   images: z.array(z.string()).max(10).optional(),
   isActive: z.boolean().optional(),
+  tags: z.array(z.string()).max(10).optional(),
+  plan: z.enum(['FREE', 'FEATURED']).optional(),
+  featuredUntil: z.string().optional(),
 });
 
 export const assignStoreSchema = z.object({
@@ -145,6 +163,7 @@ export const providerUpdateStoreSchema = z.object({
   address: z.string().max(300).optional(),
   image: z.string().optional(),
   images: z.array(z.string()).max(10).optional(),
+  tags: z.array(z.string()).max(10).optional(),
 });
 
 export const providerCreateStoreSchema = z.object({
@@ -257,3 +276,47 @@ export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 export type DeleteAccountData = z.infer<typeof deleteAccountSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+
+export const createSightingSchema = z.object({
+  notes: z.string().max(1000).optional(),
+  location: z.string().max(200).optional(),
+  image: z.string().optional(),
+});
+
+export const adopterProfileSchema = z.object({
+  housingType: z.enum(['apartment', 'house', 'other']),
+  hasYard: z.boolean().default(false),
+  hasKids: z.boolean().default(false),
+  hasOtherPets: z.boolean().default(false),
+  experience: z.enum(['none', 'some', 'experienced']),
+  hoursAvailable: z.string().max(120).optional(),
+  notes: z.string().max(1000).optional(),
+});
+
+export const createAdoptionListingSchema = z.object({
+  petId: z.string().min(1, 'La mascota es requerida'),
+  character: z.string().min(10, 'Describí el carácter de la mascota').max(1000),
+  specialNeeds: z.string().max(1000).optional(),
+  requirements: z.string().max(1000).optional(),
+  location: z.string().max(200).optional(),
+});
+
+export const createAdoptionApplicationSchema = z.object({
+  message: z.string().min(20, 'Contá por qué querés adoptar').max(2000),
+});
+
+export const reviewAdoptionApplicationSchema = z.object({
+  status: z.enum(['ACCEPTED', 'REJECTED']),
+});
+
+export const storePromotionSchema = z.object({
+  title: z.string().min(2, 'El título es requerido').max(120),
+  body: z.string().min(10, 'La promoción debe tener al menos 10 caracteres').max(500),
+  startsAt: z.string().min(1, 'La fecha de inicio es requerida'),
+  endsAt: z.string().min(1, 'La fecha de fin es requerida'),
+});
+
+export type AdopterProfileData = z.infer<typeof adopterProfileSchema>;
+export type CreateAdoptionListingData = z.infer<typeof createAdoptionListingSchema>;
+export type CreateAdoptionApplicationData = z.infer<typeof createAdoptionApplicationSchema>;
+export type StorePromotionData = z.infer<typeof storePromotionSchema>;

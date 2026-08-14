@@ -20,4 +20,9 @@ describe('route access helpers', () => {
     expect(isPublicPath('/profile')).toBe(false);
     expect(isPublicPath('/community')).toBe(false);
   });
+
+  it('allows emergency QR pages without a session', () => {
+    expect(isPublicPath('/p/abc123')).toBe(true);
+    expect(isPublicPath('/pets/abc123')).toBe(false);
+  });
 });

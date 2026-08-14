@@ -22,8 +22,20 @@ export async function GET(request: Request) {
       select: {
         location: true,
         bio: true,
+        latitude: true,
+        longitude: true,
         pets: {
-          select: { id: true, petType: true, breed: true },
+          select: {
+            id: true,
+            petType: true,
+            breed: true,
+            size: true,
+            energy: true,
+            location: true,
+            latitude: true,
+            longitude: true,
+            matchIntent: true,
+          },
         },
       },
     });
@@ -46,7 +58,8 @@ export async function GET(request: Request) {
       owner.location,
       owner.bio,
       myPetIds,
-      5
+      5,
+      { latitude: owner.latitude, longitude: owner.longitude }
     );
 
     return NextResponse.json(

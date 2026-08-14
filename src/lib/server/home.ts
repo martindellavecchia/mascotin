@@ -3,8 +3,9 @@ import 'server-only';
 import type { Pet } from '@/types';
 import { UPCOMING_APPOINTMENT_STATUSES } from '@/lib/appointments';
 import { db } from '@/lib/db';
-import { getPrimaryImageUrl, withImageFields } from '@/lib/media';
+import { withImageFields } from '@/lib/media';
 import { serializeForClient } from '@/lib/server/serialize';
+import { getRankedPetMatches } from '@/lib/server/pet-matching';
 
 export interface HomeStatsData {
   totalPets: number;
@@ -99,6 +100,12 @@ const PET_SELECT = {
   activities: true,
   location: true,
   images: true,
+  latitude: true,
+  longitude: true,
+  goodWithKids: true,
+  goodWithDogs: true,
+  goodWithCats: true,
+  matchIntent: true,
   level: true,
   xp: true,
   totalMatches: true,
@@ -109,115 +116,32 @@ const PET_SELECT = {
 
 async function getSuggestionsForPet(
   userId: string,
-  currentPet: { id: string; petType: string; breed: string | null },
+  currentPet: {
+    id: string;
+    petType: string;
+    breed: string | null;
+    size?: string | null;
+    energy?: string | null;
+    location?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    matchIntent?: string | null;
+  },
   ownerLocation: string | null,
   ownerBio: string | null,
   myPetIds: string[],
-  limit = 6
-): Promise<HomeBootstrapSuggestion[]> {
-  const [swipedPets, blockedRelations] = await Promise.all([
-    db.swipe.findMany({
-      where: { fromPetId: currentPet.id },
-      select: { toPetId: true },
-      take: 500,
-    }),
-    db.blockedUser.findMany({
-      where: {
-        OR: [{ blockerId: userId }, { blockedId: userId }],
-      },
-      select: { blockerId: true, blockedId: true },
-    }),
-  ]);
-
-  const swipedPetIds = swipedPets
-    .map((s) => s.toPetId)
-    .filter((id): id is string => Boolean(id));
-  const blockedUserIds = blockedRelations.map((b) =>
-    b.blockerId === userId ? b.blockedId : b.blockerId
-  );
-
-  const otherPets = await db.pet.findMany({
-    where: {
-      id: {
-        notIn: [...myPetIds, ...swipedPetIds],
-      },
-      ...(blockedUserIds.length > 0 && {
-        owner: {
-          userId: { notIn: blockedUserIds },
-        },
-      }),
-    },
-    select: {
-      id: true,
-      name: true,
-      petType: true,
-      breed: true,
-      images: true,
-      owner: {
-        select: {
-          location: true,
-          bio: true,
-        },
-      },
-    },
-    take: 20,
+  limit = 6,
+  ownerCoords?: { latitude?: number | null; longitude?: number | null } | null
+) {
+  return getRankedPetMatches({
+    userId,
+    currentPet,
+    ownerLocation,
+    ownerBio,
+    ownerCoords,
+    myPetIds,
+    limit,
   });
-
-  const scoredPets = otherPets.map((pet) => {
-    let score = 0;
-    const reasons: string[] = [];
-
-    if (pet.petType === currentPet.petType) {
-      score += 5;
-      reasons.push('Mismo tipo');
-    }
-
-    if (
-      pet.breed &&
-      currentPet.breed &&
-      pet.breed.toLowerCase() === currentPet.breed.toLowerCase()
-    ) {
-      score += 3;
-      reasons.push('Misma raza');
-    }
-
-    if (
-      pet.owner?.location &&
-      ownerLocation &&
-      pet.owner.location
-        .toLowerCase()
-        .includes(ownerLocation.split(',')[0].toLowerCase())
-    ) {
-      score += 2;
-      reasons.push('Misma zona');
-    }
-
-    if (pet.owner?.bio && ownerBio) {
-      const petOwnerInterests = pet.owner.bio.toLowerCase().split(/[\s,]+/);
-      const myInterests = ownerBio.toLowerCase().split(/[\s,]+/);
-      const commonInterests = petOwnerInterests.filter(
-        (i) => myInterests.includes(i) && i.length > 3
-      );
-      if (commonInterests.length > 0) {
-        score += commonInterests.length;
-        reasons.push('Intereses comunes');
-      }
-    }
-
-    return {
-      id: pet.id,
-      name: pet.name,
-      petType: pet.petType,
-      breed: pet.breed,
-      image: getPrimaryImageUrl(pet.images),
-      matchScore: score,
-      matchReason: reasons.length > 0 ? reasons.join(' • ') : 'Nuevo amigo',
-    };
-  });
-
-  return scoredPets
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, limit);
 }
 
 export async function getHomeBootstrapData(
@@ -230,6 +154,8 @@ export async function getHomeBootstrapData(
       id: true,
       location: true,
       bio: true,
+      latitude: true,
+      longitude: true,
       pets: {
         orderBy: { createdAt: 'desc' },
         select: PET_SELECT,
@@ -368,7 +294,8 @@ export async function getHomeBootstrapData(
           owner.location,
           owner.bio,
           petIds,
-          6
+          6,
+          { latitude: owner.latitude, longitude: owner.longitude }
         )
       : Promise.resolve([]),
   ]);

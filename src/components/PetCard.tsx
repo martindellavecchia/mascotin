@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Pet } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { safeParseActivities, safeParseImages } from '@/lib/utils';
 
@@ -160,6 +161,12 @@ export default function PetCard({
           </div>
 
           <div className="mt-7 flex flex-wrap gap-2">
+            {pet.goodWithKids === 'yes' && (
+              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">Bien con niños</Badge>
+            )}
+            {pet.goodWithDogs === 'yes' && (
+              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">Bien con perros</Badge>
+            )}
             {traits.slice(0, 3).map((trait) => (
               <span
                 key={trait.label}
@@ -181,8 +188,11 @@ export default function PetCard({
 
           <div className="mt-auto border-t border-slate-200 pt-6">
             <p className="mb-5 text-sm text-slate-500">
-              <span className="font-semibold text-slate-800">Buena afinidad</span>
-              {activePetName ? ` con ${activePetName}` : ''}: comparten ritmo de paseo y sociabilidad.
+              <span className="font-semibold text-slate-800">
+                {pet.matchReason?.includes('paseo') ? 'Compañero de paseo' : 'Buena afinidad'}
+              </span>
+              {activePetName ? ` con ${activePetName}` : ''}
+              {pet.matchReason ? `: ${pet.matchReason}` : ': comparten ritmo de paseo y sociabilidad.'}
             </p>
             <div className="grid grid-cols-[0.8fr_1.2fr] gap-3">
               <Button

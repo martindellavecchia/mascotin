@@ -113,6 +113,9 @@ export default function Header({ session }: HeaderProps) {
     { href: '/', label: 'Inicio', icon: 'home', tab: 'home' as const },
     { href: '/?tab=explore', label: 'Descubrir', icon: 'search', tab: 'explore' as const },
     { href: '/community', label: 'Comunidad', icon: 'groups' },
+    { href: '/alerts', label: 'Alertas', icon: 'emergency' },
+    { href: '/adoptions', label: 'Adopciones', icon: 'volunteer_activism' },
+    { href: '/map', label: 'Mapa', icon: 'map' },
     { href: '/messages', label: 'Mensajes', icon: 'chat_bubble' },
   ];
 

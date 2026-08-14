@@ -5,16 +5,33 @@ import { useSession } from 'next-auth/react';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
+
+const EVENT_CATEGORIES = [
+    { value: '_all', label: 'Todas' },
+    { value: 'paseo', label: 'Paseos' },
+    { value: 'feria', label: 'Ferias' },
+    { value: 'adopcion', label: 'Adopción' },
+    { value: 'no_convencionales', label: 'Mascotas no convencionales' },
+    { value: 'otro', label: 'Otros' },
+];
 
 export default function CommunityEventsPage() {
     const { data: session } = useSession();
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [category, setCategory] = useState('_all');
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+    const [showCreate, setShowCreate] = useState(false);
+    const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: 'otro' });
 
-    const fetchEvents = async () => {
+    const fetchEvents = async (nextCategory = category) => {
         try {
-            const res = await fetch('/api/events');
+            const res = await fetch(`/api/events?category=${nextCategory}`);
             const data = await res.json();
             if (data.success) {
                 setEvents(data.events);
@@ -59,10 +76,63 @@ export default function CommunityEventsPage() {
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <CommunityLayout>
                 <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold text-slate-800">Próximos Eventos</h2>
-                        {/* Optionally add filters here later */}
+                    <div className="flex flex-wrap justify-between items-center gap-3">
+                        <h2 className="text-2xl font-bold text-slate-800">Calendario de eventos</h2>
+                        <Button onClick={() => setShowCreate((value) => !value)}>Crear evento</Button>
                     </div>
+                    <div className="flex flex-wrap gap-2">
+                        {EVENT_CATEGORIES.map((item) => (
+                            <Button
+                                key={item.value}
+                                size="sm"
+                                variant={category === item.value ? 'default' : 'outline'}
+                                onClick={() => {
+                                    setCategory(item.value);
+                                    setLoading(true);
+                                    void fetchEvents(item.value);
+                                }}
+                            >
+                                {item.label}
+                            </Button>
+                        ))}
+                    </div>
+                    {showCreate && (
+                        <Card className="p-4 space-y-3">
+                            <Input placeholder="Título" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                            <Textarea placeholder="Descripción" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                            <Input type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                            <Input placeholder="Ubicación" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+                            <Select value={form.category} onValueChange={(value) => setForm({ ...form, category: value })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {EVENT_CATEGORIES.filter((item) => item.value !== '_all').map((item) => (
+                                        <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button onClick={async () => {
+                                const res = await fetch('/api/events', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(form),
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    toast.success('Evento creado');
+                                    setShowCreate(false);
+                                    void fetchEvents();
+                                } else {
+                                    toast.error(data.error || 'No se pudo crear');
+                                }
+                            }}>Publicar evento</Button>
+                        </Card>
+                    )}
+                    <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        className="rounded-xl border bg-white p-3"
+                    />
 
                     {loading ? (
                         <div className="text-center py-12">Cargando calendario...</div>

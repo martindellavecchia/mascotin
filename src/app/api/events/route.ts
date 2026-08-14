@@ -18,6 +18,7 @@ export async function GET(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const groupId = searchParams.get('groupId');
+        const category = searchParams.get('category');
         const limit = searchParams.get('limit');
         const action = searchParams.get('action'); // 'all' to see past events
         const take = limit ? parseInt(limit) : 20;
@@ -33,6 +34,9 @@ export async function GET(request: Request) {
 
         if (groupId) {
             where.groupId = groupId;
+        }
+        if (category && category !== '_all') {
+            where.category = category;
         }
 
         // Filter out dismissed events
@@ -117,7 +121,7 @@ export async function POST(request: Request) {
                 { status: 400 }
             );
         }
-        const { title, description, date, location, image, maxAttendees, groupId } = parsed.data;
+        const { title, description, date, location, image, maxAttendees, groupId, category } = parsed.data;
 
         const event = await db.event.create({
             data: {
@@ -129,6 +133,7 @@ export async function POST(request: Request) {
                 image,
                 maxAttendees,
                 groupId: groupId || null,
+                category: category || 'otro',
             },
             include: {
                 author: {

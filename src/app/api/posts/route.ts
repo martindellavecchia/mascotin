@@ -15,12 +15,14 @@ export async function GET(req: Request) {
 
         const { searchParams } = new URL(req.url);
         const petId = searchParams.get('petId');
+        const postType = searchParams.get('postType');
         const limit = parseInt(searchParams.get('limit') || '10');
         const cursor = searchParams.get('cursor'); // Post ID for cursor-based pagination
 
         const feedPage = await getFeedPage({
             userId: session.user.id,
             petId,
+            postType,
             limit,
             cursor,
         });

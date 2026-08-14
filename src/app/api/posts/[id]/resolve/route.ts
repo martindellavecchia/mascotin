@@ -39,9 +39,9 @@ export async function PATCH(
             );
         }
 
-        if (post.postType !== 'lost_pet') {
+        if (!['lost_pet', 'found_pet'].includes(post.postType)) {
             return NextResponse.json(
-                { success: false, error: 'This action is only for lost pet posts' },
+                { success: false, error: 'This action is only for lost or found pet posts' },
                 { status: 400 }
             );
         }

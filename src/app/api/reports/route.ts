@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { reportedId, reason, description } = parsed.data;
+    const { reportedId, reason, description, targetType, targetId } = parsed.data;
 
     if (reportedId === session.user.id) {
       return NextResponse.json(
@@ -63,6 +63,8 @@ export async function POST(request: Request) {
         reportedId,
         reason,
         description,
+        targetType,
+        targetId,
       },
     });
 

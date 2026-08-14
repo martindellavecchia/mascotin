@@ -8,6 +8,7 @@ import { serializeForClient } from '@/lib/server/serialize';
 export interface FeedPageOptions {
   userId: string;
   petId?: string | null;
+  postType?: string | null;
   limit?: number;
   cursor?: string | null;
 }
@@ -15,11 +16,13 @@ export interface FeedPageOptions {
 export async function getFeedPage({
   userId,
   petId,
+  postType,
   limit = 10,
   cursor,
 }: FeedPageOptions) {
   const where: Prisma.PostWhereInput = {};
   if (petId) where.petId = petId;
+  if (postType) where.postType = postType;
 
   const posts = await db.post.findMany({
     where,

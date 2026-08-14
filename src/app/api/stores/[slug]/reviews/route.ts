@@ -5,6 +5,7 @@ import { storeReviewSchema } from '@/lib/schemas';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { recalculateStoreRating } from '@/lib/stores';
 import { createNotification } from '@/lib/notifications';
+import { isPlaceReviewCategory } from '@/lib/places';
 
 export async function POST(
   request: Request,
@@ -33,7 +34,7 @@ export async function POST(
 
     const store = await db.store.findFirst({
       where: { OR: [{ id: slug }, { slug }], isActive: true },
-      select: { id: true, slug: true, name: true, providerId: true },
+      select: { id: true, slug: true, name: true, providerId: true, category: { select: { name: true } } },
     });
     if (!store) {
       return NextResponse.json(
@@ -54,6 +55,7 @@ export async function POST(
       },
       select: { id: true, appointmentId: true },
     });
+    const allowWithoutAppointment = isPlaceReviewCategory(store.category.name);
     const completedAppointment = existing
       ? { id: existing.appointmentId }
       : await db.appointment.findFirst({
@@ -65,7 +67,7 @@ export async function POST(
           select: { id: true },
           orderBy: { date: 'desc' },
         });
-    if (!completedAppointment) {
+    if (!completedAppointment && !allowWithoutAppointment) {
       return NextResponse.json(
         { success: false, error: 'Sólo podés reseñar después de completar una cita con este negocio' },
         { status: 403 }
@@ -85,7 +87,7 @@ export async function POST(
         create: {
           storeId: store.id,
           authorId: auth.session.user.id,
-          appointmentId: completedAppointment.id,
+          appointmentId: completedAppointment?.id || null,
           rating: parsed.data.rating,
           comment: parsed.data.comment || null,
         },

@@ -33,9 +33,10 @@ interface LostPetFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
+    mode?: 'lost' | 'found';
 }
 
-export default function LostPetForm({ open, onOpenChange, onSuccess }: LostPetFormProps) {
+export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'lost' }: LostPetFormProps) {
     const { data: session } = useSession();
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(false);
@@ -87,7 +88,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess }: LostPetFo
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    postType: 'lost_pet',
+                    postType: mode === 'found' ? 'found_pet' : 'lost_pet',
                     content: description,
                     images,
                     petId: selectedPetId || null,
@@ -99,7 +100,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess }: LostPetFo
 
             const data = await res.json();
             if (data.success || data.post) {
-                toast.success('🚨 Alerta de mascota perdida publicada');
+                toast.success(mode === 'found' ? 'Avistamiento publicado' : '🚨 Alerta de mascota perdida publicada');
                 onOpenChange(false);
                 onSuccess?.();
                 // Reset form
@@ -124,7 +125,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess }: LostPetFo
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <span className="material-symbols-rounded">emergency</span>
-                        Reportar Mascota Perdida
+                        {mode === 'found' ? 'Reportar mascota encontrada' : 'Reportar Mascota Perdida'}
                     </DialogTitle>
                 </DialogHeader>
 

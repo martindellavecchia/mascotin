@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { extractPassportFields, resolveCoordinates } from '@/lib/pet-payload';
 
 // GET - Get pet by ID
 export async function GET(
@@ -95,6 +96,11 @@ export async function PUT(
             isActive,
         } = body;
 
+        const passport = extractPassportFields(body);
+        const coords = location
+          ? await resolveCoordinates(location, pet.latitude, pet.longitude)
+          : null;
+
         const updatedPet = await db.pet.update({
             where: { id },
             data: {
@@ -114,6 +120,10 @@ export async function PUT(
                 ...(images !== undefined && { images: typeof images === 'string' ? images : JSON.stringify(images) }),
                 ...(thumbnailIndex !== undefined && { thumbnailIndex }),
                 ...(isActive !== undefined && { isActive }),
+                ...(coords && { latitude: coords.latitude, longitude: coords.longitude }),
+                ...Object.fromEntries(
+                  Object.entries(passport).filter(([, value]) => value !== undefined)
+                ),
             },
         });
 

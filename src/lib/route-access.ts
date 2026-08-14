@@ -12,6 +12,13 @@ export function isAuthPage(pathname: string) {
   return AUTH_PAGE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
+const PUBLIC_PREFIXES = ['/p/'] as const;
+
 export function isPublicPath(pathname: string) {
-  return pathname === '/' || isAuthPage(pathname) || PUBLIC_FILE_PATTERN.test(pathname);
+  return (
+    pathname === '/' ||
+    isAuthPage(pathname) ||
+    PUBLIC_FILE_PATTERN.test(pathname) ||
+    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  );
 }

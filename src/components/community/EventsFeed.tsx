@@ -68,7 +68,10 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
 
     const fetchPosts = async () => {
         try {
-            const response = await fetch('/api/posts?limit=20');
+            const params = new URLSearchParams(window.location.search);
+            const postType = params.get('filter');
+            const url = postType ? `/api/posts?limit=20&postType=${postType}` : '/api/posts?limit=20';
+            const response = await fetch(url);
             const data = await response.json();
             if (data.posts) {
                 setPosts(data.posts);
@@ -131,6 +134,27 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
 
     return (
         <div className="space-y-4">
+            <div className="mb-4 flex flex-wrap gap-2">
+                {[
+                    { value: '', label: 'Todas' },
+                    { value: 'question', label: 'Preguntas' },
+                    { value: 'recommendation', label: 'Recomendaciones' },
+                    { value: 'event', label: 'Eventos' },
+                ].map((filter) => (
+                    <button
+                        key={filter.value || 'all'}
+                        type="button"
+                        onClick={() => {
+                            const url = filter.value ? `/community?filter=${filter.value}` : '/community';
+                            window.history.replaceState(null, '', url);
+                            void fetchPosts();
+                        }}
+                        className="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:border-teal-300 hover:text-teal-700"
+                    >
+                        {filter.label}
+                    </button>
+                ))}
+            </div>
             <CreatePostCard
                 userImage={ownerImage || session?.user?.image || undefined}
                 userName={session?.user?.name || 'Usuario'}

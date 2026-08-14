@@ -3,10 +3,11 @@ import { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { parseMatchPreferences, passesMatchFilters, scorePetMatch } from '@/lib/matching';
+import { currentOrigin } from '@/lib/matching';
 
 export async function GET(request: Request) {
   try {
-    // Verificar autenticación
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -26,7 +27,6 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get current pet to know its type
     const currentPet = await db.pet.findUnique({
       where: { id: currentPetId },
       include: { owner: true },
@@ -46,41 +46,45 @@ export async function GET(request: Request) {
       );
     }
 
-    // Build where clause
+    const settings = await db.userSettings.findUnique({
+      where: { userId: session.user.id },
+    });
+    const preferences = parseMatchPreferences(settings);
+
     const where: Prisma.PetWhereInput = {
       isActive: true,
-      ownerId: { not: currentPet.ownerId }, // Avoid self-matching
+      ownerId: { not: currentPet.ownerId },
     };
 
-    // Filter by pet type (same type matches)
     if (petType) {
       where.petType = petType;
+    } else if (preferences.matchPetTypes.length > 0) {
+      where.petType = { in: preferences.matchPetTypes };
     } else {
-      // Default to same type as current pet
       where.petType = currentPet.petType;
     }
 
-    // Filter by location (optional)
     if (location) {
       where.location = location;
     }
 
-    // Get pets that haven't been swiped on by current pet
+    if (preferences.matchPetSizes.length > 0) {
+      where.size = { in: preferences.matchPetSizes };
+    }
+
     const swipedPetIds = await db.swipe.findMany({
       where: { fromPetId: currentPetId },
       select: { toPetId: true },
     });
 
-    // Usar notIn en lugar de not (bug fix: not no acepta arrays)
     const swipedIds = swipedPetIds
-      .map(s => s.toPetId)
+      .map((swipe) => swipe.toPetId)
       .filter((id): id is string => id !== null);
 
     where.id = swipedIds.length > 0
       ? { not: currentPetId, notIn: swipedIds }
       : { not: currentPetId };
 
-    // Exclude pets from blocked users (both directions)
     const blockedRelations = await db.blockedUser.findMany({
       where: {
         OR: [
@@ -90,8 +94,8 @@ export async function GET(request: Request) {
       },
       select: { blockerId: true, blockedId: true },
     });
-    const blockedUserIds = blockedRelations.map(b =>
-      b.blockerId === session.user.id ? b.blockedId : b.blockerId
+    const blockedUserIds = blockedRelations.map((relation) =>
+      relation.blockerId === session.user.id ? relation.blockedId : relation.blockerId
     );
 
     if (blockedUserIds.length > 0) {
@@ -109,21 +113,68 @@ export async function GET(request: Request) {
             name: true,
             location: true,
             image: true,
+            bio: true,
+            latitude: true,
+            longitude: true,
+            user: {
+              select: {
+                settings: {
+                  select: { matchingPaused: true },
+                },
+              },
+            },
           },
         },
       },
+      take: 50,
     });
+
+    const origin = currentOrigin(currentPet, currentPet.owner);
+    const filtered = pets
+      .filter((pet) =>
+        passesMatchFilters(
+          {
+            ...pet,
+            owner: {
+              location: pet.owner.location,
+              bio: pet.owner.bio,
+              latitude: pet.owner.latitude,
+              longitude: pet.owner.longitude,
+              user: pet.owner.user,
+            },
+          },
+          preferences,
+          origin
+        )
+      )
+      .map((pet) => {
+        const scored = scorePetMatch(
+          currentPet,
+          {
+            ...pet,
+            owner: {
+              location: pet.owner.location,
+              bio: pet.owner.bio,
+              latitude: pet.owner.latitude,
+              longitude: pet.owner.longitude,
+              user: pet.owner.user,
+            },
+          },
+          currentPet.owner.location,
+          currentPet.owner.bio
+        );
+        return { ...pet, matchScore: scored.matchScore, matchReason: scored.matchReason };
+      })
+      .sort((left, right) => right.matchScore - left.matchScore);
 
     return NextResponse.json({
       success: true,
-      pets,
+      pets: filtered,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch pets' },
       { status: 500 }
     );
   }
 }
-
-

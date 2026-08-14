@@ -16,7 +16,8 @@ import { BasicInfoSection } from './BasicInfoSection';
 import { HealthSection } from './HealthSection';
 import { DetailsSection } from './DetailsSection';
 import { ActivitiesSection } from './ActivitiesSection';
-import { ImageUploadSection } from './ImageUploadSection';
+import CompatibilityFields from '@/components/pets/CompatibilityFields';
+import { parseJsonStringArray } from '@/lib/json-array';
 
 interface PetFormProps {
   ownerId: string;
@@ -83,6 +84,16 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       activities: parseActivities(initialData?.activities),
       location: initialData?.location || '',
       images: parseImages(initialData?.images),
+      goodWithKids: initialData?.goodWithKids || 'unknown',
+      goodWithDogs: initialData?.goodWithDogs || 'unknown',
+      goodWithCats: initialData?.goodWithCats || 'unknown',
+      goodWithStrangers: initialData?.goodWithStrangers || 'unknown',
+      temperament: parseJsonStringArray(initialData?.temperament),
+      matchIntent: parseJsonStringArray(initialData?.matchIntent),
+      microchipId: initialData?.microchipId || '',
+      allergies: initialData?.allergies || '',
+      specialNeeds: initialData?.specialNeeds || '',
+      vetClinicName: initialData?.vetClinicName || '',
     },
   });
 
@@ -486,6 +497,72 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-2">Selecciona al menos una actividad</p>
+        </div>
+
+        <div className="space-y-3">
+          <Label className="text-gray-700 font-medium">Pasaporte y compatibilidad</Label>
+          <CompatibilityFields
+            data={{
+              goodWithKids: form.watch('goodWithKids'),
+              goodWithDogs: form.watch('goodWithDogs'),
+              goodWithCats: form.watch('goodWithCats'),
+              goodWithStrangers: form.watch('goodWithStrangers'),
+              temperament: form.watch('temperament'),
+              matchIntent: form.watch('matchIntent'),
+            }}
+            onChange={(field, value) => form.setValue(field as 'goodWithKids', value as never)}
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="microchipId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Microchip</FormLabel>
+                <FormControl>
+                  <Input placeholder="Opcional" {...field} value={field.value || ''} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="vetClinicName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Veterinaria</FormLabel>
+                <FormControl>
+                  <Input placeholder="Clínica de cabecera" {...field} value={field.value || ''} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="allergies"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Alergias</FormLabel>
+                <FormControl>
+                  <Input placeholder="Si las hay" {...field} value={field.value || ''} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="specialNeeds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Necesidades especiales</FormLabel>
+                <FormControl>
+                  <Input placeholder="Cuidados extra" {...field} value={field.value || ''} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
 
         <div>

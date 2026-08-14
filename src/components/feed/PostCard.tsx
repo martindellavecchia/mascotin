@@ -236,7 +236,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     </div>
                 </div>
                 {/* Only show menu if user is the post author */}
-                {currentUserId && post.author?.id === currentUserId && (
+                {currentUserId && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
@@ -244,15 +244,43 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onEdit?.(post)}>
-                                <span className="material-symbols-rounded mr-2 text-slate-500">edit</span>
-                                Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                                <span className="material-symbols-rounded mr-2">delete</span>
-                                Eliminar
-                            </DropdownMenuItem>
+                            {post.author?.id === currentUserId && (
+                                <>
+                                    <DropdownMenuItem onClick={() => onEdit?.(post)}>
+                                        <span className="material-symbols-rounded mr-2 text-slate-500">edit</span>
+                                        Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
+                                        <span className="material-symbols-rounded mr-2">delete</span>
+                                        Eliminar
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                            {post.author?.id !== currentUserId && post.author?.id && (
+                                <DropdownMenuItem
+                                    onClick={async () => {
+                                        const response = await fetch('/api/reports', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                reportedId: post.author?.id,
+                                                targetType: post.postType === 'lost_pet' || post.postType === 'found_pet' ? 'ALERT' : 'POST',
+                                                targetId: post.id,
+                                                reason: 'inappropriate',
+                                            }),
+                                        });
+                                        const data = await response.json();
+                                        toast[data.success ? 'success' : 'error'](
+                                            data.success ? 'Publicación reportada' : data.error || 'No se pudo reportar'
+                                        );
+                                    }}
+                                    className="text-red-600 focus:text-red-600"
+                                >
+                                    <span className="material-symbols-rounded mr-2">flag</span>
+                                    Reportar
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )}
@@ -263,10 +291,13 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 <div className="px-3 pb-1">
                     <Badge className={`text-[10px] py-0.5 ${post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
                         post.postType === 'question' ? 'bg-orange-50 text-orange-700' :
+                            post.postType === 'recommendation' ? 'bg-amber-50 text-amber-700' :
                             post.postType === 'photo' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
                         }`}>
                         <span className="material-symbols-rounded text-sm mr-1">
-                            {post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : 'photo_camera'}
+                            {post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : post.postType === 'recommendation' ? 'star' : 'photo_camera'}
+                        </span>
+                        {post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : 'Foto'}
                         </span>
                         {post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : 'Foto'}
                     </Badge>

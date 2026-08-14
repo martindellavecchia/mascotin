@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { Pet } from '@/types';
 import PetCard from '@/components/PetCard';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface ExploreTabProps {
   petsToSwipe: Pet[];
@@ -52,15 +52,15 @@ export default function ExploreTab({
           </h1>
           <p className="mt-2 text-slate-500">Conoce mascotas cerca de ti y amplía su mundo.</p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/settings"
           className="inline-flex w-fit items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white"
-          aria-label="Zona de búsqueda"
+          aria-label="Preferencias de zona"
         >
           <span className="material-symbols-rounded text-xl">location_on</span>
-          {activePet?.location || 'Buenos Aires'}
-          <span className="material-symbols-rounded text-lg">expand_more</span>
-        </button>
+          {activePet?.location || 'Tu zona'}
+          <span className="material-symbols-rounded text-lg">tune</span>
+        </Link>
       </div>
 
       {loading ? (

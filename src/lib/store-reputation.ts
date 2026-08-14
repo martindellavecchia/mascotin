@@ -5,6 +5,8 @@ export const DEFAULT_STORE_CATEGORIES = [
   { name: 'Guardería y hotel', description: 'Alojamiento y cuidado por día o noche.' },
   { name: 'Alimentos y tienda', description: 'Alimentos, accesorios y productos para mascotas.' },
   { name: 'Entrenamiento', description: 'Educación, conducta y entrenamiento.' },
+  { name: 'Restaurante pet-friendly', description: 'Bares y restaurantes que reciben mascotas.' },
+  { name: 'Plaza y parque', description: 'Espacios públicos y plazas para pasear.' },
   { name: 'Otros', description: 'Otros servicios para mascotas.' },
 ] as const;
 

@@ -20,8 +20,13 @@ const PREF_MAP: Record<NotificationType, string | null> = {
   LIKE: 'notifyComments',
   APPOINTMENT: 'notifyHealth',
   EVENT_ATTEND: 'notifyEvents',
-  PROVIDER_REQUEST: null, // always send
+  PROVIDER_REQUEST: null,
   GROUP_JOIN: 'notifyEvents',
+  LOST_PET_ALERT: 'notifyEvents',
+  SIGHTING: 'notifyEvents',
+  ADOPTION_APPLICATION: 'notifyMatches',
+  ADOPTION_MATCH: 'notifyMatches',
+  CONTENT_REPORT: null,
 };
 
 export async function createNotification(params: CreateNotificationParams): Promise<void> {

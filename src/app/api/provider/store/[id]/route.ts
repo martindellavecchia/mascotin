@@ -103,6 +103,9 @@ export async function PATCH(
     if (parsed.data.images) {
       updateData.images = JSON.stringify(parsed.data.images);
     }
+    if (parsed.data.tags) {
+      updateData.tags = JSON.stringify(parsed.data.tags);
+    }
     if (parsed.data.name && parsed.data.name !== store.name) {
       updateData.slug = await db.$transaction((tx) =>
         createUniqueStoreSlug(tx, parsed.data.name!, store.id)

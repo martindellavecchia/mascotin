@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { petSchema } from '@/lib/schemas';
+import { createEmergencyToken, createPublicSlug } from '@/lib/passport';
+import { extractPassportFields, resolveCoordinates } from '@/lib/pet-payload';
 
 // POST - Create new pet
 export async function POST(request: Request) {
@@ -34,6 +36,18 @@ export async function POST(request: Request) {
       location,
       images,
       thumbnailIndex,
+      goodWithKids,
+      goodWithDogs,
+      goodWithCats,
+      goodWithStrangers,
+      temperament,
+      microchipId,
+      allergies,
+      specialNeeds,
+      vetClinicName,
+      matchIntent,
+      sharePhoneOnScan,
+      shareVetOnScan,
     } = body;
 
     const parseStringArray = (value: unknown): string[] | null => {
@@ -86,6 +100,12 @@ export async function POST(request: Request) {
       activities: activitiesArray,
       location,
       images: imagesArray,
+      goodWithKids,
+      goodWithDogs,
+      goodWithCats,
+      goodWithStrangers,
+      temperament,
+      matchIntent,
     };
 
     const parsed = petSchema.safeParse(validationData);
@@ -123,31 +143,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const petData = {
-      ownerId: owner.id,
-      name,
-      petType,
-      breed,
-      age,
-      weight: weight ? parseFloat(weight) : null,
-      size,
-      gender,
-      vaccinated: vaccinated ?? true,
-      neutered: neutered ?? false,
-      energy,
-      bio,
-      activities: JSON.stringify(activitiesArray),
-      location,
-      images: JSON.stringify(imagesArray),
-      thumbnailIndex: thumbnailIndex ?? 0,
-      level: 1,
-      xp: 0,
-      totalMatches: 0,
-      isActive: true,
-    };
+    const coords = await resolveCoordinates(location);
+    const passport = extractPassportFields(body);
+    const tempId = crypto.randomUUID();
 
     const pet = await db.pet.create({
-      data: petData,
+      data: {
+        ownerId: owner.id,
+        name,
+        petType,
+        breed,
+        age,
+        weight: weight ? parseFloat(weight) : null,
+        size,
+        gender,
+        vaccinated: vaccinated ?? true,
+        neutered: neutered ?? false,
+        energy,
+        bio,
+        activities: JSON.stringify(activitiesArray),
+        location,
+        images: JSON.stringify(imagesArray),
+        thumbnailIndex: thumbnailIndex ?? 0,
+        latitude: coords?.latitude,
+        longitude: coords?.longitude,
+        publicSlug: createPublicSlug(name, tempId),
+        emergencyToken: createEmergencyToken(),
+        ...passport,
+        level: 1,
+        xp: 0,
+        totalMatches: 0,
+        isActive: true,
+      },
     });
 
     return NextResponse.json({

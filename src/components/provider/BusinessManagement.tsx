@@ -155,6 +155,43 @@ export default function BusinessManagement() {
           <div className="flex justify-end border-t border-slate-100 pt-4"><Button className="bg-teal-600 hover:bg-teal-700" onClick={() => void save()} disabled={saving || !form.categoryId || !form.name.trim() || !form.description.trim()}>{saving ? 'Guardando...' : store ? 'Guardar cambios' : 'Publicar negocio'}</Button></div>
         </CardContent>
       </Card>
+
+      {store && <PromotionCard storeId={store.id} />}
     </div>
+  );
+}
+
+function PromotionCard({ storeId }: { storeId: string }) {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [startsAt, setStartsAt] = useState('');
+  const [endsAt, setEndsAt] = useState('');
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-lg">Promoción destacada</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <Input placeholder="Título" value={title} onChange={(event) => setTitle(event.target.value)} />
+        <Textarea placeholder="Detalle de la promoción" value={body} onChange={(event) => setBody(event.target.value)} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} />
+          <Input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} />
+        </div>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            const response = await fetch(`/api/provider/store/${storeId}/promotions`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, body, startsAt, endsAt }),
+            });
+            const data = await response.json();
+            toast[data.success ? 'success' : 'error'](data.success ? 'Promoción publicada y negocio destacado' : data.error);
+          }}
+        >
+          Publicar promoción
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

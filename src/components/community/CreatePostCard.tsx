@@ -22,7 +22,7 @@ interface CreatePostCardProps {
     onPostCreated?: () => void;
 }
 
-type PostType = 'post' | 'photo' | 'event' | 'question';
+type PostType = 'post' | 'photo' | 'event' | 'question' | 'recommendation';
 
 export default function CreatePostCard({ userImage, userName, pets, onPostCreated }: CreatePostCardProps) {
     const [postType, setPostType] = useState<PostType>('post');
@@ -121,6 +121,7 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
             case 'photo': return '📷 Describe tu foto...';
             case 'event': return '📅 ¿De qué se trata el evento?';
             case 'question': return '❓ Haz una pregunta a la comunidad...';
+            case 'recommendation': return '⭐ Recomendá un lugar, producto o profesional...';
             default: return '¿Qué está haciendo tu mascota?';
         }
     };
@@ -160,7 +161,7 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                             <div className="space-y-4">
                                 {/* Post Type Tabs */}
                                 <Tabs value={postType} onValueChange={(v) => setPostType(v as PostType)}>
-                                    <TabsList className="grid grid-cols-4 w-full">
+                                    <TabsList className="grid grid-cols-5 w-full">
                                         <TabsTrigger value="post" className="text-xs gap-1">
                                             <span className="material-symbols-rounded text-sm">edit</span>
                                             Texto
@@ -176,6 +177,10 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                                         <TabsTrigger value="question" className="text-xs gap-1">
                                             <span className="material-symbols-rounded text-sm">help</span>
                                             Pregunta
+                                        </TabsTrigger>
+                                        <TabsTrigger value="recommendation" className="text-xs gap-1">
+                                            <span className="material-symbols-rounded text-sm">star</span>
+                                            Tip
                                         </TabsTrigger>
                                     </TabsList>
                                 </Tabs>

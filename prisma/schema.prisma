@@ -30,6 +30,11 @@ enum NotificationType {
   EVENT_ATTEND
   PROVIDER_REQUEST
   GROUP_JOIN
+  LOST_PET_ALERT
+  SIGHTING
+  ADOPTION_APPLICATION
+  ADOPTION_MATCH
+  CONTENT_REPORT
 }
 
 enum ProviderRequestStatus {
@@ -80,6 +85,10 @@ model User {
   storeReviews         StoreReview[]
   helpfulReviewVotes   ReviewHelpful[]
   reviewReports        ReviewReport[]
+  petSightings         PetSighting[]
+  adopterProfile       AdopterProfile?
+  adoptionListings     AdoptionListing[]
+  adoptionApplications AdoptionApplication[]
 }
 
 model UserSettings {
@@ -206,6 +215,8 @@ model Post {
   contactPhone      String?   // For lost_pet posts
   lastSeenLocation  String?   // For lost_pet posts
   isResolved        Boolean   @default(false) // For lost_pet - mascota encontrada
+  latitude          Float?
+  longitude         Float?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -218,6 +229,7 @@ model Post {
   group             Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   eventId           String?   // Link to actual Event entity
   event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  sightings         PetSighting[]
 
   @@index([authorId])
   @@index([createdAt])
@@ -290,6 +302,8 @@ model Owner {
   image           String?  // Profile photo URL
   hasYard         Boolean?
   hasOtherPets    Boolean?
+  latitude        Float?
+  longitude       Float?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -331,6 +345,22 @@ model Pet {
   location        String
   images          String
   thumbnailIndex  Int      @default(0)
+  latitude        Float?
+  longitude       Float?
+  publicSlug      String?  @unique
+  emergencyToken  String?  @unique
+  sharePhoneOnScan Boolean @default(true)
+  shareVetOnScan   Boolean @default(false)
+  goodWithKids      String?
+  goodWithDogs      String?
+  goodWithCats      String?
+  goodWithStrangers String?
+  temperament       String?
+  microchipId       String?
+  allergies         String?
+  specialNeeds      String?
+  vetClinicName     String?
+  matchIntent       String   @default("[]")
   
   // Gamification basic
   level           Int      @default(1)
@@ -350,9 +380,11 @@ model Pet {
   posts           Post[]
   appointments    Appointment[]
   healthRecords   PetHealthRecord[]
+  adoptionListings AdoptionListing[]
 
   @@unique([ownerId, name], name: "ownerId_name")
   @@index([ownerId])
+  @@index([latitude, longitude])
 }
 
 model Swipe {
@@ -397,6 +429,9 @@ model Event {
   location    String
   image       String?
   maxAttendees Int?
+  category    String    @default("otro")
+  latitude    Float?
+  longitude   Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -433,22 +468,25 @@ model EventDismissal {
 }
 
 model Message {
-  id          String   @id @default(cuid())
-  matchId     String?
-  groupId     String?
-  senderId    String
-  receiverId  String?
-  content     String
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id                      String   @id @default(cuid())
+  matchId                 String?
+  groupId                 String?
+  adoptionApplicationId   String?
+  senderId                String
+  receiverId              String?
+  content                 String
+  read                    Boolean  @default(false)
+  createdAt               DateTime @default(now())
 
-  match       Match?   @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver    User?    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  match                   Match?   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  group                   Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  adoptionApplication     AdoptionApplication? @relation(fields: [adoptionApplicationId], references: [id], onDelete: Cascade)
+  sender                  User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver                User?    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@index([matchId])
   @@index([groupId])
+  @@index([adoptionApplicationId])
   @@index([senderId])
   @@index([receiverId])
   @@index([createdAt])
@@ -559,6 +597,11 @@ model Store {
   isActive      Boolean  @default(true)
   ratingAverage Float    @default(0)
   reviewCount   Int      @default(0)
+  latitude      Float?
+  longitude     Float?
+  tags          String   @default("[]")
+  plan          String   @default("FREE")
+  featuredUntil DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -567,16 +610,18 @@ model Store {
   services        StoreService[]
   bookingServices Service[]
   reviews         StoreReview[]
+  promotions      StorePromotion[]
 
   @@index([categoryId])
   @@index([providerId])
+  @@index([latitude, longitude])
 }
 
 model StoreReview {
   id              String    @id @default(cuid())
   storeId         String
   authorId        String
-  appointmentId   String    @unique
+  appointmentId   String?   @unique
   rating          Int
   comment         String?
   status          String    @default("PUBLISHED") // PUBLISHED, HIDDEN
@@ -587,7 +632,7 @@ model StoreReview {
 
   store        Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
   author       User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  appointment  Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  appointment  Appointment?    @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
   helpfulVotes ReviewHelpful[]
   reports      ReviewReport[]
 
@@ -647,6 +692,8 @@ model Report {
   id          String   @id @default(cuid())
   reporterId  String
   reportedId  String
+  targetType  String   @default("USER") // USER, POST, COMMENT, ALERT
+  targetId    String?
   reason      String   // spam, inappropriate, harassment, other
   description String?
   status      String   @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
@@ -659,4 +706,96 @@ model Report {
   @@index([reporterId])
   @@index([reportedId])
   @@index([status])
+  @@index([targetType, targetId])
+}
+
+model PetSighting {
+  id          String   @id @default(cuid())
+  postId      String
+  reporterId  String
+  notes       String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  image       String?
+  createdAt   DateTime @default(now())
+
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([reporterId])
+}
+
+model AdopterProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  housingType    String
+  hasYard        Boolean  @default(false)
+  hasKids        Boolean  @default(false)
+  hasOtherPets   Boolean  @default(false)
+  experience     String
+  hoursAvailable String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdoptionListing {
+  id             String   @id @default(cuid())
+  petId          String
+  listedByUserId String
+  status         String   @default("OPEN")
+  character      String?
+  specialNeeds   String?
+  requirements   String?
+  location       String?
+  latitude       Float?
+  longitude      Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  pet            Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  listedBy       User     @relation(fields: [listedByUserId], references: [id], onDelete: Cascade)
+  applications   AdoptionApplication[]
+
+  @@index([petId])
+  @@index([listedByUserId])
+  @@index([status, createdAt])
+}
+
+model AdoptionApplication {
+  id                 String   @id @default(cuid())
+  listingId          String
+  applicantId        String
+  status             String   @default("PENDING")
+  message            String?
+  compatibilityScore Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  listing            AdoptionListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  applicant          User            @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  messages           Message[]
+
+  @@unique([listingId, applicantId])
+  @@index([applicantId])
+  @@index([status])
+}
+
+model StorePromotion {
+  id        String   @id @default(cuid())
+  storeId   String
+  title     String
+  body      String
+  startsAt  DateTime
+  endsAt    DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, startsAt, endsAt])
 }

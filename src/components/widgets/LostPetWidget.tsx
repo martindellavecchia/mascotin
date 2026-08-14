@@ -94,7 +94,7 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
                         variant="outline"
                         size="sm"
                         className="mt-3 w-full border-green-300 text-green-700 hover:bg-green-100"
-                        onClick={() => router.push('/community?report=lost')}
+                        onClick={() => router.push('/alerts?report=lost')}
                     >
                         <span className="material-symbols-rounded mr-2 text-sm">add_alert</span>
                         Reportar mascota
@@ -159,14 +159,14 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
                         variant="outline"
                         size="sm"
                         className="flex-1 border-red-300 text-red-700 hover:bg-red-100"
-                        onClick={() => router.push('/community?filter=lost_pet')}
+                        onClick={() => router.push('/alerts')}
                     >
                         Ver todas
                     </Button>
                     <Button
                         size="sm"
                         className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-                        onClick={() => router.push('/community?report=lost')}
+                        onClick={() => router.push('/alerts?report=lost')}
                     >
                         <span className="material-symbols-rounded mr-1 text-sm">add_alert</span>
                         Reportar

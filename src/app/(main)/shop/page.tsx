@@ -93,6 +93,9 @@ export default function ShopPage() {
             <p className="mt-3 text-base text-slate-600 md:text-lg">
               Descubrí servicios por categoría y decidí con reseñas verificadas de clientes reales.
             </p>
+            <Button asChild variant="outline" className="mt-4">
+              <Link href="/map">Ver mapa pet-friendly</Link>
+            </Button>
             <div className="relative mx-auto mt-7 max-w-2xl">
               <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
               <Input

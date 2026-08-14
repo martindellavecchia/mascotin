@@ -9,6 +9,7 @@ import StepBasicInfo from './steps/StepBasicInfo';
 import StepDetails from './steps/StepDetails';
 import StepPersonality from './steps/StepPersonality';
 import StepPhotos from './steps/StepPhotos';
+import StepCompatibility from './steps/StepCompatibility';
 import { Card } from '@/components/ui/card';
 
 interface PetOnboardingWizardProps {
@@ -20,7 +21,7 @@ interface PetOnboardingWizardProps {
 export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: PetOnboardingWizardProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const totalSteps = 5;
+    const totalSteps = 6;
 
     // Form Data State
     const [formData, setFormData] = useState({
@@ -35,9 +36,15 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
         neutered: false,
         bio: '',
         energy: 'medium',
-        activities: [] as string[], // Initialize as empty array
+        activities: [] as string[],
         location: '',
-        images: [] as string[], // Initialize as empty array
+        images: [] as string[],
+        goodWithKids: 'unknown',
+        goodWithDogs: 'unknown',
+        goodWithCats: 'unknown',
+        goodWithStrangers: 'unknown',
+        temperament: [] as string[],
+        matchIntent: [] as string[],
     });
 
     const updateData = (data: Partial<typeof formData>) => {
@@ -109,7 +116,8 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
                     {currentStep === 2 && <StepBasicInfo data={formData} updateData={updateData} />}
                     {currentStep === 3 && <StepDetails data={formData} updateData={updateData} />}
                     {currentStep === 4 && <StepPersonality data={formData} updateData={updateData} />}
-                    {currentStep === 5 && <StepPhotos images={formData.images} setImages={(imgs: string[]) => updateData({ images: imgs })} />}
+                    {currentStep === 5 && <StepCompatibility data={formData} updateData={updateData} />}
+                    {currentStep === 6 && <StepPhotos images={formData.images} setImages={(imgs: string[]) => updateData({ images: imgs })} />}
                 </div>
 
                 <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">

@@ -53,6 +53,21 @@ export interface Pet {
   location: string;
   images: string;
   thumbnailIndex?: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  publicSlug?: string | null;
+  goodWithKids?: string | null;
+  goodWithDogs?: string | null;
+  goodWithCats?: string | null;
+  goodWithStrangers?: string | null;
+  temperament?: string | string[] | null;
+  microchipId?: string | null;
+  allergies?: string | null;
+  specialNeeds?: string | null;
+  vetClinicName?: string | null;
+  matchIntent?: string | string[] | null;
+  sharePhoneOnScan?: boolean;
+  shareVetOnScan?: boolean;
 
   // Gamification basic
   level: number;
@@ -66,6 +81,7 @@ export interface Pet {
   // Optional for display
   owner?: PetOwnerPreview;
   matchId?: string;
+  matchReason?: string;
 }
 
 // Pet types enum

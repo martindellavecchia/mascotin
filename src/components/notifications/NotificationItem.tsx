@@ -14,6 +14,11 @@ const ICON_MAP: Record<string, string> = {
   EVENT_ATTEND: 'event_available',
   PROVIDER_REQUEST: 'storefront',
   GROUP_JOIN: 'group_add',
+  LOST_PET_ALERT: 'emergency',
+  SIGHTING: 'visibility',
+  ADOPTION_APPLICATION: 'volunteer_activism',
+  ADOPTION_MATCH: 'pets',
+  CONTENT_REPORT: 'flag',
 };
 
 const COLOR_MAP: Record<string, string> = {
@@ -26,6 +31,11 @@ const COLOR_MAP: Record<string, string> = {
   EVENT_ATTEND: 'text-teal-600',
   PROVIDER_REQUEST: 'text-amber-600',
   GROUP_JOIN: 'text-cyan-500',
+  LOST_PET_ALERT: 'text-red-500',
+  SIGHTING: 'text-amber-600',
+  ADOPTION_APPLICATION: 'text-teal-600',
+  ADOPTION_MATCH: 'text-pink-500',
+  CONTENT_REPORT: 'text-rose-600',
 };
 
 interface NotificationItemProps {

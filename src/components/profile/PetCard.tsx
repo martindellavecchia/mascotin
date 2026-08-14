@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { safeParseImages } from "@/lib/utils";
-import type { Pet } from "@/types";
+import Link from "next/link";
 
 interface PetCardProps {
     pet: Pet;
@@ -155,9 +155,12 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     </Button>
                     <Button
                         className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border-0 shadow-none"
+                        asChild
                     >
-                        <span className="material-symbols-rounded text-lg mr-2">visibility</span>
-                        Ver Ficha
+                        <Link href={`/pets/${pet.id}`}>
+                            <span className="material-symbols-rounded text-lg mr-2">visibility</span>
+                            Ver Ficha
+                        </Link>
                     </Button>
                 </div>
             </div>
