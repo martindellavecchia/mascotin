@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { safeParseImages } from "@/lib/utils";
 import Link from "next/link";
+import type { Pet } from "@/types";
 
 interface PetCardProps {
     pet: Pet;

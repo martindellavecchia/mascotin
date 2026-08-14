@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { Pet } from '@/types';
 import PetCard from '@/components/PetCard';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 interface ExploreTabProps {

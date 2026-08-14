@@ -19,6 +19,23 @@ import { ActivitiesSection } from './ActivitiesSection';
 import CompatibilityFields from '@/components/pets/CompatibilityFields';
 import { parseJsonStringArray } from '@/lib/json-array';
 
+const TEMPERAMENT_OPTIONS = ['sociable', 'territorial', 'anxious', 'playful', 'calm', 'independent'] as const;
+const MATCH_INTENT_OPTIONS = ['walk', 'play', 'social', 'sit'] as const;
+type TemperamentOption = (typeof TEMPERAMENT_OPTIONS)[number];
+type MatchIntentOption = (typeof MATCH_INTENT_OPTIONS)[number];
+
+function parseTemperamentOptions(value: unknown): TemperamentOption[] {
+  return parseJsonStringArray(value).filter((tag): tag is TemperamentOption =>
+    TEMPERAMENT_OPTIONS.includes(tag as TemperamentOption)
+  );
+}
+
+function parseMatchIntentOptions(value: unknown): MatchIntentOption[] {
+  return parseJsonStringArray(value).filter((item): item is MatchIntentOption =>
+    MATCH_INTENT_OPTIONS.includes(item as MatchIntentOption)
+  );
+}
+
 interface PetFormProps {
   ownerId: string;
   initialData?: any;
@@ -88,8 +105,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       goodWithDogs: initialData?.goodWithDogs || 'unknown',
       goodWithCats: initialData?.goodWithCats || 'unknown',
       goodWithStrangers: initialData?.goodWithStrangers || 'unknown',
-      temperament: parseJsonStringArray(initialData?.temperament),
-      matchIntent: parseJsonStringArray(initialData?.matchIntent),
+      temperament: parseTemperamentOptions(initialData?.temperament),
+      matchIntent: parseMatchIntentOptions(initialData?.matchIntent),
       microchipId: initialData?.microchipId || '',
       allergies: initialData?.allergies || '',
       specialNeeds: initialData?.specialNeeds || '',

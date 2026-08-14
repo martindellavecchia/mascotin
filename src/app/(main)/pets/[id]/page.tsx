@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseJsonStringArray } from '@/lib/json-array';
 import { getPrimaryImageUrl } from '@/lib/media';
 import EmergencyQr from '@/components/pets/EmergencyQr';
+import { COMPATIBILITY_LABELS } from '@/components/pets/CompatibilityFields';
 
 interface PassportPet {
   id: string;

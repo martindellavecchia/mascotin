@@ -298,8 +298,6 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             {post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : post.postType === 'recommendation' ? 'star' : 'photo_camera'}
                         </span>
                         {post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : 'Foto'}
-                        </span>
-                        {post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : 'Foto'}
                     </Badge>
                 </div>
             )}
