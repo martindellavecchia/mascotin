@@ -21,8 +21,8 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
     const activePet = pets.find(p => p.id === selectedPetId);
 
     return (
-        <Card className="mb-6 p-4 shadow-sm border-teal-100/50 bg-white">
-            <div className="flex gap-4">
+        <Card className="mb-6 min-w-0 border-teal-100/50 bg-white p-3 shadow-sm sm:p-4">
+            <div className="flex min-w-0 gap-3 sm:gap-4">
                 <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
                     {activePet?.images && activePet.images.length > 0 ? (
                         <img src={JSON.parse(activePet.images)[0] || activePet.images[0]} className="w-full h-full object-cover" alt="Pet" />
@@ -34,9 +34,9 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                     )}
                 </div>
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <div
-                        className={`bg-gray-50 rounded-2xl px-4 py-2 transition-all ${isExpanded ? 'ring-2 ring-[teal-500]/20 bg-white' : ''}`}
+                        className={`rounded-2xl bg-gray-50 px-3 py-2 transition-all sm:px-4 ${isExpanded ? 'bg-white ring-2 ring-teal-500/20' : ''}`}
                     >
                         <Textarea
                             placeholder={`Comparte una actualización sobre ${activePet?.name || 'tu mascota'}...`}
@@ -49,27 +49,27 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                     </div>
 
                     {isExpanded && (
-                        <div className="flex justify-between items-center mt-3 animate-in fade-in slide-in-from-top-2">
-                            <div className="flex gap-2">
-                                <Button variant="ghost" size="sm" className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-full">
+                        <div className="mt-3 flex animate-in flex-col gap-3 fade-in slide-in-from-top-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex min-w-0 flex-wrap gap-1 sm:gap-2">
+                                <Button variant="ghost" size="sm" className="min-h-10 rounded-full text-teal-600 hover:bg-teal-50 hover:text-teal-700">
                                     <span className="material-symbols-rounded text-[20px] mr-1">image</span>
                                     Foto
                                 </Button>
-                                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+                                <Button variant="ghost" size="sm" className="min-h-10 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
                                     <span className="material-symbols-rounded text-[20px] mr-1">location_on</span>
                                     Ubicación
                                 </Button>
-                                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+                                <Button variant="ghost" size="sm" aria-label="Agregar estado de ánimo" className="min-h-10 min-w-10 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
                                     <span className="material-symbols-rounded text-[20px] mr-1">sentiment_satisfied</span>
                                 </Button>
                             </div>
-                            <div className="flex gap-2">
-                                <Button variant="ghost" size="sm" onClick={() => setIsExpanded(false)} className="text-gray-500">
+                            <div className="grid grid-cols-2 gap-2 sm:flex">
+                                <Button variant="ghost" size="sm" onClick={() => setIsExpanded(false)} className="min-h-10 text-gray-500">
                                     Cancelar
                                 </Button>
                                 <Button
                                     size="sm"
-                                    className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-6"
+                                    className="min-h-10 rounded-full bg-teal-500 px-6 text-white hover:bg-teal-600"
                                     disabled={!content.trim()}
                                 >
                                     Publicar
@@ -78,9 +78,9 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                         </div>
                     )}
                     {!isExpanded && (
-                        <div className="flex justify-between items-center mt-2 pl-2">
-                            <p className="text-xs text-gray-400">Publica fotos, consejos o preguntas...</p>
-                            <Button variant="ghost" size="sm" className="text-gray-500" onClick={() => setIsExpanded(true)}>
+                        <div className="mt-2 flex min-w-0 items-center justify-between gap-2 pl-2">
+                            <p className="min-w-0 text-xs text-gray-400 [overflow-wrap:anywhere]">Publica fotos, consejos o preguntas...</p>
+                            <Button variant="ghost" size="icon" aria-label="Expandir publicación" className="h-10 w-10 shrink-0 text-gray-500" onClick={() => setIsExpanded(true)}>
                                 <span className="material-symbols-rounded">send</span>
                             </Button>
                         </div>

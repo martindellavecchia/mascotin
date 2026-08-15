@@ -15,7 +15,7 @@ import type { MatchWithPet } from '@/types/messages';
 const ChatWindow = dynamic(() => import('@/components/messages/ChatWindow'), {
   ssr: false,
   loading: () => (
-    <div className="h-full flex items-center justify-center">
+    <div className="flex h-full min-h-0 min-w-0 items-center justify-center">
       <LoadingSpinner size="lg" />
     </div>
   ),
@@ -24,7 +24,7 @@ const ChatWindow = dynamic(() => import('@/components/messages/ChatWindow'), {
 const GroupChat = dynamic(() => import('@/components/groups/GroupChat'), {
   ssr: false,
   loading: () => (
-    <div className="h-full flex items-center justify-center">
+    <div className="flex h-full min-h-0 min-w-0 items-center justify-center">
       <LoadingSpinner size="lg" />
     </div>
   ),
@@ -163,14 +163,14 @@ export default function MessagesClientShell({
   const renderContent = () => {
     if (!selectedId || !selectedType) {
       return (
-        <div className="flex h-full flex-col items-center justify-center bg-slate-50/50 p-8 text-center text-slate-400">
+        <div className="flex h-full min-h-0 min-w-0 flex-col items-center justify-center bg-slate-50/50 p-6 text-center text-slate-400 sm:p-8">
           <span className="material-symbols-rounded mb-4 text-6xl text-slate-300">
             chat_bubble
           </span>
           <h3 className="mb-2 text-xl font-semibold text-slate-600">
             Tus Mensajes
           </h3>
-          <p>Selecciona una conversación o grupo para comenzar a chatear.</p>
+          <p className="max-w-md [overflow-wrap:anywhere]">Selecciona una conversación o grupo para comenzar a chatear.</p>
         </div>
       );
     }
@@ -179,8 +179,8 @@ export default function MessagesClientShell({
       const group = groups.find((item) => item.id === selectedId);
 
       return (
-        <div className="flex h-full flex-col">
-          <div className="z-10 flex items-center gap-3 border-b bg-white p-4 shadow-sm">
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+          <div className="z-10 flex min-w-0 shrink-0 items-center gap-3 border-b border-slate-200 bg-white p-3 shadow-sm sm:p-4">
             <Button
               type="button"
               variant="ghost"
@@ -191,7 +191,7 @@ export default function MessagesClientShell({
             >
               <span className="material-symbols-rounded">arrow_back</span>
             </Button>
-            <div className="h-10 w-10 overflow-hidden rounded-lg bg-slate-200">
+            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-200">
               {group?.image && (
                 <Image
                   src={group.image}
@@ -203,12 +203,12 @@ export default function MessagesClientShell({
                 />
               )}
             </div>
-            <div>
-              <h2 className="font-bold text-slate-800">{group?.name}</h2>
+            <div className="min-w-0">
+              <h2 className="truncate font-bold text-slate-800">{group?.name}</h2>
               <p className="text-xs text-slate-500">Grupo de Interés</p>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden bg-slate-50 p-4">
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-slate-50 p-2 sm:p-4">
             <GroupChat
               groupId={selectedId}
               currentUserId={session?.user?.id || ''}
@@ -222,8 +222,8 @@ export default function MessagesClientShell({
     const match = matches.find((item) => item.matchId === selectedId);
 
     return (
-      <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 border-b bg-white p-2 lg:hidden">
+      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+        <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white p-2 lg:hidden">
           <Button
             type="button"
             variant="ghost"
@@ -235,7 +235,7 @@ export default function MessagesClientShell({
           </Button>
           <span className="text-sm font-medium text-slate-700">Conversación</span>
         </div>
-        <div className="min-h-0 flex-1">
+        <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
           <ChatWindow
             matchId={selectedId}
             currentUserId={session?.user?.id || ''}
@@ -250,10 +250,10 @@ export default function MessagesClientShell({
   const showChat = Boolean(selectedId);
 
   return (
-    <div className="flex flex-col bg-slate-50">
-      <div className="container mx-auto grid flex-1 grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-4">
+    <div className="h-[calc(100dvh-4rem)] min-h-0 min-w-0 bg-slate-50 lg:h-dvh">
+      <div className="container mx-auto grid h-full min-h-0 min-w-0 grid-cols-1 gap-0 p-0 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)] lg:gap-6 lg:p-8 xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_240px]">
         <div
-          className={`flex max-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm lg:max-h-[calc(100vh-120px)] ${
+          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-slate-100 bg-white shadow-sm sm:rounded-2xl sm:border ${
             showChat ? 'hidden lg:flex' : 'flex'
           }`}
         >
@@ -267,14 +267,14 @@ export default function MessagesClientShell({
         </div>
 
         <div
-          className={`lg:col-span-2 max-h-[calc(100vh-140px)] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm lg:max-h-[calc(100vh-120px)] ${
+          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-slate-100 bg-white shadow-sm sm:rounded-2xl sm:border ${
             showList ? 'hidden lg:flex' : 'flex'
           }`}
         >
           {renderContent()}
         </div>
 
-        <div className="lg:col-span-1 hidden max-h-[calc(100vh-140px)] overflow-y-auto lg:block lg:max-h-[calc(100vh-120px)]">
+        <div className="hidden h-full min-h-0 min-w-0 overflow-y-auto xl:block">
           <QuickActions />
         </div>
       </div>

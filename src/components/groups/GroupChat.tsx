@@ -216,17 +216,17 @@ export default function GroupChat({
 
   if (loading) {
     return (
-      <Card className={`h-full flex items-center justify-center ${className || ''}`}>
+      <Card className={`flex h-full min-h-0 min-w-0 items-center justify-center overflow-hidden ${className || ''}`}>
         <LoadingSpinner size="lg" />
       </Card>
     );
   }
 
   return (
-    <Card className={`h-full flex flex-col ${className || ''}`}>
+    <Card className={`flex h-full min-h-0 min-w-0 flex-col overflow-hidden ${className || ''}`}>
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4"
+        className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-4"
       >
         {messages.length === 0 && (
           <div className="text-center text-slate-400 py-10">
@@ -243,16 +243,16 @@ export default function GroupChat({
               className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
+                className={`min-w-0 max-w-[85%] rounded-lg p-3 sm:max-w-[70%] ${
                   isMine ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-800'
                 }`}
               >
                 {!isMine && (
-                  <p className="text-xs font-bold mb-1 opacity-70">
+                  <p className="mb-1 text-xs font-bold opacity-70 [overflow-wrap:anywhere]">
                     {message.sender.name}
                   </p>
                 )}
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm [overflow-wrap:anywhere]">{message.content}</p>
                 <p className="text-[10px] mt-1 opacity-70 text-right">
                   {formatTime(message.createdAt)}
                 </p>
@@ -262,19 +262,22 @@ export default function GroupChat({
         })}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 border-t bg-white">
-        <form onSubmit={handleSend} className="flex gap-2">
+      <div className="shrink-0 border-t border-slate-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+        <form onSubmit={handleSend} className="flex min-w-0 gap-2">
           <Input
             value={newMessage}
             onChange={(event) => setNewMessage(event.target.value)}
             placeholder="Escribe un mensaje..."
-            className="flex-1"
+            aria-label="Mensaje para el grupo"
+            autoComplete="off"
+            className="h-11 min-w-0 flex-1"
             disabled={sending}
           />
           <Button
             type="submit"
             size="icon"
-            className="bg-teal-500 hover:bg-teal-600"
+            aria-label="Enviar mensaje"
+            className="h-11 w-11 shrink-0 bg-teal-500 hover:bg-teal-600"
             disabled={sending}
           >
             <span className="material-symbols-rounded">

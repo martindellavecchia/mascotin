@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
             <p className="text-slate-600">
               Si el email <span className="font-semibold">{email}</span> está registrado, recibirás instrucciones para restablecer tu contraseña.
             </p>
-            <Link href="/login" className="inline-block mt-4 text-teal-600 font-bold hover:text-teal-700 transition-colors">
+            <Link href="/login" className="mt-4 inline-flex min-h-11 items-center text-teal-600 font-bold hover:text-teal-700 transition-colors">
               Volver al inicio de sesión
             </Link>
           </div>
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
             </form>
 
             <div className="mt-8 text-center">
-              <Link href="/login" className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors">
+              <Link href="/login" className="inline-flex min-h-11 items-center text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors">
                 Volver al inicio de sesión
               </Link>
             </div>

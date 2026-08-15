@@ -6,6 +6,7 @@ import Image from "next/image";
 import { safeParseImages } from "@/lib/utils";
 import Link from "next/link";
 import type { Pet } from "@/types";
+import { shouldUnoptimizeImage } from "@/lib/media";
 
 interface PetCardProps {
     pet: Pet;
@@ -55,6 +56,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         alt={pet.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        unoptimized={shouldUnoptimizeImage(thumbnailImage)}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-slate-50">
@@ -65,7 +67,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="h-8 w-8 bg-white/90 hover:bg-white text-red-600 rounded-full shadow-sm backdrop-blur-sm"
+                        className="rounded-full bg-white/90 text-red-600 shadow-sm backdrop-blur-sm hover:bg-white"
                         onClick={() => onDelete(pet)}
                         aria-label="Eliminar mascota"
                     >

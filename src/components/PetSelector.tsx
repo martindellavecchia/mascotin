@@ -3,6 +3,7 @@ import type { Pet } from '@/types';
 import Image from 'next/image';
 import { safeParseImages } from '@/lib/utils';
 import { getPetTypeIcon } from '@/lib/petTypeIcon';
+import { shouldUnoptimizeImage } from '@/lib/media';
 
 interface PetSelectorProps {
   pets: Pet[];
@@ -83,6 +84,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
                       alt={pet.name}
                       fill
                       className="object-cover"
+                      unoptimized={shouldUnoptimizeImage(firstImage)}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';

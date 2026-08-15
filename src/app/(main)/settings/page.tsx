@@ -102,8 +102,8 @@ export default function SettingsPage() {
             ]);
 
             if (settingsData.success) {
-                setSettings(settingsData.settings);
-                setTheme(settingsData.settings.theme);
+                setSettings({ ...settingsData.settings, theme: 'light' });
+                setTheme('light');
             }
             if (petsData.success) {
                 setPets(petsData.pets);
@@ -209,6 +209,7 @@ export default function SettingsPage() {
     };
 
     const handleThemeChange = (theme: string) => {
+        if (theme !== 'light') return;
         setTheme(theme);
         updateSetting({ theme });
     };
@@ -238,7 +239,7 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto px-4 py-8 max-w-3xl">
+            <div className="container mx-auto min-w-0 max-w-3xl px-4 py-8">
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                         <span className="material-symbols-rounded text-slate-500">settings</span>
@@ -247,14 +248,16 @@ export default function SettingsPage() {
                     <p className="text-slate-500">Personaliza tu experiencia en MascoTin</p>
                 </div>
 
-                <Tabs defaultValue="cuenta" className="w-full">
-                    <TabsList className="mb-4 flex-wrap">
-                        <TabsTrigger value="cuenta">Cuenta</TabsTrigger>
-                        <TabsTrigger value="mascotas">Mascotas</TabsTrigger>
-                        <TabsTrigger value="notificaciones">Notificaciones</TabsTrigger>
-                        <TabsTrigger value="feed">Feed</TabsTrigger>
-                        <TabsTrigger value="apariencia">Apariencia</TabsTrigger>
-                    </TabsList>
+                <Tabs defaultValue="cuenta" className="min-w-0 w-full">
+                    <div className="-mx-4 mb-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
+                        <TabsList className="h-auto min-h-11 w-max min-w-full flex-nowrap justify-start">
+                            <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="cuenta">Cuenta</TabsTrigger>
+                            <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="mascotas">Mascotas</TabsTrigger>
+                            <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="notificaciones">Notificaciones</TabsTrigger>
+                            <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="feed">Feed</TabsTrigger>
+                            <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="apariencia">Apariencia</TabsTrigger>
+                        </TabsList>
+                    </div>
 
                     {/* CUENTA */}
                     <TabsContent value="cuenta" className="space-y-4">
@@ -266,8 +269,8 @@ export default function SettingsPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex items-center justify-between">
-                                    <div>
+                                <div className="flex min-w-0 items-center justify-between gap-4">
+                                    <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Perfil visible</p>
                                         <p className="text-sm text-slate-500">Otros usuarios pueden encontrar tu perfil y mascotas</p>
                                     </div>
@@ -288,25 +291,28 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <Input
+                                    className="min-h-11"
                                     type="password"
                                     placeholder="Contraseña actual"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                 />
                                 <Input
+                                    className="min-h-11"
                                     type="password"
                                     placeholder="Nueva contraseña"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                 />
                                 <Input
+                                    className="min-h-11"
                                     type="password"
                                     placeholder="Confirmar nueva contraseña"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                 />
                                 <Button
-                                    className="bg-teal-500 hover:bg-teal-600"
+                                    className="min-h-11 bg-teal-500 hover:bg-teal-600"
                                     onClick={handleChangePassword}
                                     disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
                                 >
@@ -328,7 +334,7 @@ export default function SettingsPage() {
                                 </p>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="destructive">Eliminar mi cuenta</Button>
+                                        <Button className="min-h-11" variant="destructive">Eliminar mi cuenta</Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
@@ -376,21 +382,21 @@ export default function SettingsPage() {
                                         {pets.map(pet => {
                                             const img = getPetImage(pet);
                                             return (
-                                                <div key={pet.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                                    <div className="flex items-center gap-3">
+                                                <div key={pet.id} className="flex min-w-0 items-center justify-between gap-3 rounded-lg bg-slate-50 p-3">
+                                                    <div className="flex min-w-0 items-center gap-3">
                                                         {img ? (
-                                                            <img src={img} alt={pet.name} className="w-10 h-10 rounded-full object-cover" />
+                                                            <img src={img} alt={pet.name} className="h-10 w-10 shrink-0 rounded-full object-cover" />
                                                         ) : (
-                                                            <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center">
+                                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100">
                                                                 <span className="material-symbols-rounded text-teal-600">pets</span>
                                                             </div>
                                                         )}
-                                                        <div>
-                                                            <p className="font-medium text-slate-800">{pet.name}</p>
-                                                            <p className="text-xs text-slate-500">{pet.breed || pet.petType}</p>
+                                                        <div className="min-w-0">
+                                                            <p className="truncate font-medium text-slate-800">{pet.name}</p>
+                                                            <p className="truncate text-xs text-slate-500">{pet.breed || pet.petType}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex shrink-0 items-center gap-2">
                                                         <Badge className={pet.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}>
                                                             {pet.isActive ? 'Activa' : 'Pausada'}
                                                         </Badge>
@@ -415,8 +421,8 @@ export default function SettingsPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
+                                <div className="flex min-w-0 items-center justify-between gap-4">
+                                    <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Pausar matching</p>
                                         <p className="text-sm text-slate-500">No aparecer en las búsquedas de otros usuarios</p>
                                     </div>
@@ -444,7 +450,7 @@ export default function SettingsPage() {
                                     <p className="font-medium text-slate-700 mb-2">Tipos de mascota preferidos</p>
                                     <div className="flex flex-wrap gap-3">
                                         {PET_TYPES.map(t => (
-                                            <label key={t.value} className="flex items-center gap-2 cursor-pointer">
+                                            <label key={t.value} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-1">
                                                 <Checkbox
                                                     checked={settings.matchPetTypes.includes(t.value)}
                                                     onCheckedChange={() => updateSetting({ matchPetTypes: toggleArrayItem(settings.matchPetTypes, t.value) })}
@@ -459,7 +465,7 @@ export default function SettingsPage() {
                                     <p className="font-medium text-slate-700 mb-2">Tamaños preferidos</p>
                                     <div className="flex flex-wrap gap-3">
                                         {PET_SIZES.map(s => (
-                                            <label key={s.value} className="flex items-center gap-2 cursor-pointer">
+                                            <label key={s.value} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-1">
                                                 <Checkbox
                                                     checked={settings.matchPetSizes.includes(s.value)}
                                                     onCheckedChange={() => updateSetting({ matchPetSizes: toggleArrayItem(settings.matchPetSizes, s.value) })}
@@ -493,10 +499,10 @@ export default function SettingsPage() {
                                     { key: 'notifyEvents' as const, label: 'Eventos y actividades', desc: 'Nuevos eventos cerca de tu ubicación', icon: 'event' },
                                     { key: 'notifyHealth' as const, label: 'Recordatorios de salud', desc: 'Vacunas, controles y turnos próximos', icon: 'medical_services' },
                                 ].map(item => (
-                                    <div key={item.key} className="flex items-center justify-between py-2">
-                                        <div className="flex items-center gap-3">
-                                            <span className="material-symbols-rounded text-slate-400">{item.icon}</span>
-                                            <div>
+                                    <div key={item.key} className="flex min-w-0 items-center justify-between gap-4 py-2">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <span className="material-symbols-rounded shrink-0 text-slate-400">{item.icon}</span>
+                                            <div className="min-w-0">
                                                 <p className="font-medium text-slate-700">{item.label}</p>
                                                 <p className="text-sm text-slate-500">{item.desc}</p>
                                             </div>
@@ -521,8 +527,8 @@ export default function SettingsPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex items-center justify-between">
-                                    <div>
+                                <div className="flex min-w-0 items-center justify-between gap-4">
+                                    <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Ocultar mascotas perdidas resueltas</p>
                                         <p className="text-sm text-slate-500">No mostrar publicaciones de mascotas que ya fueron encontradas</p>
                                     </div>
@@ -544,27 +550,34 @@ export default function SettingsPage() {
                                     Tema
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-3 gap-3">
+                            <CardContent className="space-y-3">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                     {[
-                                        { value: 'light', label: 'Claro', icon: 'light_mode' },
-                                        { value: 'dark', label: 'Oscuro', icon: 'dark_mode' },
-                                        { value: 'system', label: 'Sistema', icon: 'desktop_windows' },
+                                        { value: 'light', label: 'Claro', icon: 'light_mode', disabled: false },
+                                        { value: 'dark', label: 'Oscuro', icon: 'dark_mode', disabled: true },
+                                        { value: 'system', label: 'Sistema', icon: 'desktop_windows', disabled: true },
                                     ].map(t => (
                                         <button
                                             key={t.value}
                                             onClick={() => handleThemeChange(t.value)}
-                                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                                            disabled={t.disabled}
+                                            className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 ${
                                                 settings.theme === t.value
                                                     ? 'border-teal-500 bg-teal-50 text-teal-700'
-                                                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                                                    : t.disabled
+                                                      ? 'cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400'
+                                                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
                                             }`}
                                         >
                                             <span className="material-symbols-rounded text-2xl">{t.icon}</span>
                                             <span className="text-sm font-medium">{t.label}</span>
+                                            {t.disabled && <span className="text-[11px]">Próximamente</span>}
                                         </button>
                                     ))}
                                 </div>
+                                <p className="text-sm text-slate-500">
+                                    El modo claro queda activo hasta completar la nueva paleta visual.
+                                </p>
                             </CardContent>
                         </Card>
                     </TabsContent>

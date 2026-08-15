@@ -14,7 +14,7 @@ function GuestHome() {
     <div className="min-h-screen bg-slate-950 text-white">
       <section className="relative min-h-[100svh] flex flex-col">
         <Image
-          src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1920&h=1080&fit=crop"
+          src="/images/hero-dogs.jpg"
           alt="Dos perros jugando al aire libre"
           fill
           className="object-cover object-center"
@@ -73,7 +73,7 @@ function GuestHome() {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
             <Image
-              src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=1200&h=900&fit=crop"
+              src="/images/community-dog.jpg"
               alt="Persona con su perro en casa"
               fill
               className="object-cover"

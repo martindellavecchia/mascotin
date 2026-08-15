@@ -2,6 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Menu, X, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/sheet';
 
 interface HeaderMobileMenuProps {
-  navLinks: Array<{ href: string; label: string; icon?: string; tab?: 'home' | 'explore' }>;
+  navLinks: Array<{ href: string; label: string; icon?: LucideIcon; tab?: 'home' | 'explore' }>;
 }
 
 export default function HeaderMobileMenu({
@@ -25,11 +26,11 @@ export default function HeaderMobileMenu({
 
   const isActive = (href: string, tab?: 'home' | 'explore') => {
     const path = href.split('?')[0];
-    if (pathname !== path) {
-      if (path !== '/' && pathname.startsWith(path)) return true;
-      return false;
-    }
-    if (path !== '/') return true;
+    if (path === '/community/events') return pathname.startsWith('/community/events');
+    if (path === '/community') return pathname === '/community';
+    if (path === '/shop') return pathname.startsWith('/shop');
+    if (path !== '/') return pathname === path || pathname.startsWith(`${path}/`);
+    if (pathname !== '/') return false;
     if (tab === 'explore') return homeTab === 'explore';
     if (tab === 'home') return !homeTab || homeTab === 'home';
     return true;
@@ -41,37 +42,58 @@ export default function HeaderMobileMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden rounded-xl text-slate-500 hover:text-teal-600 hover:bg-teal-50"
+          className="size-11 rounded-xl text-slate-500 hover:bg-teal-50 hover:text-teal-600 lg:hidden"
           aria-label="Abrir menú"
         >
-          <span className="material-symbols-rounded">menu</span>
+          <Menu className="size-5" aria-hidden="true" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[85%] max-w-sm">
-        <SheetHeader>
-          <SheetTitle>Navegación</SheetTitle>
+      <SheetContent
+        side="left"
+        className="w-[min(88vw,22rem)] max-w-none overflow-y-auto overscroll-contain [&>button:last-child]:hidden"
+      >
+        <SheetClose asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2 size-11 rounded-md"
+            aria-label="Cerrar menú"
+          >
+            <X className="size-5" aria-hidden="true" />
+          </Button>
+        </SheetClose>
+        <SheetHeader className="pr-16">
+          <SheetTitle>Menú principal</SheetTitle>
         </SheetHeader>
         <div className="space-y-4 px-4 pb-4">
           <nav className="space-y-1">
-            {navLinks.map((link) => (
-              <SheetClose key={`${link.label}-${link.href}`} asChild>
-                <Link
-                  href={link.href}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
-                    isActive(link.href, link.tab)
-                      ? 'bg-teal-50 text-teal-700'
-                      : 'text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {link.icon && (
-                    <span className={`material-symbols-rounded text-[20px] ${isActive(link.href, link.tab) ? 'filled' : ''}`}>
-                      {link.icon}
-                    </span>
-                  )}
-                  {link.label}
-                </Link>
-              </SheetClose>
-            ))}
+            {navLinks.map((link) => {
+              const active = isActive(link.href, link.tab);
+              const Icon = link.icon;
+
+              return (
+                <SheetClose key={`${link.label}-${link.href}`} asChild>
+                  <Link
+                    href={link.href}
+                    className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+                      active
+                        ? 'bg-teal-50 text-teal-700'
+                        : 'text-slate-700 hover:bg-slate-100'
+                    }`}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    {Icon && (
+                      <Icon
+                        className="size-5 shrink-0"
+                        strokeWidth={active ? 2.4 : 2}
+                        aria-hidden="true"
+                      />
+                    )}
+                    {link.label}
+                  </Link>
+                </SheetClose>
+              );
+            })}
           </nav>
         </div>
       </SheetContent>

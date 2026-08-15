@@ -31,16 +31,20 @@ export default function ConversationList({
     onSelect
 }: ConversationListProps) {
     return (
-        <div className="h-full flex flex-col">
-            <div className="p-4 border-b border-slate-100">
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+            <div className="shrink-0 border-b border-slate-100 p-4">
                 <h2 className="text-lg font-bold text-slate-800 mb-3">Mensajes</h2>
                 <div className="relative mb-3">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-rounded text-lg">search</span>
-                    <Input placeholder="Buscar..." className="pl-10 bg-slate-50 border-slate-200 rounded-full h-9 text-sm" />
+                    <Input aria-label="Buscar conversaciones" placeholder="Buscar..." className="min-h-11 rounded-full border-slate-200 bg-slate-50 pl-10 text-sm" />
                 </div>
             </div>
 
-            <Tabs defaultValue="matches" className="flex-1 flex flex-col">
+            <Tabs
+                key={selectedType ?? 'none'}
+                defaultValue={selectedType === 'group' ? 'groups' : 'matches'}
+                className="flex min-h-0 min-w-0 flex-1 flex-col"
+            >
                 <div className="px-4">
                     <TabsList className="w-full bg-slate-100 p-1">
                         <TabsTrigger value="matches" className="flex-1 text-xs">Chats</TabsTrigger>
@@ -48,7 +52,7 @@ export default function ConversationList({
                     </TabsList>
                 </div>
 
-                <TabsContent value="matches" className="flex-1 overflow-y-auto mt-2 outline-none">
+                <TabsContent value="matches" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
                     {matches.length === 0 ? (
                         <div className="p-6 text-center text-slate-400">
                             <span className="material-symbols-rounded text-4xl mb-2">pets</span>
@@ -56,29 +60,30 @@ export default function ConversationList({
                         </div>
                     ) : (
                         matches.map((match) => (
-                            <div
+                            <button
+                                type="button"
                                 key={match.matchId}
                                 onClick={() => onSelect(match.matchId, 'match')}
                                 className={cn(
-                                    "flex items-center gap-3 p-4 cursor-pointer transition-colors border-b border-slate-50",
+                                    "flex min-w-0 w-full cursor-pointer items-center gap-3 border-b border-slate-50 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500",
                                     selectedId === match.matchId && selectedType === 'match' ? 'bg-teal-50' : 'hover:bg-slate-50'
                                 )}
                             >
-                                <Avatar className="w-12 h-12">
+                                <Avatar className="h-12 w-12 shrink-0">
                                     <AvatarImage src={match.primaryImageUrl || undefined} />
                                     <AvatarFallback className="bg-teal-100 text-teal-700">{match.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-slate-900 text-sm truncate">{match.name}</p>
-                                    <p className="text-xs text-teal-600">{match.breed || 'Mascota'}</p>
+                                    <p className="truncate text-xs text-teal-600">{match.breed || 'Mascota'}</p>
                                     <p className="text-sm text-slate-400 truncate">Toca para chatear...</p>
                                 </div>
-                            </div>
+                            </button>
                         ))
                     )}
                 </TabsContent>
 
-                <TabsContent value="groups" className="flex-1 overflow-y-auto mt-2 outline-none">
+                <TabsContent value="groups" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
                     {groups.length === 0 ? (
                         <div className="p-6 text-center text-slate-400">
                             <span className="material-symbols-rounded text-4xl mb-2">groups</span>
@@ -86,11 +91,12 @@ export default function ConversationList({
                         </div>
                     ) : (
                         groups.map((group) => (
-                            <div
+                            <button
+                                type="button"
                                 key={group.id}
                                 onClick={() => onSelect(group.id, 'group')}
                                 className={cn(
-                                    "flex items-center gap-3 p-4 cursor-pointer transition-colors border-b border-slate-50",
+                                    "flex min-w-0 w-full cursor-pointer items-center gap-3 border-b border-slate-50 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500",
                                     selectedId === group.id && selectedType === 'group' ? 'bg-teal-50' : 'hover:bg-slate-50'
                                 )}
                             >
@@ -114,7 +120,7 @@ export default function ConversationList({
                                     <p className="font-semibold text-slate-900 text-sm truncate">{group.name}</p>
                                     <p className="text-xs text-slate-500 truncate">{group.description}</p>
                                 </div>
-                            </div>
+                            </button>
                         ))
                     )}
                 </TabsContent>

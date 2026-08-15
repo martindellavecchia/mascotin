@@ -66,8 +66,8 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
 
     return (
         <>
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-                <div className="h-48 bg-slate-200 relative">
+            <section className="mb-6 min-w-0 overflow-hidden rounded-xl bg-white shadow-sm">
+                <div className="relative h-36 bg-slate-200 sm:h-48">
                     {group.image ? (
                         <img src={group.image} alt={group.name} className="w-full h-full object-cover" />
                     ) : (
@@ -77,13 +77,13 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                     )}
                 </div>
 
-                <div className="px-6 py-4">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 mb-2">{group.name}</h1>
-                            <p className="text-slate-600 mb-4 max-w-2xl">{group.description}</p>
+                <div className="px-4 py-4 sm:px-6">
+                    <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="mb-2 text-2xl font-bold text-slate-900 [overflow-wrap:anywhere] sm:text-3xl">{group.name}</h1>
+                            <p className="mb-4 max-w-2xl text-slate-600 [overflow-wrap:anywhere]">{group.description}</p>
 
-                            <div className="flex items-center gap-4 text-sm text-slate-500">
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 sm:gap-4">
                                 <span className="flex items-center gap-1">
                                     <span className="material-symbols-rounded">person</span>
                                     {group._count.members} miembros
@@ -101,14 +101,14 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                             </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto lg:shrink-0">
                             {isCreator ? (
                                 <>
-                                    <Button variant="outline" onClick={() => setIsEditOpen(true)}>
+                                    <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setIsEditOpen(true)}>
                                         <span className="material-symbols-rounded mr-2">edit</span>
                                         Editar
                                     </Button>
-                                    <Button variant="destructive" onClick={handleDelete}>
+                                    <Button variant="destructive" className="min-h-11 w-full sm:w-auto" onClick={handleDelete}>
                                         <span className="material-symbols-rounded mr-2">delete</span>
                                         Eliminar
                                     </Button>
@@ -117,7 +117,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                 <Button
                                     onClick={handleJoinLeave}
                                     variant={isMember ? "outline" : "default"}
-                                    className={!isMember ? "bg-teal-500 hover:bg-teal-600" : ""}
+                                    className={`col-span-2 min-h-11 w-full sm:w-auto ${!isMember ? "bg-teal-500 hover:bg-teal-600" : ""}`}
                                     disabled={loading}
                                 >
                                     {loading ? 'Procesando...' : isMember ? 'Salir del Grupo' : 'Unirse al Grupo'}
@@ -126,7 +126,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <EditGroupModal
                 open={isEditOpen}

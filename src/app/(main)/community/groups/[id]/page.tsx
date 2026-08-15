@@ -57,7 +57,7 @@ export default function SingleGroupPage() {
     const isCreator = session?.user?.id === group.creatorId;
 
     return (
-        <div className="bg-slate-50 flex flex-col">
+        <div className="flex min-w-0 flex-col bg-slate-50">
             <CommunityLayout>
                 <GroupHeader
                     group={group}
@@ -66,24 +66,26 @@ export default function SingleGroupPage() {
                     onJoinChange={() => setRefreshKey((prev) => prev + 1)}
                 />
 
-                <Tabs defaultValue="feed" className="w-full">
-                    <TabsList className="w-full justify-start bg-white border-b p-0 h-auto rounded-none">
-                        <TabsTrigger value="feed" className="py-3 px-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600">
-                            Feed
-                        </TabsTrigger>
-                        <TabsTrigger value="chat" className="py-3 px-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600">
-                            Chat Grupal
-                        </TabsTrigger>
-                        <TabsTrigger value="events" className="py-3 px-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600">
-                            Eventos
-                        </TabsTrigger>
-                        <TabsTrigger value="members" className="py-3 px-6 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600">
-                            Miembros
-                        </TabsTrigger>
-                    </TabsList>
+                <Tabs defaultValue="feed" className="min-w-0 w-full">
+                    <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+                        <TabsList className="inline-flex h-auto min-w-max justify-start rounded-none border-b border-slate-200 bg-white p-0">
+                            <TabsTrigger value="feed" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                                Feed
+                            </TabsTrigger>
+                            <TabsTrigger value="chat" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                                Chat Grupal
+                            </TabsTrigger>
+                            <TabsTrigger value="events" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                                Eventos
+                            </TabsTrigger>
+                            <TabsTrigger value="members" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                                Miembros
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
 
-                    <div className="mt-6">
-                        <TabsContent value="feed">
+                    <div className="mt-4 min-w-0 sm:mt-6">
+                        <TabsContent value="feed" className="min-w-0">
                             <GroupFeed
                                 groupId={group.id}
                                 currentUser={session?.user ? {
@@ -93,23 +95,27 @@ export default function SingleGroupPage() {
                                 } : null}
                             />
                         </TabsContent>
-                        <TabsContent value="chat">
+                        <TabsContent value="chat" className="min-w-0">
                             {isMember ? (
-                                <GroupChat groupId={group.id} currentUserId={session?.user?.id || ''} />
+                                <GroupChat
+                                    groupId={group.id}
+                                    currentUserId={session?.user?.id || ''}
+                                    className="h-[calc(100dvh-12rem)] min-h-[28rem] max-h-[44rem] overflow-hidden"
+                                />
                             ) : (
                                 <div className="text-center py-12 bg-white rounded-lg">
                                     <p className="text-slate-500">Debes unirte al grupo para ver el chat.</p>
                                 </div>
                             )}
                         </TabsContent>
-                        <TabsContent value="events">
+                        <TabsContent value="events" className="min-w-0">
                             <GroupEvents
                                 groupId={group.id}
                                 isCreator={isCreator}
                                 currentUserId={session?.user?.id || ''}
                             />
                         </TabsContent>
-                        <TabsContent value="members">
+                        <TabsContent value="members" className="min-w-0">
                             <GroupMembers
                                 groupId={group.id}
                                 isCreator={isCreator}

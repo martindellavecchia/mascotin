@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -34,9 +35,10 @@ interface LostPetFormProps {
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
     mode?: 'lost' | 'found';
+    initialPetId?: string;
 }
 
-export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'lost' }: LostPetFormProps) {
+export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'lost', initialPetId }: LostPetFormProps) {
     const { data: session } = useSession();
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(false);
@@ -50,10 +52,17 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
     const [imageUrl, setImageUrl] = useState('');
 
     useEffect(() => {
-        if (open && session) {
-            fetchPets();
+        if (open && session?.user?.id) {
+            setLoadingPets(true);
+            void fetchPets();
         }
-    }, [open, session]);
+    }, [open, session?.user?.id]);
+
+    useEffect(() => {
+        if (open && mode === 'lost' && initialPetId) {
+            setSelectedPetId(initialPetId);
+        }
+    }, [initialPetId, mode, open]);
 
     const fetchPets = async () => {
         const result = await fetchWithError<{ pets: Pet[] }>('/api/owner/pets');
@@ -100,7 +109,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
             const data = await res.json();
             if (data.success || data.post) {
-                toast.success(mode === 'found' ? 'Avistamiento publicado' : '🚨 Alerta de mascota perdida publicada');
+                toast.success(mode === 'found' ? 'Avistamiento publicado' : 'Alerta de mascota perdida publicada');
                 onOpenChange(false);
                 onSuccess?.();
                 // Reset form
@@ -125,17 +134,20 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <span className="material-symbols-rounded">emergency</span>
-                        {mode === 'found' ? 'Reportar mascota encontrada' : 'Reportar Mascota Perdida'}
+                        {mode === 'found' ? 'Reportar mascota encontrada' : 'Reportar mascota perdida'}
                     </DialogTitle>
+                    <DialogDescription>
+                        Compartí datos precisos para que la comunidad pueda ayudar a ubicarla.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                     {/* Pet Selection */}
                     <div className="space-y-2">
                         <Label>¿Es tu mascota?</Label>
-                        <Select value={selectedPetId || '_none'} onValueChange={(val) => setSelectedPetId(val === '_none' ? '' : val)}>
+                        <Select value={selectedPetId || '_none'} onValueChange={(val) => setSelectedPetId(val === '_none' ? '' : val)} disabled={loadingPets}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Selecciona una opción" />
+                                <SelectValue placeholder={loadingPets ? 'Cargando mascotas...' : 'Seleccioná una opción'} />
                             </SelectTrigger>
                             <SelectContent>
                                 {pets.map(pet => (
@@ -154,9 +166,18 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                             Foto de la mascota {selectedPetId && <span className="text-slate-400 font-normal">(opcional - usará foto del perfil)</span>}
                         </Label>
                         <div
-                            className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${imageUrl ? 'border-green-300 bg-green-50' : 'border-slate-300 hover:border-teal-400 hover:bg-teal-50'
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Seleccionar una foto de la mascota"
+                            className={`rounded-lg border-2 border-dashed p-4 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${imageUrl ? 'border-green-300 bg-green-50' : 'cursor-pointer border-slate-300 hover:border-teal-400 hover:bg-teal-50'
                                 }`}
                             onClick={() => document.getElementById('lost-pet-image-input')?.click()}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault();
+                                    document.getElementById('lost-pet-image-input')?.click();
+                                }
+                            }}
                             onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-teal-500', 'bg-teal-50'); }}
                             onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-teal-500', 'bg-teal-50'); }}
                             onDrop={(e) => {
@@ -186,11 +207,11 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                             />
                             {imageUrl ? (
                                 <div className="relative">
-                                    <img src={imageUrl} alt="Preview" className="max-h-32 mx-auto rounded-lg" />
-                                    <p className="text-xs text-green-600 mt-2">✓ Imagen cargada</p>
+                                    <img src={imageUrl} alt="Vista previa de la mascota" className="mx-auto max-h-32 rounded-lg" />
+                                    <p className="mt-2 text-xs text-green-600">Imagen cargada</p>
                                     <button
                                         type="button"
-                                        className="text-xs text-red-500 hover:underline mt-1"
+                                        className="mt-1 min-h-10 px-3 text-xs text-red-600 hover:underline"
                                         onClick={(e) => { e.stopPropagation(); setImageUrl(''); }}
                                     >
                                         Quitar imagen
@@ -246,9 +267,9 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     </div>
 
                     {/* Alert banner */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
-                        <span className="font-semibold">💡 Tip:</span> Tu alerta será visible para toda la comunidad.
-                        Asegúrate de que el teléfono esté correcto.
+                    <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                        <span className="material-symbols-rounded mt-0.5 text-lg" aria-hidden="true">lightbulb</span>
+                        <p><span className="font-semibold">Importante:</span> la alerta será visible para toda la comunidad. Verificá que el teléfono sea correcto.</p>
                     </div>
 
                     {/* Submit */}
@@ -269,12 +290,12 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                             {loading ? (
                                 <>
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                                    Publicando...
+                                    Publicando…
                                 </>
                             ) : (
                                 <>
                                     <span className="material-symbols-rounded mr-2">campaign</span>
-                                    Publicar Alerta
+                                    Publicar alerta
                                 </>
                             )}
                         </Button>

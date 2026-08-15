@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -99,13 +99,13 @@ export default function ProviderAppointments() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'PENDING':
-                return <Badge className="bg-amber-100 text-amber-700">Pendiente</Badge>;
+                return <Badge className="whitespace-nowrap bg-amber-100 text-amber-700">Pendiente</Badge>;
             case 'CONFIRMED':
-                return <Badge className="bg-teal-100 text-teal-700">Confirmada</Badge>;
+                return <Badge className="whitespace-nowrap bg-teal-100 text-teal-700">Confirmada</Badge>;
             case 'CANCELLED':
-                return <Badge className="bg-red-100 text-red-700">Cancelada</Badge>;
+                return <Badge className="whitespace-nowrap bg-red-100 text-red-700">Cancelada</Badge>;
             case 'COMPLETED':
-                return <Badge className="bg-slate-100 text-slate-700">Completada</Badge>;
+                return <Badge className="whitespace-nowrap bg-slate-100 text-slate-700">Completada</Badge>;
             default:
                 return <Badge>{status}</Badge>;
         }
@@ -129,33 +129,35 @@ export default function ProviderAppointments() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
             {/* Status Tabs */}
-            <div className="flex flex-wrap gap-2">
-                <Button
-                    variant={filter === '' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFilter('')}
-                    className={filter === '' ? 'bg-teal-500 hover:bg-teal-600' : ''}
-                >
-                    Todas ({counts.PENDING + counts.CONFIRMED})
-                </Button>
-                <Button
-                    variant={filter === 'PENDING' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFilter('PENDING')}
-                    className={filter === 'PENDING' ? 'bg-amber-500 hover:bg-amber-600' : ''}
-                >
-                    Pendientes ({counts.PENDING})
-                </Button>
-                <Button
-                    variant={filter === 'CONFIRMED' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFilter('CONFIRMED')}
-                    className={filter === 'CONFIRMED' ? 'bg-teal-500 hover:bg-teal-600' : ''}
-                >
-                    Confirmadas ({counts.CONFIRMED})
-                </Button>
+            <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+                <div className="flex min-w-max gap-2">
+                    <Button
+                        variant={filter === '' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFilter('')}
+                        className={`min-h-10 shrink-0 ${filter === '' ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
+                    >
+                        Todas ({counts.PENDING + counts.CONFIRMED})
+                    </Button>
+                    <Button
+                        variant={filter === 'PENDING' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFilter('PENDING')}
+                        className={`min-h-10 shrink-0 ${filter === 'PENDING' ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+                    >
+                        Pendientes ({counts.PENDING})
+                    </Button>
+                    <Button
+                        variant={filter === 'CONFIRMED' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFilter('CONFIRMED')}
+                        className={`min-h-10 shrink-0 ${filter === 'CONFIRMED' ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
+                    >
+                        Confirmadas ({counts.CONFIRMED})
+                    </Button>
+                </div>
             </div>
 
             {/* Appointments List */}
@@ -169,76 +171,72 @@ export default function ProviderAppointments() {
                     </CardContent>
                 </Card>
             ) : (
-                <div className="space-y-4">
+                <div className="min-w-0 space-y-4">
                     {appointments.map(apt => (
-                        <Card key={apt.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4">
-                                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    {/* Date */}
-                                    <div className="flex items-center gap-3 md:w-48">
-                                        <div className="flex flex-col items-center bg-teal-50 rounded-lg px-3 py-2 min-w-[50px]">
-                                            <span className="text-[10px] font-bold text-teal-600 uppercase">
-                                                {format(new Date(apt.date), 'MMM', { locale: es })}
-                                            </span>
-                                            <span className="text-xl font-bold text-teal-700">
-                                                {format(new Date(apt.date), 'd')}
-                                            </span>
+                        <Card key={apt.id} className="min-w-0 transition-shadow hover:shadow-md">
+                            <CardContent className="min-w-0 p-4">
+                                <div className="min-w-0 space-y-4">
+                                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                        <div className="flex min-w-0 items-start gap-3">
+                                            <div className="flex min-w-[50px] shrink-0 flex-col items-center rounded-lg bg-teal-50 px-3 py-2">
+                                                <span className="text-[10px] font-bold uppercase text-teal-600">
+                                                    {format(new Date(apt.date), 'MMM', { locale: es })}
+                                                </span>
+                                                <span className="text-xl font-bold text-teal-700">
+                                                    {format(new Date(apt.date), 'd')}
+                                                </span>
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-semibold text-slate-800">
+                                                    {format(new Date(apt.date), 'HH:mm')}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    {apt.service.duration} min
+                                                </p>
+                                                <p className="mt-2 font-semibold text-slate-800 [overflow-wrap:anywhere]">{apt.service.name}</p>
+                                                <div className="mt-1 flex min-w-0 items-start gap-2">
+                                                    <Avatar className="h-6 w-6 shrink-0">
+                                                        {getPetImage(apt.pet) ? (
+                                                            <AvatarImage src={getPetImage(apt.pet)!} />
+                                                        ) : (
+                                                            <AvatarFallback className="text-xs">
+                                                                <span className="material-symbols-rounded align-middle text-sm text-teal-700">pets</span>
+                                                            </AvatarFallback>
+                                                        )}
+                                                    </Avatar>
+                                                    <span className="min-w-0 text-sm text-slate-600 [overflow-wrap:anywhere]">
+                                                        {apt.pet.name} {apt.pet.breed && `(${apt.pet.breed})`}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-slate-800">
-                                                {format(new Date(apt.date), 'HH:mm')}
-                                            </p>
-                                            <p className="text-xs text-slate-500">
-                                                {apt.service.duration} min
-                                            </p>
-                                        </div>
-                                    </div>
 
-                                    {/* Service & Pet */}
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-slate-800">{apt.service.name}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Avatar className="h-6 w-6">
-                                                {getPetImage(apt.pet) ? (
-                                                    <AvatarImage src={getPetImage(apt.pet)!} />
-                                                ) : (
-                                                    <AvatarFallback className="text-xs">
-                                                        <span className="material-symbols-rounded text-sm text-teal-700 align-middle">pets</span>
-                                                    </AvatarFallback>
-                                                )}
-                                            </Avatar>
-                                            <span className="text-sm text-slate-600">
-                                                {apt.pet.name} {apt.pet.breed && `(${apt.pet.breed})`}
-                                            </span>
+                                        <div className="shrink-0 self-start">
+                                            {getStatusBadge(apt.status)}
                                         </div>
                                     </div>
 
                                     {/* Client */}
-                                    <div className="flex items-center gap-2 md:w-48">
-                                        <Avatar className="h-8 w-8">
+                                    <div className="flex min-w-0 items-center gap-3 border-t border-slate-100 pt-3">
+                                        <Avatar className="h-9 w-9 shrink-0">
                                             {apt.user.image ? (
                                                 <AvatarImage src={apt.user.image} />
                                             ) : (
                                                 <AvatarFallback>{apt.user.name?.[0] || 'U'}</AvatarFallback>
                                             )}
                                         </Avatar>
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-700">{apt.user.name}</p>
-                                            <p className="text-xs text-slate-500">{apt.user.email}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-slate-700 [overflow-wrap:anywhere]">{apt.user.name || 'Cliente'}</p>
+                                            <p className="text-xs text-slate-500 [overflow-wrap:anywhere]">{apt.user.email}</p>
                                         </div>
-                                    </div>
-
-                                    {/* Status & Actions */}
-                                    <div className="flex items-center gap-2 md:w-40 justify-end">
-                                        {getStatusBadge(apt.status)}
                                     </div>
 
                                     {/* Action Buttons */}
                                     {apt.status === 'PENDING' && (
-                                        <div className="flex gap-2">
+                                        <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:flex sm:justify-end">
                                             <Button
                                                 size="sm"
-                                                className="bg-teal-500 hover:bg-teal-600"
+                                                className="min-h-10 w-full bg-teal-500 hover:bg-teal-600 sm:w-auto"
                                                 disabled={updating === apt.id}
                                                 onClick={() => updateStatus(apt.id, 'CONFIRMED')}
                                             >
@@ -247,7 +245,7 @@ export default function ProviderAppointments() {
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                                className="min-h-10 w-full border-red-200 text-red-600 hover:bg-red-50 sm:w-auto"
                                                 disabled={updating === apt.id}
                                                 onClick={() => updateStatus(apt.id, 'CANCELLED')}
                                             >
@@ -257,14 +255,17 @@ export default function ProviderAppointments() {
                                     )}
 
                                     {apt.status === 'CONFIRMED' && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={updating === apt.id}
-                                            onClick={() => updateStatus(apt.id, 'COMPLETED')}
-                                        >
-                                            Marcar completada
-                                        </Button>
+                                        <div className="flex border-t border-slate-100 pt-3 sm:justify-end">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="min-h-10 w-full sm:w-auto"
+                                                disabled={updating === apt.id}
+                                                onClick={() => updateStatus(apt.id, 'COMPLETED')}
+                                            >
+                                                Marcar completada
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             </CardContent>

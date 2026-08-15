@@ -121,15 +121,22 @@ function PanelSkeleton({
 }
 
 function writeShallowHomeUrl(nextTab: HomeTab, nextPetId?: string) {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams(window.location.search);
   params.set('tab', nextTab);
 
   if (nextPetId) {
     params.set('petId', nextPetId);
+  } else {
+    params.delete('petId');
   }
 
   const query = params.toString();
-  window.history.replaceState(window.history.state, '', query ? `/?${query}` : '/');
+  const pathname = window.location.pathname || '/';
+  window.history.replaceState(
+    window.history.state,
+    '',
+    query ? `${pathname}?${query}` : pathname
+  );
   window.dispatchEvent(new Event('mascotin:home-tab'));
 }
 
@@ -328,7 +335,7 @@ export default function HomeClientShell({
       <DashboardLayout
         rightSidebar={rightSidebar}
       >
-        <div className="w-full">
+        <div className="min-w-0 w-full">
           <Tabs
             value={activeTab}
             onValueChange={(value) => {
@@ -336,33 +343,36 @@ export default function HomeClientShell({
             }}
             className="w-full"
           >
-            <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-xl border border-slate-200 bg-white p-1 lg:hidden">
-              <TabsTrigger
-                value="home"
-                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
-              >
-                <span className="material-symbols-rounded text-lg">home</span>
-                Inicio
-              </TabsTrigger>
-              <TabsTrigger
-                value="explore"
-                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
-              >
-                <span className="material-symbols-rounded text-lg">explore</span>
-                Descubrir
-              </TabsTrigger>
-              <TabsTrigger
-                value="matches"
-                className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none rounded-md transition-colors gap-2"
-              >
-                <span className="material-symbols-rounded text-lg">favorite</span>
-                Coincidencias
-              </TabsTrigger>
-            </TabsList>
+            <div className="mb-6 min-w-0 lg:hidden">
+              <TabsList className="grid h-12 w-full min-w-0 grid-cols-3 rounded-xl border border-slate-200 bg-white p-1">
+                <TabsTrigger
+                  value="home"
+                  className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
+                >
+                  <span className="material-symbols-rounded text-lg">home</span>
+                  Inicio
+                </TabsTrigger>
+                <TabsTrigger
+                  value="explore"
+                  className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
+                >
+                  <span className="material-symbols-rounded text-lg">explore</span>
+                  Descubrir
+                </TabsTrigger>
+                <TabsTrigger
+                  value="matches"
+                  aria-label="Círculo de coincidencias"
+                  className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
+                >
+                  <span className="material-symbols-rounded text-lg">favorite</span>
+                  Círculo
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="home" className="space-y-6 mt-0">
+            <TabsContent value="home" className="min-w-0 space-y-6 mt-0">
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                <div>
+                <div className="min-w-0">
                   <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Inicio</h1>
                   <p className="mt-2 text-slate-500">Todo lo que está pasando en la comunidad de {activePet?.name}.</p>
                 </div>
@@ -370,11 +380,11 @@ export default function HomeClientShell({
                   <button
                     type="button"
                     onClick={() => router.push(`/profile?petId=${activePet.id}`)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:border-teal-200"
+                    className="inline-flex min-h-11 max-w-full min-w-0 items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:border-teal-200 sm:self-auto"
                   >
-                    <span className="material-symbols-rounded text-teal-700 filled">pets</span>
-                    {activePet.name}
-                    <span className="material-symbols-rounded text-lg text-slate-400">expand_more</span>
+                    <span className="material-symbols-rounded shrink-0 text-teal-700 filled">pets</span>
+                    <span className="truncate">{activePet.name}</span>
+                    <span className="material-symbols-rounded shrink-0 text-lg text-slate-400">expand_more</span>
                   </button>
                 )}
               </div>
@@ -392,7 +402,7 @@ export default function HomeClientShell({
               />
             </TabsContent>
 
-            <TabsContent value="explore" className="mt-0">
+            <TabsContent value="explore" className="min-w-0 mt-0">
               <ExploreTab
                 petsToSwipe={petsToSwipe}
                 currentIndex={currentIndex}
@@ -404,7 +414,7 @@ export default function HomeClientShell({
               />
             </TabsContent>
 
-            <TabsContent value="matches" className="mt-0">
+            <TabsContent value="matches" className="min-w-0 mt-0">
               <div className="mb-7">
                 <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Tu círculo</h1>
                 <p className="mt-2 text-slate-500">Las conexiones que nacieron en la plaza.</p>
@@ -424,8 +434,8 @@ export default function HomeClientShell({
       </DashboardLayout>
 
       {matchNotification && (
-        <div className="fixed top-20 left-1/2 z-[60] animate-match-in">
-          <div className="bg-teal-700 text-white px-6 py-3.5 rounded-lg shadow-lg border border-teal-600">
+        <div className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-match-in">
+          <div className="rounded-lg border border-teal-600 bg-teal-700 px-5 py-3.5 text-white shadow-lg sm:px-6">
             <div className="flex items-center gap-3">
               <span className="material-symbols-rounded text-2xl filled">
                 favorite

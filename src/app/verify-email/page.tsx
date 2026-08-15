@@ -76,7 +76,7 @@ function VerifyEmailContent() {
           <p className="text-slate-600">{message}</p>
           <a
             href="/login"
-            className="inline-block mt-4 text-teal-600 font-bold hover:text-teal-700 transition-colors"
+            className="mt-4 inline-flex min-h-11 items-center text-teal-600 font-bold hover:text-teal-700 transition-colors"
           >
             Volver al inicio de sesión
           </a>

@@ -111,9 +111,9 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-row">
-      <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-12 lg:px-20 xl:px-24 bg-slate-50 relative">
-        <header className="absolute top-0 left-0 w-full p-6 sm:p-8 lg:p-10">
-          <Link href="/" className="flex items-center gap-2.5 text-slate-900">
+      <div className="flex flex-1 flex-col overflow-y-auto bg-slate-50 px-6 py-8 sm:px-12 lg:px-20 lg:py-10 xl:px-24">
+        <header className="w-full shrink-0 pb-8 lg:pb-10">
+          <Link href="/" className="flex min-h-11 w-fit items-center gap-2.5 text-slate-900">
             <div className="flex items-center justify-center size-10 rounded-lg bg-teal-600 text-white">
               <span className="material-symbols-rounded text-2xl filled">pets</span>
             </div>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
           </Link>
         </header>
 
-        <div className="w-full max-w-[420px] mx-auto mt-16 sm:mt-0">
+        <div className="mx-auto w-full max-w-[420px] pb-4">
           <div className="mb-8 space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
               Crea tu cuenta
@@ -197,11 +197,11 @@ export default function RegisterPage() {
                   }
                   required
                   disabled={loading}
-                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-12 text-base focus-visible:ring-teal-600/30"
+                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-14 text-base focus-visible:ring-teal-600/30"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
@@ -248,7 +248,7 @@ export default function RegisterPage() {
                   }
                   required
                   disabled={loading}
-                  className={`w-full rounded-lg bg-white border h-12 px-4 pr-12 text-base focus-visible:ring-teal-600/30 ${
+                  className={`w-full rounded-lg bg-white border h-12 px-4 pr-14 text-base focus-visible:ring-teal-600/30 ${
                     formData.confirmPassword &&
                     formData.password !== formData.confirmPassword
                       ? 'border-red-500'
@@ -260,7 +260,7 @@ export default function RegisterPage() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label={
                     showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
@@ -288,7 +288,10 @@ export default function RegisterPage() {
 
           <p className="mt-8 text-center text-sm text-slate-600">
             ¿Ya tienes una cuenta?{' '}
-            <Link className="text-teal-700 font-semibold hover:text-teal-800" href="/login">
+            <Link
+              className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
+              href="/login"
+            >
               Inicia sesión
             </Link>
           </p>
@@ -297,8 +300,8 @@ export default function RegisterPage() {
 
       <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] relative bg-slate-900 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&h=1600&fit=crop"
-          alt="Persona con su perro al aire libre"
+          src="/images/community-dog.jpg"
+          alt="Perro y gato compartiendo al aire libre"
           fill
           className="object-cover object-center"
           priority

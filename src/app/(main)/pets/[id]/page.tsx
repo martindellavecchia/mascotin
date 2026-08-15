@@ -97,10 +97,15 @@ export default function PetPassportPage() {
 
   useEffect(() => {
     async function load() {
-      const response = await fetch(`/api/pet/${params.id}/passport`);
-      const data = await response.json();
-      if (data.success) setPet(data.pet);
-      setLoading(false);
+      try {
+        const response = await fetch(`/api/pet/${params.id}/passport`);
+        const data = await response.json();
+        if (response.ok && data.success) setPet(data.pet);
+      } catch (error) {
+        console.error('Error fetching pet passport:', error);
+      } finally {
+        setLoading(false);
+      }
     }
     void load();
   }, [params.id]);
@@ -153,7 +158,7 @@ export default function PetPassportPage() {
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
       <Link
         href="/profile"
-        className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-teal-700"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-slate-600 hover:text-teal-700"
       >
         <span className="material-symbols-rounded text-lg">arrow_back</span>
         Mis mascotas

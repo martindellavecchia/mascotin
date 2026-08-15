@@ -140,44 +140,44 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
     };
 
     return (
-        <div className="space-y-6">
-            <Card className="bg-white shadow-sm border-slate-100 overflow-hidden">
-                <Tabs defaultValue="post" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <div className="bg-slate-50 border-b px-4 pt-2">
-                        <TabsList className="bg-transparent h-auto p-0 gap-4">
+        <div className="min-w-0 space-y-6">
+            <Card className="min-w-0 overflow-hidden border-slate-100 bg-white shadow-sm">
+                <Tabs defaultValue="post" value={activeTab} onValueChange={setActiveTab} className="min-w-0 w-full">
+                    <div className="border-b border-slate-200 bg-slate-50 px-3 pt-2 sm:px-4">
+                        <TabsList className="grid h-auto w-full min-w-0 grid-cols-3 gap-0 bg-transparent p-0">
                             <TabsTrigger
                                 value="post"
-                                className="bg-transparent border-b-2 border-transparent data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-2 pb-2 text-slate-500 data-[state=active]:text-teal-600 transition-none"
+                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
-                                <span className="material-symbols-rounded mr-2 text-lg">edit</span>
+                                <span className="material-symbols-rounded mr-1 text-lg">edit</span>
                                 Publicación
                             </TabsTrigger>
                             <TabsTrigger
                                 value="event"
-                                className="bg-transparent border-b-2 border-transparent data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-2 pb-2 text-slate-500 data-[state=active]:text-teal-600 transition-none"
+                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
-                                <span className="material-symbols-rounded mr-2 text-lg">event</span>
+                                <span className="material-symbols-rounded mr-1 text-lg">event</span>
                                 Evento
                             </TabsTrigger>
                             <TabsTrigger
                                 value="question"
-                                className="bg-transparent border-b-2 border-transparent data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-2 pb-2 text-slate-500 data-[state=active]:text-teal-600 transition-none"
+                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
-                                <span className="material-symbols-rounded mr-2 text-lg">help</span>
+                                <span className="material-symbols-rounded mr-1 text-lg">help</span>
                                 Pregunta
                             </TabsTrigger>
                         </TabsList>
                     </div>
 
-                    <div className="p-4">
-                        <div className="flex gap-4">
-                            <Avatar className="mt-1">
+                    <div className="p-3 sm:p-4">
+                        <div className="flex min-w-0 gap-3 sm:gap-4">
+                            <Avatar className="mt-1 shrink-0">
                                 <AvatarImage src={currentUser?.image || undefined} />
                                 <AvatarFallback>{currentUser?.name?.[0] || 'U'}</AvatarFallback>
                             </Avatar>
 
-                            <div className="flex-1 space-y-4">
-                                <TabsContent value="post" className="m-0 space-y-4">
+                            <div className="min-w-0 flex-1 space-y-4">
+                                <TabsContent value="post" className="m-0 min-w-0 space-y-4">
                                     <Textarea
                                         placeholder={`¿Qué quieres compartir con el grupo?`}
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px]"
@@ -186,7 +186,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     />
                                 </TabsContent>
 
-                                <TabsContent value="question" className="m-0 space-y-4">
+                                <TabsContent value="question" className="m-0 min-w-0 space-y-4">
                                     <Textarea
                                         placeholder={`Haz una pregunta al grupo...`}
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px] text-lg font-medium placeholder:font-normal"
@@ -195,14 +195,14 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     />
                                 </TabsContent>
 
-                                <TabsContent value="event" className="m-0 space-y-3">
+                                <TabsContent value="event" className="m-0 min-w-0 space-y-3">
                                     <Input
                                         placeholder="Título del evento"
                                         className="font-bold"
                                         value={eventTitle}
                                         onChange={(e) => setEventTitle(e.target.value)}
                                     />
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <Input
                                             type="datetime-local"
                                             value={eventDate}
@@ -228,6 +228,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                         <img src={image} alt="Preview" className="w-full h-full object-cover" />
                                         <button
                                             onClick={() => setImage('')}
+                                            aria-label="Quitar imagen"
                                             className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
                                         >
                                             <span className="material-symbols-rounded text-sm">close</span>
@@ -235,8 +236,8 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     </div>
                                 )}
 
-                                <div className="flex justify-between items-center pt-2">
-                                    <label className={`cursor-pointer flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <label className={`flex min-h-11 cursor-pointer items-center gap-2 text-sm text-slate-500 transition-colors hover:text-teal-600 ${uploading ? 'cursor-not-allowed opacity-50' : ''}`}>
                                         <span className="material-symbols-rounded">image</span>
                                         {uploading ? 'Subiendo...' : 'Agregar foto'}
                                         <input
@@ -251,7 +252,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Button
                                         onClick={handleCreatePost}
                                         disabled={!content.trim() || creating || uploading}
-                                        className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-6"
+                                        className="min-h-11 w-full rounded-full bg-teal-500 px-6 text-white hover:bg-teal-600 sm:w-auto"
                                     >
                                         {creating ? 'Publicando...' : 'Publicar'}
                                     </Button>
@@ -266,12 +267,12 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
             {loading ? (
                 <div className="text-center py-8 text-slate-500 animate-pulse">Cargando publicaciones...</div>
             ) : posts.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-200">
+                <div className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-12 text-center">
                     <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">chat_bubble_outline</span>
-                    <p className="text-slate-500">Aún no hay publicaciones. ¡Comienza la conversación!</p>
+                    <p className="text-slate-500 [overflow-wrap:anywhere]">Aún no hay publicaciones. ¡Comienza la conversación!</p>
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="min-w-0 space-y-4">
                     {posts.map(post => (
                         <PostCard
                             key={post.id}

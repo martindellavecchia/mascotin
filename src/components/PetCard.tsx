@@ -78,16 +78,16 @@ export default function PetCard({
   };
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="grid min-h-0 max-h-[calc(100dvh-11rem)] md:min-h-[480px] md:max-h-none md:grid-cols-[47%_53%] 2xl:min-h-[640px]">
-        <div className="relative min-h-[200px] overflow-hidden bg-slate-100 sm:min-h-[240px] md:min-h-full">
+    <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="grid min-h-0 lg:min-h-[520px] lg:grid-cols-[47%_53%] 2xl:min-h-[640px]">
+        <div className="relative min-h-[200px] overflow-hidden bg-slate-100 sm:min-h-[240px] lg:min-h-full">
           {hasImage ? (
             <Image
               src={mainImage}
               alt={`${pet.name} en su foto de perfil`}
               fill
               className="object-cover"
-              sizes="(min-width: 1280px) 34vw, (min-width: 768px) 45vw, 100vw"
+              sizes="(min-width: 1536px) 30vw, (min-width: 1024px) 42vw, 100vw"
               priority
               unoptimized={shouldUnoptimizeImage(mainImage)}
             />
@@ -119,12 +119,12 @@ export default function PetCard({
 
         <div className="flex min-w-0 flex-col px-6 py-7 sm:px-8 sm:py-9 2xl:px-10">
           <div>
-            <h2 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-[38px]">
+            <h2 className="break-words text-3xl font-bold leading-tight tracking-[-0.04em] text-slate-950 sm:text-[38px]">
               {pet.name}, {pet.age} años
             </h2>
             <p className="mt-2 text-lg text-slate-700">{pet.breed || 'Mestizo'}</p>
-            <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
-              <span className="material-symbols-rounded text-xl">location_on</span>
+            <p className="mt-4 flex min-w-0 items-start gap-2 break-words text-sm text-slate-500">
+              <span className="material-symbols-rounded shrink-0 text-xl">location_on</span>
               {pet.location || pet.owner?.location || 'Cerca de ti'}
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function PetCard({
 
           <div className="mt-7 flex gap-3 text-slate-700">
             <span className="material-symbols-rounded mt-0.5 text-2xl text-slate-400">favorite</span>
-            <p className="text-[15px] leading-7">
+            <p className="min-w-0 break-words text-[15px] leading-7">
               {pet.bio || `${pet.name} disfruta los paseos y conocer nuevos amigos.`}
             </p>
           </div>
@@ -180,14 +180,14 @@ export default function PetCard({
           </div>
 
           <div className="mt-auto border-t border-slate-200 pt-6">
-            <p className="mb-5 text-sm text-slate-500">
+            <p className="mb-5 break-words text-sm text-slate-500">
               <span className="font-semibold text-slate-800">
                 {pet.matchReason?.includes('paseo') ? 'Compañero de paseo' : 'Buena afinidad'}
               </span>
               {activePetName ? ` con ${activePetName}` : ''}
               {pet.matchReason ? `: ${pet.matchReason}` : ': comparten ritmo de paseo y sociabilidad.'}
             </p>
-            <div className="grid grid-cols-[0.8fr_1.2fr] gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[0.8fr_1.2fr]">
               <Button
                 type="button"
                 variant="outline"

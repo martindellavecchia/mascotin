@@ -156,15 +156,15 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     return (
-        <Card className={`mb-2 shadow-sm overflow-hidden ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : 'border-slate-100 bg-white'}`}>
+        <Card className={`mb-2 min-w-0 overflow-hidden shadow-sm ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : 'border-slate-100 bg-white'}`}>
             {/* Lost Pet Banner */}
             {post.postType === 'lost_pet' && (
-                <div className={`px-3 py-1.5 flex items-center justify-between text-sm border-b ${isResolved ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'}`}>
-                    <div className="flex items-center gap-1.5 text-white">
+                <div className={`flex flex-col items-start justify-between gap-2 border-b px-3 py-2 text-sm sm:flex-row sm:items-center ${isResolved ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'}`}>
+                    <div className="flex min-w-0 items-center gap-1.5 text-white">
                         <span className="material-symbols-rounded">
                             {isResolved ? 'check_circle' : 'emergency'}
                         </span>
-                        <span className="text-sm font-bold">
+                        <span className="text-sm font-bold [overflow-wrap:anywhere]">
                             {isResolved ? '¡MASCOTA ENCONTRADA!' : 'MASCOTA PERDIDA'}
                         </span>
                     </div>
@@ -193,7 +193,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                     toast.error('Error al actualizar');
                                 }
                             }}
-                            className={`text-xs font-bold px-3 py-1 rounded-full transition-colors ${isResolved
+                            className={`min-h-9 shrink-0 rounded-full px-3 py-1 text-xs font-bold transition-colors ${isResolved
                                 ? 'bg-white/20 hover:bg-white/30 text-white'
                                 : 'bg-white text-green-600 hover:bg-green-50'
                                 }`}
@@ -204,7 +204,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 </div>
             )}
             {/* Header */}
-            <div className="px-3 py-2.5 flex items-center gap-2.5">
+            <div className="flex min-w-0 items-center gap-2.5 px-3 py-2.5">
                 <span className="relative shrink-0">
                     <Avatar className="h-8 w-8 border border-slate-100">
                         <AvatarImage src={post.author?.image || undefined} />
@@ -213,22 +213,22 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     {post.author?.isBusinessOwner && <BusinessOwnerBadge compact />}
                 </span>
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm text-slate-900">{post.author?.name || 'Usuario'}</span>
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                        <span className="min-w-0 text-sm font-semibold text-slate-900 [overflow-wrap:anywhere]">{post.author?.name || 'Usuario'}</span>
                         {post.pet && (
-                            <span className="text-xs text-slate-500 inline-flex items-center gap-0.5">
+                            <span className="inline-flex min-w-0 items-center gap-0.5 text-xs text-slate-500 [overflow-wrap:anywhere]">
                               con {post.pet.name}
                               <span className="material-symbols-rounded text-sm text-teal-600">pets</span>
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
                         <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: es })}</span>
                         {post.location && (
                             <>
                                 <span>•</span>
-                                <span className="flex items-center gap-0.5">
-                                    <span className="material-symbols-rounded text-[14px]">location_on</span>
+                                <span className="flex min-w-0 items-start gap-0.5 [overflow-wrap:anywhere]">
+                                    <span className="material-symbols-rounded shrink-0 text-[14px]">location_on</span>
                                     {post.location}
                                 </span>
                             </>
@@ -239,7 +239,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 {currentUserId && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+                            <Button variant="ghost" size="icon" className="text-slate-400">
                                 <span className="material-symbols-rounded">more_horiz</span>
                             </Button>
                         </DropdownMenuTrigger>
@@ -304,16 +304,16 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Content */}
             <div className="px-3 pb-2">
-                <p className={`whitespace-pre-wrap text-sm leading-relaxed ${post.postType === 'question' ? 'font-medium text-slate-900' : 'text-slate-700'}`}>
+                <p className={`whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere] ${post.postType === 'question' ? 'font-medium text-slate-900' : 'text-slate-700'}`}>
                     {post.content}
                 </p>
             </div>
 
             {/* Event Info */}
             {post.postType === 'event' && post.eventDate && (
-                <div className="mx-3 mb-2 p-2.5 bg-teal-50 rounded-lg border border-teal-100">
-                    <div className="flex items-center gap-3">
-                        <div className="flex flex-col items-center bg-white px-2 py-1.5 rounded-md">
+                <div className="mx-3 mb-2 rounded-lg border border-teal-100 bg-teal-50 p-2.5">
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                        <div className="flex shrink-0 flex-col items-center rounded-md bg-white px-2 py-1.5">
                             <span className="text-[10px] text-teal-700 font-bold uppercase">
                                 {format(new Date(post.eventDate), 'MMM', { locale: es })}
                             </span>
@@ -321,14 +321,14 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 {format(new Date(post.eventDate), 'd')}
                             </span>
                         </div>
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1 text-sm text-teal-800">
                                 <span className="material-symbols-rounded text-lg">schedule</span>
                                 {format(new Date(post.eventDate), 'HH:mm')}
                             </div>
                             {post.eventLocation && (
-                                <div className="flex items-center gap-1 text-sm text-teal-700 mt-1">
-                                    <span className="material-symbols-rounded text-lg">location_on</span>
+                                <div className="mt-1 flex min-w-0 items-start gap-1 text-sm text-teal-700 [overflow-wrap:anywhere]">
+                                    <span className="material-symbols-rounded shrink-0 text-lg">location_on</span>
                                     {post.eventLocation}
                                 </div>
                             )}
@@ -336,7 +336,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         {post.eventId && (
                             <Button
                                 size="sm"
-                                className={`${isAttending ? 'bg-teal-800 hover:bg-teal-900' : 'bg-teal-700 hover:bg-teal-800'} text-white transition-colors`}
+                                className={`min-h-10 w-full shrink-0 text-white transition-colors sm:w-auto ${isAttending ? 'bg-teal-800 hover:bg-teal-900' : 'bg-teal-700 hover:bg-teal-800'}`}
                                 onClick={handleAttend}
                             >
                                 {isAttending ? (
@@ -356,16 +356,16 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 <div className="mx-3 mb-2 p-2 bg-red-50 rounded-lg border border-red-200">
                     <div className="space-y-1">
                         {post.lastSeenLocation && (
-                            <div className="flex items-center gap-2 text-sm text-red-700">
-                                <span className="material-symbols-rounded text-lg">location_on</span>
-                                <span><strong>Visto por última vez:</strong> {post.lastSeenLocation}</span>
+                            <div className="flex min-w-0 items-start gap-2 text-sm text-red-700">
+                                <span className="material-symbols-rounded shrink-0 text-lg">location_on</span>
+                                <span className="min-w-0 [overflow-wrap:anywhere]"><strong>Visto por última vez:</strong> {post.lastSeenLocation}</span>
                             </div>
                         )}
                         {post.contactPhone && (
-                            <div className="flex items-center gap-2 text-sm text-red-700">
-                                <span className="material-symbols-rounded text-lg">call</span>
-                                <span><strong>Contacto:</strong></span>
-                                <a href={`tel:${post.contactPhone}`} className="font-bold underline hover:text-red-800">
+                            <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-0.5 text-sm text-red-700">
+                                <span className="material-symbols-rounded shrink-0 text-lg">call</span>
+                                <span className="shrink-0"><strong>Contacto:</strong></span>
+                                <a href={`tel:${post.contactPhone}`} className="inline-flex min-h-11 min-w-0 items-center font-bold underline [overflow-wrap:anywhere] hover:text-red-800">
                                     {post.contactPhone}
                                 </a>
                             </div>
@@ -376,7 +376,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Images */}
             {post.primaryImageUrl && (
-                <div className="relative bg-slate-100 w-full h-[280px]">
+                <div className="relative h-[220px] w-full bg-slate-100 sm:h-[280px]">
                     <Image
                         src={post.primaryImageUrl}
                         alt="Contenido de la publicación"
@@ -406,7 +406,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     ) : (
                         <div className="space-y-1.5">
                             {comments.map(comment => (
-                                <div key={comment.id} className="flex gap-1.5 text-xs">
+                                <div key={comment.id} className="flex min-w-0 gap-1.5 text-xs">
                                     <span className="relative mt-0.5 shrink-0">
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage src={comment.author.image || undefined} />
@@ -414,8 +414,8 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                         </Avatar>
                                         {comment.author.isBusinessOwner && <BusinessOwnerBadge compact className="-bottom-1.5 -right-1.5" />}
                                     </span>
-                                    <div className="bg-white px-2 py-1 rounded-lg text-xs">
-                                        <span className="font-semibold mr-1">{comment.author.name}</span>
+                                    <div className="min-w-0 max-w-full rounded-lg bg-white px-2 py-1 text-xs [overflow-wrap:anywhere]">
+                                        <span className="mr-1 font-semibold">{comment.author.name}</span>
                                         <span className="text-slate-700">{comment.content}</span>
                                     </div>
                                 </div>
@@ -423,19 +423,19 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         </div>
                     )}
 
-                    <div className="flex gap-1.5 items-center mt-1">
-                        <Avatar className="h-6 w-6">
+                    <div className="mt-1 flex min-w-0 items-center gap-1.5">
+                        <Avatar className="h-6 w-6 shrink-0">
                             {currentUserImage ? (
                                 <AvatarImage src={currentUserImage} />
                             ) : (
                                 <AvatarFallback className="bg-teal-500 text-white text-xs">Yo</AvatarFallback>
                             )}
                         </Avatar>
-                        <div className="flex-1 relative">
+                        <div className="relative min-w-0 flex-1">
                             <input
                                 type="text"
                                 placeholder="Escribe un comentario..."
-                                className="w-full rounded-full border border-slate-200 pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:border-teal-400"
+                                className="min-h-10 w-full rounded-full border border-slate-200 py-2 pl-3 pr-11 text-xs focus:border-teal-400 focus:outline-none"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => {
@@ -448,7 +448,8 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             <button
                                 onClick={handleAddComment}
                                 disabled={!newComment.trim()}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-500 disabled:opacity-50"
+                                aria-label="Enviar comentario"
+                                className="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:text-teal-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 disabled:opacity-50"
                             >
                                 <span className="material-symbols-rounded text-[20px]">send</span>
                             </button>
@@ -458,10 +459,10 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             )}
 
             {/* Actions */}
-            <div className="px-1 py-0.5 flex items-center border-t border-slate-50">
+            <div className="flex min-w-0 items-center border-t border-slate-50 px-1 py-0.5">
                 <Button
                     variant="ghost"
-                    className={`flex-1 gap-2 ${isLiked ? 'text-teal-600 hover:text-teal-700 hover:bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
+                    className={`min-w-0 flex-1 gap-1 px-2 sm:gap-2 ${isLiked ? 'text-teal-600 hover:text-teal-700 hover:bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
                     onClick={handleLike}
                     aria-label={isLiked ? 'Quitar me gusta' : 'Me gusta'}
                     aria-pressed={isLiked}
@@ -472,7 +473,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
                 <Button
                     variant="ghost"
-                    className={`flex-1 gap-2 ${showComments ? 'text-teal-500 bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
+                    className={`min-w-0 flex-1 gap-1 px-2 sm:gap-2 ${showComments ? 'text-teal-500 bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
                     onClick={() => setShowComments(!showComments)}
                     aria-label={showComments ? 'Ocultar comentarios' : 'Mostrar comentarios'}
                     aria-expanded={showComments}
@@ -481,7 +482,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     <span className="text-xs">Comentar</span>
                 </Button>
 
-                <Button variant="ghost" size="sm" className="flex-1 gap-1 text-slate-500 hover:text-slate-600 h-8">
+                <Button variant="ghost" size="sm" className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600">
                     <span className="material-symbols-rounded text-[16px]">share</span>
                     <span className="text-xs">Compartir</span>
                 </Button>

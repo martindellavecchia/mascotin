@@ -34,6 +34,8 @@ interface AdoptionCard {
 function AdoptionsContent() {
   const searchParams = useSearchParams();
   const [listings, setListings] = useState<AdoptionCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showCreate, setShowCreate] = useState(Boolean(searchParams.get('list')));
   const [pets, setPets] = useState<Array<{ id: string; name: string }>>([]);
@@ -55,9 +57,19 @@ function AdoptionsContent() {
   });
 
   const load = async () => {
-    const response = await fetch('/api/adoptions');
-    const data = await response.json();
-    if (data.success) setListings(data.listings);
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await fetch('/api/adoptions');
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'No se pudieron cargar las fichas');
+      setListings(data.listings);
+    } catch (error) {
+      console.error('Error fetching adoption listings:', error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -73,13 +85,13 @@ function AdoptionsContent() {
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Adopciones responsables</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Adopciones responsables</h1>
           <p className="text-slate-500">Fichas completas y postulaciones con compatibilidad.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowProfile((value) => !value)}>Perfil adoptante</Button>
-          <Button onClick={() => setShowCreate((value) => !value)}>Publicar ficha</Button>
+        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
+          <Button className="w-full sm:w-auto" variant="outline" onClick={() => setShowProfile((value) => !value)}>Perfil adoptante</Button>
+          <Button className="w-full sm:w-auto" onClick={() => setShowCreate((value) => !value)}>Publicar ficha</Button>
         </div>
       </div>
 
@@ -168,8 +180,27 @@ function AdoptionsContent() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {listings.length === 0 ? (
+      <div className="grid gap-4 md:grid-cols-2" aria-live="polite">
+        {loading ? (
+          [0, 1].map((item) => (
+            <Card key={item} className="overflow-hidden" aria-label="Cargando ficha de adopción">
+              <div className="h-48 animate-pulse bg-slate-200" />
+              <CardContent className="space-y-3 p-4">
+                <div className="h-6 w-2/5 animate-pulse rounded bg-slate-200" />
+                <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
+                <div className="h-10 w-full animate-pulse rounded-lg bg-slate-100" />
+              </CardContent>
+            </Card>
+          ))
+        ) : loadError ? (
+          <Card className="border-dashed md:col-span-2">
+            <CardContent className="flex flex-col items-center px-6 py-12 text-center">
+              <h3 className="text-lg font-semibold text-slate-900">No pudimos cargar las adopciones</h3>
+              <p className="mt-1 text-sm text-slate-500">Revisá tu conexión e intentá nuevamente.</p>
+              <Button className="mt-5" variant="outline" onClick={() => void load()}>Reintentar</Button>
+            </CardContent>
+          </Card>
+        ) : listings.length === 0 ? (
           <Card className="border-dashed md:col-span-2">
             <CardContent className="flex flex-col items-center px-6 py-14 text-center">
               <span className="material-symbols-rounded text-5xl text-slate-300">pets</span>
@@ -187,11 +218,10 @@ function AdoptionsContent() {
           listings.map((listing) => {
             const image = getPrimaryImageUrl(listing.pet.images);
             return (
-              <Card key={listing.id}>
+              <Card key={listing.id} className="overflow-hidden">
                 <CardContent className="p-4 space-y-3">
                   {image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={image} alt={listing.pet.name} className="h-40 w-full rounded-xl object-cover" />
+                    <img src={image} alt={listing.pet.name} className="h-48 w-full rounded-xl object-cover" />
                   )}
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-bold">{listing.pet.name}</h2>

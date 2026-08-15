@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogFooter,
@@ -321,10 +322,10 @@ export default function AdminPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto min-w-0 px-4 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <h1 className="flex items-center gap-2 text-xl font-bold text-slate-800 sm:text-2xl">
                             <span className="material-symbols-rounded text-teal-600">admin_panel_settings</span>
                             Panel de Administración
                         </h1>
@@ -333,26 +334,28 @@ export default function AdminPage() {
                 </div>
 
                 <Tabs defaultValue="users" className="w-full">
-                    <TabsList className="mb-4">
-                        <TabsTrigger value="users">Usuarios</TabsTrigger>
-                        <TabsTrigger value="providers">Proveedores</TabsTrigger>
-                        <TabsTrigger value="requests" className="relative">
-                            Solicitudes
-                            {requestCounts.PENDING > 0 && (
-                                <span className="ml-1.5 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-                                    {requestCounts.PENDING}
-                                </span>
-                            )}
-                        </TabsTrigger>
-                        <TabsTrigger value="stats">Estadísticas</TabsTrigger>
-                    </TabsList>
+                    <div className="mb-3 overflow-x-auto pb-1">
+                        <TabsList className="h-auto w-max min-w-full justify-start">
+                            <TabsTrigger className="min-h-10 shrink-0" value="users">Usuarios</TabsTrigger>
+                            <TabsTrigger className="min-h-10 shrink-0" value="providers">Proveedores</TabsTrigger>
+                            <TabsTrigger value="requests" className="relative min-h-10 shrink-0">
+                                Solicitudes
+                                {requestCounts.PENDING > 0 && (
+                                    <span className="ml-1.5 min-w-[20px] rounded-full bg-orange-500 px-1.5 py-0.5 text-center text-xs text-white">
+                                        {requestCounts.PENDING}
+                                    </span>
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger className="min-h-10 shrink-0" value="stats">Estadísticas</TabsTrigger>
+                        </TabsList>
+                    </div>
 
                     <TabsContent value="users">
                         {/* Filters */}
                         <Card className="mb-4">
                             <CardContent className="p-4">
-                                <div className="flex flex-wrap gap-4">
-                                    <div className="flex-1 min-w-[200px]">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+                                    <div className="min-w-0 flex-1 sm:min-w-[200px]">
                                         <Input
                                             placeholder="Buscar por nombre o email..."
                                             value={search}
@@ -361,7 +364,7 @@ export default function AdminPage() {
                                         />
                                     </div>
                                     <Select value={roleFilter} onValueChange={setRoleFilter}>
-                                        <SelectTrigger className="w-[150px]">
+                                        <SelectTrigger className="w-full sm:w-[150px]">
                                             <SelectValue placeholder="Todos los roles" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -371,7 +374,7 @@ export default function AdminPage() {
                                             <SelectItem value="ADMIN">Admin</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <Button onClick={fetchUsers} variant="outline">
+                                    <Button className="w-full sm:w-auto" onClick={fetchUsers} variant="outline">
                                         <span className="material-symbols-rounded mr-2">search</span>
                                         Buscar
                                     </Button>
@@ -405,9 +408,9 @@ export default function AdminPage() {
                                                                     <AvatarFallback>{user.name?.[0] || 'U'}</AvatarFallback>
                                                                 )}
                                                             </Avatar>
-                                                            <div>
+                                                            <div className="min-w-0">
                                                                 <p className="font-medium text-slate-800">{user.name || 'Sin nombre'}</p>
-                                                                <p className="text-sm text-slate-500">{user.email}</p>
+                                                                <p className="break-words text-sm text-slate-500 [overflow-wrap:anywhere]">{user.email}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -464,11 +467,11 @@ export default function AdminPage() {
                                 </div>
 
                                 {/* Pagination */}
-                                <div className="p-4 border-t flex items-center justify-between">
+                                <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm text-slate-500">
                                         Mostrando {users.length} de {pagination.total} usuarios
                                     </p>
-                                    <div className="flex gap-2">
+                                    <div className="grid grid-cols-2 gap-2 sm:flex">
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -494,14 +497,14 @@ export default function AdminPage() {
                     <TabsContent value="requests">
                         <Card className="mb-4">
                             <CardContent className="p-4">
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 overflow-x-auto pb-1">
                                     {(['PENDING', 'APPROVED', 'REJECTED'] as const).map((s) => (
                                         <Button
                                             key={s}
                                             variant={requestFilter === s ? 'default' : 'outline'}
                                             size="sm"
                                             onClick={() => setRequestFilter(s)}
-                                            className={requestFilter === s ? 'bg-teal-500 hover:bg-teal-600' : ''}
+                                            className={`shrink-0 ${requestFilter === s ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
                                         >
                                             {s === 'PENDING' ? 'Pendientes' : s === 'APPROVED' ? 'Aprobadas' : 'Rechazadas'}
                                             {' '}({requestCounts[s]})
@@ -715,11 +718,14 @@ export default function AdminPage() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {actionType === 'role' && 'Cambiar Rol'}
-                            {actionType === 'block' && (selectedUser?.isBlocked ? 'Desbloquear Usuario' : 'Bloquear Usuario')}
-                            {actionType === 'password' && 'Resetear Contraseña'}
-                            {actionType === 'delete' && 'Eliminar Usuario'}
+                            {actionType === 'role' && 'Cambiar rol'}
+                            {actionType === 'block' && (selectedUser?.isBlocked ? 'Desbloquear usuario' : 'Bloquear usuario')}
+                            {actionType === 'password' && 'Restablecer contraseña'}
+                            {actionType === 'delete' && 'Eliminar usuario'}
                         </DialogTitle>
+                        <DialogDescription>
+                            Revisá el alcance de la acción antes de confirmarla.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4">
@@ -771,7 +777,7 @@ export default function AdminPage() {
                         {actionType === 'delete' && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                                 <p className="text-red-700">
-                                    ⚠️ Esta acción es irreversible. Se eliminarán todos los datos asociados a este usuario.
+                                    <span className="font-semibold">Acción irreversible.</span> Se eliminarán todos los datos asociados a este usuario.
                                 </p>
                             </div>
                         )}
@@ -798,7 +804,10 @@ export default function AdminPage() {
             <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Revisar Solicitud de Proveedor</DialogTitle>
+                        <DialogTitle>Revisar solicitud de proveedor</DialogTitle>
+                        <DialogDescription>
+                            Validá la información del negocio antes de aprobar o rechazar el acceso.
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div>

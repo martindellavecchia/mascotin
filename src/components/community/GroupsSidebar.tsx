@@ -37,8 +37,11 @@ export default function GroupsSidebar() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-slate-800">Mis Grupos</h3>
-                <Link href="/community/groups">
-                    <span className="text-xs text-teal-600 hover:underline cursor-pointer">Ver todos</span>
+                <Link
+                    href="/community/groups"
+                    className="-my-2 inline-flex min-h-11 items-center rounded-md px-2 text-xs text-teal-600 hover:bg-teal-50 hover:underline"
+                >
+                    Ver todos
                 </Link>
             </div>
 
@@ -64,8 +67,8 @@ export default function GroupsSidebar() {
                     ))
                 )}
 
-                <Link href="/community/groups">
-                    <Button variant="outline" className="w-full mt-2 text-xs">
+                <Link href="/community/groups" className="block">
+                    <Button variant="outline" className="mt-2 w-full text-xs">
                         Explorar Grupos
                     </Button>
                 </Link>

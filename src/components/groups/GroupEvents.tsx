@@ -198,11 +198,11 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
     if (loading) return <div className="p-8 text-center text-slate-500">Cargando eventos...</div>;
 
     return (
-        <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-slate-800">Eventos del Grupo ({events.length})</h3>
+        <div className="min-w-0 space-y-4">
+            <h3 className="text-lg font-semibold text-slate-800 [overflow-wrap:anywhere]">Eventos del Grupo ({events.length})</h3>
 
             {events.length === 0 ? (
-                <div className="text-center py-10 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
                     <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">event_busy</span>
                     <p className="text-slate-500">No hay eventos programados.</p>
                 </div>
@@ -211,10 +211,10 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                     {events.map((event) => (
                         <Card
                             key={event.id}
-                            className="p-4 flex gap-4 cursor-pointer hover:shadow-md transition-shadow group-card"
+                            className="group-card flex min-w-0 cursor-pointer flex-col gap-4 p-4 transition-shadow hover:shadow-md sm:flex-row"
                             onClick={() => (isCreator || event.authorId === currentUserId) && setViewingEvent(event)}
                         >
-                            <div className="w-24 h-24 bg-slate-100 rounded-lg overflow-hidden shrink-0">
+                            <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-24 sm:w-24">
                                 {event.image ? (
                                     <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
                                 ) : (
@@ -223,24 +223,29 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                     </div>
                                 )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className="font-bold text-slate-800 truncate">{event.title}</h4>
-                                        <p className="text-sm text-slate-500 mb-2 flex items-center gap-1">
-                                            <span className="material-symbols-rounded text-xs">calendar_today</span>
-                                            {new Date(event.date).toLocaleDateString()}
-                                            <span className="material-symbols-rounded text-xs ml-2">location_on</span>
-                                            {event.location}
-                                        </p>
-                                        <p className="text-sm text-slate-600 line-clamp-2">{event.description}</p>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex min-w-0 items-start justify-between gap-2">
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="font-bold text-slate-800 [overflow-wrap:anywhere]">{event.title}</h4>
+                                        <div className="mb-2 mt-1 space-y-1 text-sm text-slate-500">
+                                            <p className="flex items-start gap-1">
+                                                <span className="material-symbols-rounded shrink-0 text-xs">calendar_today</span>
+                                                <span>{new Date(event.date).toLocaleDateString()}</span>
+                                            </p>
+                                            <p className="flex min-w-0 items-start gap-1 [overflow-wrap:anywhere]">
+                                                <span className="material-symbols-rounded shrink-0 text-xs">location_on</span>
+                                                <span className="min-w-0">{event.location}</span>
+                                            </p>
+                                        </div>
+                                        <p className="line-clamp-2 text-sm text-slate-600 [overflow-wrap:anywhere]">{event.description}</p>
                                     </div>
-                                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex shrink-0 gap-1" onClick={(e) => e.stopPropagation()}>
                                         {(isCreator || event.authorId === currentUserId) && (
                                             <>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
+                                                    aria-label={`Editar ${event.title}`}
                                                     className="text-slate-400 hover:text-teal-600 hover:bg-teal-50"
                                                     onClick={() => setEditingEvent(event)}
                                                 >
@@ -249,6 +254,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
+                                                    aria-label={`Eliminar ${event.title}`}
                                                     className="text-slate-400 hover:text-red-500 hover:bg-red-50"
                                                     onClick={() => handleDelete(event.id)}
                                                 >
@@ -258,10 +264,10 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                         )}
                                     </div>
                                 </div>
-                                <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
-                                    <span>Organizado por {event.author.name}</span>
+                                <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-xs text-slate-400">
+                                    <span className="min-w-0 [overflow-wrap:anywhere]">Organizado por {event.author.name}</span>
                                     {(isCreator || event.authorId === currentUserId) && (
-                                        <span className="text-teal-600 font-medium ml-2 px-2 py-0.5 bg-teal-50 rounded-full">
+                                        <span className="rounded-full bg-teal-50 px-2 py-0.5 font-medium text-teal-600">
                                             Ver Asistentes
                                         </span>
                                     )}
@@ -274,7 +280,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
 
             {/* Edit DIALOG */}
             <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
-                <DialogContent>
+                <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Editar Evento</DialogTitle>
                     </DialogHeader>
@@ -309,9 +315,9 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                             />
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditingEvent(null)}>Cancelar</Button>
-                        <Button onClick={handleUpdate} disabled={updating}>
+                    <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+                        <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setEditingEvent(null)}>Cancelar</Button>
+                        <Button className="min-h-11 w-full sm:w-auto" onClick={handleUpdate} disabled={updating}>
                             {updating ? 'Guardando...' : 'Guardar Cambios'}
                         </Button>
                     </DialogFooter>
@@ -320,9 +326,9 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
 
             {/* Attendees DIALOG */}
             <Dialog open={!!viewingEvent} onOpenChange={(open) => !open && setViewingEvent(null)}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Asistentes: {viewingEvent?.title}</DialogTitle>
+                        <DialogTitle className="pr-6 [overflow-wrap:anywhere]">Asistentes: {viewingEvent?.title}</DialogTitle>
                     </DialogHeader>
 
                     <div className="py-4">
@@ -333,8 +339,8 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                 No hay asistentes confirmados aún.
                             </div>
                         ) : (
-                            <div className="max-h-[300px] overflow-y-auto border rounded-md">
-                                <Table>
+                            <div className="max-h-[300px] overflow-auto rounded-md border">
+                                <Table className="min-w-[640px]">
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Usuario</TableHead>
@@ -345,14 +351,14 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                     <TableBody>
                                         {attendees.map((attendee) => (
                                             <TableRow key={attendee.userId}>
-                                                <TableCell className="flex items-center gap-2">
-                                                    <Avatar className="w-8 h-8">
+                                                <TableCell className="flex min-w-0 items-center gap-2">
+                                                    <Avatar className="h-8 w-8 shrink-0">
                                                         <AvatarImage src={attendee.image || undefined} />
                                                         <AvatarFallback>{attendee.name[0]}</AvatarFallback>
                                                     </Avatar>
-                                                    <span className="font-medium">{attendee.name}</span>
+                                                    <span className="min-w-0 font-medium [overflow-wrap:anywhere]">{attendee.name}</span>
                                                 </TableCell>
-                                                <TableCell>{attendee.email}</TableCell>
+                                                <TableCell className="[overflow-wrap:anywhere]">{attendee.email}</TableCell>
                                                 <TableCell className="text-slate-500 text-xs">
                                                     {new Date(attendee.confirmedAt).toLocaleDateString()}
                                                 </TableCell>
@@ -364,14 +370,14 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                         )}
                     </div>
 
-                    <DialogFooter className="flex justify-between sm:justify-between items-center w-full">
-                        <div className="text-sm text-slate-500">
+                    <DialogFooter className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="text-center text-sm text-slate-500 sm:text-left">
                             Total: {attendees.length} asistentes
                         </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setViewingEvent(null)}>Cerrar</Button>
+                        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
+                            <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setViewingEvent(null)}>Cerrar</Button>
                             {attendees.length > 0 && (
-                                <Button onClick={downloadCSV} className="bg-teal-600 hover:bg-teal-700">
+                                <Button onClick={downloadCSV} className="min-h-11 w-full bg-teal-600 hover:bg-teal-700 sm:w-auto">
                                     <span className="material-symbols-rounded mr-2 text-sm">download</span>
                                     Descargar CSV
                                 </Button>

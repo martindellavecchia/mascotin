@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Profile } from '@/types';
 import Image from 'next/image';
+import { shouldUnoptimizeImage } from '@/lib/media';
 
 interface ProfileCardProps {
   profile: Profile;
@@ -33,6 +34,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
             fill
             className="object-cover"
             priority
+            unoptimized={shouldUnoptimizeImage(mainImage)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 

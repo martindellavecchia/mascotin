@@ -54,6 +54,7 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
     const [loading, setLoading] = useState(true);
     const [ownerImage, setOwnerImage] = useState<string | undefined>();
     const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [activeFilter, setActiveFilter] = useState('');
 
     useEffect(() => {
         if (!session?.user?.id) return;
@@ -70,6 +71,7 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
         try {
             const params = new URLSearchParams(window.location.search);
             const postType = params.get('filter');
+            setActiveFilter(postType || '');
             const url = postType ? `/api/posts?limit=20&postType=${postType}` : '/api/posts?limit=20';
             const response = await fetch(url);
             const data = await response.json();
@@ -147,9 +149,15 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                         onClick={() => {
                             const url = filter.value ? `/community?filter=${filter.value}` : '/community';
                             window.history.replaceState(null, '', url);
+                            setActiveFilter(filter.value);
                             void fetchPosts();
                         }}
-                        className="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:border-teal-300 hover:text-teal-700"
+                        aria-pressed={activeFilter === filter.value}
+                        className={`min-h-10 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                            activeFilter === filter.value
+                                ? 'border-teal-300 bg-teal-50 text-teal-800'
+                                : 'border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700'
+                        }`}
                     >
                         {filter.label}
                     </button>

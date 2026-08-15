@@ -12,7 +12,13 @@ const SonnerToaster = dynamic(() =>
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true} disableTransitionOnChange={false}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        forcedTheme="light"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
         {children}
         <SonnerToaster />
       </ThemeProvider>

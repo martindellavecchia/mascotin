@@ -55,7 +55,7 @@ export default function ExploreTab({
         </div>
         <Link
           href="/settings"
-          className="inline-flex w-fit items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white"
+          className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white"
           aria-label="Preferencias de zona"
         >
           <span className="material-symbols-rounded text-xl">location_on</span>

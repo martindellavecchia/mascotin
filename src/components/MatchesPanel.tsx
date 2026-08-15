@@ -60,18 +60,18 @@ export default function MatchesPanel({ matches }: MatchesPanelProps) {
           <button
             type="button"
             onClick={() => router.push('/?tab=explore')}
-            className="mt-6 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
+            className="mt-6 min-h-11 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
           >
             Ir a Descubrir
           </button>
         </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-220px)]">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <ScrollArea className="min-h-[320px] h-[calc(100dvh-220px)]">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {matches.map((match) => (
               <Card
                 key={match.id}
-                className="cursor-pointer border-slate-200 shadow-sm transition-colors hover:border-teal-200"
+                className="min-w-0 cursor-pointer border-slate-200 shadow-sm transition-colors hover:border-teal-200"
                 onClick={() => openChat(match)}
               >
                 <CardContent className="p-4">

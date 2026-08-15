@@ -182,7 +182,7 @@ export default function SuggestedPets({
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all h-8 w-8"
+                                className="text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all"
                                 onClick={() => handleSwipe(pet.id, false)}
                                 disabled={actionPetId === pet.id}
                                 title="No me interesa"
@@ -194,7 +194,7 @@ export default function SuggestedPets({
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition-all h-8 w-8"
+                                className="text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition-all"
                                 onClick={() => handleSwipe(pet.id, true)}
                                 disabled={actionPetId === pet.id}
                                 title="Me gusta"

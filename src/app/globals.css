@@ -102,6 +102,18 @@
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+.leaflet-control-zoom a {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  line-height: 2.5rem !important;
+}
+
+html:not(.material-symbols-ready) .material-symbols-rounded {
+  inline-size: 1em;
+  overflow: hidden;
+  color: transparent !important;
+}
+
 body {
   font-family: var(--font-plus-jakarta-sans), system-ui, sans-serif;
   background-color: var(--color-bg);
@@ -131,6 +143,21 @@ body {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   box-shadow: var(--state-focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes fadeIn {

@@ -39,7 +39,7 @@ export default function GroupCard({ group, onJoin }: GroupCardProps) {
                 )}
             </div>
             <CardContent className="p-4">
-                <Link href={`/community/groups/${group.id}`} className="hover:underline">
+                <Link href={`/community/groups/${group.id}`} className="inline-flex min-h-11 w-full items-center hover:underline">
                     <h3 className="font-bold text-lg text-slate-900 truncate">{group.name}</h3>
                 </Link>
                 <div className="flex items-center text-xs text-slate-500 mt-1 mb-3 gap-2">
@@ -60,11 +60,11 @@ export default function GroupCard({ group, onJoin }: GroupCardProps) {
                         Unirse
                     </Button>
                 ) : (
-                    <Link href={`/community/groups/${group.id}`} className="w-full block">
-                        <Button className="w-full bg-slate-100 text-slate-600 hover:bg-slate-200" variant="ghost">
+                    <Button asChild className="w-full bg-slate-100 text-slate-600 hover:bg-slate-200" variant="ghost">
+                        <Link href={`/community/groups/${group.id}`}>
                             Ver Grupo
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 )}
             </CardContent>
         </Card>

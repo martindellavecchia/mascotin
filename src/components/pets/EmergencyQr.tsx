@@ -57,7 +57,6 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
       </CardHeader>
       <CardContent className="text-center">
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt="QR de emergencia" className="mx-auto rounded-lg border border-slate-100" />
         ) : (
           <p className="text-sm text-slate-500">Generando código...</p>

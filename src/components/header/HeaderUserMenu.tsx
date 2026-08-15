@@ -2,6 +2,14 @@
 
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import {
+  BadgePlus,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Store,
+  UserRound,
+} from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,7 +39,7 @@ interface HeaderUserMenuProps {
 export default function HeaderUserMenu({ session, showLabel = false }: HeaderUserMenuProps) {
   const router = useRouter();
   const userInitials =
-    session?.user?.name?.split(' ').map((name: string) => name[0]).join('') || 'U';
+    session?.user?.name?.split(' ').map((name: string) => name[0]).join('').slice(0, 2).toUpperCase() || 'U';
   const displayImage = session?.user?.headerImage || session?.user?.image;
   const userRole = session?.user?.role || null;
 
@@ -40,13 +48,15 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className={showLabel ? 'h-auto max-w-[170px] justify-start gap-3 rounded-xl px-2 py-2' : 'h-10 w-10 rounded-full p-0'}
-          aria-label="Menú de usuario"
+          className={showLabel
+            ? 'size-11 min-w-11 justify-center rounded-full p-0 lg:h-14 lg:w-[160px] lg:justify-start lg:gap-3 lg:rounded-xl lg:px-2 lg:py-2'
+            : 'size-11 rounded-full p-0'}
+          aria-label={session?.user?.name ? `Abrir menú de ${session.user.name}` : 'Abrir menú de usuario'}
         >
           <span className="relative shrink-0">
-            <Avatar className="h-10 w-10">
+            <Avatar className="size-9 lg:size-10">
               {displayImage ? (
-                <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
+                <AvatarImage src={displayImage} alt={session?.user?.name || 'Avatar del usuario'} />
               ) : (
                 <AvatarFallback className="bg-teal-500 text-white font-semibold">
                   {userInitials}
@@ -65,12 +75,12 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-[min(18rem,calc(100vw-1rem))]">
         <div className="px-3 py-2 flex items-center gap-3">
           <span className="relative shrink-0">
             <Avatar className="h-10 w-10">
               {displayImage ? (
-                <AvatarImage src={displayImage} alt={session?.user?.name || 'User'} />
+                <AvatarImage src={displayImage} alt={session?.user?.name || 'Avatar del usuario'} />
               ) : (
                 <AvatarFallback className="bg-teal-500 text-white font-semibold">
                   {userInitials}
@@ -79,54 +89,48 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
             </Avatar>
             {session?.user?.isBusinessOwner && <BusinessOwnerBadge />}
           </span>
-          <div>
-            <p className="text-sm font-semibold">{session?.user?.name}</p>
-            <p className="text-xs text-slate-500">{session?.user?.email}</p>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{session?.user?.name || 'Mi perfil'}</p>
+            <p className="truncate text-xs text-slate-500">{session?.user?.email}</p>
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/profile')}>
-          <span className="material-symbols-rounded mr-2 text-slate-500">person</span>
-          Ver Perfil
+        <DropdownMenuItem className="min-h-11" onClick={() => router.push('/profile')}>
+          <UserRound className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+          Ver perfil
         </DropdownMenuItem>
         {userRole === 'PROVIDER' && (
-          <DropdownMenuItem onClick={() => router.push('/provider')}>
-            <span className="material-symbols-rounded mr-2 text-slate-500">
-              storefront
-            </span>
-            Panel de Proveedor
+          <DropdownMenuItem className="min-h-11" onClick={() => router.push('/provider')}>
+            <Store className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+            Panel de proveedor
           </DropdownMenuItem>
         )}
         {userRole === 'OWNER' && (
-          <DropdownMenuItem onClick={() => router.push('/provider')}>
-            <span className="material-symbols-rounded mr-2 text-slate-500">
-              add_business
-            </span>
-            Solicitar ser Proveedor
+          <DropdownMenuItem className="min-h-11" onClick={() => router.push('/provider')}>
+            <BadgePlus className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+            Solicitar ser proveedor
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => router.push('/settings')}>
-          <span className="material-symbols-rounded mr-2 text-slate-500">settings</span>
+        <DropdownMenuItem className="min-h-11" onClick={() => router.push('/settings')}>
+          <Settings className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
           Configuración
         </DropdownMenuItem>
         {userRole === 'ADMIN' && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/admin')}>
-              <span className="material-symbols-rounded mr-2 text-teal-600">
-                admin_panel_settings
-              </span>
-              Panel Admin
+            <DropdownMenuItem className="min-h-11" onClick={() => router.push('/admin')}>
+              <LayoutDashboard className="mr-2 size-[18px] text-teal-600" aria-hidden="true" />
+              Panel de administración
             </DropdownMenuItem>
           </>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-red-600 focus:text-red-600"
+          className="min-h-11 text-red-600 focus:text-red-600"
         >
-          <span className="material-symbols-rounded mr-2">logout</span>
-          Cerrar Sesión
+          <LogOut className="mr-2 size-[18px]" aria-hidden="true" />
+          Cerrar sesión
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

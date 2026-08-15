@@ -7,7 +7,6 @@ import { PetCard } from '@/components/profile/PetCard';
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: { alt: string; src: string }) => (
-    // eslint-disable-next-line @next/next/no-img-element
     <img alt={props.alt} src={props.src} />
   ),
 }));

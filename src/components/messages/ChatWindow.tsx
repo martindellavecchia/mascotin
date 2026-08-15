@@ -206,30 +206,30 @@ export default function ChatWindow({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex h-full min-h-0 min-w-0 items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-        <Avatar className="w-10 h-10">
+    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+      <div className="flex min-w-0 shrink-0 items-center gap-3 border-b border-slate-100 p-3 sm:p-4">
+        <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={otherPet?.primaryImageUrl || undefined} />
           <AvatarFallback className="bg-teal-100 text-teal-700">
             {otherPet?.name?.[0] || '?'}
           </AvatarFallback>
         </Avatar>
-        <div>
-          <p className="font-semibold text-slate-900">{otherPet?.name || 'Chat'}</p>
-          <p className="text-xs text-teal-600">{otherPet?.breed || 'Mascota'}</p>
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-slate-900">{otherPet?.name || 'Chat'}</p>
+          <p className="truncate text-xs text-teal-600">{otherPet?.breed || 'Mascota'}</p>
         </div>
       </div>
 
       <div
         ref={scrollContainerRef}
-        className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/50"
+        className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-slate-50/50 p-3 sm:p-4"
         aria-live="polite"
       >
         {messages.length === 0 ? (
@@ -252,13 +252,13 @@ export default function ChatWindow({
               }`}
             >
               <div
-                className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+                className={`min-w-0 max-w-[85%] rounded-2xl px-4 py-2 sm:max-w-[70%] ${
                   message.senderId === currentUserId
                     ? 'bg-teal-500 text-white rounded-br-md'
                     : 'bg-white text-slate-800 rounded-bl-md shadow-sm'
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm [overflow-wrap:anywhere]">{message.content}</p>
                 <div
                   className={`flex items-center gap-1 mt-1 ${
                     message.senderId === currentUserId ? 'justify-end' : ''
@@ -292,27 +292,35 @@ export default function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t border-slate-100 bg-white">
-        <div className="flex items-center gap-3">
+      <div className="shrink-0 border-t border-slate-100 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleSend();
+          }}
+          className="flex min-w-0 items-center gap-2 sm:gap-3"
+        >
           <Input
             placeholder="Escribe un mensaje..."
             value={newMessage}
             onChange={(event) => setNewMessage(event.target.value)}
-            onKeyDown={(event) => event.key === 'Enter' && handleSend()}
-            className="flex-1 bg-slate-100 border-none rounded-full focus-visible:ring-teal-500"
+            aria-label="Mensaje"
+            autoComplete="off"
+            className="h-11 min-w-0 flex-1 rounded-full border-none bg-slate-100 focus-visible:ring-teal-500"
             disabled={sending}
           />
           <Button
-            onClick={handleSend}
+            type="submit"
             size="icon"
-            className="rounded-full bg-teal-500 hover:bg-teal-600 text-white shrink-0"
+            aria-label="Enviar mensaje"
+            className="h-11 w-11 shrink-0 rounded-full bg-teal-500 text-white hover:bg-teal-600"
             disabled={!newMessage.trim() || sending}
           >
             <span className="material-symbols-rounded">
               {sending ? 'pending' : 'send'}
             </span>
           </Button>
-        </div>
+        </form>
       </div>
     </div>
   );

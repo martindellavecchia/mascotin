@@ -119,10 +119,11 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
                 {lostPets.slice(0, 2).map((pet) => {
                     const image = pet.pet?.primaryImageUrl || pet.primaryImageUrl || null;
                     return (
-                        <div
+                        <button
+                            type="button"
                             key={pet.id}
-                            className="flex items-start gap-3 p-2 rounded-lg bg-white/70 border border-red-100 hover:bg-white transition-colors cursor-pointer"
-                            onClick={() => router.push(`/community?post=${pet.id}`)}
+                            className="flex min-h-16 w-full items-start gap-3 rounded-lg border border-red-100 bg-white/70 p-2 text-left transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
+                            onClick={() => router.push(`/alerts?post=${pet.id}`)}
                         >
                             <Avatar className="h-14 w-14 rounded-lg border-2 border-red-200">
                                 {image ? (
@@ -150,7 +151,7 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
                                     </p>
                                 )}
                             </div>
-                        </div>
+                        </button>
                     );
                 })}
 

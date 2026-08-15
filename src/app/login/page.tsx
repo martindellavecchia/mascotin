@@ -115,11 +115,11 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-12 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-teal-600/30"
+                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-14 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-teal-600/30"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
@@ -133,7 +133,7 @@ export default function LoginPage() {
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
-                className="text-sm font-medium text-teal-700 hover:text-teal-800"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-teal-700 hover:text-teal-800"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -157,7 +157,10 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-slate-600">
             ¿No tienes una cuenta?{' '}
-            <Link className="text-teal-700 font-semibold hover:text-teal-800" href="/register">
+            <Link
+              className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
+              href="/register"
+            >
               Regístrate
             </Link>
           </p>
@@ -166,7 +169,7 @@ export default function LoginPage() {
 
       <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] relative bg-slate-900 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1544568100-847a948585b9?w=1200&h=1600&fit=crop"
+          src="/images/login-dog.jpg"
           alt="Perro en un parque"
           fill
           className="object-cover object-center"

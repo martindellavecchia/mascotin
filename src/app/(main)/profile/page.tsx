@@ -166,36 +166,36 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+      <main className="container mx-auto min-w-0 flex-1 px-4 py-8">
+        <div className="mx-auto min-w-0 max-w-6xl">
           {/* Header & Actions */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div>
+            <div className="min-w-0">
               <h1 className="text-3xl font-bold text-slate-900">Mi Perfil</h1>
               <p className="text-slate-500 mt-1">Gestiona tu información y mascotas</p>
             </div>
             <Button
               onClick={() => setShowOwnerForm(true)}
-              className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-6"
+              className="min-h-11 shrink-0 rounded-full bg-teal-500 px-6 text-white hover:bg-teal-600"
             >
               <span className="material-symbols-rounded text-lg mr-2">edit</span>
               Editar Perfil
             </Button>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-6">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-4">
             {/* Left Column: Owner Info */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="min-w-0 space-y-6 xl:col-span-1">
               <ProfileCard owner={owner} email={session.user.email || ''} />
               <AboutCard bio={owner.bio} onEdit={() => setShowOwnerForm(true)} />
               <StatsCard petsCount={pets.length} matchesCount={matches.length} />
             </div>
 
             {/* Middle Column: Pets */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="min-w-0 space-y-6 xl:col-span-2">
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-slate-900">
                     <span className="material-symbols-rounded text-teal-500">pets</span>
                     Mis Mascotas
                   </h2>
@@ -204,7 +204,7 @@ function ProfileContent() {
                       setEditingPet(null);
                       setShowPetForm(true);
                     }}
-                    className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-4"
+                    className="min-h-11 shrink-0 rounded-full bg-teal-500 px-4 text-white hover:bg-teal-600"
                   >
                     <span className="material-symbols-rounded text-lg mr-1">add</span>
                     Agregar
@@ -218,7 +218,7 @@ function ProfileContent() {
                     }}
                   />
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     {pets.map((pet) => (
                       <PetCard
                         key={pet.id}
@@ -236,7 +236,7 @@ function ProfileContent() {
             </div>
 
             {/* Right Sidebar: Quick Actions */}
-            <div className="lg:col-span-1 hidden lg:block">
+            <div className="hidden min-w-0 xl:col-span-1 xl:block">
               <div className="sticky top-24">
                 <QuickActions />
               </div>
@@ -249,15 +249,16 @@ function ProfileContent() {
 
       {/* Edit Owner Modal */}
       {showOwnerForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-0 bg-white relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+          <Card className="relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto border-0 bg-white shadow-2xl">
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-4 rounded-full hover:bg-slate-100"
+              className="absolute right-3 top-3 size-11 rounded-full hover:bg-slate-100 sm:right-4 sm:top-4"
               onClick={() => setShowOwnerForm(false)}
+              aria-label="Cerrar edición de perfil"
             >
-              <span className="material-symbols-rounded text-slate-500">close</span>
+              <span className="material-symbols-rounded text-slate-500" aria-hidden="true">close</span>
             </Button>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-slate-900">Editar Perfil de Dueño</CardTitle>
@@ -280,18 +281,19 @@ function ProfileContent() {
 
       {/* Pet Form Modal (Create/Edit) */}
       {showPetForm && owner && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <Card className="w-full max-w-full sm:max-w-2xl h-full sm:h-auto max-h-full sm:max-h-[90vh] overflow-y-auto shadow-2xl border-0 bg-white relative rounded-none sm:rounded-xl">
+        <div className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <Card className="relative h-[100dvh] max-h-[100dvh] w-full max-w-full overflow-y-auto rounded-none border-0 bg-white shadow-2xl sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-2xl sm:rounded-xl">
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 top-4 rounded-full hover:bg-slate-100 z-10"
+              className="absolute right-3 top-3 z-10 size-11 rounded-full hover:bg-slate-100 sm:right-4 sm:top-4"
               onClick={() => {
                 setShowPetForm(false);
                 setEditingPet(null);
               }}
+              aria-label="Cerrar formulario de mascota"
             >
-              <span className="material-symbols-rounded text-slate-500">close</span>
+              <span className="material-symbols-rounded text-slate-500" aria-hidden="true">close</span>
             </Button>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-slate-900 pr-10">

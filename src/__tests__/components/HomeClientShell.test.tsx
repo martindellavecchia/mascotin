@@ -225,7 +225,7 @@ describe('HomeClientShell', () => {
   it('fetches matches only after opening the matches tab', async () => {
     const user = userEvent.setup();
     renderShell();
-    await user.click(screen.getByRole('button', { name: /coincidencias/i }));
+    await user.click(screen.getByRole('button', { name: /círculo/i }));
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/matches');

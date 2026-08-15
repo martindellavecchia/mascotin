@@ -58,7 +58,7 @@ export default function CommunitySidebar({
           <button
             type="button"
             onClick={onOpenMatches}
-            className="text-xs font-semibold text-teal-700 hover:text-teal-800"
+            className="-my-2 inline-flex min-h-11 items-center rounded-md px-2 text-xs font-semibold text-teal-700 hover:bg-teal-50 hover:text-teal-800"
           >
             Ver todo
           </button>
@@ -126,7 +126,10 @@ export default function CommunitySidebar({
           <h2 id="message-preview-title" className="text-lg font-bold tracking-tight text-slate-900">
             Mensajes
           </h2>
-          <Link href="/messages" className="text-xs font-semibold text-teal-700 hover:text-teal-800">
+          <Link
+            href="/messages"
+            className="-my-2 inline-flex min-h-11 items-center rounded-md px-2 text-xs font-semibold text-teal-700 hover:bg-teal-50 hover:text-teal-800"
+          >
             Ver todos
           </Link>
         </div>

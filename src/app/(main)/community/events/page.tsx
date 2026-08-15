@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { es } from 'date-fns/locale';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -131,7 +132,8 @@ export default function CommunityEventsPage() {
                         mode="single"
                         selected={selectedDate}
                         onSelect={setSelectedDate}
-                        className="rounded-xl border bg-white p-3"
+                        locale={es}
+                        className="rounded-xl border border-slate-200 bg-white p-3"
                     />
 
                     {loading ? (

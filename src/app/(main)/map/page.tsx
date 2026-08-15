@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { MapPinned } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -71,7 +72,7 @@ export default function MapPage() {
   );
 
   useEffect(() => {
-    if (filteredStores.length === 0) return;
+    if (stores.length === 0) return;
 
     let map: { remove: () => void } | null = null;
     let cancelled = false;
@@ -110,24 +111,27 @@ export default function MapPage() {
       cancelled = true;
       map?.remove();
     };
-  }, [filteredStores, withCoords]);
+  }, [stores.length, withCoords]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 px-4 py-8">
+    <div className="mx-auto min-w-0 max-w-6xl space-y-4 px-4 py-5 sm:py-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Mapa pet-friendly</h1>
-        <p className="text-slate-500">Veterinarias, plazas y restaurantes con etiquetas claras.</p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Mapa pet-friendly</h1>
+        <p className="mt-1 text-sm text-slate-500 sm:text-base">
+          Veterinarias, plazas y restaurantes con etiquetas claras.
+        </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
         <button
           type="button"
           onClick={() => setCategoryId('_all')}
-          className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+          className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm transition-colors ${
             categoryId === '_all'
               ? 'border-teal-500 bg-teal-50 text-teal-800'
               : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200'
           }`}
+          aria-pressed={categoryId === '_all'}
         >
           Todas
         </button>
@@ -136,11 +140,12 @@ export default function MapPage() {
             key={category.id}
             type="button"
             onClick={() => setCategoryId(category.id)}
-            className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+            className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm transition-colors ${
               categoryId === category.id
                 ? 'border-teal-500 bg-teal-50 text-teal-800'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200'
             }`}
+            aria-pressed={categoryId === category.id}
           >
             {category.name}
           </button>
@@ -148,26 +153,31 @@ export default function MapPage() {
       </div>
 
       {stores.length === 0 ? (
-        <Card className="flex flex-col items-center gap-4 border-dashed p-10 text-center">
-          <span className="material-symbols-rounded text-5xl text-slate-300">map</span>
+        <Card className="flex flex-col items-center gap-4 border-dashed p-6 text-center sm:p-10">
+          <MapPinned className="size-12 text-slate-300" aria-hidden="true" />
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Todavía no hay lugares en el mapa</h2>
             <p className="mt-1 max-w-md text-sm text-slate-500">
               Cuando haya negocios publicados con ubicación, van a aparecer acá. Mientras tanto podés explorar la tienda o sumar tu negocio.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button asChild className="bg-teal-600 hover:bg-teal-700">
+          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
+            <Button asChild className="min-h-11 bg-teal-600 hover:bg-teal-700">
               <Link href="/shop">Ver negocios</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="min-h-11">
               <Link href="/provider">Publicar mi negocio</Link>
             </Button>
           </div>
         </Card>
       ) : (
         <>
-          <div id="pet-friendly-map" className="h-[480px] overflow-hidden rounded-2xl border border-slate-200" />
+          <div
+            id="pet-friendly-map"
+            role="region"
+            aria-label="Mapa de lugares pet-friendly"
+            className="h-[clamp(20rem,60svh,30rem)] overflow-hidden rounded-2xl border border-slate-200 sm:h-[clamp(24rem,65svh,36rem)] lg:h-[clamp(28rem,70svh,42rem)]"
+          />
           {withCoords.length === 0 && (
             <p className="text-sm text-slate-500">
               Ningún negocio filtrado tiene coordenadas todavía. Mostramos Buenos Aires como referencia.
@@ -175,10 +185,10 @@ export default function MapPage() {
           )}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredStores.map((store) => (
-              <Card key={store.id} className={`p-4 ${selected?.id === store.id ? 'ring-2 ring-teal-500' : ''}`}>
+              <Card key={store.id} className={`min-w-0 p-4 ${selected?.id === store.id ? 'ring-2 ring-teal-500' : ''}`}>
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <Link href={`/shop/${store.slug}`} className="font-semibold text-slate-900 hover:text-teal-700">
+                  <div className="min-w-0">
+                    <Link href={`/shop/${store.slug}`} className="inline-flex min-h-11 items-center break-words font-semibold text-slate-900 hover:text-teal-700">
                       {store.name}
                     </Link>
                     <p className="text-sm text-slate-500">{store.category.name}</p>

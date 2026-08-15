@@ -36,8 +36,13 @@ export default function AlertsPage() {
 
 function AlertsPageContent() {
   const searchParams = useSearchParams();
+  const reportParam = searchParams.get('report');
+  const selectedPostId = searchParams.get('post');
+  const initialPetId = searchParams.get('petId') || undefined;
   const [tab, setTab] = useState<'lost_pet' | 'found_pet' | 'resolved'>('lost_pet');
   const [alerts, setAlerts] = useState<AlertPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<'lost' | 'found'>('lost');
   const [sightingPostId, setSightingPostId] = useState<string | null>(null);
@@ -50,9 +55,19 @@ function AlertsPageContent() {
   }, [tab]);
 
   const load = async () => {
-    const response = await fetch(`/api/posts/lost?${query}&limit=30`);
-    const data = await response.json();
-    if (data.success) setAlerts(data.lostPets);
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await fetch(`/api/posts/lost?${query}&limit=30`);
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'No se pudieron cargar las alertas');
+      setAlerts(data.lostPets);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -60,11 +75,18 @@ function AlertsPageContent() {
   }, [query]);
 
   useEffect(() => {
-    if (searchParams.get('report') === 'lost') {
+    if (reportParam === 'lost') {
       setFormMode('lost');
       setFormOpen(true);
     }
-  }, [searchParams]);
+  }, [reportParam]);
+
+  useEffect(() => {
+    if (loading || !selectedPostId) return;
+    window.requestAnimationFrame(() => {
+      document.getElementById(`alert-${selectedPostId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [alerts, loading, selectedPostId]);
 
   const submitSighting = async () => {
     if (!sightingPostId) return;
@@ -116,34 +138,57 @@ function AlertsPageContent() {
         </div>
       </div>
 
-      <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)}>
-        <TabsList>
-          <TabsTrigger value="lost_pet">Perdidas</TabsTrigger>
-          <TabsTrigger value="found_pet">Encontradas</TabsTrigger>
-          <TabsTrigger value="resolved">Resueltas</TabsTrigger>
+      <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="min-w-0">
+        <TabsList className="grid h-auto w-full grid-cols-3">
+          <TabsTrigger className="min-h-10 px-2" value="lost_pet">Perdidas</TabsTrigger>
+          <TabsTrigger className="min-h-10 px-2" value="found_pet">Encontradas</TabsTrigger>
+          <TabsTrigger className="min-h-10 px-2" value="resolved">Resueltas</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      <div className="space-y-4">
-        {alerts.length === 0 && (
+      <div className="space-y-4" aria-live="polite">
+        {loading && [0, 1].map((item) => (
+          <Card key={item} className="overflow-hidden" aria-label="Cargando alerta">
+            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row">
+              <div className="h-32 w-full animate-pulse rounded-xl bg-slate-200 sm:w-40" />
+              <div className="flex-1 space-y-3 py-1">
+                <div className="h-5 w-24 animate-pulse rounded bg-slate-200" />
+                <div className="h-5 w-2/5 animate-pulse rounded bg-slate-200" />
+                <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {!loading && loadError && (
+          <Card className="p-8 text-center">
+            <h2 className="font-semibold text-slate-900">No pudimos cargar las alertas</h2>
+            <p className="mt-1 text-sm text-slate-500">Intentá nuevamente en unos segundos.</p>
+            <Button className="mt-4" variant="outline" onClick={() => void load()}>Reintentar</Button>
+          </Card>
+        )}
+        {!loading && !loadError && alerts.length === 0 && (
           <Card className="p-8 text-center text-slate-500">No hay alertas en esta sección.</Card>
         )}
-        {alerts.map((alert) => {
+        {!loading && !loadError && alerts.map((alert) => {
           const image = getPrimaryImageUrl(alert.images);
+          const isSelected = selectedPostId === alert.id;
           return (
-            <Card key={alert.id}>
+            <Card
+              id={`alert-${alert.id}`}
+              key={alert.id}
+              className={isSelected ? 'border-teal-300 ring-2 ring-teal-100' : undefined}
+            >
               <CardContent className="flex flex-col gap-4 p-5 sm:flex-row">
                 <div className="h-32 w-full overflow-hidden rounded-xl bg-slate-100 sm:w-40">
                   {image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={image} alt="" className="h-full w-full object-cover" />
+                    <img src={image} alt={alert.pet?.name || 'Mascota reportada'} className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-slate-300">
                       <span className="material-symbols-rounded text-4xl">pets</span>
                     </div>
                   )}
                 </div>
-                <div className="flex-1 space-y-2">
+                <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className={alert.postType === 'found_pet' ? 'bg-teal-100 text-teal-800' : 'bg-red-100 text-red-700'}>
                       {alert.postType === 'found_pet' ? 'Encontrada' : 'Perdida'}
@@ -151,7 +196,7 @@ function AlertsPageContent() {
                     {alert.isResolved && <Badge className="bg-green-100 text-green-700">Resuelta</Badge>}
                   </div>
                   <p className="font-semibold text-slate-900">{alert.pet?.name || alert.author?.name}</p>
-                  <p className="text-sm text-slate-600">{alert.content}</p>
+                  <p className="break-words text-sm text-slate-600 [overflow-wrap:anywhere]">{alert.content}</p>
                   {alert.lastSeenLocation && (
                     <p className="text-sm text-slate-500">Zona: {alert.lastSeenLocation}</p>
                   )}
@@ -190,6 +235,7 @@ function AlertsPageContent() {
         onOpenChange={setFormOpen}
         onSuccess={() => void load()}
         mode={formMode}
+        initialPetId={initialPetId}
       />
     </div>
   );

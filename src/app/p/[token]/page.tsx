@@ -30,7 +30,6 @@ export default async function EmergencyPassportPage({
     <main className="mx-auto min-h-screen max-w-lg bg-slate-50 px-4 py-10">
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         {image && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={image} alt={pet.name} className="h-64 w-full object-cover" />
         )}
         <div className="space-y-4 p-6">

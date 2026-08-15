@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { passwordSchema } from '@/lib/schemas';
 import { toast } from 'sonner';
 
 function ResetPasswordForm() {
@@ -43,8 +44,9 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres');
+    const passwordCheck = passwordSchema.safeParse(password);
+    if (!passwordCheck.success) {
+      toast.error(passwordCheck.error.issues[0]?.message || 'La contraseña no es válida');
       return;
     }
 
@@ -105,21 +107,25 @@ function ResetPasswordForm() {
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
-              className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 pr-12 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
+              className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 pr-14 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
             />
             <button
               type="button"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+              className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
               <span className="material-symbols-rounded">{showPassword ? 'visibility_off' : 'visibility'}</span>
             </button>
           </div>
+          <p className="ml-1 text-xs leading-relaxed text-slate-500">
+            Usá al menos 8 caracteres, una mayúscula, una minúscula y un número.
+          </p>
         </div>
 
         <div className="space-y-1.5">

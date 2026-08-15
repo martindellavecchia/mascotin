@@ -20,12 +20,12 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
 
     if (compact) {
         return (
-            <div className="flex items-center justify-center gap-4 py-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 py-2 sm:gap-4">
                 {actions.map((action) => (
                     <button
                         key={action.label}
                         onClick={() => router.push(action.href)}
-                        className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-100 transition-colors"
+                        className="flex min-h-11 min-w-16 flex-1 basis-16 flex-col items-center gap-1 rounded-xl p-2 transition-colors hover:bg-slate-100"
                         title={action.label}
                         aria-label={action.label}
                     >
@@ -47,12 +47,12 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
                 </CardHeader>
             )}
             <CardContent className={!showTitle ? 'pt-4' : ''}>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2">
                     {actions.map((action) => (
                         <button
                             key={action.label}
                             onClick={() => router.push(action.href)}
-                            className="flex flex-col items-center gap-2 rounded-xl p-3 transition-colors hover:bg-slate-50"
+                            className="flex min-h-20 min-w-0 flex-col items-center gap-2 rounded-xl p-3 transition-colors hover:bg-slate-50"
                             aria-label={action.label}
                         >
                             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>

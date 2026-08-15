@@ -41,7 +41,11 @@ export function getPrimaryImageUrl(
 }
 
 export function shouldUnoptimizeImage(src?: string | null): boolean {
-  return Boolean(src?.startsWith('data:'));
+  return Boolean(
+    src?.startsWith('data:') ||
+    src?.startsWith('http://') ||
+    src?.startsWith('https://')
+  );
 }
 
 export function isRenderableImage(source?: string | null): boolean {

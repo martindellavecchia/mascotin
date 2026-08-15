@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { safeParseImages } from '@/lib/utils';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
+import { shouldUnoptimizeImage } from '@/lib/media';
 
 export default function TrendingPets() {
     const router = useRouter();
@@ -106,6 +107,7 @@ export default function TrendingPets() {
                                             alt={pet.name}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform"
+                                            unoptimized={shouldUnoptimizeImage(firstImage)}
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
