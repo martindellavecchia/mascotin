@@ -364,6 +364,45 @@ export const completeFosterPlacementSchema = z.object({
   outcome: z.enum(['RESOLVED', 'NEEDS_ADOPTION']),
 });
 
+export const rescueCasePublicationSchema = z.object({
+  summary: z.string().trim().min(20, 'El resumen debe tener al menos 20 caracteres').max(1000),
+  publicZone: z.string().trim().min(2, 'Indicá una zona general').max(120),
+  imageIndex: z.number().int().min(0).max(2).default(0),
+});
+
+export const fosterAlertPreferencesSchema = z.object({
+  enabled: z.boolean(),
+  radiusKm: z.number().int().min(1).max(50).default(5),
+  species: z.array(z.enum(['dog', 'cat', 'other'])).min(1, 'Elegí al menos una especie'),
+  urgencies: z.array(z.enum(['NORMAL', 'HIGH', 'CRITICAL'])).min(1, 'Elegí al menos una urgencia'),
+});
+
+const knownUnknown = z.enum(['yes', 'no', 'unknown']);
+
+export const fosterAdoptionDraftSchema = z.object({
+  name: z.string().trim().min(1, 'El nombre es requerido').max(50),
+  breed: z.string().trim().max(80).optional().or(z.literal('')),
+  estimatedAge: z.number().int().min(0).max(30),
+  gender: z.enum(['male', 'female', 'unknown']),
+  energy: z.enum(['low', 'medium', 'high', 'unknown']),
+  character: z.string().trim().min(10, 'Describí el carácter del animal').max(1000),
+  bio: z.string().trim().min(20, 'Contá un poco más sobre el animal').max(2000),
+  goodWithKids: knownUnknown,
+  goodWithDogs: knownUnknown,
+  goodWithCats: knownUnknown,
+  vaccinated: z.boolean().nullable(),
+  neutered: z.boolean().nullable(),
+  specialNeeds: z.string().trim().max(1000).optional().or(z.literal('')),
+  requirements: z.string().trim().max(1000).optional().or(z.literal('')),
+  publicZone: z.string().trim().min(2, 'Indicá una zona general').max(120),
+  images: z.array(z.string()).min(1, 'Agregá al menos una foto').max(6),
+});
+
+export const adoptionHandoffConfirmSchema = z.object({
+  ownerName: z.string().trim().min(2).max(100).optional(),
+  ownerLocation: z.string().trim().min(2).max(200).optional(),
+});
+
 export const fosterMessageSchema = z.object({
   content: z.string().trim().min(1, 'Escribí un mensaje').max(2000),
 });
@@ -380,4 +419,7 @@ export type CreateAdoptionListingData = z.infer<typeof createAdoptionListingSche
 export type CreateAdoptionApplicationData = z.infer<typeof createAdoptionApplicationSchema>;
 export type FosterProfileData = z.infer<typeof fosterProfileSchema>;
 export type CreateRescueCaseData = z.infer<typeof createRescueCaseSchema>;
+export type RescueCasePublicationData = z.infer<typeof rescueCasePublicationSchema>;
+export type FosterAlertPreferencesData = z.infer<typeof fosterAlertPreferencesSchema>;
+export type FosterAdoptionDraftData = z.infer<typeof fosterAdoptionDraftSchema>;
 export type StorePromotionData = z.infer<typeof storePromotionSchema>;

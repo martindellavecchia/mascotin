@@ -14,7 +14,7 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
     const actions = [
         { icon: 'search', label: 'Descubrir', color: 'bg-teal-50 text-teal-700', href: '/?tab=explore' },
         { icon: 'storefront', label: 'Servicios', color: 'bg-slate-100 text-slate-700', href: '/shop' },
-        { icon: 'volunteer_activism', label: 'Ayuda', color: 'bg-orange-50 text-orange-700', href: '/help' },
+        { icon: 'volunteer_activism', label: 'Hogares', color: 'bg-orange-50 text-orange-700', href: '/hogares-de-transito' },
         { icon: 'calendar_month', label: 'Eventos', color: 'bg-teal-50 text-teal-700', href: '/community/events' },
     ];
 

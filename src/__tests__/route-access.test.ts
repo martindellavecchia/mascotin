@@ -21,6 +21,8 @@ describe('route access helpers', () => {
     expect(isPublicPath('/community')).toBe(false);
     expect(isPublicPath('/help')).toBe(false);
     expect(isPublicPath('/help/cases/case-1')).toBe(false);
+    expect(isPublicPath('/hogares-de-transito')).toBe(false);
+    expect(isPublicPath('/hogares-de-transito/casos/case-1')).toBe(false);
   });
 
   it('allows emergency QR pages without a session', () => {

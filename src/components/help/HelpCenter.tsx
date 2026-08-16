@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FosterProfileForm from '@/components/help/FosterProfileForm';
+import FosterAlertPreferences from '@/components/help/FosterAlertPreferences';
 import RescueCaseForm from '@/components/help/RescueCaseForm';
 import type {
   FosterOfferSummary,
@@ -74,7 +75,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
             {rescueCase.interestedCount > 0 && <span className="font-medium text-orange-700">{rescueCase.interestedCount} interesados</span>}
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link href={`/help/cases/${rescueCase.id}`}>Ver seguimiento</Link>
+            <Link href={`/hogares-de-transito/casos/${rescueCase.id}`}>Ver seguimiento</Link>
           </Button>
         </CardContent>
       </div>
@@ -140,7 +141,7 @@ function OfferCard({
           </div>
         ) : (
           <Button asChild variant="outline" className="w-full">
-            <Link href={`/help/cases/${offer.rescueCase.id}`}>
+            <Link href={`/hogares-de-transito/casos/${offer.rescueCase.id}`}>
               {offer.placement ? 'Abrir coordinación' : 'Ver caso'}
             </Link>
           </Button>
@@ -177,7 +178,7 @@ export default function HelpCenter() {
         });
       }
     } catch {
-      toast.error('No pudimos cargar el centro de ayuda');
+      toast.error('No pudimos cargar Hogares de tránsito');
     } finally {
       setLoading(false);
     }
@@ -224,8 +225,8 @@ export default function HelpCenter() {
       <section className="overflow-hidden rounded-2xl border border-teal-100 bg-white">
         <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div>
-            <Badge className="mb-3 bg-orange-100 text-orange-800">Red de ayuda MascoTin</Badge>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Ayuda a un amiguito</h1>
+            <Badge className="mb-3 bg-orange-100 text-orange-800">Módulo principal de MascoTin</Badge>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Hogares de tránsito</h1>
             <p className="mt-3 max-w-2xl text-slate-600">
               Encontrá resguardo para un animal o abrí tu hogar de manera temporal. Tu dirección y ubicación exacta permanecen privadas.
             </p>
@@ -236,7 +237,7 @@ export default function HelpCenter() {
         </div>
       </section>
 
-      <section aria-label="Opciones de ayuda" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Opciones de hogares de tránsito" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: 'pets', action: () => setCaseDialogOpen(true) },
           { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: 'home', action: () => setProfileDialogOpen(true) },
@@ -312,7 +313,7 @@ export default function HelpCenter() {
           )}
         </TabsContent>
 
-        <TabsContent value="home">
+        <TabsContent value="home" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
               <div>
@@ -339,6 +340,7 @@ export default function HelpCenter() {
               )}
             </CardContent>
           </Card>
+          <FosterAlertPreferences enabled={Boolean(profile)} />
         </TabsContent>
       </Tabs>
 
@@ -347,7 +349,7 @@ export default function HelpCenter() {
           <DialogHeader className="sr-only"><DialogTitle>Nueva solicitud de ayuda</DialogTitle><DialogDescription>Datos del animal encontrado</DialogDescription></DialogHeader>
           <RescueCaseForm onCreated={(caseId) => {
             setCaseDialogOpen(false);
-            router.push(`/help/cases/${caseId}`);
+            router.push(`/hogares-de-transito/casos/${caseId}`);
           }} />
         </DialogContent>
       </Dialog>

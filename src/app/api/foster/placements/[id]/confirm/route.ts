@@ -15,7 +15,7 @@ export async function POST(
 
   const placement = await db.fosterPlacement.findUnique({
     where: { id },
-    include: { rescueCase: true, fosterProfile: true },
+    include: { rescueCase: { include: { adoptionDraft: true } }, fosterProfile: true },
   });
   if (!placement) {
     return NextResponse.json({ success: false, error: 'Tránsito no encontrado' }, { status: 404 });
@@ -34,6 +34,7 @@ export async function POST(
   }
 
   const now = new Date();
+  const resumingAdoption = placement.rescueCase.adoptionDraft?.status === 'PAUSED';
   let updated;
   try {
     updated = await db.$transaction(async (tx) => {
@@ -55,20 +56,33 @@ export async function POST(
       if (saved.requesterConfirmedAt && saved.fosterConfirmedAt) {
         const activated = await tx.fosterPlacement.updateMany({
           where: { id, status: 'COORDINATING' },
-          data: { status: 'ACTIVE', startedAt: now },
+          data: { status: resumingAdoption ? 'AWAITING_ADOPTION' : 'ACTIVE', startedAt: now, outcome: resumingAdoption ? 'NEEDS_ADOPTION' : null },
         });
         if (activated.count === 1) {
           await tx.rescueCase.updateMany({
             where: { id: placement.rescueCaseId, status: 'COORDINATING' },
-            data: { status: 'IN_FOSTER' },
+            data: { status: resumingAdoption ? 'NEEDS_ADOPTION' : 'IN_FOSTER' },
           });
+          if (resumingAdoption && placement.rescueCase.adoptionDraft) {
+            await tx.fosterAdoptionDraft.update({
+              where: { id: placement.rescueCase.adoptionDraft.id },
+              data: {
+                placementId: id,
+                managedByUserId: placement.fosterProfile.userId,
+                status: 'DRAFT',
+                selectedApplicationId: null,
+                fosterConfirmedAt: null,
+                adopterConfirmedAt: null,
+              },
+            });
+          }
           await tx.rescueCaseEvent.create({
             data: {
               caseId: placement.rescueCaseId,
               actorId: auth.session.user.id,
-              type: 'HANDOFF_CONFIRMED',
+              type: resumingAdoption ? 'ADOPTION_FOSTER_REPLACED' : 'HANDOFF_CONFIRMED',
               fromStatus: 'COORDINATING',
-              toStatus: 'IN_FOSTER',
+              toStatus: resumingAdoption ? 'NEEDS_ADOPTION' : 'IN_FOSTER',
               details: JSON.stringify({ placementId: placement.id }),
             },
           });
@@ -95,11 +109,13 @@ export async function POST(
     userId: recipientId,
     actorId: auth.session.user.id,
     type: 'FOSTER_PLACEMENT',
-    title: updated.status === 'ACTIVE' ? 'El tránsito comenzó' : 'Confirmación de entrega',
-    body: updated.status === 'ACTIVE'
+    title: updated.status === 'AWAITING_ADOPTION' ? 'El nuevo hogar quedó confirmado' : updated.status === 'ACTIVE' ? 'El tránsito comenzó' : 'Confirmación de entrega',
+    body: updated.status === 'AWAITING_ADOPTION'
+      ? 'El hogar puede revisar y volver a publicar la ficha de adopción.'
+      : updated.status === 'ACTIVE'
       ? 'Ambas partes confirmaron que la mascota ya está en el hogar'
       : 'La otra parte confirmó la entrega. Falta tu confirmación.',
-    link: `/help/cases/${placement.rescueCaseId}`,
+    link: `/hogares-de-transito/casos/${placement.rescueCaseId}`,
     entityId: placement.id,
   });
 

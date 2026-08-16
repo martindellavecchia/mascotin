@@ -103,8 +103,8 @@ export async function createOffersForCase(caseId: string): Promise<number> {
         actorId: rescueCase.createdByUserId,
         type: 'FOSTER_OFFER',
         title: 'Una mascota necesita tránsito cerca tuyo',
-        body: `${rescueCase.location} · a menos de ${rescueCase.searchRadiusKm} km`,
-        link: '/help?view=offers',
+        body: `Caso compatible a menos de ${rescueCase.searchRadiusKm} km`,
+        link: '/hogares-de-transito?view=offers',
         entityId: rescueCase.id,
       })
     )
@@ -167,8 +167,8 @@ export async function createOffersForProfile(profileId: string): Promise<number>
         actorId: rescueCase.createdByUserId,
         type: 'FOSTER_OFFER',
         title: 'Una mascota necesita tránsito cerca tuyo',
-        body: `${rescueCase.location} · a menos de ${rescueCase.searchRadiusKm} km`,
-        link: '/help?view=offers',
+        body: `Caso compatible a menos de ${rescueCase.searchRadiusKm} km`,
+        link: '/hogares-de-transito?view=offers',
         entityId: rescueCase.id,
       })
     )

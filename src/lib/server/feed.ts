@@ -20,7 +20,7 @@ export async function getFeedPage({
   limit = 10,
   cursor,
 }: FeedPageOptions) {
-  const where: Prisma.PostWhereInput = {};
+  const where: Prisma.PostWhereInput = { isVisible: true };
   if (petId) where.petId = petId;
   if (postType) where.postType = postType;
 
@@ -84,6 +84,17 @@ export async function getFeedPage({
           },
         },
       },
+      rescueCase: {
+        select: {
+          id: true,
+          status: true,
+          species: true,
+          size: true,
+          urgency: true,
+          requestedDays: true,
+          adoptionListing: { select: { id: true, status: true } },
+        },
+      },
     },
   });
 
@@ -101,15 +112,36 @@ export async function getFeedPage({
     const authorImage = author?.image || author?.owner?.image || null;
     const normalizedPost = withImageFields(post);
 
+    const isFosterCase = Boolean(post.rescueCase);
     return {
       ...normalizedPost,
+      authorId: isFosterCase ? 'foster-module' : post.authorId,
       author: {
-        ...post.author,
-        image: authorImage,
-        isBusinessOwner: (author.stores?.length ?? 0) > 0,
+        ...(isFosterCase
+          ? { id: 'foster-module', name: 'Hogares de tránsito', image: null, isBusinessOwner: false }
+          : {
+              ...post.author,
+              image: authorImage,
+              isBusinessOwner: (author.stores?.length ?? 0) > 0,
+            }),
         owner: undefined,
         stores: undefined,
       },
+      canManage: post.authorId === userId,
+      rescueCase: post.rescueCase
+        ? {
+            id: post.rescueCase.id,
+            status: post.rescueCase.status,
+            species: post.rescueCase.species,
+            size: post.rescueCase.size,
+            urgency: post.rescueCase.urgency,
+            requestedDays: post.rescueCase.requestedDays,
+            adoptionListingId:
+              post.rescueCase.adoptionListing?.status === 'OPEN' || post.rescueCase.adoptionListing?.status === 'PENDING'
+                ? post.rescueCase.adoptionListing.id
+                : null,
+          }
+        : null,
       isLiked: post.likes.length > 0,
       likes: undefined,
       isAttending: post.event ? post.event.attendees.length > 0 : false,

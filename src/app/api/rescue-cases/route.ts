@@ -6,6 +6,7 @@ import { parseImageUrls } from '@/lib/media';
 import { resolveCoordinates } from '@/lib/pet-payload';
 import { createRescueCaseSchema } from '@/lib/schemas';
 import { createOffersForCase, expireFosterOffers } from '@/lib/server/foster';
+import { notifySubscribedFosters } from '@/lib/server/foster-network';
 
 export async function GET() {
   const auth = await requireAuth();
@@ -29,6 +30,9 @@ export async function GET() {
           take: 1,
           select: { id: true, status: true },
         },
+        communityPost: { select: { isVisible: true } },
+        adoptionDraft: { select: { id: true, status: true, listingId: true } },
+        adoptionListing: { select: { id: true, status: true } },
       },
       take: 50,
     }),
@@ -54,7 +58,7 @@ export async function GET() {
       ? db.fosterPlacement.findMany({
           where: {
             fosterProfileId: profile.id,
-            status: { in: ['COORDINATING', 'ACTIVE'] },
+            status: { in: ['COORDINATING', 'ACTIVE', 'AWAITING_ADOPTION'] },
           },
           include: { rescueCase: true },
           orderBy: { updatedAt: 'desc' },
@@ -80,6 +84,9 @@ export async function GET() {
       offerCount: rescueCase.offers.length,
       interestedCount: rescueCase.offers.filter((offer) => offer.status === 'INTERESTED').length,
       placement: rescueCase.placements[0] || null,
+      isPublished: Boolean(rescueCase.communityPost?.isVisible),
+      adoptionDraft: rescueCase.adoptionDraft,
+      adoptionListing: rescueCase.adoptionListing,
     })),
     offers: offers.map((offer) => ({
       id: offer.id,
@@ -173,6 +180,7 @@ export async function POST(request: Request) {
     });
 
     const offerCount = await createOffersForCase(rescueCase.id);
+    await notifySubscribedFosters(rescueCase.id);
 
     return NextResponse.json(
       {

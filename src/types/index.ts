@@ -45,8 +45,9 @@ export interface Pet {
   weight?: number;
   size: string;
   gender: string;
-  vaccinated: boolean;
-  neutered: boolean;
+  vaccinated: boolean | null;
+  neutered: boolean | null;
+  careRole?: 'OWNED' | 'FOSTER';
   energy: string;
   bio: string;
   activities: string[];
@@ -152,6 +153,16 @@ export interface Post {
     comments: number;
   };
   isLiked?: boolean;
+  canManage?: boolean;
+  rescueCase?: {
+    id: string;
+    status: string;
+    species: string;
+    size: string;
+    urgency: string;
+    requestedDays: number;
+    adoptionListingId: string | null;
+  } | null;
 }
 
 export interface Comment {

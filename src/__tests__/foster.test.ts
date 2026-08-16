@@ -1,5 +1,6 @@
 import {
   DEFAULT_FOSTER_RADIUS_KM,
+  matchesFosterAlertPreferences,
   normalizeFosterRadius,
   rankFosterCandidates,
   scoreFosterCandidate,
@@ -92,5 +93,25 @@ describe('foster matching', () => {
 
     expect(ranked).toHaveLength(5);
     expect(ranked[0].distanceKm).toBeLessThanOrEqual(ranked[1].distanceKm);
+  });
+
+  it('applies opt-in filters and the configurable alert radius', () => {
+    const settings = {
+      status: 'ACTIVE' as const,
+      caseAlertsEnabled: true,
+      alertRadiusKm: 5,
+      alertSpecies: JSON.stringify(['dog']),
+      alertUrgencies: JSON.stringify(['HIGH', 'CRITICAL']),
+    };
+
+    expect(matchesFosterAlertPreferences({ species: 'dog', urgency: 'HIGH' }, settings, 4.9)).toBe(true);
+    expect(matchesFosterAlertPreferences({ species: 'cat', urgency: 'HIGH' }, settings, 4)).toBe(false);
+    expect(matchesFosterAlertPreferences({ species: 'dog', urgency: 'NORMAL' }, settings, 4)).toBe(false);
+    expect(matchesFosterAlertPreferences({ species: 'dog', urgency: 'HIGH' }, settings, 5.1)).toBe(false);
+    expect(matchesFosterAlertPreferences(
+      { species: 'dog', urgency: 'HIGH' },
+      { ...settings, caseAlertsEnabled: false },
+      2,
+    )).toBe(false);
   });
 });

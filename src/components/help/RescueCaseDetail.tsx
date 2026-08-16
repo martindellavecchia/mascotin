@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FosterChat from '@/components/help/FosterChat';
+import FosterAdoptionDraftForm from '@/components/help/FosterAdoptionDraftForm';
+import RescueCasePublicationCard from '@/components/help/RescueCasePublicationCard';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,7 +65,7 @@ interface CaseDetail {
   searchRadiusKm: number;
   requestedDays: number;
   createdAt: string;
-  createdBy: { id: string; name: string | null; image: string | null };
+  createdBy?: { id: string; name: string | null; image: string | null };
   offers: OfferDetail[];
   placements: PlacementDetail[];
   events: Array<{
@@ -72,10 +74,15 @@ interface CaseDetail {
     createdAt: string;
     actor: { id: string; name: string | null };
   }>;
+  publication: { summary: string; publicZone: string | null; isVisible: boolean } | null;
+  adoptionDraft: { id: string; status: string; managedByUserId: string; listingId: string | null } | null;
+  adoptionListingId: string | null;
+  canExpressInterest: boolean;
+  hasFosterProfile: boolean;
 }
 
 interface DetailResponse {
-  viewerRole: 'CREATOR' | 'FOSTER';
+  viewerRole: 'CREATOR' | 'FOSTER' | 'VISITOR';
   viewerUserId: string;
   case: CaseDetail;
 }
@@ -91,10 +98,18 @@ const EVENT_LABELS: Record<string, string> = {
   COORDINATION_CANCELLED: 'Coordinación cancelada',
   PLACEMENT_COMPLETED: 'Tránsito finalizado',
   CASE_CANCELLED: 'Caso cancelado',
+  COMMUNITY_PUBLISHED: 'Caso publicado en Comunidad',
+  COMMUNITY_PUBLICATION_UPDATED: 'Publicación comunitaria actualizada',
+  COMMUNITY_UNPUBLISHED: 'Caso retirado de Comunidad',
+  ADOPTION_DRAFT_CREATED: 'Borrador de adopción creado',
+  ADOPTION_PUBLISHED: 'Ficha publicada en Adopciones',
+  ADOPTION_APPLICATION_SELECTED: 'Postulación de adopción seleccionada',
+  ADOPTION_HANDOFF_CANCELLED: 'Coordinación de adopción cancelada',
+  ADOPTION_COMPLETED: 'Adopción definitiva completada',
 };
 
 function placementActive(placement: PlacementDetail) {
-  return ['COORDINATING', 'ACTIVE'].includes(placement.status);
+  return ['COORDINATING', 'ACTIVE', 'AWAITING_ADOPTION'].includes(placement.status);
 }
 
 export default function RescueCaseDetail({ caseId }: { caseId: string }) {
@@ -150,7 +165,7 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
     return <div className="mx-auto max-w-6xl space-y-4 px-4 py-8"><div className="h-10 w-40 animate-pulse rounded bg-slate-200" /><div className="h-80 animate-pulse rounded-2xl bg-slate-200" /></div>;
   }
   if (!data) {
-    return <div className="mx-auto max-w-xl px-4 py-20 text-center"><h1 className="text-xl font-semibold">No pudimos abrir el caso</h1><Button asChild variant="outline" className="mt-4"><Link href="/help">Volver a Ayuda</Link></Button></div>;
+    return <div className="mx-auto max-w-xl px-4 py-20 text-center"><h1 className="text-xl font-semibold">No pudimos abrir el caso</h1><Button asChild variant="outline" className="mt-4"><Link href="/hogares-de-transito">Volver a Hogares de tránsito</Link></Button></div>;
   }
 
   const rescueCase = data.case;
@@ -165,7 +180,7 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="ghost"><Link href="/help"><span className="material-symbols-rounded mr-2" aria-hidden="true">arrow_back</span>Volver a Ayuda</Link></Button>
+        <Button asChild variant="ghost"><Link href="/hogares-de-transito"><span className="material-symbols-rounded mr-2" aria-hidden="true">arrow_back</span>Volver a Hogares de tránsito</Link></Button>
         <Badge className="bg-teal-100 text-teal-800">{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
       </div>
 
@@ -181,7 +196,7 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h1 className="text-2xl font-bold text-slate-950">{SPECIES_LABELS[rescueCase.species]} · {SIZE_LABELS[rescueCase.size]}</h1>
-                  <p className="mt-1 text-sm text-slate-500">{rescueCase.location} · publicado por {rescueCase.createdBy.name || 'Usuario de MascoTin'}</p>
+                  <p className="mt-1 text-sm text-slate-500">{rescueCase.location}{rescueCase.createdBy ? ` · publicado por ${rescueCase.createdBy.name || 'Usuario de MascoTin'}` : ''}</p>
                 </div>
                 {rescueCase.urgency !== 'NORMAL' && <Badge className={rescueCase.urgency === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}>{rescueCase.urgency === 'CRITICAL' ? 'Situación crítica' : 'Alta urgencia'}</Badge>}
               </div>
@@ -197,9 +212,27 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
             </CardContent>
           </Card>
 
+          {data.viewerRole === 'VISITOR' && (
+            <Card className="border-orange-200 bg-orange-50/40">
+              <CardContent className="space-y-3 p-5">
+                <h2 className="font-semibold text-slate-900">¿Podés ofrecer un hogar de tránsito?</h2>
+                <p className="text-sm text-slate-600">La ubicación exacta y el chat se habilitan sólo cuando participás y la persona responsable te selecciona.</p>
+                {rescueCase.adoptionListingId ? (
+                  <Button asChild><Link href={`/adoptions/${rescueCase.adoptionListingId}`}>Ver ficha de adopción</Link></Button>
+                ) : !rescueCase.hasFosterProfile ? (
+                  <Button asChild><Link href="/hogares-de-transito?create=profile">Crear perfil de hogar</Link></Button>
+                ) : rescueCase.canExpressInterest ? (
+                  <Button disabled={acting} onClick={() => void mutate(`/api/rescue-cases/${caseId}/interest`, { method: 'POST' }, 'Avisamos que podés ayudar')}>Quiero ofrecer tránsito</Button>
+                ) : (
+                  <p className="rounded-lg bg-white p-3 text-sm text-slate-600">Tu perfil no tiene cupo, está fuera del radio o no coincide con este caso.</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {placement && (
             <Card>
-              <CardHeader><CardTitle className="text-lg">{placement.status === 'COORDINATING' ? 'Coordinar la entrega' : placement.status === 'ACTIVE' ? 'Tránsito en curso' : 'Último tránsito'}</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">{placement.status === 'COORDINATING' ? 'Coordinar la entrega' : placement.status === 'ACTIVE' ? 'Tránsito en curso' : placement.status === 'AWAITING_ADOPTION' ? 'Cuidado durante la adopción' : 'Último tránsito'}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className={`rounded-xl border p-4 ${placement.requesterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium text-slate-800">Persona que rescató</p><p className="mt-1 text-sm text-slate-500">{placement.requesterConfirmedAt ? 'Entrega confirmada' : 'Falta confirmar la entrega'}</p></div>
@@ -222,11 +255,25 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
                     </div>
                   </div>
                 )}
+                {placement.status === 'AWAITING_ADOPTION' && (
+                  <div className="space-y-3 rounded-xl border border-orange-200 bg-orange-50 p-4">
+                    <p className="font-medium text-orange-900">El animal continúa bajo cuidado del hogar y mantiene un cupo ocupado.</p>
+                    <p className="text-sm text-orange-800">El cupo se liberará cuando hogar y adoptante confirmen la entrega definitiva.</p>
+                    {data.viewerRole === 'FOSTER' && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild><Button variant="outline" disabled={acting}>Ya no puedo continuar alojándolo</Button></AlertDialogTrigger>
+                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Volver a buscar un hogar de tránsito?</AlertDialogTitle><AlertDialogDescription>La ficha de adopción quedará pausada y se avisará a la persona responsable del caso.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction onClick={() => void mutate(`/api/foster/placements/${placement.id}/cancel`, { method: 'POST' }, 'El caso volvió a buscar tránsito')}>Confirmar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {placement && <FosterChat placementId={placement.id} currentUserId={data.viewerUserId} enabled={['COORDINATING', 'ACTIVE'].includes(placement.status)} />}
+          {placement && <FosterChat placementId={placement.id} currentUserId={data.viewerUserId} enabled={['COORDINATING', 'ACTIVE', 'AWAITING_ADOPTION'].includes(placement.status)} />}
+
+          {rescueCase.adoptionDraft && <FosterAdoptionDraftForm caseId={caseId} />}
 
           {data.viewerRole === 'CREATOR' && (
             <Card>
@@ -251,6 +298,16 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
         </div>
 
         <aside className="min-w-0 space-y-5">
+          {data.viewerRole === 'CREATOR' && (
+            <RescueCasePublicationCard
+              caseId={caseId}
+              description={rescueCase.description}
+              images={rescueCase.images}
+              publication={rescueCase.publication}
+              onChanged={load}
+            />
+          )}
+
           {canChangeRadius && (
             <Card><CardHeader><CardTitle className="text-base">Radio de búsqueda</CardTitle></CardHeader><CardContent className="space-y-3"><Label>Distancia máxima</Label><Select value={radius} onValueChange={setRadius}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{[5, 10, 20, 50].map((value) => <SelectItem key={value} value={String(value)}>{value} km</SelectItem>)}</SelectContent></Select><Button variant="outline" className="w-full" disabled={acting || Number(radius) === rescueCase.searchRadiusKm} onClick={() => void mutate(`/api/rescue-cases/${caseId}/radius`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ searchRadiusKm: Number(radius) }) }, 'Radio actualizado')}>Actualizar búsqueda</Button></CardContent></Card>
           )}
@@ -258,10 +315,8 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
           <Card><CardHeader><CardTitle className="text-base">Actividad</CardTitle></CardHeader><CardContent>{rescueCase.events.length === 0 ? <p className="text-sm text-slate-500">Sin actividad registrada.</p> : <ol className="space-y-4">{rescueCase.events.map((event) => <li key={event.id} className="relative border-l border-slate-200 pl-4"><span className="absolute -left-1.5 top-1 size-3 rounded-full border-2 border-white bg-teal-500" /><p className="text-sm font-medium text-slate-800">{EVENT_LABELS[event.type] || event.type}</p><p className="mt-0.5 text-xs text-slate-600">{new Date(event.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p></li>)}</ol>}</CardContent></Card>
 
           {data.viewerRole === 'CREATOR' && ['SEARCHING', 'INTERESTED'].includes(rescueCase.status) && (
-            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" className="w-full text-red-600 hover:bg-red-50 hover:text-red-700">Cancelar caso</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Cancelar la solicitud?</AlertDialogTitle><AlertDialogDescription>Se cerrarán las solicitudes enviadas a los hogares. Esta acción no puede deshacerse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={async () => { const ok = await mutate(`/api/rescue-cases/${caseId}/cancel`, { method: 'POST' }, 'Caso cancelado'); if (ok) router.push('/help'); }}>Cancelar caso</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" className="w-full text-red-600 hover:bg-red-50 hover:text-red-700">Cancelar caso</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Cancelar la solicitud?</AlertDialogTitle><AlertDialogDescription>Se cerrarán las solicitudes enviadas a los hogares. Esta acción no puede deshacerse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={async () => { const ok = await mutate(`/api/rescue-cases/${caseId}/cancel`, { method: 'POST' }, 'Caso cancelado'); if (ok) router.push('/hogares-de-transito'); }}>Cancelar caso</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
           )}
-
-          {rescueCase.status === 'NEEDS_ADOPTION' && <Button asChild className="w-full"><Link href="/adoptions">Continuar en Adopciones</Link></Button>}
         </aside>
       </div>
     </main>

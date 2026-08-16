@@ -1,7 +1,10 @@
 import {
   createRescueCaseSchema,
   fosterMessageSchema,
+  fosterAdoptionDraftSchema,
+  fosterAlertPreferencesSchema,
   fosterProfileSchema,
+  rescueCasePublicationSchema,
   updateRescueCaseRadiusSchema,
 } from '@/lib/schemas';
 
@@ -65,5 +68,51 @@ describe('foster schemas', () => {
   it('trims foster chat messages and rejects empty content', () => {
     expect(fosterMessageSchema.parse({ content: '  ¿Cómo coordinamos?  ' }).content).toBe('¿Cómo coordinamos?');
     expect(fosterMessageSchema.safeParse({ content: '   ' }).success).toBe(false);
+  });
+
+  it('keeps foster alerts opt-in with a configurable 1-50 km radius', () => {
+    const preferences = {
+      enabled: true,
+      radiusKm: 5,
+      species: ['dog'],
+      urgencies: ['HIGH', 'CRITICAL'],
+    };
+    expect(fosterAlertPreferencesSchema.safeParse(preferences).success).toBe(true);
+    expect(fosterAlertPreferencesSchema.safeParse({ ...preferences, radiusKm: 51 }).success).toBe(false);
+    expect(fosterAlertPreferencesSchema.safeParse({ ...preferences, species: [] }).success).toBe(false);
+  });
+
+  it('requires a safe summary and general zone before publishing a case', () => {
+    expect(rescueCasePublicationSchema.safeParse({
+      summary: 'Necesita un hogar temporal mientras se recupera.',
+      publicZone: 'Palermo, CABA',
+      imageIndex: 0,
+    }).success).toBe(true);
+    expect(rescueCasePublicationSchema.safeParse({
+      summary: 'Muy corto',
+      publicZone: '',
+      imageIndex: 0,
+    }).success).toBe(false);
+  });
+
+  it('allows unknown health data in a foster adoption draft', () => {
+    expect(fosterAdoptionDraftSchema.safeParse({
+      name: 'Milo',
+      breed: '',
+      estimatedAge: 2,
+      gender: 'unknown',
+      energy: 'medium',
+      character: 'Es sociable y tranquilo con las personas.',
+      bio: 'Fue rescatado y se encuentra aprendiendo rutinas dentro del hogar.',
+      goodWithKids: 'unknown',
+      goodWithDogs: 'yes',
+      goodWithCats: 'unknown',
+      vaccinated: null,
+      neutered: null,
+      specialNeeds: '',
+      requirements: '',
+      publicZone: 'Palermo, CABA',
+      images: ['/uploads/rescue.jpg'],
+    }).success).toBe(true);
   });
 });

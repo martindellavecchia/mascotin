@@ -30,6 +30,15 @@ export async function GET(
             include: { applicant: { select: { id: true, name: true } } },
           }
         : false,
+      fosterDraft: {
+        select: {
+          status: true,
+          managedByUserId: true,
+          fosterConfirmedAt: true,
+          adopterConfirmedAt: true,
+          selectedApplication: { select: { id: true, applicantId: true } },
+        },
+      },
     },
   });
 
@@ -37,9 +46,27 @@ export async function GET(
     return NextResponse.json({ success: false, error: 'Ficha no encontrada' }, { status: 404 });
   }
 
+  const selectedApplicantId = listing.fosterDraft?.selectedApplication?.applicantId;
+  const handoffRole = listing.fosterDraft?.managedByUserId === auth.session.user.id
+    ? 'FOSTER'
+    : selectedApplicantId === auth.session.user.id
+      ? 'ADOPTER'
+      : null;
+
   return NextResponse.json({
     success: true,
-    listing: { ...listing, pet: withImageFields(listing.pet) },
+    listing: {
+      ...listing,
+      listedBy: listing.sourceRescueCaseId ? { id: 'foster-module', name: 'Hogar de tránsito' } : listing.listedBy,
+      fosterDraft: undefined,
+      pet: withImageFields(listing.pet),
+      handoff: handoffRole && listing.fosterDraft ? {
+        role: handoffRole,
+        status: listing.fosterDraft.status,
+        fosterConfirmedAt: listing.fosterDraft.fosterConfirmedAt,
+        adopterConfirmedAt: listing.fosterDraft.adopterConfirmedAt,
+      } : null,
+    },
   });
 }
 

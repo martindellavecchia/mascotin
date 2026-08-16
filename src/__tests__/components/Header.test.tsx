@@ -88,7 +88,7 @@ describe('Header', () => {
     it('renders foster homes and map links', () => {
       render(<Header session={mockSession} />);
 
-      expect(screen.getByRole('link', { name: /hogares de tránsito/i })).toHaveAttribute('href', '/help');
+      expect(screen.getByRole('link', { name: /hogares de tránsito/i })).toHaveAttribute('href', '/hogares-de-transito');
       expect(screen.getByRole('link', { name: /mapa/i })).toBeInTheDocument();
     });
 

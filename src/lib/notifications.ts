@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { NotificationType } from '@prisma/client';
+import { NotificationType, Prisma } from '@prisma/client';
 
 interface CreateNotificationParams {
   userId: string;
@@ -9,6 +9,7 @@ interface CreateNotificationParams {
   body: string;
   link?: string;
   entityId?: string;
+  dedupeKey?: string;
 }
 
 // Map notification type to UserSettings preference field
@@ -29,11 +30,13 @@ const PREF_MAP: Record<NotificationType, string | null> = {
   FOSTER_OFFER: 'notifyFoster',
   FOSTER_RESPONSE: 'notifyFoster',
   FOSTER_PLACEMENT: 'notifyFoster',
+  FOSTER_CASE_ALERT: 'notifyFoster',
+  FOSTER_ADOPTION: 'notifyFoster',
   CONTENT_REPORT: null,
 };
 
 export async function createNotification(params: CreateNotificationParams): Promise<void> {
-  const { userId, actorId, type, title, body, link, entityId } = params;
+  const { userId, actorId, type, title, body, link, entityId, dedupeKey } = params;
 
   // Don't self-notify
   if (userId === actorId) return;
@@ -48,9 +51,16 @@ export async function createNotification(params: CreateNotificationParams): Prom
     if (settings && (settings as Record<string, boolean>)[prefField] === false) return;
   }
 
-  await db.notification.create({
-    data: { userId, actorId, type, title, body, link, entityId },
-  });
+  try {
+    await db.notification.create({
+      data: { userId, actorId, type, title, body, link, entityId, dedupeKey },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002' && dedupeKey) {
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function createNotificationBulk(
@@ -61,6 +71,7 @@ export async function createNotificationBulk(
   body: string,
   link?: string,
   entityId?: string,
+  dedupeKeyPrefix?: string,
 ): Promise<void> {
   const filtered = recipientIds.filter(id => id !== actorId);
   if (filtered.length === 0) return;
@@ -88,6 +99,8 @@ export async function createNotificationBulk(
       body,
       link,
       entityId,
+      dedupeKey: dedupeKeyPrefix ? `${dedupeKeyPrefix}:${uid}` : undefined,
     })),
+    skipDuplicates: true,
   });
 }

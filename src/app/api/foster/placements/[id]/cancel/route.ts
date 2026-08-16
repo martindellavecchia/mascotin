@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
 import { createOffersForCase } from '@/lib/server/foster';
+import { notifySubscribedFosters } from '@/lib/server/foster-network';
 
 class PlacementConflict extends Error {}
 
@@ -16,7 +17,7 @@ export async function POST(
 
   const placement = await db.fosterPlacement.findUnique({
     where: { id },
-    include: { rescueCase: true, fosterProfile: true },
+    include: { rescueCase: true, fosterProfile: true, adoptionDraft: true },
   });
   if (!placement) {
     return NextResponse.json({ success: false, error: 'Tránsito no encontrado' }, { status: 404 });
@@ -26,17 +27,24 @@ export async function POST(
   if (!isRequester && !isFoster) {
     return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 403 });
   }
-  if (placement.status !== 'COORDINATING') {
+  const awaitingAdoption = placement.status === 'AWAITING_ADOPTION';
+  if (!['COORDINATING', 'AWAITING_ADOPTION'].includes(placement.status)) {
     return NextResponse.json(
-      { success: false, error: 'Solo puede cancelarse antes de confirmar la entrega' },
+      { success: false, error: 'Este tránsito ya no puede cancelarse' },
       { status: 409 }
     );
+  }
+  if (awaitingAdoption && !isFoster) {
+    return NextResponse.json({ success: false, error: 'Sólo el hogar puede indicar que ya no puede continuar' }, { status: 403 });
+  }
+  if (awaitingAdoption && placement.adoptionDraft?.status === 'MATCHED') {
+    return NextResponse.json({ success: false, error: 'Cancelá primero la coordinación de adopción' }, { status: 409 });
   }
 
   try {
     await db.$transaction(async (tx) => {
       const claimed = await tx.fosterPlacement.updateMany({
-        where: { id, status: 'COORDINATING' },
+        where: { id, status: placement.status },
         data: { status: 'CANCELLED', endedAt: new Date() },
       });
       if (claimed.count !== 1) throw new PlacementConflict('La coordinación ya había cambiado');
@@ -49,15 +57,21 @@ export async function POST(
         data: { status: 'CLOSED' },
       });
       await tx.rescueCase.updateMany({
-        where: { id: placement.rescueCaseId, status: 'COORDINATING' },
+        where: { id: placement.rescueCaseId, status: awaitingAdoption ? 'NEEDS_ADOPTION' : 'COORDINATING' },
         data: { status: 'SEARCHING' },
       });
+      if (awaitingAdoption && placement.adoptionDraft) {
+        await tx.fosterAdoptionDraft.update({ where: { id: placement.adoptionDraft.id }, data: { status: 'PAUSED' } });
+        if (placement.adoptionDraft.listingId) {
+          await tx.adoptionListing.update({ where: { id: placement.adoptionDraft.listingId }, data: { status: 'CLOSED' } });
+        }
+      }
       await tx.rescueCaseEvent.create({
         data: {
           caseId: placement.rescueCaseId,
           actorId: auth.session.user.id,
-          type: 'COORDINATION_CANCELLED',
-          fromStatus: 'COORDINATING',
+          type: awaitingAdoption ? 'ADOPTION_FOSTER_CANCELLED' : 'COORDINATION_CANCELLED',
+          fromStatus: awaitingAdoption ? 'NEEDS_ADOPTION' : 'COORDINATING',
           toStatus: 'SEARCHING',
         },
       });
@@ -79,12 +93,13 @@ export async function POST(
       userId: recipientId,
       actorId: auth.session.user.id,
       type: 'FOSTER_PLACEMENT',
-      title: 'La coordinación fue cancelada',
+      title: awaitingAdoption ? 'El hogar ya no puede continuar' : 'La coordinación fue cancelada',
       body: 'El caso volvió a buscar un hogar de tránsito',
-      link: `/help/cases/${placement.rescueCaseId}`,
+      link: `/hogares-de-transito/casos/${placement.rescueCaseId}`,
       entityId: placement.id,
     }),
   ]);
+  await notifySubscribedFosters(placement.rescueCaseId);
 
   return NextResponse.json({ success: true });
 }

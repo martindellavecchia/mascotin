@@ -98,7 +98,7 @@ export async function POST(
     type: 'MESSAGE',
     title: 'Nuevo mensaje sobre un tránsito',
     body: `${auth.session.user.name || 'Alguien'} te envió un mensaje`,
-    link: `/help/cases/${placement.rescueCaseId}`,
+    link: `/hogares-de-transito/casos/${placement.rescueCaseId}`,
     entityId: message.id,
   });
 

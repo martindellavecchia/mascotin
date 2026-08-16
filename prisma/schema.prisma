@@ -37,6 +37,8 @@ enum NotificationType {
   FOSTER_OFFER
   FOSTER_RESPONSE
   FOSTER_PLACEMENT
+  FOSTER_CASE_ALERT
+  FOSTER_ADOPTION
   CONTENT_REPORT
 }
 
@@ -80,8 +82,22 @@ enum FosterOfferStatus {
 enum FosterPlacementStatus {
   COORDINATING
   ACTIVE
+  AWAITING_ADOPTION
   COMPLETED
   CANCELLED
+}
+
+enum FosterAdoptionDraftStatus {
+  DRAFT
+  PUBLISHED
+  MATCHED
+  COMPLETED
+  PAUSED
+}
+
+enum PetCareRole {
+  OWNED
+  FOSTER
 }
 
 model User {
@@ -133,6 +149,7 @@ model User {
   fosterProfile        FosterProfile?
   rescueCases          RescueCase[]
   rescueCaseEvents     RescueCaseEvent[]     @relation("RescueCaseEventActor")
+  fosterAdoptionDrafts FosterAdoptionDraft[] @relation("FosterAdoptionManager")
 }
 
 model UserSettings {
@@ -167,6 +184,7 @@ model Notification {
   link      String?
   read      Boolean          @default(false)
   entityId  String?
+  dedupeKey String?          @unique
   createdAt DateTime         @default(now())
 
   user  User  @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
@@ -260,6 +278,8 @@ model Post {
   contactPhone     String? // For lost_pet posts
   lastSeenLocation String? // For lost_pet posts
   isResolved       Boolean   @default(false) // For lost_pet - mascota encontrada
+  isVisible        Boolean   @default(true)
+  rescueCaseId     String?   @unique
   latitude         Float?
   longitude        Float?
   createdAt        DateTime  @default(now())
@@ -275,10 +295,12 @@ model Post {
   eventId     String? // Link to actual Event entity
   event       Event?        @relation(fields: [eventId], references: [id], onDelete: SetNull)
   sightings   PetSighting[]
+  rescueCase  RescueCase?   @relation(fields: [rescueCaseId], references: [id], onDelete: SetNull)
 
   @@index([authorId])
   @@index([createdAt])
   @@index([postType, isResolved, createdAt])
+  @@index([isVisible, createdAt])
 }
 
 model Invitation {
@@ -373,7 +395,7 @@ model PetHealthRecord {
 }
 
 model Pet {
-  id                String  @id @default(cuid())
+  id                String      @id @default(cuid())
   ownerId           String
   name              String
   petType           String
@@ -382,20 +404,20 @@ model Pet {
   weight            Float? // Nuevo campo
   size              String
   gender            String
-  vaccinated        Boolean @default(true)
-  neutered          Boolean @default(false)
+  vaccinated        Boolean?
+  neutered          Boolean?
   energy            String
   bio               String
   activities        String
   location          String
   images            String
-  thumbnailIndex    Int     @default(0)
+  thumbnailIndex    Int         @default(0)
   latitude          Float?
   longitude         Float?
-  publicSlug        String? @unique
-  emergencyToken    String? @unique
-  sharePhoneOnScan  Boolean @default(true)
-  shareVetOnScan    Boolean @default(false)
+  publicSlug        String?     @unique
+  emergencyToken    String?     @unique
+  sharePhoneOnScan  Boolean     @default(true)
+  shareVetOnScan    Boolean     @default(false)
   goodWithKids      String?
   goodWithDogs      String?
   goodWithCats      String?
@@ -405,7 +427,8 @@ model Pet {
   allergies         String?
   specialNeeds      String?
   vetClinicName     String?
-  matchIntent       String  @default("[]")
+  matchIntent       String      @default("[]")
+  careRole          PetCareRole @default(OWNED)
 
   // Gamification basic
   level        Int @default(1)
@@ -417,16 +440,17 @@ model Pet {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner            Owner             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  sentSwipes       Swipe[]           @relation("PetSentSwipes")
-  receivedSwipes   Swipe[]           @relation("PetReceivedSwipes")
-  match1           Match[]           @relation("Pet1Matches")
-  match2           Match[]           @relation("Pet2Matches")
-  posts            Post[]
-  appointments     Appointment[]
-  healthRecords    PetHealthRecord[]
-  adoptionListings AdoptionListing[]
-  rescueCases      RescueCase[]
+  owner                Owner                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sentSwipes           Swipe[]               @relation("PetSentSwipes")
+  receivedSwipes       Swipe[]               @relation("PetReceivedSwipes")
+  match1               Match[]               @relation("Pet1Matches")
+  match2               Match[]               @relation("Pet2Matches")
+  posts                Post[]
+  appointments         Appointment[]
+  healthRecords        PetHealthRecord[]
+  adoptionListings     AdoptionListing[]
+  rescueCases          RescueCase[]
+  fosterAdoptionDrafts FosterAdoptionDraft[]
 
   @@unique([ownerId, name], name: "ownerId_name")
   @@index([ownerId])
@@ -793,22 +817,25 @@ model AdopterProfile {
 }
 
 model AdoptionListing {
-  id             String   @id @default(cuid())
-  petId          String
-  listedByUserId String
-  status         String   @default("OPEN")
-  character      String?
-  specialNeeds   String?
-  requirements   String?
-  location       String?
-  latitude       Float?
-  longitude      Float?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  petId              String
+  listedByUserId     String
+  sourceRescueCaseId String?  @unique
+  status             String   @default("OPEN")
+  character          String?
+  specialNeeds       String?
+  requirements       String?
+  location           String?
+  latitude           Float?
+  longitude          Float?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  pet          Pet                   @relation(fields: [petId], references: [id], onDelete: Cascade)
-  listedBy     User                  @relation(fields: [listedByUserId], references: [id], onDelete: Cascade)
-  applications AdoptionApplication[]
+  pet              Pet                   @relation(fields: [petId], references: [id], onDelete: Cascade)
+  listedBy         User                  @relation(fields: [listedByUserId], references: [id], onDelete: Cascade)
+  applications     AdoptionApplication[]
+  sourceRescueCase RescueCase?           @relation("RescueCaseAdoptionListing", fields: [sourceRescueCaseId], references: [id], onDelete: SetNull)
+  fosterDraft      FosterAdoptionDraft?  @relation("FosterAdoptionListing")
 
   @@index([petId])
   @@index([listedByUserId])
@@ -825,9 +852,10 @@ model AdoptionApplication {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  listing   AdoptionListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  applicant User            @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  listing          AdoptionListing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  applicant        User                 @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  messages         Message[]
+  selectedForDraft FosterAdoptionDraft? @relation("SelectedAdoptionApplication")
 
   @@unique([listingId, applicantId])
   @@index([applicantId])
@@ -835,30 +863,34 @@ model AdoptionApplication {
 }
 
 model FosterProfile {
-  id              String              @id @default(cuid())
-  userId          String              @unique
-  status          FosterProfileStatus @default(ACTIVE)
-  acceptsSpecies  String              @default("[]")
-  acceptsSizes    String              @default("[]")
-  capacity        Int                 @default(1)
-  occupiedSlots   Int                 @default(0)
-  location        String
-  latitude        Float
-  longitude       Float
-  availableFrom   DateTime?
-  availableUntil  DateTime?
-  maxDurationDays Int                 @default(30)
-  housingType     String
-  hasYard         Boolean             @default(false)
-  hasKids         Boolean             @default(false)
-  hasOtherPets    Boolean             @default(false)
-  experience      String
-  notes           String?
-  adultDeclaredAt DateTime
-  termsAcceptedAt DateTime
-  termsVersion    String
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                String              @id @default(cuid())
+  userId            String              @unique
+  status            FosterProfileStatus @default(ACTIVE)
+  acceptsSpecies    String              @default("[]")
+  acceptsSizes      String              @default("[]")
+  capacity          Int                 @default(1)
+  occupiedSlots     Int                 @default(0)
+  location          String
+  latitude          Float
+  longitude         Float
+  availableFrom     DateTime?
+  availableUntil    DateTime?
+  maxDurationDays   Int                 @default(30)
+  housingType       String
+  hasYard           Boolean             @default(false)
+  hasKids           Boolean             @default(false)
+  hasOtherPets      Boolean             @default(false)
+  experience        String
+  notes             String?
+  adultDeclaredAt   DateTime
+  termsAcceptedAt   DateTime
+  termsVersion      String
+  caseAlertsEnabled Boolean             @default(false)
+  alertRadiusKm     Int                 @default(5)
+  alertSpecies      String              @default("[]")
+  alertUrgencies    String              @default("[]")
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   offers     FosterOffer[]
@@ -889,11 +921,14 @@ model RescueCase {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
-  createdBy  User              @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
-  pet        Pet?              @relation(fields: [petId], references: [id], onDelete: SetNull)
-  offers     FosterOffer[]
-  placements FosterPlacement[]
-  events     RescueCaseEvent[]
+  createdBy       User                 @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  pet             Pet?                 @relation(fields: [petId], references: [id], onDelete: SetNull)
+  offers          FosterOffer[]
+  placements      FosterPlacement[]
+  events          RescueCaseEvent[]
+  communityPost   Post?
+  adoptionDraft   FosterAdoptionDraft?
+  adoptionListing AdoptionListing?     @relation("RescueCaseAdoptionListing")
 
   @@index([createdByUserId, status, createdAt])
   @@index([status, createdAt])
@@ -939,10 +974,11 @@ model FosterPlacement {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
-  rescueCase    RescueCase    @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
-  fosterProfile FosterProfile @relation(fields: [fosterProfileId], references: [id], onDelete: Cascade)
-  offer         FosterOffer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  rescueCase    RescueCase           @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
+  fosterProfile FosterProfile        @relation(fields: [fosterProfileId], references: [id], onDelete: Cascade)
+  offer         FosterOffer          @relation(fields: [offerId], references: [id], onDelete: Cascade)
   messages      Message[]
+  adoptionDraft FosterAdoptionDraft?
 
   @@index([rescueCaseId, status])
   @@index([fosterProfileId, status])
@@ -956,6 +992,8 @@ model RescueCaseEvent {
   fromStatus RescueCaseStatus?
   toStatus   RescueCaseStatus?
   details    String?
+  eventKey   String?           @unique
+  payload    Json?
   createdAt  DateTime          @default(now())
 
   rescueCase RescueCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
@@ -963,6 +1001,46 @@ model RescueCaseEvent {
 
   @@index([caseId, createdAt])
   @@index([actorId])
+}
+
+model FosterAdoptionDraft {
+  id                    String                    @id @default(cuid())
+  rescueCaseId          String                    @unique
+  placementId           String                    @unique
+  managedByUserId       String
+  petId                 String?
+  listingId             String?                   @unique
+  selectedApplicationId String?                   @unique
+  status                FosterAdoptionDraftStatus @default(DRAFT)
+  name                  String?
+  breed                 String?
+  estimatedAge          Int?
+  gender                String?
+  energy                String?
+  character             String?
+  bio                   String?
+  goodWithKids          String?
+  goodWithDogs          String?
+  goodWithCats          String?
+  vaccinated            Boolean?
+  neutered              Boolean?
+  specialNeeds          String?
+  requirements          String?
+  publicZone            String?
+  images                String                    @default("[]")
+  fosterConfirmedAt     DateTime?
+  adopterConfirmedAt    DateTime?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  rescueCase          RescueCase           @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
+  placement           FosterPlacement      @relation(fields: [placementId], references: [id], onDelete: Cascade)
+  managedBy           User                 @relation("FosterAdoptionManager", fields: [managedByUserId], references: [id], onDelete: Cascade)
+  pet                 Pet?                 @relation(fields: [petId], references: [id], onDelete: SetNull)
+  listing             AdoptionListing?     @relation("FosterAdoptionListing", fields: [listingId], references: [id], onDelete: SetNull)
+  selectedApplication AdoptionApplication? @relation("SelectedAdoptionApplication", fields: [selectedApplicationId], references: [id], onDelete: SetNull)
+
+  @@index([managedByUserId, status, updatedAt])
 }
 
 model StorePromotion {

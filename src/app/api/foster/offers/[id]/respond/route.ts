@@ -74,7 +74,7 @@ export async function PATCH(
     body: nextStatus === 'INTERESTED'
       ? `${auth.session.user.name || 'Un hogar'} quiere conversar sobre el caso`
       : 'Un hogar indicó que esta vez no puede recibir a la mascota',
-    link: `/help/cases/${offer.rescueCaseId}`,
+    link: `/hogares-de-transito/casos/${offer.rescueCaseId}`,
     entityId: offer.id,
   });
 

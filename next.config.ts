@@ -7,6 +7,20 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['date-fns', 'lucide-react', '@radix-ui/react-dropdown-menu'],
   },
   transpilePackages: ['leaflet'],
+  async redirects() {
+    return [
+      {
+        source: '/help/cases/:id',
+        destination: '/hogares-de-transito/casos/:id',
+        permanent: true,
+      },
+      {
+        source: '/help',
+        destination: '/hogares-de-transito',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

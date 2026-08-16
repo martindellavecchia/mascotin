@@ -18,6 +18,10 @@ export interface FosterProfileView {
   experience: string;
   notes: string | null;
   termsVersion: string;
+  caseAlertsEnabled: boolean;
+  alertRadiusKm: number;
+  alertSpecies: string;
+  alertUrgencies: string;
 }
 export interface RescueCaseSummary {
   id: string;
@@ -35,6 +39,9 @@ export interface RescueCaseSummary {
   offerCount: number;
   interestedCount: number;
   placement: { id: string; status: string } | null;
+  isPublished?: boolean;
+  adoptionDraft?: { id: string; status: string; listingId: string | null } | null;
+  adoptionListing?: { id: string; status: string } | null;
 }
 
 export interface FosterOfferSummary {

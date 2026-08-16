@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
 import { completeFosterPlacementSchema } from '@/lib/schemas';
+import { FosterAdoptionError, startFosterAdoption } from '@/lib/server/foster-adoption';
 
 class PlacementConflict extends Error {}
 
@@ -34,7 +35,30 @@ export async function POST(
     return NextResponse.json({ success: false, error: 'El tránsito no está activo' }, { status: 409 });
   }
 
-  const nextCaseStatus = parsed.data.outcome;
+  if (parsed.data.outcome === 'NEEDS_ADOPTION') {
+    try {
+      const draft = await startFosterAdoption(id, auth.session.user.id);
+      await createNotification({
+        userId: placement.fosterProfile.userId,
+        actorId: auth.session.user.id,
+        type: 'FOSTER_ADOPTION',
+        title: 'Prepará la ficha de adopción',
+        body: 'El animal sigue ocupando tu cupo hasta completar la entrega definitiva.',
+        link: `/hogares-de-transito/casos/${placement.rescueCaseId}`,
+        entityId: draft.id,
+        dedupeKey: `adoption-draft-ready:${draft.id}`,
+      });
+      return NextResponse.json({ success: true, caseStatus: 'NEEDS_ADOPTION', draftId: draft.id });
+    } catch (error) {
+      if (error instanceof FosterAdoptionError) {
+        return NextResponse.json({ success: false, error: error.message }, { status: error.status });
+      }
+      console.error('Error starting foster adoption:', error);
+      return NextResponse.json({ success: false, error: 'No se pudo iniciar la adopción' }, { status: 500 });
+    }
+  }
+
+  const nextCaseStatus = 'RESOLVED' as const;
   try {
     await db.$transaction(async (tx) => {
       const claimed = await tx.fosterPlacement.updateMany({
@@ -81,10 +105,8 @@ export async function POST(
     actorId: auth.session.user.id,
     type: 'FOSTER_PLACEMENT',
     title: 'Tránsito finalizado',
-    body: nextCaseStatus === 'NEEDS_ADOPTION'
-      ? 'El caso continúa buscando una familia definitiva'
-      : 'El caso fue marcado como resuelto',
-    link: `/help/cases/${placement.rescueCaseId}`,
+    body: 'El caso fue marcado como resuelto',
+    link: `/hogares-de-transito/casos/${placement.rescueCaseId}`,
     entityId: placement.id,
   });
 

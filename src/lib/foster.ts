@@ -57,6 +57,19 @@ export interface FosterNeed {
   requestedDays: number;
 }
 
+export interface FosterAlertSettings {
+  status: FosterProfileStatusValue;
+  caseAlertsEnabled: boolean;
+  alertRadiusKm: number;
+  alertSpecies: string;
+  alertUrgencies: string;
+}
+
+export interface FosterAlertNeed {
+  species: string;
+  urgency: string;
+}
+
 export interface RankedFosterCandidate {
   profileId: string;
   distanceKm: number;
@@ -79,6 +92,19 @@ export function parseFosterList(value: string | null | undefined): string[] {
 export function normalizeFosterRadius(value: number | null | undefined): number {
   if (!Number.isFinite(value)) return DEFAULT_FOSTER_RADIUS_KM;
   return Math.min(MAX_FOSTER_RADIUS_KM, Math.max(1, Math.round(value as number)));
+}
+
+export function matchesFosterAlertPreferences(
+  need: FosterAlertNeed,
+  settings: FosterAlertSettings,
+  distanceKm: number | null | undefined,
+): boolean {
+  if (!settings.caseAlertsEnabled || settings.status !== 'ACTIVE') return false;
+  if (distanceKm === null || distanceKm === undefined || !Number.isFinite(distanceKm)) return false;
+  if (distanceKm > normalizeFosterRadius(settings.alertRadiusKm)) return false;
+
+  return parseFosterList(settings.alertSpecies).includes(need.species)
+    && parseFosterList(settings.alertUrgencies).includes(need.urgency);
 }
 
 export function scoreFosterCandidate(

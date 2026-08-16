@@ -21,6 +21,8 @@ const ICON_MAP: Record<string, string> = {
   FOSTER_OFFER: 'home',
   FOSTER_RESPONSE: 'volunteer_activism',
   FOSTER_PLACEMENT: 'handshake',
+  FOSTER_CASE_ALERT: 'home_health',
+  FOSTER_ADOPTION: 'family_home',
   CONTENT_REPORT: 'flag',
 };
 
@@ -41,6 +43,8 @@ const COLOR_MAP: Record<string, string> = {
   FOSTER_OFFER: 'text-orange-600',
   FOSTER_RESPONSE: 'text-teal-600',
   FOSTER_PLACEMENT: 'text-emerald-600',
+  FOSTER_CASE_ALERT: 'text-orange-600',
+  FOSTER_ADOPTION: 'text-pink-600',
   CONTENT_REPORT: 'text-rose-600',
 };
 

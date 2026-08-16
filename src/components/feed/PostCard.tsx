@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Post, Comment } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
@@ -19,6 +20,7 @@ import { es } from 'date-fns/locale';
 import { shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { RESCUE_STATUS_LABELS, SIZE_LABELS, SPECIES_LABELS } from '@/lib/foster';
 
 interface ExtendedPost extends Post {
     postType?: string;
@@ -30,6 +32,16 @@ interface ExtendedPost extends Post {
     contactPhone?: string;
     lastSeenLocation?: string;
     isResolved?: boolean;
+    canManage?: boolean;
+    rescueCase?: {
+        id: string;
+        status: string;
+        species: string;
+        size: string;
+        urgency: string;
+        requestedDays: number;
+        adoptionListingId: string | null;
+    } | null;
     _count?: {
         likes: number;
         comments: number;
@@ -46,6 +58,7 @@ interface PostCardProps {
 }
 
 function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onEdit }: PostCardProps) {
+    const isFosterCase = post.postType === 'foster_case' && Boolean(post.rescueCase);
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [deleting, setDeleting] = useState(false);
@@ -156,7 +169,18 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     return (
-        <Card className={`mb-2 min-w-0 overflow-hidden shadow-sm ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : 'border-slate-100 bg-white'}`}>
+        <Card className={`mb-2 min-w-0 overflow-hidden shadow-sm ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : isFosterCase ? 'border-orange-200 bg-white' : 'border-slate-100 bg-white'}`}>
+            {isFosterCase && post.rescueCase && (
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-3 py-2 text-orange-900">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-bold">
+                        <span className="material-symbols-rounded text-lg" aria-hidden="true">volunteer_activism</span>
+                        HOGAR DE TRÁNSITO
+                    </span>
+                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold">
+                        {RESCUE_STATUS_LABELS[post.rescueCase.status] || post.rescueCase.status}
+                    </span>
+                </div>
+            )}
             {/* Lost Pet Banner */}
             {post.postType === 'lost_pet' && (
                 <div className={`flex flex-col items-start justify-between gap-2 border-b px-3 py-2 text-sm sm:flex-row sm:items-center ${isResolved ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'}`}>
@@ -244,7 +268,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            {post.author?.id === currentUserId && (
+                            {post.author?.id === currentUserId && !isFosterCase && (
                                 <>
                                     <DropdownMenuItem onClick={() => onEdit?.(post)}>
                                         <span className="material-symbols-rounded mr-2 text-slate-500">edit</span>
@@ -256,6 +280,14 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                         Eliminar
                                     </DropdownMenuItem>
                                 </>
+                            )}
+                            {isFosterCase && post.canManage && post.rescueCase && (
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/hogares-de-transito/casos/${post.rescueCase.id}`}>
+                                        <span className="material-symbols-rounded mr-2 text-slate-500">settings</span>
+                                        Gestionar caso
+                                    </Link>
+                                </DropdownMenuItem>
                             )}
                             {post.author?.id !== currentUserId && post.author?.id && (
                                 <DropdownMenuItem
@@ -289,15 +321,15 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {/* Post Type Badge */}
             {post.postType && post.postType !== 'post' && (
                 <div className="px-3 pb-1">
-                    <Badge className={`text-[10px] py-0.5 ${post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
+                    <Badge className={`text-[10px] py-0.5 ${post.postType === 'foster_case' ? 'bg-orange-50 text-orange-800' : post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
                         post.postType === 'question' ? 'bg-orange-50 text-orange-700' :
                             post.postType === 'recommendation' ? 'bg-amber-50 text-amber-700' :
                             post.postType === 'photo' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
                         }`}>
                         <span className="material-symbols-rounded text-sm mr-1">
-                            {post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : post.postType === 'recommendation' ? 'star' : 'photo_camera'}
+                            {post.postType === 'foster_case' ? 'home_health' : post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : post.postType === 'recommendation' ? 'star' : 'photo_camera'}
                         </span>
-                        {post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : 'Foto'}
+                        {post.postType === 'foster_case' ? 'Caso de tránsito' : post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : 'Foto'}
                     </Badge>
                 </div>
             )}
@@ -308,6 +340,21 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     {post.content}
                 </p>
             </div>
+
+            {isFosterCase && post.rescueCase && (
+                <div className="mx-3 mb-3 rounded-xl border border-orange-100 bg-orange-50/70 p-3">
+                    <div className="flex flex-wrap gap-2 text-xs text-orange-900">
+                        <span className="rounded-full bg-white px-2.5 py-1 font-medium">{SPECIES_LABELS[post.rescueCase.species] || post.rescueCase.species}</span>
+                        <span className="rounded-full bg-white px-2.5 py-1 font-medium">{SIZE_LABELS[post.rescueCase.size] || post.rescueCase.size}</span>
+                        {post.rescueCase.urgency !== 'NORMAL' && <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-800">{post.rescueCase.urgency === 'CRITICAL' ? 'Crítico' : 'Urgente'}</span>}
+                    </div>
+                    <Button asChild className="mt-3 w-full" variant={post.rescueCase.adoptionListingId ? 'default' : 'outline'}>
+                        <Link href={post.rescueCase.adoptionListingId ? `/adoptions/${post.rescueCase.adoptionListingId}` : `/hogares-de-transito/casos/${post.rescueCase.id}`}>
+                            {post.rescueCase.adoptionListingId ? 'Ver adopción' : ['SEARCHING', 'INTERESTED'].includes(post.rescueCase.status) ? 'Quiero ofrecer tránsito' : 'Ver estado del caso'}
+                        </Link>
+                    </Button>
+                </div>
+            )}
 
             {/* Event Info */}
             {post.postType === 'event' && post.eventDate && (

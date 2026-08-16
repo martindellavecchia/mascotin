@@ -118,7 +118,7 @@ function AlertsPageContent() {
           <Button
             variant="outline"
             className="w-full sm:w-auto"
-            onClick={() => window.location.assign('/help?create=case')}
+            onClick={() => window.location.assign('/hogares-de-transito?create=case')}
           >
             Encontré una mascota
           </Button>

@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
-import { parseFosterList } from '@/lib/foster';
+import {
+  matchesFosterAlertPreferences,
+  parseFosterList,
+  scoreFosterCandidate,
+} from '@/lib/foster';
 import { parseImageUrls } from '@/lib/media';
 
 export async function GET(
@@ -37,6 +41,18 @@ export async function GET(
         take: 30,
         include: { actor: { select: { id: true, name: true } } },
       },
+      communityPost: true,
+      adoptionDraft: {
+        select: {
+          id: true,
+          status: true,
+          managedByUserId: true,
+          listingId: true,
+          fosterConfirmedAt: true,
+          adopterConfirmedAt: true,
+        },
+      },
+      adoptionListing: { select: { id: true, status: true } },
     },
   });
   if (!rescueCase) {
@@ -51,7 +67,59 @@ export async function GET(
     (placement) => placement.fosterProfile.userId === auth.session.user.id
   );
   if (!isCreator && !viewerOffer && !viewerPlacement) {
-    return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 403 });
+    const profile = await db.fosterProfile.findUnique({ where: { userId: auth.session.user.id } });
+    const candidate = profile ? scoreFosterCandidate(rescueCase, profile) : null;
+    const matchesSubscription = Boolean(
+      profile && candidate && matchesFosterAlertPreferences(rescueCase, profile, candidate.distanceKm),
+    );
+    const blockedRelationship = matchesSubscription
+      ? await db.blockedUser.findFirst({
+          where: {
+            OR: [
+              { blockerId: rescueCase.createdByUserId, blockedId: auth.session.user.id },
+              { blockerId: auth.session.user.id, blockedId: rescueCase.createdByUserId },
+            ],
+          },
+          select: { id: true },
+        })
+      : null;
+    const canViewFromSubscription = matchesSubscription && !blockedRelationship;
+    if (!rescueCase.communityPost?.isVisible && !canViewFromSubscription) {
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 403 });
+    }
+    return NextResponse.json({
+      success: true,
+      viewerRole: 'VISITOR',
+      viewerUserId: auth.session.user.id,
+      case: {
+        id: rescueCase.id,
+        status: rescueCase.status,
+        species: rescueCase.species,
+        size: rescueCase.size,
+        urgency: rescueCase.urgency,
+        apparentCondition: 'La información detallada se comparte al coordinar.',
+        description: rescueCase.communityPost?.content || 'Una mascota necesita un hogar de tránsito.',
+        images: parseImageUrls(rescueCase.communityPost?.images || rescueCase.images).slice(0, 1),
+        location: rescueCase.communityPost?.location || 'Cerca de tu zona',
+        searchRadiusKm: rescueCase.searchRadiusKm,
+        requestedDays: rescueCase.requestedDays,
+        createdAt: rescueCase.createdAt,
+        offers: [],
+        placements: [],
+        events: [],
+        publication: rescueCase.communityPost ? {
+          summary: rescueCase.communityPost.content,
+          publicZone: rescueCase.communityPost.location,
+          isVisible: rescueCase.communityPost.isVisible,
+        } : null,
+        adoptionDraft: null,
+        adoptionListingId: rescueCase.adoptionListing?.status === 'OPEN' || rescueCase.adoptionListing?.status === 'PENDING'
+          ? rescueCase.adoptionListing.id
+          : null,
+        canExpressInterest: Boolean(candidate && ['SEARCHING', 'INTERESTED'].includes(rescueCase.status)),
+        hasFosterProfile: Boolean(profile),
+      },
+    });
   }
 
   const visibleOffers = isCreator
@@ -127,6 +195,15 @@ export async function GET(
       offers: visibleOffers,
       placements,
       events: rescueCase.events,
+      publication: rescueCase.communityPost ? {
+        summary: rescueCase.communityPost.content,
+        publicZone: rescueCase.communityPost.location,
+        isVisible: rescueCase.communityPost.isVisible,
+      } : null,
+      adoptionDraft: rescueCase.adoptionDraft,
+      adoptionListingId: rescueCase.adoptionListing?.id || null,
+      canExpressInterest: false,
+      hasFosterProfile: Boolean(viewerOffer || viewerPlacement),
     },
   });
 }

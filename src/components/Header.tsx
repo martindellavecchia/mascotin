@@ -34,7 +34,7 @@ const NAV_LINKS: NavigationLink[] = [
   { href: '/?tab=explore', label: 'Descubrir', icon: Search, tab: 'explore' },
   { href: '/community', label: 'Comunidad', icon: Users },
   { href: '/community/events', label: 'Eventos', icon: CalendarDays },
-  { href: '/help', label: 'Hogares de tránsito', icon: HeartHandshake },
+  { href: '/hogares-de-transito', label: 'Hogares de tránsito', icon: HeartHandshake },
   { href: '/map', label: 'Mapa', icon: Map },
   { href: '/messages', label: 'Mensajes', icon: MessageCircle },
 ];

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { updateRescueCaseRadiusSchema } from '@/lib/schemas';
 import { createOffersForCase } from '@/lib/server/foster';
+import { notifySubscribedFosters } from '@/lib/server/foster-network';
 
 export async function PATCH(
   request: Request,
@@ -58,6 +59,7 @@ export async function PATCH(
   ]);
 
   const offerCount = await createOffersForCase(id);
+  await notifySubscribedFosters(id);
   return NextResponse.json({
     success: true,
     searchRadiusKm: parsed.data.searchRadiusKm,

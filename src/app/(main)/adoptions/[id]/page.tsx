@@ -1,14 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { getPrimaryImageUrl } from '@/lib/media';
+import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 
 interface ListingDetail {
@@ -17,6 +20,7 @@ interface ListingDetail {
   specialNeeds: string | null;
   requirements: string | null;
   location: string | null;
+  status: string;
   listedByUserId: string;
   pet: {
     id: string;
@@ -35,6 +39,12 @@ interface ListingDetail {
     message: string | null;
     applicant: { id: string; name: string | null };
   }>;
+  handoff?: {
+    role: 'FOSTER' | 'ADOPTER';
+    status: string;
+    fosterConfirmedAt: string | null;
+    adopterConfirmedAt: string | null;
+  } | null;
 }
 
 export default function AdoptionDetailPage() {
@@ -44,6 +54,9 @@ export default function AdoptionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [message, setMessage] = useState('');
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerLocation, setOwnerLocation] = useState('');
+  const [confirming, setConfirming] = useState(false);
 
   const load = async () => {
     setLoadError(false);
@@ -104,7 +117,9 @@ export default function AdoptionDetailPage() {
       <Button asChild variant="ghost"><Link href="/adoptions">Volver</Link></Button>
       <Card className="overflow-hidden">
         {image && (
-          <img src={image} alt={listing.pet.name} className="h-64 w-full object-cover" />
+          <div className="relative h-64 w-full">
+            <Image src={image} alt={listing.pet.name} fill sizes="(max-width: 768px) 100vw, 768px" unoptimized={shouldUnoptimizeImage(image)} className="object-cover" priority />
+          </div>
         )}
         <CardHeader>
           <CardTitle>{listing.pet.name}</CardTitle>
@@ -123,6 +138,50 @@ export default function AdoptionDetailPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {listing.handoff?.status === 'MATCHED' && (
+        <Card className="border-orange-200">
+          <CardHeader><CardTitle className="text-lg">Confirmar entrega definitiva</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className={`rounded-xl border p-3 ${listing.handoff.fosterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium">Hogar de tránsito</p><p className="text-sm text-slate-500">{listing.handoff.fosterConfirmedAt ? 'Entrega confirmada' : 'Confirmación pendiente'}</p></div>
+              <div className={`rounded-xl border p-3 ${listing.handoff.adopterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium">Familia adoptante</p><p className="text-sm text-slate-500">{listing.handoff.adopterConfirmedAt ? 'Recepción confirmada' : 'Confirmación pendiente'}</p></div>
+            </div>
+            {listing.handoff.role === 'ADOPTER' && !listing.handoff.adopterConfirmedAt && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2"><Label htmlFor="adopter-owner-name">Nombre del responsable</Label><Input id="adopter-owner-name" value={ownerName} onChange={(event) => setOwnerName(event.target.value)} placeholder="Sólo si todavía no tenés perfil" /></div>
+                <div className="space-y-2"><Label htmlFor="adopter-owner-location">Zona</Label><Input id="adopter-owner-location" value={ownerLocation} onChange={(event) => setOwnerLocation(event.target.value)} placeholder="Sólo si todavía no tenés perfil" /></div>
+              </div>
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              {((listing.handoff.role === 'FOSTER' && !listing.handoff.fosterConfirmedAt) || (listing.handoff.role === 'ADOPTER' && !listing.handoff.adopterConfirmedAt)) && (
+                <Button disabled={confirming} onClick={async () => {
+                  setConfirming(true);
+                  try {
+                    const response = await fetch(`/api/adoptions/${listing.id}/handoff/confirm`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ownerName: ownerName || undefined, ownerLocation: ownerLocation || undefined }) });
+                    const data = await response.json();
+                    if (!response.ok || !data.success) throw new Error(data.error || 'No se pudo confirmar');
+                    toast.success(data.completed ? 'Adopción completada' : 'Confirmación guardada');
+                    void load();
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : 'No se pudo confirmar');
+                  } finally {
+                    setConfirming(false);
+                  }
+                }}>Confirmar {listing.handoff.role === 'FOSTER' ? 'entrega' : 'recepción'}</Button>
+              )}
+              {listing.handoff.role === 'FOSTER' && (
+                <Button variant="outline" disabled={confirming} onClick={async () => {
+                  const response = await fetch(`/api/adoptions/${listing.id}/handoff/cancel`, { method: 'POST' });
+                  const data = await response.json();
+                  toast[data.success ? 'success' : 'error'](data.success ? 'La ficha volvió a recibir postulaciones' : data.error || 'No se pudo cancelar');
+                  if (data.success) void load();
+                }}>Cancelar coordinación</Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {!isOwner && (
         <Card className="space-y-3 p-4">
