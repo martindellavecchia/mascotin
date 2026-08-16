@@ -60,6 +60,7 @@ export async function PATCH(request: Request) {
         if (d.notifyComments !== undefined) data.notifyComments = d.notifyComments;
         if (d.notifyEvents !== undefined) data.notifyEvents = d.notifyEvents;
         if (d.notifyHealth !== undefined) data.notifyHealth = d.notifyHealth;
+        if (d.notifyFoster !== undefined) data.notifyFoster = d.notifyFoster;
         if (d.profileVisible !== undefined) data.profileVisible = d.profileVisible;
         if (d.hideResolvedLostPets !== undefined) data.hideResolvedLostPets = d.hideResolvedLostPets;
 

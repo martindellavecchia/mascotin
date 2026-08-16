@@ -26,6 +26,9 @@ const PREF_MAP: Record<NotificationType, string | null> = {
   SIGHTING: 'notifyEvents',
   ADOPTION_APPLICATION: 'notifyMatches',
   ADOPTION_MATCH: 'notifyMatches',
+  FOSTER_OFFER: 'notifyFoster',
+  FOSTER_RESPONSE: 'notifyFoster',
+  FOSTER_PLACEMENT: 'notifyFoster',
   CONTENT_REPORT: null,
 };
 

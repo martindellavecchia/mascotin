@@ -242,6 +242,7 @@ export const updateSettingsSchema = z.object({
   notifyComments: z.boolean().optional(),
   notifyEvents: z.boolean().optional(),
   notifyHealth: z.boolean().optional(),
+  notifyFoster: z.boolean().optional(),
   profileVisible: z.boolean().optional(),
   hideResolvedLostPets: z.boolean().optional(),
 });
@@ -310,6 +311,63 @@ export const reviewAdoptionApplicationSchema = z.object({
   status: z.enum(['ACCEPTED', 'REJECTED']),
 });
 
+const locationFields = {
+  location: z.string().trim().min(2, 'Ingresá una zona').max(200),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+};
+
+export const fosterProfileSchema = z.object({
+  acceptsSpecies: z.array(z.enum(['dog', 'cat', 'other'])).min(1, 'Elegí al menos una especie'),
+  acceptsSizes: z.array(z.enum(['small', 'medium', 'large', 'any'])).min(1, 'Elegí al menos un tamaño'),
+  capacity: z.number().int().min(1).max(5),
+  ...locationFields,
+  availableFrom: z.string().date().optional().or(z.literal('')),
+  availableUntil: z.string().date().optional().or(z.literal('')),
+  maxDurationDays: z.number().int().min(1).max(90),
+  housingType: z.enum(['apartment', 'house', 'other']),
+  hasYard: z.boolean().default(false),
+  hasKids: z.boolean().default(false),
+  hasOtherPets: z.boolean().default(false),
+  experience: z.enum(['none', 'some', 'experienced']),
+  notes: z.string().trim().max(1000).optional(),
+  adultDeclared: z.literal(true, { error: 'Debés confirmar que sos mayor de 18 años' }),
+  termsAccepted: z.literal(true, { error: 'Debés aceptar los términos del tránsito' }),
+});
+
+export const updateFosterProfileStatusSchema = z.object({
+  status: z.enum(['ACTIVE', 'PAUSED']),
+});
+
+export const createRescueCaseSchema = z.object({
+  species: z.enum(['dog', 'cat', 'other']),
+  size: z.enum(['small', 'medium', 'large']),
+  urgency: z.enum(['NORMAL', 'HIGH', 'CRITICAL']),
+  apparentCondition: z.string().trim().min(3, 'Describí el estado aparente').max(300),
+  description: z.string().trim().min(20, 'Contanos un poco más sobre la situación').max(2000),
+  images: z.array(z.string()).min(1, 'Agregá al menos una foto').max(3),
+  ...locationFields,
+  searchRadiusKm: z.number().int().min(1).max(50).default(5),
+  requestedDays: z.number().int().min(1).max(90),
+  consentAccepted: z.literal(true, { error: 'Debés aceptar el consentimiento de ubicación' }),
+});
+
+export const updateRescueCaseRadiusSchema = z.object({
+  searchRadiusKm: z.number().int().min(1).max(50),
+});
+
+export const respondFosterOfferSchema = z.object({
+  response: z.enum(['INTERESTED', 'DECLINED']),
+});
+
+export const completeFosterPlacementSchema = z.object({
+  outcome: z.enum(['RESOLVED', 'NEEDS_ADOPTION']),
+});
+
+export const fosterMessageSchema = z.object({
+  content: z.string().trim().min(1, 'Escribí un mensaje').max(2000),
+});
+
 export const storePromotionSchema = z.object({
   title: z.string().min(2, 'El título es requerido').max(120),
   body: z.string().min(10, 'La promoción debe tener al menos 10 caracteres').max(500),
@@ -320,4 +378,6 @@ export const storePromotionSchema = z.object({
 export type AdopterProfileData = z.infer<typeof adopterProfileSchema>;
 export type CreateAdoptionListingData = z.infer<typeof createAdoptionListingSchema>;
 export type CreateAdoptionApplicationData = z.infer<typeof createAdoptionApplicationSchema>;
+export type FosterProfileData = z.infer<typeof fosterProfileSchema>;
+export type CreateRescueCaseData = z.infer<typeof createRescueCaseSchema>;
 export type StorePromotionData = z.infer<typeof storePromotionSchema>;

@@ -58,7 +58,7 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
               {displayImage ? (
                 <AvatarImage src={displayImage} alt={session?.user?.name || 'Avatar del usuario'} />
               ) : (
-                <AvatarFallback className="bg-teal-500 text-white font-semibold">
+                <AvatarFallback className="bg-teal-700 text-white font-semibold">
                   {userInitials}
                 </AvatarFallback>
               )}
@@ -82,7 +82,7 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
               {displayImage ? (
                 <AvatarImage src={displayImage} alt={session?.user?.name || 'Avatar del usuario'} />
               ) : (
-                <AvatarFallback className="bg-teal-500 text-white font-semibold">
+                <AvatarFallback className="bg-teal-700 text-white font-semibold">
                   {userInitials}
                 </AvatarFallback>
               )}

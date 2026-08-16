@@ -42,7 +42,7 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: [
           ...securityHeaders,
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
         ],
       },
     ];

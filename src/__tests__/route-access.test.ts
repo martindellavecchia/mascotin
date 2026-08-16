@@ -19,6 +19,8 @@ describe('route access helpers', () => {
   it('still protects application pages', () => {
     expect(isPublicPath('/profile')).toBe(false);
     expect(isPublicPath('/community')).toBe(false);
+    expect(isPublicPath('/help')).toBe(false);
+    expect(isPublicPath('/help/cases/case-1')).toBe(false);
   });
 
   it('allows emergency QR pages without a session', () => {

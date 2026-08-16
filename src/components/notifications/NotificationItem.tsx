@@ -18,6 +18,9 @@ const ICON_MAP: Record<string, string> = {
   SIGHTING: 'visibility',
   ADOPTION_APPLICATION: 'volunteer_activism',
   ADOPTION_MATCH: 'pets',
+  FOSTER_OFFER: 'home',
+  FOSTER_RESPONSE: 'volunteer_activism',
+  FOSTER_PLACEMENT: 'handshake',
   CONTENT_REPORT: 'flag',
 };
 
@@ -35,6 +38,9 @@ const COLOR_MAP: Record<string, string> = {
   SIGHTING: 'text-amber-600',
   ADOPTION_APPLICATION: 'text-teal-600',
   ADOPTION_MATCH: 'text-pink-500',
+  FOSTER_OFFER: 'text-orange-600',
+  FOSTER_RESPONSE: 'text-teal-600',
+  FOSTER_PLACEMENT: 'text-emerald-600',
   CONTENT_REPORT: 'text-rose-600',
 };
 

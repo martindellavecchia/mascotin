@@ -36,6 +36,7 @@ interface Settings {
     notifyComments: boolean;
     notifyEvents: boolean;
     notifyHealth: boolean;
+    notifyFoster: boolean;
     profileVisible: boolean;
     hideResolvedLostPets: boolean;
 }
@@ -498,6 +499,7 @@ export default function SettingsPage() {
                                     { key: 'notifyComments' as const, label: 'Comentarios', desc: 'Cuando alguien comenta en tus publicaciones', icon: 'comment' },
                                     { key: 'notifyEvents' as const, label: 'Eventos y actividades', desc: 'Nuevos eventos cerca de tu ubicación', icon: 'event' },
                                     { key: 'notifyHealth' as const, label: 'Recordatorios de salud', desc: 'Vacunas, controles y turnos próximos', icon: 'medical_services' },
+                                    { key: 'notifyFoster' as const, label: 'Hogares de tránsito', desc: 'Solicitudes y novedades de los casos de ayuda', icon: 'home' },
                                 ].map(item => (
                                     <div key={item.key} className="flex min-w-0 items-center justify-between gap-4 py-2">
                                         <div className="flex min-w-0 items-center gap-3">

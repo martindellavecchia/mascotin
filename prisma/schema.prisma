@@ -34,6 +34,9 @@ enum NotificationType {
   SIGHTING
   ADOPTION_APPLICATION
   ADOPTION_MATCH
+  FOSTER_OFFER
+  FOSTER_RESPONSE
+  FOSTER_PLACEMENT
   CONTENT_REPORT
 }
 
@@ -43,45 +46,83 @@ enum ProviderRequestStatus {
   REJECTED
 }
 
-model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  name            String?
-  password        String?
-  role            UserRole  @default(OWNER)
-  isBlocked       Boolean   @default(false)
-  emailVerified   DateTime?
-  image           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+enum FosterProfileStatus {
+  ACTIVE
+  PAUSED
+  SUSPENDED
+}
 
-  accounts        Account[]
-  sessions        Session[]
-  owner           Owner?
-  providerProfile ProviderProfile?
-  profile         Profile?     // Legacy - for backward compatibility
-  sentMessages    Message[]  @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
-  posts           Post[]
-  comments        Comment[]
-  likes           Like[]
-  appointments    Appointment[] // Citas como cliente
-  events          Event[]
-  eventAttendees  EventAttendee[]
-  eventDismissals EventDismissal[]
-  invitationsSent     Invitation[] @relation("InvitationsSent")
-  invitationsReceived Invitation[] @relation("InvitationsReceived")
-  createdGroups       Group[]
-  groupMemberships    GroupMember[]
-  blockedUsers        BlockedUser[] @relation("BlockerUser")
-  blockedByUsers      BlockedUser[] @relation("BlockedUser")
-  reports             Report[]      @relation("ReporterUser")
-  reportedBy          Report[]      @relation("ReportedUser")
-  stores              Store[]
-  providerRequests    ProviderRequest[]
-  settings            UserSettings?
-  notifications       Notification[] @relation("UserNotifications")
-  actedNotifications  Notification[] @relation("ActorNotifications")
+enum RescueCaseStatus {
+  SEARCHING
+  INTERESTED
+  COORDINATING
+  IN_FOSTER
+  RESOLVED
+  NEEDS_ADOPTION
+  CANCELLED
+}
+
+enum RescueUrgency {
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum FosterOfferStatus {
+  PENDING
+  INTERESTED
+  DECLINED
+  SELECTED
+  CLOSED
+  EXPIRED
+}
+
+enum FosterPlacementStatus {
+  COORDINATING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  role          UserRole  @default(OWNER)
+  isBlocked     Boolean   @default(false)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts             Account[]
+  sessions             Session[]
+  owner                Owner?
+  providerProfile      ProviderProfile?
+  profile              Profile? // Legacy - for backward compatibility
+  sentMessages         Message[]             @relation("SentMessages")
+  receivedMessages     Message[]             @relation("ReceivedMessages")
+  posts                Post[]
+  comments             Comment[]
+  likes                Like[]
+  appointments         Appointment[] // Citas como cliente
+  events               Event[]
+  eventAttendees       EventAttendee[]
+  eventDismissals      EventDismissal[]
+  invitationsSent      Invitation[]          @relation("InvitationsSent")
+  invitationsReceived  Invitation[]          @relation("InvitationsReceived")
+  createdGroups        Group[]
+  groupMemberships     GroupMember[]
+  blockedUsers         BlockedUser[]         @relation("BlockerUser")
+  blockedByUsers       BlockedUser[]         @relation("BlockedUser")
+  reports              Report[]              @relation("ReporterUser")
+  reportedBy           Report[]              @relation("ReportedUser")
+  stores               Store[]
+  providerRequests     ProviderRequest[]
+  settings             UserSettings?
+  notifications        Notification[]        @relation("UserNotifications")
+  actedNotifications   Notification[]        @relation("ActorNotifications")
   storeReviews         StoreReview[]
   helpfulReviewVotes   ReviewHelpful[]
   reviewReports        ReviewReport[]
@@ -89,6 +130,9 @@ model User {
   adopterProfile       AdopterProfile?
   adoptionListings     AdoptionListing[]
   adoptionApplications AdoptionApplication[]
+  fosterProfile        FosterProfile?
+  rescueCases          RescueCase[]
+  rescueCaseEvents     RescueCaseEvent[]     @relation("RescueCaseEventActor")
 }
 
 model UserSettings {
@@ -96,7 +140,7 @@ model UserSettings {
   userId               String   @unique
   theme                String   @default("system")
   matchingPaused       Boolean  @default(false)
-  matchDistance         Int      @default(50)
+  matchDistance        Int      @default(50)
   matchPetTypes        String   @default("[]")
   matchPetSizes        String   @default("[]")
   notifyMatches        Boolean  @default(true)
@@ -104,132 +148,133 @@ model UserSettings {
   notifyComments       Boolean  @default(true)
   notifyEvents         Boolean  @default(true)
   notifyHealth         Boolean  @default(true)
+  notifyFoster         Boolean  @default(true)
   profileVisible       Boolean  @default(true)
   hideResolvedLostPets Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
-  id          String           @id @default(cuid())
-  userId      String
-  actorId     String?
-  type        NotificationType
-  title       String
-  body        String
-  link        String?
-  read        Boolean          @default(false)
-  entityId    String?
-  createdAt   DateTime         @default(now())
+  id        String           @id @default(cuid())
+  userId    String
+  actorId   String?
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  read      Boolean          @default(false)
+  entityId  String?
+  createdAt DateTime         @default(now())
 
-  user        User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  actor       User?            @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+  user  User  @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([userId, read, createdAt])
   @@index([userId, createdAt])
 }
 
 model ProviderRequest {
-  id            String                @id @default(cuid())
-  userId        String
-  businessName  String
-  description   String?
-  location      String
-  reason        String
-  status        ProviderRequestStatus @default(PENDING)
-  adminNote     String?
-  reviewedAt    DateTime?
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  id           String                @id @default(cuid())
+  userId       String
+  businessName String
+  description  String?
+  location     String
+  reason       String
+  status       ProviderRequestStatus @default(PENDING)
+  adminNote    String?
+  reviewedAt   DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
-  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
 }
 
 model ProviderProfile {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  businessName  String
-  description   String?
-  location      String
-  rating        Float     @default(0)
-  reviewCount   Int       @default(0)
-  services      Service[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  businessName String
+  description  String?
+  location     String
+  rating       Float     @default(0)
+  reviewCount  Int       @default(0)
+  services     Service[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Service {
-  id            String    @id @default(cuid())
-  providerId    String
-  storeId       String?
-  name          String
-  description   String
-  price         Float
-  duration      Int       // en minutos
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String   @id @default(cuid())
+  providerId  String
+  storeId     String?
+  name        String
+  description String
+  price       Float
+  duration    Int // en minutos
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  provider      ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  store         Store?          @relation(fields: [storeId], references: [id], onDelete: SetNull)
-  appointments  Appointment[]
+  provider     ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  store        Store?          @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  appointments Appointment[]
 
   @@index([storeId])
 }
 
 model Appointment {
-  id            String    @id @default(cuid())
-  serviceId     String
-  userId        String    // Cliente (Dueño)
-  petId         String
-  date          DateTime
-  status        String    @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  serviceId String
+  userId    String // Cliente (Dueño)
+  petId     String
+  date      DateTime
+  status    String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pet           Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
-  review        StoreReview?
+  service Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet     Pet          @relation(fields: [petId], references: [id], onDelete: Cascade)
+  review  StoreReview?
 
   @@index([userId])
   @@index([serviceId])
 }
 
 model Post {
-  id                String    @id @default(cuid())
-  authorId          String
-  petId             String?   // Opcional: post vinculado a mascota
-  postType          String    @default("post") // post, photo, event, question, lost_pet
-  content           String
-  images            String    // JSON array
-  location          String?
-  eventDate         DateTime? // For event posts
-  eventLocation     String?   // For event posts
-  contactPhone      String?   // For lost_pet posts
-  lastSeenLocation  String?   // For lost_pet posts
-  isResolved        Boolean   @default(false) // For lost_pet - mascota encontrada
-  latitude          Float?
-  longitude         Float?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  authorId         String
+  petId            String? // Opcional: post vinculado a mascota
+  postType         String    @default("post") // post, photo, event, question, lost_pet
+  content          String
+  images           String // JSON array
+  location         String?
+  eventDate        DateTime? // For event posts
+  eventLocation    String? // For event posts
+  contactPhone     String? // For lost_pet posts
+  lastSeenLocation String? // For lost_pet posts
+  isResolved       Boolean   @default(false) // For lost_pet - mascota encontrada
+  latitude         Float?
+  longitude        Float?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  author            User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  pet               Pet?      @relation(fields: [petId], references: [id], onDelete: SetNull)
-  comments          Comment[]
-  likes             Like[]
-  invitations       Invitation[]
-  groupId           String?
-  group             Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  eventId           String?   // Link to actual Event entity
-  event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  sightings         PetSighting[]
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  pet         Pet?          @relation(fields: [petId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+  likes       Like[]
+  invitations Invitation[]
+  groupId     String?
+  group       Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  eventId     String? // Link to actual Event entity
+  event       Event?        @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  sightings   PetSighting[]
 
   @@index([authorId])
   @@index([createdAt])
@@ -238,119 +283,119 @@ model Post {
 
 model Invitation {
   id        String   @id @default(cuid())
-  postId    String   // Post with type=event
-  inviterId String   // Who sent
-  inviteeId String   // Who receives
+  postId    String // Post with type=event
+  inviterId String // Who sent
+  inviteeId String // Who receives
   status    String   @default("pending") // pending, accepted, declined
   createdAt DateTime @default(now())
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  inviter   User     @relation("InvitationsSent", fields: [inviterId], references: [id], onDelete: Cascade)
-  invitee   User     @relation("InvitationsReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
+  post    Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  inviter User @relation("InvitationsSent", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User @relation("InvitationsReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
-  id          String    @id @default(cuid())
-  postId      String
-  authorId    String
-  content     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([authorId])
 }
 
 model Like {
-  id          String    @id @default(cuid())
-  postId      String
-  userId      String
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
 
-  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
 }
 
 model Profile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  name        String
-  bio         String
-  age         Int
-  gender      String
-  interests   String
-  location    String
-  images      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  bio       String
+  age       Int
+  gender    String
+  interests String
+  location  String
+  images    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Owner {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  name            String
-  phone           String?
-  location        String
-  bio             String?
-  image           String?  // Profile photo URL
-  hasYard         Boolean?
-  hasOtherPets    Boolean?
-  latitude        Float?
-  longitude       Float?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  name         String
+  phone        String?
+  location     String
+  bio          String?
+  image        String? // Profile photo URL
+  hasYard      Boolean?
+  hasOtherPets Boolean?
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pets            Pet[]
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pets Pet[]
 }
 
 model PetHealthRecord {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   petId       String
-  type        String   // VACCINE, CHECKUP, MEDICATION
+  type        String // VACCINE, CHECKUP, MEDICATION
   name        String
   dueDate     DateTime?
   completedAt DateTime?
   notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  pet         Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
 
   @@index([petId])
 }
 
 model Pet {
-  id              String   @id @default(cuid())
-  ownerId         String
-  name            String
-  petType         String
-  breed           String?
-  age             Int
-  weight          Float?   // Nuevo campo
-  size            String
-  gender          String
-  vaccinated      Boolean  @default(true)
-  neutered        Boolean  @default(false)
-  energy          String
-  bio             String
-  activities      String
-  location        String
-  images          String
-  thumbnailIndex  Int      @default(0)
-  latitude        Float?
-  longitude       Float?
-  publicSlug      String?  @unique
-  emergencyToken  String?  @unique
-  sharePhoneOnScan Boolean @default(true)
-  shareVetOnScan   Boolean @default(false)
+  id                String  @id @default(cuid())
+  ownerId           String
+  name              String
+  petType           String
+  breed             String?
+  age               Int
+  weight            Float? // Nuevo campo
+  size              String
+  gender            String
+  vaccinated        Boolean @default(true)
+  neutered          Boolean @default(false)
+  energy            String
+  bio               String
+  activities        String
+  location          String
+  images            String
+  thumbnailIndex    Int     @default(0)
+  latitude          Float?
+  longitude         Float?
+  publicSlug        String? @unique
+  emergencyToken    String? @unique
+  sharePhoneOnScan  Boolean @default(true)
+  shareVetOnScan    Boolean @default(false)
   goodWithKids      String?
   goodWithDogs      String?
   goodWithCats      String?
@@ -360,27 +405,28 @@ model Pet {
   allergies         String?
   specialNeeds      String?
   vetClinicName     String?
-  matchIntent       String   @default("[]")
-  
+  matchIntent       String  @default("[]")
+
   // Gamification basic
-  level           Int      @default(1)
-  xp              Int      @default(0)
-  totalMatches    Int      @default(0)
-  
-  isActive        Boolean  @default(true)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  owner           Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  sentSwipes      Swipe[]  @relation("PetSentSwipes")
-  receivedSwipes  Swipe[]  @relation("PetReceivedSwipes")
-  match1          Match[]  @relation("Pet1Matches")
-  match2          Match[]  @relation("Pet2Matches")
-  posts           Post[]
-  appointments    Appointment[]
-  healthRecords   PetHealthRecord[]
+  level        Int @default(1)
+  xp           Int @default(0)
+  totalMatches Int @default(0)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner            Owner             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sentSwipes       Swipe[]           @relation("PetSentSwipes")
+  receivedSwipes   Swipe[]           @relation("PetReceivedSwipes")
+  match1           Match[]           @relation("Pet1Matches")
+  match2           Match[]           @relation("Pet2Matches")
+  posts            Post[]
+  appointments     Appointment[]
+  healthRecords    PetHealthRecord[]
   adoptionListings AdoptionListing[]
+  rescueCases      RescueCase[]
 
   @@unique([ownerId, name], name: "ownerId_name")
   @@index([ownerId])
@@ -388,16 +434,16 @@ model Pet {
 }
 
 model Swipe {
-  id          String   @id @default(cuid())
-  fromId      String   @default("")  // Legacy — kept for data compat
-  toId        String   @default("")  // Legacy — kept for data compat
-  fromPetId   String?
-  toPetId     String?
-  isLike      Boolean
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  fromId    String   @default("") // Legacy — kept for data compat
+  toId      String   @default("") // Legacy — kept for data compat
+  fromPetId String?
+  toPetId   String?
+  isLike    Boolean
+  createdAt DateTime @default(now())
 
-  fromPet     Pet?      @relation("PetSentSwipes", fields: [fromPetId], references: [id], onDelete: Cascade)
-  toPet       Pet?      @relation("PetReceivedSwipes", fields: [toPetId], references: [id], onDelete: Cascade)
+  fromPet Pet? @relation("PetSentSwipes", fields: [fromPetId], references: [id], onDelete: Cascade)
+  toPet   Pet? @relation("PetReceivedSwipes", fields: [toPetId], references: [id], onDelete: Cascade)
 
   @@unique([fromPetId, toPetId])
   @@index([fromPetId])
@@ -405,42 +451,42 @@ model Swipe {
 }
 
 model Match {
-  id          String   @id @default(cuid())
-  user1Id     String   @default("")  // Legacy — kept for data compat
-  user2Id     String   @default("")  // Legacy — kept for data compat
-  pet1Id      String?
-  pet2Id      String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  user1Id   String   @default("") // Legacy — kept for data compat
+  user2Id   String   @default("") // Legacy — kept for data compat
+  pet1Id    String?
+  pet2Id    String?
+  createdAt DateTime @default(now())
 
-  pet1        Pet?      @relation("Pet1Matches", fields: [pet1Id], references: [id], onDelete: Cascade)
-  pet2        Pet?      @relation("Pet2Matches", fields: [pet2Id], references: [id], onDelete: Cascade)
-  messages    Message[]
+  pet1     Pet?      @relation("Pet1Matches", fields: [pet1Id], references: [id], onDelete: Cascade)
+  pet2     Pet?      @relation("Pet2Matches", fields: [pet2Id], references: [id], onDelete: Cascade)
+  messages Message[]
 
   @@index([pet1Id])
   @@index([pet2Id])
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  authorId    String
-  title       String
-  description String?
-  date        DateTime
-  location    String
-  image       String?
+  id           String   @id @default(cuid())
+  authorId     String
+  title        String
+  description  String?
+  date         DateTime
+  location     String
+  image        String?
   maxAttendees Int?
-  category    String    @default("otro")
-  latitude    Float?
-  longitude   Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  category     String   @default("otro")
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  attendees   EventAttendee[]
-  dismissals  EventDismissal[]
-  groupId     String?
-  group       Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  posts       Post[]
+  author     User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  attendees  EventAttendee[]
+  dismissals EventDismissal[]
+  groupId    String?
+  group      Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  posts      Post[]
 }
 
 model EventAttendee {
@@ -449,8 +495,8 @@ model EventAttendee {
   userId    String
   createdAt DateTime @default(now())
 
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
 }
@@ -461,32 +507,35 @@ model EventDismissal {
   userId    String
   createdAt DateTime @default(now())
 
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
 }
 
 model Message {
-  id                      String   @id @default(cuid())
-  matchId                 String?
-  groupId                 String?
-  adoptionApplicationId   String?
-  senderId                String
-  receiverId              String?
-  content                 String
-  read                    Boolean  @default(false)
-  createdAt               DateTime @default(now())
+  id                    String   @id @default(cuid())
+  matchId               String?
+  groupId               String?
+  adoptionApplicationId String?
+  fosterPlacementId     String?
+  senderId              String
+  receiverId            String?
+  content               String
+  read                  Boolean  @default(false)
+  createdAt             DateTime @default(now())
 
-  match                   Match?   @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  group                   Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  adoptionApplication     AdoptionApplication? @relation(fields: [adoptionApplicationId], references: [id], onDelete: Cascade)
-  sender                  User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver                User?    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  match               Match?               @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  group               Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  adoptionApplication AdoptionApplication? @relation(fields: [adoptionApplicationId], references: [id], onDelete: Cascade)
+  fosterPlacement     FosterPlacement?     @relation(fields: [fosterPlacementId], references: [id], onDelete: Cascade)
+  sender              User                 @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver            User?                @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@index([matchId])
   @@index([groupId])
   @@index([adoptionApplicationId])
+  @@index([fosterPlacementId])
   @@index([senderId])
   @@index([receiverId])
   @@index([createdAt])
@@ -536,34 +585,34 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  members     GroupMember[]
-  posts       Post[]
-  events      Event[]
-  messages    Message[]
+  creator  User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  members  GroupMember[]
+  posts    Post[]
+  events   Event[]
+  messages Message[]
 }
 
 model GroupMember {
-  id        String   @id @default(cuid())
-  groupId   String
-  userId    String
-  role      String   @default("MEMBER") // MEMBER, ADMIN
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  role     String   @default("MEMBER") // MEMBER, ADMIN
+  joinedAt DateTime @default(now())
 
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
 }
 
 model BlockedUser {
-  id          String   @id @default(cuid())
-  blockerId   String
-  blockedId   String
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
 
-  blocker     User     @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
-  blocked     User     @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker User @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
 
   @@unique([blockerId, blockedId])
   @@index([blockerId])
@@ -579,34 +628,34 @@ model StoreCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  stores      Store[]
+  stores Store[]
 }
 
 model Store {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   categoryId    String
-  providerId    String?  // null until admin assigns to a provider
+  providerId    String? // null until admin assigns to a provider
   name          String
-  slug          String   @unique
+  slug          String    @unique
   description   String?
   phone         String?
   email         String?
   address       String?
   image         String?
-  images        String   @default("[]") // JSON array
-  isActive      Boolean  @default(true)
-  ratingAverage Float    @default(0)
-  reviewCount   Int      @default(0)
+  images        String    @default("[]") // JSON array
+  isActive      Boolean   @default(true)
+  ratingAverage Float     @default(0)
+  reviewCount   Int       @default(0)
   latitude      Float?
   longitude     Float?
-  tags          String   @default("[]")
-  plan          String   @default("FREE")
+  tags          String    @default("[]")
+  plan          String    @default("FREE")
   featuredUntil DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  category        StoreCategory  @relation(fields: [categoryId], references: [id])
-  provider        User?          @relation(fields: [providerId], references: [id])
+  category        StoreCategory    @relation(fields: [categoryId], references: [id])
+  provider        User?            @relation(fields: [providerId], references: [id])
   services        StoreService[]
   bookingServices Service[]
   reviews         StoreReview[]
@@ -678,12 +727,12 @@ model StoreService {
   name        String
   description String
   price       Float
-  duration    Int      // minutes
+  duration    Int // minutes
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId])
 }
@@ -694,14 +743,14 @@ model Report {
   reportedId  String
   targetType  String   @default("USER") // USER, POST, COMMENT, ALERT
   targetId    String?
-  reason      String   // spam, inappropriate, harassment, other
+  reason      String // spam, inappropriate, harassment, other
   description String?
   status      String   @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  reporter    User     @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
-  reported    User     @relation("ReportedUser", fields: [reportedId], references: [id], onDelete: Cascade)
+  reporter User @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported User @relation("ReportedUser", fields: [reportedId], references: [id], onDelete: Cascade)
 
   @@index([reporterId])
   @@index([reportedId])
@@ -710,18 +759,18 @@ model Report {
 }
 
 model PetSighting {
-  id          String   @id @default(cuid())
-  postId      String
-  reporterId  String
-  notes       String?
-  location    String?
-  latitude    Float?
-  longitude   Float?
-  image       String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  postId     String
+  reporterId String
+  notes      String?
+  location   String?
+  latitude   Float?
+  longitude  Float?
+  image      String?
+  createdAt  DateTime @default(now())
 
-  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([reporterId])
@@ -740,7 +789,7 @@ model AdopterProfile {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AdoptionListing {
@@ -757,9 +806,9 @@ model AdoptionListing {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  pet            Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
-  listedBy       User     @relation(fields: [listedByUserId], references: [id], onDelete: Cascade)
-  applications   AdoptionApplication[]
+  pet          Pet                   @relation(fields: [petId], references: [id], onDelete: Cascade)
+  listedBy     User                  @relation(fields: [listedByUserId], references: [id], onDelete: Cascade)
+  applications AdoptionApplication[]
 
   @@index([petId])
   @@index([listedByUserId])
@@ -776,13 +825,144 @@ model AdoptionApplication {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  listing            AdoptionListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  applicant          User            @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  messages           Message[]
+  listing   AdoptionListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  applicant User            @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  messages  Message[]
 
   @@unique([listingId, applicantId])
   @@index([applicantId])
   @@index([status])
+}
+
+model FosterProfile {
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  status          FosterProfileStatus @default(ACTIVE)
+  acceptsSpecies  String              @default("[]")
+  acceptsSizes    String              @default("[]")
+  capacity        Int                 @default(1)
+  occupiedSlots   Int                 @default(0)
+  location        String
+  latitude        Float
+  longitude       Float
+  availableFrom   DateTime?
+  availableUntil  DateTime?
+  maxDurationDays Int                 @default(30)
+  housingType     String
+  hasYard         Boolean             @default(false)
+  hasKids         Boolean             @default(false)
+  hasOtherPets    Boolean             @default(false)
+  experience      String
+  notes           String?
+  adultDeclaredAt DateTime
+  termsAcceptedAt DateTime
+  termsVersion    String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offers     FosterOffer[]
+  placements FosterPlacement[]
+
+  @@index([status])
+  @@index([latitude, longitude])
+}
+
+model RescueCase {
+  id                String           @id @default(cuid())
+  createdByUserId   String
+  petId             String?
+  status            RescueCaseStatus @default(SEARCHING)
+  species           String
+  size              String
+  urgency           RescueUrgency    @default(NORMAL)
+  apparentCondition String
+  description       String
+  images            String
+  location          String
+  latitude          Float
+  longitude         Float
+  searchRadiusKm    Int              @default(5)
+  requestedDays     Int              @default(14)
+  consentAcceptedAt DateTime
+  consentVersion    String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  createdBy  User              @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  pet        Pet?              @relation(fields: [petId], references: [id], onDelete: SetNull)
+  offers     FosterOffer[]
+  placements FosterPlacement[]
+  events     RescueCaseEvent[]
+
+  @@index([createdByUserId, status, createdAt])
+  @@index([status, createdAt])
+  @@index([latitude, longitude])
+}
+
+model FosterOffer {
+  id              String            @id @default(cuid())
+  rescueCaseId    String
+  fosterProfileId String
+  status          FosterOfferStatus @default(PENDING)
+  distanceKm      Float
+  score           Int
+  reasons         String            @default("[]")
+  expiresAt       DateTime
+  respondedAt     DateTime?
+  selectedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  rescueCase    RescueCase       @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
+  fosterProfile FosterProfile    @relation(fields: [fosterProfileId], references: [id], onDelete: Cascade)
+  placement     FosterPlacement?
+
+  @@unique([rescueCaseId, fosterProfileId])
+  @@index([fosterProfileId, status, createdAt])
+  @@index([rescueCaseId, status])
+  @@index([expiresAt])
+}
+
+model FosterPlacement {
+  id                   String                @id @default(cuid())
+  rescueCaseId         String
+  fosterProfileId      String
+  offerId              String                @unique
+  status               FosterPlacementStatus @default(COORDINATING)
+  requesterConfirmedAt DateTime?
+  fosterConfirmedAt    DateTime?
+  startedAt            DateTime?
+  expectedEndAt        DateTime?
+  endedAt              DateTime?
+  outcome              String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  rescueCase    RescueCase    @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
+  fosterProfile FosterProfile @relation(fields: [fosterProfileId], references: [id], onDelete: Cascade)
+  offer         FosterOffer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@index([rescueCaseId, status])
+  @@index([fosterProfileId, status])
+}
+
+model RescueCaseEvent {
+  id         String            @id @default(cuid())
+  caseId     String
+  actorId    String
+  type       String
+  fromStatus RescueCaseStatus?
+  toStatus   RescueCaseStatus?
+  details    String?
+  createdAt  DateTime          @default(now())
+
+  rescueCase RescueCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actor      User       @relation("RescueCaseEventActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@index([actorId])
 }
 
 model StorePromotion {
@@ -795,7 +975,7 @@ model StorePromotion {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId, startsAt, endsAt])
 }

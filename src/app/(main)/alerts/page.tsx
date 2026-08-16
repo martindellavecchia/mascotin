@@ -118,12 +118,9 @@ function AlertsPageContent() {
           <Button
             variant="outline"
             className="w-full sm:w-auto"
-            onClick={() => {
-              setFormMode('found');
-              setFormOpen(true);
-            }}
+            onClick={() => window.location.assign('/help?create=case')}
           >
-            Reportar encontrada
+            Encontré una mascota
           </Button>
           <Button
             variant="outline"

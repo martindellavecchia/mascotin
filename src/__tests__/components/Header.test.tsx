@@ -85,10 +85,10 @@ describe('Header', () => {
       expect(screen.getByRole('link', { name: /eventos/i })).toBeInTheDocument();
     });
 
-    it('renders alerts and map links', () => {
+    it('renders help and map links', () => {
       render(<Header session={mockSession} />);
 
-      expect(screen.getByRole('link', { name: /alertas/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /ayuda/i })).toHaveAttribute('href', '/help');
       expect(screen.getByRole('link', { name: /mapa/i })).toBeInTheDocument();
     });
 
