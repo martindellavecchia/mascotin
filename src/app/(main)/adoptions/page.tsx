@@ -37,7 +37,9 @@ function AdoptionsContent() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showCreate, setShowCreate] = useState(Boolean(searchParams.get('list')));
+  const [showCreate, setShowCreate] = useState(
+    Boolean(searchParams.get('list')) || searchParams.get('create') === 'listing',
+  );
   const [pets, setPets] = useState<Array<{ id: string; name: string }>>([]);
   const [profile, setProfile] = useState({
     housingType: 'apartment',

@@ -225,7 +225,6 @@ export default function HelpCenter() {
       <section className="overflow-hidden rounded-2xl border border-teal-100 bg-white">
         <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div>
-            <Badge className="mb-3 bg-orange-100 text-orange-800">Módulo principal de MascoTin</Badge>
             <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Hogares de tránsito</h1>
             <p className="mt-3 max-w-2xl text-slate-600">
               Encontrá resguardo para un animal o abrí tu hogar de manera temporal. Tu dirección y ubicación exacta permanecen privadas.
@@ -237,27 +236,81 @@ export default function HelpCenter() {
         </div>
       </section>
 
-      <section aria-label="Opciones de hogares de tránsito" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: 'pets', action: () => setCaseDialogOpen(true) },
-          { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: 'home', action: () => setProfileDialogOpen(true) },
-        ].map((item) => (
-          <button key={item.title} onClick={item.action} className="min-h-36 rounded-2xl border border-slate-200 bg-white p-5 text-left transition-colors hover:border-teal-300 hover:bg-teal-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
-            <span className="material-symbols-rounded text-3xl text-teal-700" aria-hidden="true">{item.icon}</span>
-            <span className="mt-4 block font-semibold text-slate-900">{item.title}</span>
-            <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
-          </button>
-        ))}
-        <Link href="/adoptions" className="min-h-36 rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-orange-300 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
-          <span className="material-symbols-rounded text-3xl text-orange-600" aria-hidden="true">favorite</span>
-          <span className="mt-4 block font-semibold text-slate-900">Quiero adoptar</span>
-          <span className="mt-1 block text-sm text-slate-500">Ver mascotas disponibles</span>
-        </Link>
-        <Link href="/adoptions" className="min-h-36 rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-orange-300 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
-          <span className="material-symbols-rounded text-3xl text-orange-600" aria-hidden="true">handshake</span>
-          <span className="mt-4 block font-semibold text-slate-900">Dar en adopción</span>
-          <span className="mt-1 block text-sm text-slate-500">Publicar una ficha responsable</span>
-        </Link>
+      <section aria-label="Opciones de hogares de tránsito" className="grid gap-8 md:grid-cols-2 md:gap-0">
+        <div className="space-y-5 md:pr-8">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-teal-700">Ayuda temporal</h2>
+            <p className="mt-1 text-sm text-slate-500">Resguardo y tránsito para una mascota</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: 'pets', action: () => setCaseDialogOpen(true) },
+              { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: 'home', action: () => setProfileDialogOpen(true) },
+            ].map((item) => (
+              <button
+                key={item.title}
+                type="button"
+                onClick={item.action}
+                className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left transition-colors hover:border-teal-300 hover:bg-teal-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700 sm:size-14" aria-hidden="true">
+                  <span className="material-symbols-rounded text-3xl">{item.icon}</span>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-slate-900">{item.title}</span>
+                  <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
+                </span>
+                <span className="material-symbols-rounded shrink-0 text-2xl text-teal-600 transition-transform group-hover:translate-x-0.5" aria-hidden="true">chevron_right</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-5 border-t border-slate-200 pt-8 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-orange-600">Adopción definitiva</h2>
+            <p className="mt-1 text-sm text-slate-500">Un hogar permanente para una mascota</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              {
+                href: '/adoptions',
+                eyebrow: 'Quiero adoptar',
+                title: 'Buscar una mascota',
+                description: 'Ver mascotas disponibles',
+                action: 'Explorar',
+                icon: 'search',
+              },
+              {
+                href: '/adoptions?create=listing',
+                eyebrow: 'Quiero dar en adopción',
+                title: 'Publicar una mascota',
+                description: 'Crear su ficha responsable',
+                action: 'Publicar',
+                icon: 'publish',
+              },
+            ].map((item) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600 sm:size-14" aria-hidden="true">
+                  <span className="material-symbols-rounded text-3xl">{item.icon}</span>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[0.6875rem] font-bold uppercase tracking-wide text-orange-600">{item.eyebrow}</span>
+                  <span className="mt-1 block font-semibold text-slate-900">{item.title}</span>
+                  <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
+                </span>
+                <span className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 min-[900px]:flex">
+                  {item.action}
+                  <span className="material-symbols-rounded text-2xl transition-transform group-hover:translate-x-0.5" aria-hidden="true">chevron_right</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       <Tabs defaultValue={initialTab} className="space-y-5">
