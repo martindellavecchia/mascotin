@@ -23,6 +23,21 @@ export interface StoreTrustSummary {
   description: string;
 }
 
+export const STORE_TRUST_TONES: Record<StoreTrustLevel, 'emerald' | 'teal' | 'amber' | 'rose' | 'slate'> = {
+  HIGHLY_RECOMMENDED: 'emerald',
+  TRUSTED: 'teal',
+  MIXED: 'amber',
+  REVIEW_CAREFULLY: 'rose',
+  NEW: 'slate',
+};
+
+export function withStoreTrustPresentation(summary: StoreTrustSummary) {
+  return {
+    ...summary,
+    tone: STORE_TRUST_TONES[summary.level],
+  };
+}
+
 export function getStoreTrustSummary(
   ratingAverage: number,
   reviewCount: number

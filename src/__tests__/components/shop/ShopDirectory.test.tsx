@@ -12,7 +12,7 @@ const store: PublicStoreCard = {
   category: { id: 'cat-1', name: 'Peluquería' },
   ratingAverage: 4.8,
   reviewCount: 12,
-  trust: { label: 'Muy confiable', description: '', tone: 'emerald' },
+  trust: { level: 'HIGHLY_RECOMMENDED', label: 'Muy confiable', description: '', tone: 'emerald' },
   services: [{ id: 'svc-1', name: 'Baño', price: 8000, duration: 60 }],
 };
 

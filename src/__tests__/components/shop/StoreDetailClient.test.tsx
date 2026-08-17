@@ -18,7 +18,7 @@ const store: PublicStoreDetail = {
   owner: { id: 'owner-1', name: 'Ana', image: null },
   ratingAverage: 4.8,
   reviewCount: 1,
-  trust: { label: 'Muy confiable', description: '', tone: 'emerald' },
+  trust: { level: 'HIGHLY_RECOMMENDED', label: 'Muy confiable', description: '', tone: 'emerald' },
   services: [{ id: 'svc-1', name: 'Baño', description: 'Baño completo', price: 8000, duration: 60 }],
   reviews: [],
 };

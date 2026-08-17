@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { parseJsonStringArray } from '@/lib/json-array';
 import { haversineKm, toGeoPoint } from '@/lib/geo';
 import { isFeaturedStore } from '@/lib/places';
-import { getStoreTrustSummary, getWeightedStoreScore } from '@/lib/store-reputation';
+import { getStoreTrustSummary, getWeightedStoreScore, withStoreTrustPresentation } from '@/lib/store-reputation';
 import { parseStoreImages } from '@/lib/stores';
 import { invalidateStoreDirectoryCache, STORE_CACHE_TAGS } from '@/lib/server/store-cache';
 
@@ -27,7 +27,7 @@ export interface PublicStoreCard {
   category: { id: string; name: string };
   ratingAverage: number;
   reviewCount: number;
-  trust: { label: string; description: string; tone: string };
+  trust: ReturnType<typeof withStoreTrustPresentation>;
   services: Array<{ id: string; name: string; price: number; duration: number }>;
 }
 
@@ -153,7 +153,7 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
         : null,
       ratingAverage: store.ratingAverage,
       reviewCount: store.reviewCount,
-      trust: getStoreTrustSummary(store.ratingAverage, store.reviewCount),
+      trust: withStoreTrustPresentation(getStoreTrustSummary(store.ratingAverage, store.reviewCount)),
       weightedScore: getWeightedStoreScore(store.ratingAverage, store.reviewCount),
       services: store.bookingServices,
       promotions: store.promotions,
@@ -190,8 +190,8 @@ function mapPublicStore(store: {
   address: string | null;
   image: string | null;
   images: string | null;
-  tags: string | null;
-  providerId: string;
+    tags: string | null;
+    providerId: string | null;
   ratingAverage: number;
   reviewCount: number;
   category: { id: string; name: string };
@@ -248,7 +248,7 @@ function mapPublicStore(store: {
       : null,
     ratingAverage: store.ratingAverage,
     reviewCount: store.reviewCount,
-    trust: getStoreTrustSummary(store.ratingAverage, store.reviewCount),
+    trust: withStoreTrustPresentation(getStoreTrustSummary(store.ratingAverage, store.reviewCount)),
     services: store.bookingServices,
     reviews: store.reviews.map((review) => ({
       id: review.id,

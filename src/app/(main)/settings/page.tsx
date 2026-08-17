@@ -528,7 +528,7 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
                                         <Switch
-                                            checked={settings[item.key]}
+                                            checked={Boolean(settings[item.key])}
                                             onCheckedChange={(v) => updateSetting({ [item.key]: v })}
                                         />
                                     </div>

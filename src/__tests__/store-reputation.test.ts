@@ -1,4 +1,4 @@
-import { getStoreTrustSummary, getWeightedStoreScore } from '@/lib/store-reputation';
+import { getStoreTrustSummary, getWeightedStoreScore, withStoreTrustPresentation } from '@/lib/store-reputation';
 import { providerCreateStoreSchema, storeReviewSchema } from '@/lib/schemas';
 
 describe('store reputation', () => {
@@ -9,6 +9,8 @@ describe('store reputation', () => {
 
   it('marks businesses as highly recommended only with volume and quality', () => {
     expect(getStoreTrustSummary(4.7, 8).level).toBe('HIGHLY_RECOMMENDED');
+    expect(getStoreTrustSummary(4.7, 8).label).toBe('Muy recomendado');
+    expect(withStoreTrustPresentation(getStoreTrustSummary(4.7, 8)).tone).toBe('emerald');
     expect(getStoreTrustSummary(4.1, 8).level).toBe('TRUSTED');
     expect(getStoreTrustSummary(2.8, 8).level).toBe('REVIEW_CAREFULLY');
   });
