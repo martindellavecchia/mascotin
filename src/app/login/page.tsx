@@ -174,7 +174,7 @@ export default function LoginPage() {
           alt="Perro en un parque"
           fill
           className="object-cover object-center"
-          priority
+          sizes="(min-width: 1024px) 60vw, 0px"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" />
         <div className="relative z-10 flex flex-col justify-end p-12 xl:p-16 w-full">

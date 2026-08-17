@@ -1,4 +1,6 @@
+const path = require('path');
 const base = (process.env.PERF_BASE_URL || 'http://127.0.0.1:3000').replace(/\/$/, '');
+const chromeUserDataDir = path.join(__dirname, 'artifacts', 'performance-remediation', 'chrome-user-data');
 
 module.exports = {
   ci: {
@@ -6,6 +8,7 @@ module.exports = {
       url: [`${base}/`, `${base}/login`, `${base}/shop`],
       numberOfRuns: 3,
       settings: {
+        disableFullPageScreenshot: true,
         formFactor: 'mobile',
         screenEmulation: {
           mobile: true,
@@ -23,6 +26,7 @@ module.exports = {
           cpuSlowdownMultiplier: 4,
         },
         onlyCategories: ['performance'],
+        chromeFlags: `--headless --disable-gpu --user-data-dir=${chromeUserDataDir}`,
       },
     },
     assert: {
