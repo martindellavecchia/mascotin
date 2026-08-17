@@ -4,6 +4,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  ChevronRight,
+  HandHeart,
+  Home,
+  PawPrint,
+  Search,
+  Upload,
+  type LucideIcon,
+} from 'lucide-react';
 import FosterProfileForm from '@/components/help/FosterProfileForm';
 import RescueCaseForm from '@/components/help/RescueCaseForm';
 import SolidarityAlerts from '@/components/help/SolidarityAlerts';
@@ -47,7 +56,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
   return (
     <Card className="overflow-hidden">
       <div className="grid min-w-0 grid-cols-[96px_minmax(0,1fr)] sm:grid-cols-[128px_minmax(0,1fr)]">
-        <div className="relative min-h-40 bg-slate-100">
+        <div className="relative flex min-h-40 items-center justify-center bg-slate-100">
           {image ? (
             <Image
               src={image}
@@ -58,7 +67,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
               className="object-cover"
             />
           ) : (
-            <span className="material-symbols-rounded absolute inset-0 flex items-center justify-center text-4xl text-slate-300">pets</span>
+            <PawPrint className="size-10 text-slate-300" aria-hidden="true" />
           )}
         </div>
         <CardContent className="min-w-0 space-y-3 p-4">
@@ -239,7 +248,7 @@ export default function HelpCenter() {
             </p>
           </div>
           <div className="flex size-24 items-center justify-center rounded-full bg-teal-50 text-teal-700">
-            <span className="material-symbols-rounded text-5xl" aria-hidden="true">volunteer_activism</span>
+            <HandHeart className="size-12" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -251,11 +260,13 @@ export default function HelpCenter() {
             <p className="mt-1 text-sm text-slate-500">Resguardo y tránsito para una mascota</p>
           </div>
           <div className="space-y-3">
-            {[
-              { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: 'pets', action: () => setCaseDialogOpen(true) },
-              { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: 'home', action: () => setProfileDialogOpen(true) },
-              { title: 'Ayudar como voluntario', description: 'Traslados, rescate y logística', icon: 'volunteer_activism', action: () => setActiveTab('volunteer') },
-            ].map((item) => (
+            {([
+              { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: PawPrint, action: () => setCaseDialogOpen(true) },
+              { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: Home, action: () => setProfileDialogOpen(true) },
+              { title: 'Ayudar como voluntario', description: 'Traslados, rescate y logística', icon: HandHeart, action: () => setActiveTab('volunteer') },
+            ] as { title: string; description: string; icon: LucideIcon; action: () => void }[]).map((item) => {
+              const Icon = item.icon;
+              return (
               <button
                 key={item.title}
                 type="button"
@@ -263,15 +274,16 @@ export default function HelpCenter() {
                 className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left transition-colors hover:border-teal-300 hover:bg-teal-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
               >
                 <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700 sm:size-14" aria-hidden="true">
-                  <span className="material-symbols-rounded text-3xl">{item.icon}</span>
+                  <Icon className="size-8" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold text-slate-900">{item.title}</span>
                   <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
                 </span>
-                <span className="material-symbols-rounded shrink-0 text-2xl text-teal-600 transition-transform group-hover:translate-x-0.5" aria-hidden="true">chevron_right</span>
+                <ChevronRight className="size-7 shrink-0 text-teal-600 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -281,14 +293,14 @@ export default function HelpCenter() {
             <p className="mt-1 text-sm text-slate-500">Un hogar permanente para una mascota</p>
           </div>
           <div className="space-y-3">
-            {[
+            {([
               {
                 href: '/adoptions',
                 eyebrow: 'Quiero adoptar',
                 title: 'Buscar una mascota',
                 description: 'Ver mascotas disponibles',
                 action: 'Explorar',
-                icon: 'search',
+                icon: Search,
               },
               {
                 href: '/adoptions?create=listing',
@@ -296,16 +308,18 @@ export default function HelpCenter() {
                 title: 'Publicar una mascota',
                 description: 'Crear su ficha responsable',
                 action: 'Publicar',
-                icon: 'publish',
+                icon: Upload,
               },
-            ].map((item) => (
+            ] as { href: string; eyebrow: string; title: string; description: string; action: string; icon: LucideIcon }[]).map((item) => {
+              const Icon = item.icon;
+              return (
               <Link
                 key={item.title}
                 href={item.href}
                 className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
               >
                 <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600 sm:size-14" aria-hidden="true">
-                  <span className="material-symbols-rounded text-3xl">{item.icon}</span>
+                  <Icon className="size-8" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[0.6875rem] font-bold uppercase tracking-wide text-orange-600">{item.eyebrow}</span>
@@ -314,10 +328,11 @@ export default function HelpCenter() {
                 </span>
                 <span className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 min-[900px]:flex">
                   {item.action}
-                  <span className="material-symbols-rounded text-2xl transition-transform group-hover:translate-x-0.5" aria-hidden="true">chevron_right</span>
+                  <ChevronRight className="size-7 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

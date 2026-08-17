@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Profile } from '@/types';
 import Image from 'next/image';
+import { CalendarDays, MapPin, Tag } from 'lucide-react';
 import { shouldUnoptimizeImage } from '@/lib/media';
 
 interface ProfileCardProps {
@@ -44,7 +45,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
               {profile.name}, {profile.age}
             </h2>
             <div className="flex items-center gap-2 text-white/90">
-              <span className="material-symbols-rounded text-lg">location_on</span>
+              <MapPin className="size-5" aria-hidden="true" />
               <span className="text-sm">{profile.location}</span>
             </div>
           </div>
@@ -61,7 +62,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
           {interests.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-600 font-medium">
-                <span className="material-symbols-rounded w-4 h-4">local_offer</span>
+                <Tag className="size-4" aria-hidden="true" />
                 <span className="text-sm">Intereses</span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -80,7 +81,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
 
           {/* Additional Info */}
           <div className="flex items-center gap-2 text-gray-600 pt-2 border-t border-gray-100">
-            <span className="material-symbols-rounded w-4 h-4">calendar_month</span>
+            <CalendarDays className="size-4" aria-hidden="true" />
             <span className="text-sm">
               Looking for: {profile.gender === 'female' ? 'Men' : profile.gender === 'male' ? 'Women' : 'Everyone'}
             </span>

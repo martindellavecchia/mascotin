@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CircleAlert, Eye, EyeOff, PawPrint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -69,7 +70,7 @@ export default function LoginPage() {
         <header className="absolute top-0 left-0 w-full p-6 sm:p-8 lg:p-10">
           <Link href="/" className="flex items-center gap-2.5 text-slate-900">
             <div className="flex items-center justify-center size-10 rounded-lg bg-teal-600 text-white">
-              <span className="material-symbols-rounded text-2xl filled">pets</span>
+              <PawPrint className="size-7" aria-hidden="true" fill="currentColor" />
             </div>
             <span className="text-xl font-bold tracking-tight">MascoTin</span>
           </Link>
@@ -123,9 +124,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  <span className="material-symbols-rounded">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
                 </button>
               </div>
             </div>
@@ -141,7 +140,7 @@ export default function LoginPage() {
 
             {error && (
               <div className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                <span className="material-symbols-rounded text-red-600 text-xl mt-0.5">error</span>
+                <CircleAlert className="mt-0.5 size-6 text-red-600" aria-hidden="true" />
                 <p className="text-sm font-medium text-red-700">{error}</p>
               </div>
             )}

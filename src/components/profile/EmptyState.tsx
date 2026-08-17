@@ -1,5 +1,6 @@
 'use client';
 
+import { Plus, PawPrint } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
@@ -10,7 +11,7 @@ export function EmptyState({ onAddPet }: EmptyStateProps) {
     return (
         <div className="text-center py-12">
             <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-rounded text-4xl text-teal-500">pets</span>
+                <PawPrint className="size-10 text-teal-500" aria-hidden="true" />
             </div>
             <h3 className="text-lg font-semibold text-slate-700 mb-2">
                 Aún no tienes mascotas
@@ -22,7 +23,7 @@ export function EmptyState({ onAddPet }: EmptyStateProps) {
                 onClick={onAddPet}
                 className="bg-teal-500 hover:bg-teal-600 text-white rounded-full px-6"
             >
-                <span className="material-symbols-rounded text-lg mr-2">add</span>
+                <Plus className="size-5 mr-2" aria-hidden="true" />
                 Registrar Mascota
             </Button>
         </div>

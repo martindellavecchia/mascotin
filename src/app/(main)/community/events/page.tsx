@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { es } from 'date-fns/locale';
+import { CalendarX, Clock, MapPin, Users } from 'lucide-react';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -140,7 +141,7 @@ export default function CommunityEventsPage() {
                         <div className="text-center py-12">Cargando calendario...</div>
                     ) : events.length === 0 ? (
                         <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-200">
-                            <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">event_busy</span>
+                            <CalendarX className="mb-2 size-10 text-slate-300" aria-hidden="true" />
                             <p className="text-slate-500">No hay eventos programados próximamente.</p>
                         </div>
                     ) : (
@@ -172,15 +173,15 @@ export default function CommunityEventsPage() {
 
                                             <div className="flex flex-wrap gap-4 text-sm text-slate-500 pt-2">
                                                 <div className="flex items-center gap-1">
-                                                    <span className="material-symbols-rounded text-base">schedule</span>
+                                                    <Clock className="size-4" aria-hidden="true" />
                                                     {date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <span className="material-symbols-rounded text-base">location_on</span>
+                                                    <MapPin className="size-4" aria-hidden="true" />
                                                     {event.location}
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <span className="material-symbols-rounded text-base">group</span>
+                                                    <Users className="size-4" aria-hidden="true" />
                                                     {event.attendeesCount} asistentes
                                                 </div>
                                             </div>

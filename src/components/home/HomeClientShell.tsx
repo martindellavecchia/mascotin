@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown, Compass, Heart, Home, PawPrint } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import HomeStats from '@/components/HomeStats';
 import Feed from '@/components/feed/Feed';
@@ -349,14 +350,14 @@ export default function HomeClientShell({
                   value="home"
                   className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
                 >
-                  <span className="material-symbols-rounded text-lg">home</span>
+                  <Home className="size-5" aria-hidden="true" />
                   Inicio
                 </TabsTrigger>
                 <TabsTrigger
                   value="explore"
                   className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
                 >
-                  <span className="material-symbols-rounded text-lg">explore</span>
+                  <Compass className="size-5" aria-hidden="true" />
                   Descubrir
                 </TabsTrigger>
                 <TabsTrigger
@@ -364,7 +365,7 @@ export default function HomeClientShell({
                   aria-label="Círculo de coincidencias"
                   className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
                 >
-                  <span className="material-symbols-rounded text-lg">favorite</span>
+                  <Heart className="size-5" aria-hidden="true" />
                   Círculo
                 </TabsTrigger>
               </TabsList>
@@ -382,9 +383,9 @@ export default function HomeClientShell({
                     onClick={() => router.push(`/profile?petId=${activePet.id}`)}
                     className="inline-flex min-h-11 max-w-full min-w-0 items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:border-teal-200 sm:self-auto"
                   >
-                    <span className="material-symbols-rounded shrink-0 text-teal-700 filled">pets</span>
+                    <PawPrint className="size-5 shrink-0 text-teal-700" fill="currentColor" aria-hidden="true" />
                     <span className="truncate">{activePet.name}</span>
-                    <span className="material-symbols-rounded shrink-0 text-lg text-slate-400">expand_more</span>
+                    <ChevronDown className="size-5 shrink-0 text-slate-400" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -437,9 +438,7 @@ export default function HomeClientShell({
         <div className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-match-in">
           <div className="rounded-lg border border-teal-600 bg-teal-700 px-5 py-3.5 text-white shadow-lg sm:px-6">
             <div className="flex items-center gap-3">
-              <span className="material-symbols-rounded text-2xl filled">
-                favorite
-              </span>
+              <Heart className="size-7" fill="currentColor" aria-hidden="true" />
               <div>
                 <p className="text-base font-semibold">¡Es un match!</p>
                 <p className="text-sm text-teal-100">

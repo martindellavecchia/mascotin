@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { ExternalLink, Store } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -140,14 +141,14 @@ export default function BusinessManagement() {
               </p>
             </div>
             <Button asChild variant="outline" className="border-teal-200 bg-white text-teal-700">
-              <Link href={`/shop/${store.slug}`}><span className="material-symbols-rounded mr-2 text-lg">open_in_new</span>Ver perfil público</Link>
+              <Link href={`/shop/${store.slug}`}><ExternalLink className="mr-2 size-5" aria-hidden="true" />Ver perfil público</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
         <Card className="border-dashed border-teal-300 bg-teal-50/60">
           <CardContent className="p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-700"><span className="material-symbols-rounded text-2xl">add_business</span></div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-700"><Store className="size-7" aria-hidden="true" /></div>
             <h2 className="mt-4 text-xl font-bold text-slate-900">Publicá tu negocio</h2>
             <p className="mt-1 max-w-2xl text-sm text-slate-600">Al publicarlo, tus servicios aparecerán agrupados en un perfil puntuable y tu avatar mostrará el badge de owner de negocio.</p>
           </CardContent>

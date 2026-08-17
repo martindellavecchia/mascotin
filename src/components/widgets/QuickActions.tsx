@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { CalendarDays, HandHeart, Search, Store, type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface QuickActionsProps {
@@ -11,11 +12,11 @@ interface QuickActionsProps {
 export default function QuickActions({ showTitle = true, compact = false }: QuickActionsProps) {
     const router = useRouter();
 
-    const actions = [
-        { icon: 'search', label: 'Descubrir', color: 'bg-teal-50 text-teal-700', href: '/?tab=explore' },
-        { icon: 'storefront', label: 'Servicios', color: 'bg-slate-100 text-slate-700', href: '/shop' },
-        { icon: 'volunteer_activism', label: 'Hogares', color: 'bg-orange-50 text-orange-700', href: '/hogares-de-transito' },
-        { icon: 'calendar_month', label: 'Eventos', color: 'bg-teal-50 text-teal-700', href: '/community/events' },
+    const actions: Array<{ icon: LucideIcon; label: string; color: string; href: string }> = [
+        { icon: Search, label: 'Descubrir', color: 'bg-teal-50 text-teal-700', href: '/?tab=explore' },
+        { icon: Store, label: 'Servicios', color: 'bg-slate-100 text-slate-700', href: '/shop' },
+        { icon: HandHeart, label: 'Hogares', color: 'bg-orange-50 text-orange-700', href: '/hogares-de-transito' },
+        { icon: CalendarDays, label: 'Eventos', color: 'bg-teal-50 text-teal-700', href: '/community/events' },
     ];
 
     if (compact) {
@@ -30,7 +31,7 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
                         aria-label={action.label}
                     >
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${action.color}`}>
-                            <span className="material-symbols-rounded text-lg">{action.icon}</span>
+                            <action.icon className="size-5" aria-hidden="true" />
                         </div>
                         <span className="text-[10px] text-slate-500 font-medium">{action.label}</span>
                     </button>
@@ -56,7 +57,7 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
                             aria-label={action.label}
                         >
                             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>
-                                <span className="material-symbols-rounded text-xl">{action.icon}</span>
+                                <action.icon className="size-6" aria-hidden="true" />
                             </div>
                             <span className="text-xs font-medium text-slate-600">{action.label}</span>
                         </button>

@@ -1,7 +1,8 @@
 
 import type { Pet } from '@/types';
 import Image from 'next/image';
-import { getPetTypeIcon } from '@/lib/petTypeIcon';
+import { Plus } from 'lucide-react';
+import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
 interface PetSelectorProps {
@@ -69,9 +70,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
                       }}
                     />
                   ) : (
-                    <span className="material-symbols-rounded text-4xl text-teal-600">
-                      {getPetTypeIcon(pet.petType)}
-                    </span>
+                    <PetTypeIcon petType={pet.petType} className="size-10 text-teal-600" />
                   )}
                 </div>
 
@@ -98,7 +97,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
             className="flex-shrink-0 flex flex-col items-center gap-2 group"
           >
             <div className="w-[72px] h-[72px] rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 group-hover:border-primary group-hover:text-primary transition-all">
-              <span className="material-symbols-rounded text-2xl">add</span>
+              <Plus className="size-7" aria-hidden="true" />
             </div>
             <span className="text-xs font-medium text-gray-500 group-hover:text-primary transition-colors">Agregar</span>
           </button>

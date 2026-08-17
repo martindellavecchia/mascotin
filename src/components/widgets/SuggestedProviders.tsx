@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -98,8 +99,8 @@ export default function SuggestedProviders() {
                                 {provider.location} • <span className="text-amber-500">★</span> {provider.rating.toFixed(1)}
                             </p>
                         </div>
-                        <Button variant="ghost" size="icon" className="text-teal-600 hover:bg-teal-50">
-                            <span className="material-symbols-rounded text-xl">add</span>
+                        <Button variant="ghost" size="icon" className="text-teal-600 hover:bg-teal-50" aria-label="Agregar proveedor">
+                            <Plus className="size-6" aria-hidden="true" />
                         </Button>
                     </div>
                 ))}

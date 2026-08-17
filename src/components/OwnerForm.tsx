@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { Camera, Hourglass, PawPrint, Trees } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -136,10 +137,13 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               className="absolute bottom-0 right-0 p-2 bg-teal-500 text-white rounded-full shadow-md hover:bg-teal-600 transition-colors disabled:opacity-50"
+              aria-label="Cambiar foto de perfil"
             >
-              <span className="material-symbols-rounded text-sm">
-                {uploading ? 'hourglass_empty' : 'photo_camera'}
-              </span>
+              {uploading ? (
+                <Hourglass className="size-4" aria-hidden="true" />
+              ) : (
+                <Camera className="size-4" aria-hidden="true" />
+              )}
             </button>
           </div>
           <input
@@ -232,7 +236,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
                     onChange={field.onChange}
                     className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                   />
-                  <span className="material-symbols-rounded text-lg text-teal-700">yard</span>
+                  <Trees className="size-5 text-teal-700" aria-hidden="true" />
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo patio/jardín</span>
                 </label>
               )}
@@ -252,7 +256,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
                     onChange={field.onChange}
                     className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                   />
-                  <span className="material-symbols-rounded text-lg text-teal-700">pets</span>
+                  <PawPrint className="size-5 text-teal-700" aria-hidden="true" />
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo otras mascotas</span>
                 </label>
               )}

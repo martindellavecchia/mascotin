@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { CalendarCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -160,7 +162,7 @@ export default function ProviderAppointments() {
             {appointments.length === 0 ? (
                 <Card>
                     <CardContent className="p-8 text-center">
-                        <span className="material-symbols-rounded text-5xl text-slate-300 mb-2">event_available</span>
+                        <CalendarCheck className="mx-auto mb-2 size-12 text-slate-300" aria-hidden="true" />
                         <p className="text-slate-500">
                             {filter ? 'No hay citas con este estado' : 'No tienes citas próximas'}
                         </p>
@@ -196,7 +198,7 @@ export default function ProviderAppointments() {
                                                             <AvatarImage src={getPetImage(apt.pet)!} />
                                                         ) : (
                                                             <AvatarFallback className="text-xs">
-                                                                <span className="material-symbols-rounded align-middle text-sm text-teal-700">pets</span>
+                                                                <PetTypeIcon petType={apt.pet.petType} className="size-4 text-teal-700" />
                                                             </AvatarFallback>
                                                         )}
                                                     </Avatar>

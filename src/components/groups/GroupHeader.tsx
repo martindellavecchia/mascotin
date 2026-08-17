@@ -1,12 +1,12 @@
 'use client';
 
-import EditGroupModal from './EditGroupModal';
-
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Pencil, Trash2, UserRound, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import EditGroupModal from './EditGroupModal';
 
 interface GroupHeaderProps {
     group: {
@@ -72,7 +72,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                         <img src={group.image} alt={group.name} className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-teal-100">
-                            <span className="material-symbols-rounded text-6xl text-teal-300">groups</span>
+                            <Users className="size-16 text-teal-300" aria-hidden="true" />
                         </div>
                     )}
                 </div>
@@ -85,7 +85,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
 
                             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 sm:gap-4">
                                 <span className="flex items-center gap-1">
-                                    <span className="material-symbols-rounded">person</span>
+                                    <UserRound className="size-5" aria-hidden="true" />
                                     {group._count.members} miembros
                                 </span>
                                 {isMember && (
@@ -105,11 +105,11 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                             {isCreator ? (
                                 <>
                                     <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setIsEditOpen(true)}>
-                                        <span className="material-symbols-rounded mr-2">edit</span>
+                                        <Pencil className="mr-2 size-5" aria-hidden="true" />
                                         Editar
                                     </Button>
                                     <Button variant="destructive" className="min-h-11 w-full sm:w-auto" onClick={handleDelete}>
-                                        <span className="material-symbols-rounded mr-2">delete</span>
+                                        <Trash2 className="mr-2 size-5" aria-hidden="true" />
                                         Eliminar
                                     </Button>
                                 </>

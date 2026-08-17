@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { CalendarDays, Camera, CircleHelp, ImagePlus, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -131,19 +132,19 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                     <Tabs value={postType} onValueChange={(v) => setPostType(v as PostType)}>
                         <TabsList className="grid grid-cols-4 w-full">
                             <TabsTrigger value="post" className="text-xs gap-1">
-                                <span className="material-symbols-rounded text-sm">edit</span>
+                                <Pencil className="size-4" aria-hidden="true" />
                                 Texto
                             </TabsTrigger>
                             <TabsTrigger value="photo" className="text-xs gap-1">
-                                <span className="material-symbols-rounded text-sm">photo_camera</span>
+                                <Camera className="size-4" aria-hidden="true" />
                                 Foto
                             </TabsTrigger>
                             <TabsTrigger value="event" className="text-xs gap-1">
-                                <span className="material-symbols-rounded text-sm">event</span>
+                                <CalendarDays className="size-4" aria-hidden="true" />
                                 Evento
                             </TabsTrigger>
                             <TabsTrigger value="question" className="text-xs gap-1">
-                                <span className="material-symbols-rounded text-sm">help</span>
+                                <CircleHelp className="size-4" aria-hidden="true" />
                                 Pregunta
                             </TabsTrigger>
                         </TabsList>
@@ -198,7 +199,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading || images.length >= 4}
                             >
-                                <span className="material-symbols-rounded text-teal-600 mr-1">add_photo_alternate</span>
+                                <ImagePlus className="mr-1 size-5 text-teal-600" aria-hidden="true" />
                                 Agregar
                             </Button>
                         </div>

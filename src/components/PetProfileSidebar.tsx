@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { CircleCheck, Pencil, PawPrint, TriangleAlert } from 'lucide-react';
 import { Pet } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ export default function PetProfileSidebar({
         return (
             <Card className="p-6 text-center">
                 <div className="w-20 h-20 bg-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="material-symbols-rounded text-slate-400 text-3xl">pets</span>
+                    <PawPrint className="size-8 text-slate-400" aria-hidden="true" />
                 </div>
                 <h3 className="font-semibold text-slate-900 mb-2">Sin Mascota Activa</h3>
                 <p className="text-sm text-slate-500 mb-4">Selecciona o registra una mascota.</p>
@@ -164,8 +165,9 @@ export default function PetProfileSidebar({
                     <button
                         onClick={onEdit}
                         className="absolute bottom-0 right-0 p-1.5 bg-teal-500 text-white rounded-full shadow-md hover:bg-teal-600 transition-colors"
+                        aria-label="Editar mascota"
                     >
-                        <span className="material-symbols-rounded text-sm">edit</span>
+                        <Pencil className="size-4" aria-hidden="true" />
                     </button>
                 </div>
 
@@ -198,7 +200,7 @@ export default function PetProfileSidebar({
                 <Card className="p-4">
                     <div className="flex items-start gap-3 mb-3">
                         <div className="p-2 bg-orange-100 text-orange-500 rounded-lg shrink-0">
-                            <span className="material-symbols-rounded text-lg">warning</span>
+                            <TriangleAlert className="size-5" aria-hidden="true" />
                         </div>
                         <div>
                             <h4 className="font-semibold text-orange-600 text-xs uppercase tracking-wide">Alerta de Salud</h4>
@@ -219,7 +221,7 @@ export default function PetProfileSidebar({
                 <Card className="p-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-teal-100 text-teal-600 rounded-lg">
-                            <span className="material-symbols-rounded text-lg">check_circle</span>
+                            <CircleCheck className="size-5" aria-hidden="true" />
                         </div>
                         <div>
                             <p className="font-medium text-slate-800 text-sm">Salud al día</p>

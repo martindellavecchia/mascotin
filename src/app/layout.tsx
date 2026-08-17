@@ -44,19 +44,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.fonts.load('24px "Material Symbols Rounded"').then(function(){if(document.fonts.check('24px "Material Symbols Rounded"'))document.documentElement.classList.add('material-symbols-ready')}).catch(function(){})`,
-          }}
-        />
-      </head>
       <body
         className={`${plusJakartaSans.variable} font-sans antialiased bg-slate-50`}
       >

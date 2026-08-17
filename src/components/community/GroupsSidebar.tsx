@@ -1,8 +1,9 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Group {
@@ -56,7 +57,7 @@ export default function GroupsSidebar() {
                                     <img src={group.image} alt="" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-teal-100">
-                                        <span className="material-symbols-rounded text-teal-300">groups</span>
+                                        <Users className="size-5 text-teal-300" aria-hidden="true" />
                                     </div>
                                 )}
                             </div>

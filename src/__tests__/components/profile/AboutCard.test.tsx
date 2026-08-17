@@ -74,7 +74,6 @@ describe('Profile PetCard gender', () => {
     );
 
     expect(screen.getByText('Hembra')).toBeInTheDocument();
-    expect(screen.getByText('female')).toBeInTheDocument();
     expect(screen.getByText('Ver pasaporte')).toBeInTheDocument();
   });
 
@@ -88,7 +87,6 @@ describe('Profile PetCard gender', () => {
     );
 
     expect(screen.getByText('Macho')).toBeInTheDocument();
-    expect(screen.getByText('male')).toBeInTheDocument();
   });
 
   it('shows a single edit action for the pet', () => {

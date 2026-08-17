@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { Plus, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -82,7 +83,7 @@ export default function GroupsDirectoryPage() {
                             onClick={() => setShowCreateModal(true)}
                             className="bg-teal-500 hover:bg-teal-600 text-white"
                         >
-                            <span className="material-symbols-rounded mr-2">add</span>
+                            <Plus className="mr-2 size-5" aria-hidden="true" />
                             Crear Grupo
                         </Button>
                     </div>
@@ -103,7 +104,7 @@ export default function GroupsDirectoryPage() {
                         </div>
                     ) : groups.length === 0 ? (
                         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                            <span className="material-symbols-rounded text-6xl text-slate-200 mb-4">groups</span>
+                            <Users className="mb-4 size-16 text-slate-200" aria-hidden="true" />
                             <h3 className="text-lg font-medium text-slate-700">No se encontraron grupos</h3>
                             <p className="text-slate-500">Sé el primero en crear uno para este tema.</p>
                         </div>

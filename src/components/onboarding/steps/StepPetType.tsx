@@ -1,8 +1,9 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { getPetTypeIcon } from '@/lib/petTypeIcon';
+import { Check } from 'lucide-react';
+import { PetTypeIcon } from '@/components/PetTypeIcon';
+import { cn } from '@/lib/utils';
 
 interface StepPetTypeProps {
     value: string;
@@ -39,13 +40,11 @@ export default function StepPetType({ value, onChange }: StepPetTypeProps) {
                               : 'opacity-90 hover:opacity-100'
                         )}
                     >
-                        <span className="material-symbols-rounded text-5xl mb-3 text-teal-700">
-                          {getPetTypeIcon(type.id)}
-                        </span>
+                        <PetTypeIcon petType={type.id} className="size-12 mb-3 text-teal-700" />
                         <span className="font-semibold text-slate-800">{type.label}</span>
                         {value === type.id && (
                             <div className="absolute top-3 right-3 bg-teal-600 text-white rounded-full p-1">
-                                <span className="material-symbols-rounded text-sm">check</span>
+                                <Check className="size-4" aria-hidden="true" />
                             </div>
                         )}
                     </motion.button>

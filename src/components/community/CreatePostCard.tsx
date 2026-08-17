@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { CalendarDays, Camera, CircleHelp, ImagePlus, Pencil, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -126,15 +127,6 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
         }
     };
 
-    const getIcon = (type: PostType) => {
-        switch (type) {
-            case 'photo': return 'photo_camera';
-            case 'event': return 'event';
-            case 'question': return 'help';
-            default: return 'edit';
-        }
-    };
-
     return (
         <Card className="mb-6 shadow-sm">
             <CardContent className="p-4">
@@ -163,23 +155,23 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                                 <Tabs value={postType} onValueChange={(v) => setPostType(v as PostType)}>
                                     <TabsList className="grid w-full grid-cols-5">
                                         <TabsTrigger value="post" className="gap-1 px-1 text-xs sm:px-3" aria-label="Texto">
-                                            <span className="material-symbols-rounded text-base">edit</span>
+                                            <Pencil className="size-4" aria-hidden="true" />
                                             <span className="hidden sm:inline">Texto</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="photo" className="gap-1 px-1 text-xs sm:px-3" aria-label="Foto">
-                                            <span className="material-symbols-rounded text-base">photo_camera</span>
+                                            <Camera className="size-4" aria-hidden="true" />
                                             <span className="hidden sm:inline">Foto</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="event" className="gap-1 px-1 text-xs sm:px-3" aria-label="Evento">
-                                            <span className="material-symbols-rounded text-base">event</span>
+                                            <CalendarDays className="size-4" aria-hidden="true" />
                                             <span className="hidden sm:inline">Evento</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="question" className="gap-1 px-1 text-xs sm:px-3" aria-label="Pregunta">
-                                            <span className="material-symbols-rounded text-base">help</span>
+                                            <CircleHelp className="size-4" aria-hidden="true" />
                                             <span className="hidden sm:inline">Pregunta</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="recommendation" className="gap-1 px-1 text-xs sm:px-3" aria-label="Tip">
-                                            <span className="material-symbols-rounded text-base">star</span>
+                                            <Star className="size-4" aria-hidden="true" />
                                             <span className="hidden sm:inline">Tip</span>
                                         </TabsTrigger>
                                     </TabsList>
@@ -250,8 +242,9 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                                             size="sm"
                                             onClick={() => fileInputRef.current?.click()}
                                             disabled={uploading || images.length >= 4}
+                                            aria-label="Agregar foto"
                                         >
-                                            <span className="material-symbols-rounded text-teal-600">add_photo_alternate</span>
+                                            <ImagePlus className="size-5 text-teal-600" aria-hidden="true" />
                                         </Button>
 
                                         {pets && pets.length > 0 && (

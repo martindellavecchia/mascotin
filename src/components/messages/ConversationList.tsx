@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { shouldUnoptimizeImage } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { PawPrint, Search, Users } from 'lucide-react';
 import type { MatchWithPet } from '@/types/messages';
 
 interface Group {
@@ -35,7 +36,7 @@ export default function ConversationList({
             <div className="shrink-0 border-b border-slate-100 p-4">
                 <h2 className="text-lg font-bold text-slate-800 mb-3">Mensajes</h2>
                 <div className="relative mb-3">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-rounded text-lg">search</span>
+                    <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
                     <Input aria-label="Buscar conversaciones" placeholder="Buscar..." className="min-h-11 rounded-full border-slate-200 bg-slate-50 pl-10 text-sm" />
                 </div>
             </div>
@@ -55,7 +56,7 @@ export default function ConversationList({
                 <TabsContent value="matches" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
                     {matches.length === 0 ? (
                         <div className="p-6 text-center text-slate-400">
-                            <span className="material-symbols-rounded text-4xl mb-2">pets</span>
+                            <PawPrint className="mb-2 size-10" aria-hidden="true" />
                             <p className="text-sm">No tienes matches aún.</p>
                         </div>
                     ) : (
@@ -86,7 +87,7 @@ export default function ConversationList({
                 <TabsContent value="groups" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
                     {groups.length === 0 ? (
                         <div className="p-6 text-center text-slate-400">
-                            <span className="material-symbols-rounded text-4xl mb-2">groups</span>
+                            <Users className="mb-2 size-10" aria-hidden="true" />
                             <p className="text-sm">No perteneces a ningún grupo.</p>
                         </div>
                     ) : (
@@ -112,7 +113,7 @@ export default function ConversationList({
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-teal-100">
-                                            <span className="material-symbols-rounded text-teal-300">groups</span>
+                                            <Users className="size-5 text-teal-300" aria-hidden="true" />
                                         </div>
                                     )}
                                 </div>

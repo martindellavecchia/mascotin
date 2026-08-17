@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Camera, LoaderCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface StepPhotosProps {
@@ -61,7 +62,7 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
                             className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-red-500 text-white shadow-sm"
                             aria-label="Eliminar foto"
                         >
-                            <span className="material-symbols-rounded text-[16px] leading-none">close</span>
+                            <X className="size-4" aria-hidden="true" />
                         </button>
                     </div>
                 ))}
@@ -69,10 +70,10 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
                 {images.length < MAX_PHOTOS && (
                     <label className="aspect-square rounded-xl border-2 border-dashed border-teal-300 flex flex-col items-center justify-center cursor-pointer hover:bg-teal-50 transition-colors bg-teal-50/50">
                         {uploading ? (
-                            <span className="material-symbols-rounded text-[24px] leading-none animate-spin text-teal-500">progress_activity</span>
+                            <LoaderCircle className="size-6 animate-spin text-teal-500" aria-hidden="true" />
                         ) : (
                             <>
-                                <span className="material-symbols-rounded text-teal-500 text-[32px] leading-none mb-2">add_a_photo</span>
+                                <Camera className="text-teal-500 size-8 mb-2" aria-hidden="true" />
                                 <span className="text-xs text-slate-500">Subir Foto</span>
                             </>
                         )}

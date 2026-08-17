@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MapPin, PawPrint, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import type { Pet } from '@/types';
 import PetCard from '@/components/PetCard';
 import { Button } from '@/components/ui/button';
@@ -58,9 +59,9 @@ export default function ExploreTab({
           className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white"
           aria-label="Preferencias de zona"
         >
-          <span className="material-symbols-rounded text-xl">location_on</span>
+          <MapPin className="size-6" aria-hidden="true" />
           {activePet?.location || 'Tu zona'}
-          <span className="material-symbols-rounded text-lg">tune</span>
+          <SlidersHorizontal className="size-5" aria-hidden="true" />
         </Link>
       </div>
 
@@ -74,7 +75,7 @@ export default function ExploreTab({
       ) : currentIndex >= petsToSwipe.length || !currentPet ? (
         <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
           <div className="max-w-sm">
-            <span className="material-symbols-rounded filled text-6xl text-teal-200">pets</span>
+            <PawPrint className="size-16 text-teal-200" fill="currentColor" aria-hidden="true" />
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Ya conociste a todos por aquí</h2>
             <p className="mt-2 text-slate-500">Actualiza la plaza para descubrir nuevas mascotas cerca de ti.</p>
             <Button onClick={onReload} className="mt-6 h-11 rounded-xl bg-teal-600 px-6 hover:bg-teal-700">
@@ -95,7 +96,7 @@ export default function ExploreTab({
       )}
 
       <p className="mt-5 flex items-center gap-2 text-xs text-slate-500">
-        <span className="material-symbols-rounded text-lg">verified_user</span>
+        <ShieldCheck className="size-5" aria-hidden="true" />
         Perfiles verificados para tu tranquilidad. Conecta siempre en espacios seguros.
       </p>
     </section>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Mail, MailCheck, PawPrint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -43,7 +44,7 @@ export default function ForgotPasswordPage() {
         {/* Header Logo */}
         <div className="flex items-center gap-3 text-slate-800 mb-10 justify-center">
           <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600">
-            <span className="material-symbols-rounded text-2xl">pets</span>
+            <PawPrint className="size-7" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
         </div>
@@ -51,7 +52,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
-              <span className="material-symbols-rounded text-3xl">mark_email_read</span>
+              <MailCheck className="size-8" aria-hidden="true" />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-800">Revisa tu correo</h1>
             <p className="text-slate-600">
@@ -87,7 +88,7 @@ export default function ForgotPasswordPage() {
                     className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <span className="material-symbols-rounded">mail</span>
+                    <Mail className="size-5" aria-hidden="true" />
                   </span>
                 </div>
               </div>

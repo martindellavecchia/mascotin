@@ -1,5 +1,6 @@
 'use client';
 
+import { Stethoscope, Syringe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -71,9 +72,7 @@ export default function StepDetails({ data, updateData }: StepDetailsProps) {
                             onChange={(e) => updateData({ vaccinated: e.target.checked })}
                             className="sr-only"
                         />
-                        <span className={`material-symbols-rounded text-xl ${data.vaccinated ? 'text-teal-600' : 'text-slate-400'}`}>
-                            vaccines
-                        </span>
+                        <Syringe className={`size-6 ${data.vaccinated ? 'text-teal-600' : 'text-slate-400'}`} aria-hidden="true" />
                         <span className={`text-sm font-medium ${data.vaccinated ? 'text-teal-700' : 'text-slate-700'}`}>
                             {isFemale ? 'Vacunada' : 'Vacunado'}
                         </span>
@@ -91,9 +90,7 @@ export default function StepDetails({ data, updateData }: StepDetailsProps) {
                             onChange={(e) => updateData({ neutered: e.target.checked })}
                             className="sr-only"
                         />
-                        <span className={`material-symbols-rounded text-xl ${data.neutered ? 'text-teal-600' : 'text-slate-400'}`}>
-                            medical_services
-                        </span>
+                        <Stethoscope className={`size-6 ${data.neutered ? 'text-teal-600' : 'text-slate-400'}`} aria-hidden="true" />
                         <span className={`text-sm font-medium ${data.neutered ? 'text-teal-700' : 'text-slate-700'}`}>
                             {isFemale ? 'Castrada' : 'Castrado'}
                         </span>

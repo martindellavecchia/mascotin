@@ -1,9 +1,21 @@
 'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import {
+    Cake,
+    Eye,
+    FilePen,
+    Mars,
+    Ruler,
+    Stethoscope,
+    Syringe,
+    Trash2,
+    Venus,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PetTypeIcon } from "@/components/PetTypeIcon";
 import type { Pet } from "@/types";
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from "@/lib/media";
 
@@ -38,7 +50,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
         female: 'Hembra'
     };
 
-    const genderIcon = pet.gender === 'male' ? 'male' : 'female';
+    const GenderIcon = pet.gender === 'male' ? Mars : Venus;
     const isFemale = pet.gender === 'female';
 
     return (
@@ -55,7 +67,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                        <span className="material-symbols-rounded text-6xl text-slate-300">pets</span>
+                        <PetTypeIcon petType={pet.petType} className="size-16 text-slate-300" />
                     </div>
                 )}
                 <div className="absolute top-3 right-3 flex gap-2">
@@ -66,12 +78,12 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         onClick={() => onDelete(pet)}
                         aria-label="Eliminar mascota"
                     >
-                        <span className="material-symbols-rounded text-sm">delete</span>
+                        <Trash2 className="size-4" aria-hidden="true" />
                     </Button>
                 </div>
                 <div className="absolute bottom-3 left-3 flex gap-2 max-w-[calc(100%-1.5rem)]">
                     <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1 shrink-0">
-                        <span className="material-symbols-rounded text-sm text-teal-700">pets</span>
+                        <PetTypeIcon petType={pet.petType} className="size-4 text-teal-700" />
                         {pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Otro'}
                     </Badge>
                     {pet.breed && (
@@ -87,17 +99,17 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         <h3 className="text-xl font-bold text-slate-900 mb-1">{pet.name}</h3>
                         <div className="flex flex-wrap gap-2 text-sm text-slate-500">
                             <span className="flex items-center gap-1">
-                                <span className="material-symbols-rounded text-base">cake</span>
+                                <Cake className="size-4" aria-hidden="true" />
                                 {pet.age} años
                             </span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                                <span className="material-symbols-rounded text-base">{genderIcon}</span>
+                                <GenderIcon className="size-4" aria-hidden="true" />
                                 {genderLabels[pet.gender] || pet.gender}
                             </span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                                <span className="material-symbols-rounded text-base">straighten</span>
+                                <Ruler className="size-4" aria-hidden="true" />
                                 {sizeLabels[displaySize.toLowerCase()] || displaySize}
                             </span>
                         </div>
@@ -107,13 +119,13 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                 <div className="flex flex-wrap gap-2 mb-4">
                     {pet.vaccinated && (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-teal-50 text-teal-700 text-xs font-medium">
-                            <span className="material-symbols-rounded text-sm">vaccines</span>
+                            <Syringe className="size-4" aria-hidden="true" />
                             {isFemale ? 'Vacunada' : 'Vacunado'}
                         </span>
                     )}
                     {pet.neutered && (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-teal-50 text-teal-700 text-xs font-medium border border-teal-200">
-                            <span className="material-symbols-rounded text-sm">medical_services</span>
+                            <Stethoscope className="size-4" aria-hidden="true" />
                             {isFemale ? 'Castrada' : 'Castrado'}
                         </span>
                     )}
@@ -124,7 +136,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         className="w-full bg-teal-50 hover:bg-teal-100 text-teal-700 border-0 shadow-none"
                         onClick={() => onEdit(pet)}
                     >
-                        <span className="material-symbols-rounded text-lg mr-2">edit_note</span>
+                        <FilePen className="size-5 mr-2" aria-hidden="true" />
                         Editar
                     </Button>
                     <Button
@@ -132,7 +144,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         asChild
                     >
                         <Link href={`/pets/${pet.id}`}>
-                            <span className="material-symbols-rounded text-lg mr-2">visibility</span>
+                            <Eye className="size-5 mr-2" aria-hidden="true" />
                             Ver pasaporte
                         </Link>
                     </Button>

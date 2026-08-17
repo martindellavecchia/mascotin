@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -11,7 +12,7 @@ export default function PetPairingWidget() {
         <Card className="bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0 overflow-hidden">
             <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-rounded text-2xl filled">favorite</span>
+                    <Heart className="size-7 fill-current" aria-hidden="true" />
                     <span className="text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">PET MATCHING</span>
                 </div>
                 <h3 className="font-bold text-lg mb-1">Encuentra amigos de juego</h3>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ChevronDown, ChevronUp, Info, Pencil } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -26,7 +27,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
             <Card className="shadow-sm border-0 bg-white">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg flex items-center gap-2">
-                        <span className="material-symbols-rounded text-teal-500">info</span>
+                        <Info className="size-5 text-teal-500" aria-hidden="true" />
                         Sobre mí
                     </CardTitle>
                 </CardHeader>
@@ -41,7 +42,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                             className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 p-0 h-auto font-medium"
                             onClick={onEdit}
                         >
-                            <span className="material-symbols-rounded text-base mr-1">edit</span>
+                            <Pencil className="size-4 mr-1" aria-hidden="true" />
                             Editar biografía
                         </Button>
                     )}
@@ -61,12 +62,14 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                     className="text-lg flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors"
                     onClick={() => isLongText && setExpanded(!expanded)}
                 >
-                    <span className="material-symbols-rounded text-teal-500">info</span>
+                    <Info className="size-5 text-teal-500" aria-hidden="true" />
                     Sobre mí
                     {isLongText && (
-                        <span className="material-symbols-rounded text-slate-400 text-sm ml-auto">
-                            {expanded ? 'expand_less' : 'expand_more'}
-                        </span>
+                        expanded ? (
+                            <ChevronUp className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
+                        ) : (
+                            <ChevronDown className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
+                        )
                     )}
                 </CardTitle>
             </CardHeader>

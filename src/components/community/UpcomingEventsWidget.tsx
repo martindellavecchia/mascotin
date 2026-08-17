@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Clock, Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -139,11 +140,11 @@ export default function UpcomingEventsWidget() {
                                     <h4 className="font-semibold text-sm text-slate-800 line-clamp-1">{event.title}</h4>
                                     <div className="flex items-center text-xs text-slate-500 mt-1 gap-2">
                                         <span className="flex items-center gap-1">
-                                            <span className="material-symbols-rounded text-xs">schedule</span>
+                                            <Clock className="size-3" aria-hidden="true" />
                                             {time}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="material-symbols-rounded text-xs">group</span>
+                                            <Users className="size-3" aria-hidden="true" />
                                             {event.attendeesCount}
                                         </span>
                                     </div>

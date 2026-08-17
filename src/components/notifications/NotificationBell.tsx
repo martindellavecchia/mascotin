@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Bell, BellOff, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -53,7 +54,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
           className="relative rounded-xl text-slate-500 hover:text-teal-600 hover:bg-teal-50"
           aria-label="Notificaciones"
         >
-          <span className="material-symbols-rounded">notifications</span>
+          <Bell className="size-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -77,11 +78,11 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         <ScrollArea className="max-h-[400px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <span className="material-symbols-rounded animate-spin text-slate-400">progress_activity</span>
+              <LoaderCircle className="size-5 animate-spin text-slate-400" aria-hidden="true" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-              <span className="material-symbols-rounded text-3xl mb-2">notifications_off</span>
+              <BellOff className="mb-2 size-8" aria-hidden="true" />
               <p className="text-sm">No tienes notificaciones</p>
             </div>
           ) : (

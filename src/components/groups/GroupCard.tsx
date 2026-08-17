@@ -1,7 +1,8 @@
+import Link from 'next/link';
+import { UserRound, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
 
 interface GroupCardProps {
     group: {
@@ -29,7 +30,7 @@ export default function GroupCard({ group, onJoin }: GroupCardProps) {
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-teal-50 rounded-t-lg">
-                        <span className="material-symbols-rounded text-4xl text-teal-200">groups</span>
+                        <Users className="size-10 text-teal-200" aria-hidden="true" />
                     </div>
                 )}
                 {group.isMember && (
@@ -44,7 +45,7 @@ export default function GroupCard({ group, onJoin }: GroupCardProps) {
                 </Link>
                 <div className="flex items-center text-xs text-slate-500 mt-1 mb-3 gap-2">
                     <span className="flex items-center gap-1">
-                        <span className="material-symbols-rounded text-sm">person</span>
+                        <UserRound className="size-4" aria-hidden="true" />
                         {group._count.members} miembros
                     </span>
                 </div>

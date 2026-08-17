@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -181,7 +182,7 @@ function AlertsPageContent() {
                     <img src={image} alt={alert.pet?.name || 'Mascota reportada'} className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-slate-300">
-                      <span className="material-symbols-rounded text-4xl">pets</span>
+                      <PawPrint className="size-10" aria-hidden="true" />
                     </div>
                   )}
                 </div>

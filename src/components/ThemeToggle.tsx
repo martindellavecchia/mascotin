@@ -2,6 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -13,8 +14,8 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="w-10 h-10 rounded-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark flex items-center justify-center text-text-main shadow-sm hover:shadow-md transition-all">
-        <span className="material-symbols-rounded text-xl">light_mode</span>
+      <button aria-label="Cambiar tema" className="w-10 h-10 rounded-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark flex items-center justify-center text-text-main shadow-sm hover:shadow-md transition-all">
+        <Sun className="size-5" aria-hidden="true" />
       </button>
     );
   }
@@ -23,9 +24,9 @@ export default function ThemeToggle() {
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       className="w-10 h-10 rounded-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark flex items-center justify-center text-text-main shadow-sm hover:shadow-md transition-all"
-      aria-label="Toggle theme"
+      aria-label="Cambiar tema"
     >
-      {theme === 'dark' ? <span className="material-symbols-rounded text-xl">light_mode</span> : <span className="material-symbols-rounded text-xl">dark_mode</span>}
+      {theme === 'dark' ? <Sun className="size-5" aria-hidden="true" /> : <Moon className="size-5" aria-hidden="true" />}
     </button>
   );
 }

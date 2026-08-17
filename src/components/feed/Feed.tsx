@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { ChevronDown, FilePlus } from 'lucide-react';
 import { Post, Pet } from '@/types';
 import PostCard from './PostCard';
 import dynamic from 'next/dynamic';
@@ -155,7 +156,7 @@ export default function Feed({
     if (posts.length === 0) {
         return (
             <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-slate-100">
-                <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">post_add</span>
+                <FilePlus className="mb-2 size-10 text-slate-300" aria-hidden="true" />
                 <p className="text-slate-500">No hay publicaciones aún.</p>
             </div>
         );
@@ -181,7 +182,7 @@ export default function Feed({
                             </>
                         ) : (
                             <>
-                                <span className="material-symbols-rounded mr-2">expand_more</span>
+                                <ChevronDown className="mr-2 size-5" aria-hidden="true" />
                                 Cargar más
                             </>
                         )}

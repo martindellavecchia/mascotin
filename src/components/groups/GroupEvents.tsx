@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CalendarDays, CalendarX, Download, MapPin, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -203,7 +204,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
 
             {events.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
-                    <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">event_busy</span>
+                    <CalendarX className="mb-2 size-10 text-slate-300" aria-hidden="true" />
                     <p className="text-slate-500">No hay eventos programados.</p>
                 </div>
             ) : (
@@ -219,7 +220,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                     <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-teal-50 text-teal-300">
-                                        <span className="material-symbols-rounded text-3xl">event</span>
+                                        <CalendarDays className="size-8" aria-hidden="true" />
                                     </div>
                                 )}
                             </div>
@@ -229,11 +230,11 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                         <h4 className="font-bold text-slate-800 [overflow-wrap:anywhere]">{event.title}</h4>
                                         <div className="mb-2 mt-1 space-y-1 text-sm text-slate-500">
                                             <p className="flex items-start gap-1">
-                                                <span className="material-symbols-rounded shrink-0 text-xs">calendar_today</span>
+                                                <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
                                                 <span>{new Date(event.date).toLocaleDateString()}</span>
                                             </p>
                                             <p className="flex min-w-0 items-start gap-1 [overflow-wrap:anywhere]">
-                                                <span className="material-symbols-rounded shrink-0 text-xs">location_on</span>
+                                                <MapPin className="size-3 shrink-0" aria-hidden="true" />
                                                 <span className="min-w-0">{event.location}</span>
                                             </p>
                                         </div>
@@ -249,7 +250,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                                     className="text-slate-400 hover:text-teal-600 hover:bg-teal-50"
                                                     onClick={() => setEditingEvent(event)}
                                                 >
-                                                    <span className="material-symbols-rounded">edit</span>
+                                                    <Pencil className="size-5" aria-hidden="true" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
@@ -258,7 +259,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                                     className="text-slate-400 hover:text-red-500 hover:bg-red-50"
                                                     onClick={() => handleDelete(event.id)}
                                                 >
-                                                    <span className="material-symbols-rounded">delete</span>
+                                                    <Trash2 className="size-5" aria-hidden="true" />
                                                 </Button>
                                             </>
                                         )}
@@ -378,7 +379,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                             <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setViewingEvent(null)}>Cerrar</Button>
                             {attendees.length > 0 && (
                                 <Button onClick={downloadCSV} className="min-h-11 w-full bg-teal-600 hover:bg-teal-700 sm:w-auto">
-                                    <span className="material-symbols-rounded mr-2 text-sm">download</span>
+                                    <Download className="mr-2 size-4" aria-hidden="true" />
                                     Descargar CSV
                                 </Button>
                             )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { CircleAlert } from 'lucide-react';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import EventsFeed from '@/components/community/EventsFeed';
 import LostPetForm from '@/components/community/LostPetForm';
@@ -39,7 +40,7 @@ export default function CommunityPage() {
                         className="w-full border-red-200 text-red-700 hover:bg-red-50 sm:w-auto"
                         onClick={() => setLostPetFormOpen(true)}
                     >
-                        <span className="material-symbols-rounded mr-2">emergency</span>
+                        <CircleAlert className="mr-2 size-5" aria-hidden="true" />
                         Reportar Mascota Perdida
                     </Button>
                 </div>

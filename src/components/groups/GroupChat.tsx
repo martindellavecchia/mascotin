@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { LoaderCircle, Send } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -280,9 +281,11 @@ export default function GroupChat({
             className="h-11 w-11 shrink-0 bg-teal-500 hover:bg-teal-600"
             disabled={sending}
           >
-            <span className="material-symbols-rounded">
-              {sending ? 'pending' : 'send'}
-            </span>
+            {sending ? (
+              <LoaderCircle className="size-5 animate-spin" />
+            ) : (
+              <Send className="size-5" />
+            )}
           </Button>
         </form>
       </div>

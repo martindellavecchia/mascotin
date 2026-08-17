@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import FosterChat from '@/components/help/FosterChat';
 import FosterAdoptionDraftForm from '@/components/help/FosterAdoptionDraftForm';
 import RescueContactSheet, { type ContactOption, type ContactReference } from '@/components/help/RescueContactSheet';
@@ -287,7 +288,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="ghost"><Link href="/hogares-de-transito"><span className="material-symbols-rounded mr-2" aria-hidden="true">arrow_back</span>Volver a Hogares de tránsito</Link></Button>
+        <Button asChild variant="ghost"><Link href="/hogares-de-transito"><ArrowLeft className="mr-2 size-5" aria-hidden="true" />Volver a Hogares de tránsito</Link></Button>
         <Badge className="bg-teal-100 text-teal-800">{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
       </div>
 

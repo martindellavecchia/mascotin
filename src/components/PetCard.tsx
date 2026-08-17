@@ -2,6 +2,19 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import {
+  ArrowRight,
+  Circle,
+  GraduationCap,
+  Heart,
+  Leaf,
+  MapPin,
+  PawPrint,
+  ShieldCheck,
+  Users,
+  Waves,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Pet } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -17,15 +30,15 @@ interface PetCardProps {
   actionsDisabled?: boolean;
 }
 
-const ACTIVITY_LABELS: Record<string, { icon: string; label: string }> = {
-  walk: { icon: 'eco', label: 'Paseos tranquilos' },
-  walking: { icon: 'eco', label: 'Paseos tranquilos' },
-  play: { icon: 'sports_baseball', label: 'Juguetona' },
-  playing: { icon: 'sports_baseball', label: 'Juguetona' },
-  fetch: { icon: 'sports_baseball', label: 'Le gusta buscar' },
-  socialize: { icon: 'group', label: 'Sociable' },
-  swim: { icon: 'pool', label: 'Le gusta nadar' },
-  training: { icon: 'school', label: 'Entrenamiento' },
+const ACTIVITY_LABELS: Record<string, { icon: LucideIcon; label: string }> = {
+  walk: { icon: Leaf, label: 'Paseos tranquilos' },
+  walking: { icon: Leaf, label: 'Paseos tranquilos' },
+  play: { icon: Circle, label: 'Juguetona' },
+  playing: { icon: Circle, label: 'Juguetona' },
+  fetch: { icon: Circle, label: 'Le gusta buscar' },
+  socialize: { icon: Users, label: 'Sociable' },
+  swim: { icon: Waves, label: 'Le gusta nadar' },
+  training: { icon: GraduationCap, label: 'Entrenamiento' },
 };
 
 function getSizeLabel(size: string) {
@@ -63,11 +76,11 @@ export default function PetCard({
 
   const traits = activities
     .map((activity) => ACTIVITY_LABELS[activity.toLowerCase()])
-    .filter((trait): trait is { icon: string; label: string } => Boolean(trait))
+    .filter((trait): trait is { icon: LucideIcon; label: string } => Boolean(trait))
     .filter((trait, index, list) => list.findIndex((item) => item.label === trait.label) === index);
 
   if (pet.vaccinated) {
-    traits.push({ icon: 'verified_user', label: 'Vacunas al día' });
+    traits.push({ icon: ShieldCheck, label: 'Vacunas al día' });
   }
 
   const nextImage = () => {
@@ -91,7 +104,7 @@ export default function PetCard({
             />
           ) : (
             <div className="flex h-full min-h-[200px] items-center justify-center text-slate-300 sm:min-h-[240px]">
-              <span className="material-symbols-rounded text-7xl">pets</span>
+              <PawPrint className="size-20 text-slate-300" aria-hidden="true" />
             </div>
           )}
 
@@ -110,7 +123,7 @@ export default function PetCard({
               className="absolute bottom-5 right-5 size-11 rounded-full border border-white/50 bg-white/90 text-slate-900 hover:bg-white"
               aria-label="Ver siguiente foto"
             >
-              <span className="material-symbols-rounded">arrow_forward</span>
+              <ArrowRight className="size-5" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -122,7 +135,7 @@ export default function PetCard({
             </h2>
             <p className="mt-2 text-lg text-slate-700">{pet.breed || 'Mestizo'}</p>
             <p className="mt-4 flex min-w-0 items-start gap-2 break-words text-sm text-slate-500">
-              <span className="material-symbols-rounded shrink-0 text-xl">location_on</span>
+              <MapPin className="size-5 shrink-0" aria-hidden="true" />
               {pet.location || pet.owner?.location || 'Cerca de ti'}
             </p>
           </div>
@@ -145,7 +158,7 @@ export default function PetCard({
           </div>
 
           <div className="mt-7 flex gap-3 text-slate-700">
-            <span className="material-symbols-rounded mt-0.5 text-2xl text-slate-400">favorite</span>
+            <Heart className="mt-0.5 size-7 text-slate-400" aria-hidden="true" />
             <p className="min-w-0 break-words text-[15px] leading-7">
               {pet.bio || `${pet.name} disfruta los paseos y conocer nuevos amigos.`}
             </p>
@@ -158,15 +171,18 @@ export default function PetCard({
             {pet.goodWithDogs === 'yes' && (
               <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">Bien con perros</Badge>
             )}
-            {traits.slice(0, 3).map((trait) => (
+            {traits.slice(0, 3).map((trait) => {
+              const TraitIcon = trait.icon;
+              return (
               <span
                 key={trait.label}
                 className="inline-flex items-center gap-2 rounded-lg bg-teal-50 px-3 py-2 text-xs font-medium text-slate-700"
               >
-                <span className="material-symbols-rounded text-base text-teal-700">{trait.icon}</span>
+                <TraitIcon className="size-4 text-teal-700" aria-hidden="true" />
                 {trait.label}
               </span>
-            ))}
+              );
+            })}
           </div>
 
           <div className="sr-only">
@@ -201,7 +217,7 @@ export default function PetCard({
                 disabled={actionsDisabled}
                 className="h-12 rounded-xl bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700"
               >
-                <span className="material-symbols-rounded mr-2 text-lg filled">pets</span>
+                <PawPrint className="mr-2 size-5" fill="currentColor" aria-hidden="true" />
                 Quiero conocer{pet.gender === 'female' ? 'la' : 'lo'}
               </Button>
             </div>

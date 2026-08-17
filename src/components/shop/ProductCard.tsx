@@ -1,5 +1,6 @@
 'use client';
 
+import { Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +23,8 @@ export default function ProductCard({ title, price, image, category }: ProductCa
                 <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">{title}</h3>
                 <div className="flex items-center justify-between mt-4">
                     <span className="font-bold text-lg text-gray-900">${price.toLocaleString()}</span>
-                    <Button size="sm" className="rounded-full w-8 h-8 p-0 bg-teal-500 hover:bg-teal-600">
-                        <span className="material-symbols-rounded text-white text-sm">add</span>
+                    <Button size="sm" className="rounded-full w-8 h-8 p-0 bg-teal-500 hover:bg-teal-600" aria-label="Agregar al carrito">
+                        <Plus className="size-4 text-white" aria-hidden="true" />
                     </Button>
                 </div>
             </CardContent>

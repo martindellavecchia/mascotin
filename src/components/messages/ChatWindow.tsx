@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Hand, LoaderCircle, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -235,9 +236,7 @@ export default function ChatWindow({
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center text-slate-400">
             <div className="text-center">
-              <span className="material-symbols-rounded text-4xl mb-2">
-                waving_hand
-              </span>
+              <Hand className="mb-2 size-10" aria-hidden="true" />
               <p className="text-sm">¡Envía el primer mensaje!</p>
             </div>
           </div>
@@ -316,9 +315,11 @@ export default function ChatWindow({
             className="h-11 w-11 shrink-0 rounded-full bg-teal-500 text-white hover:bg-teal-600"
             disabled={!newMessage.trim() || sending}
           >
-            <span className="material-symbols-rounded">
-              {sending ? 'pending' : 'send'}
-            </span>
+            {sending ? (
+              <LoaderCircle className="size-5 animate-spin" />
+            ) : (
+              <Send className="size-5" />
+            )}
           </Button>
         </form>
       </div>

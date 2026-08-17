@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { ChevronRight, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,7 +63,7 @@ export default function MatchesPanel({ matches }: MatchesPanelProps) {
     <div className="h-full">
       {matches.length === 0 ? (
         <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
-          <span className="material-symbols-rounded text-5xl text-slate-300">favorite</span>
+          <Heart className="size-12 text-slate-300" aria-hidden="true" />
           <h3 className="mt-4 text-lg font-semibold text-slate-800">Todavía no hay coincidencias</h3>
           <p className="mt-2 max-w-sm text-sm text-slate-500">
             Cuando hagas match, van a aparecer acá para chatear en Mensajes.
@@ -98,7 +99,7 @@ export default function MatchesPanel({ matches }: MatchesPanelProps) {
                       </p>
                       <p className="mt-1 text-xs font-medium text-teal-700">Abrir chat</p>
                     </div>
-                    <span className="material-symbols-rounded text-slate-400">chevron_right</span>
+                    <ChevronRight className="text-slate-400" aria-hidden="true" />
                   </div>
                 </CardContent>
               </Card>

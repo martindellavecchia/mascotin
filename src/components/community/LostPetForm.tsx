@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { CircleAlert, ImagePlus, Lightbulb, MapPin, Megaphone, Phone } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -133,7 +134,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
-                        <span className="material-symbols-rounded">emergency</span>
+                        <CircleAlert className="size-5" aria-hidden="true" />
                         {mode === 'found' ? 'Reportar mascota encontrada' : 'Reportar mascota perdida'}
                     </DialogTitle>
                     <DialogDescription>
@@ -219,7 +220,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                                 </div>
                             ) : (
                                 <>
-                                    <span className="material-symbols-rounded text-3xl text-slate-400">add_photo_alternate</span>
+                                    <ImagePlus className="size-8 text-slate-400" aria-hidden="true" />
                                     <p className="text-sm text-slate-500 mt-1">Arrastra una imagen o haz clic para seleccionar</p>
                                 </>
                             )}
@@ -241,7 +242,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     {/* Last Seen Location */}
                     <div className="space-y-2">
                         <Label className="flex items-center gap-1">
-                            <span className="material-symbols-rounded text-sm">location_on</span>
+                            <MapPin className="size-4" aria-hidden="true" />
                             Última ubicación vista *
                         </Label>
                         <Input
@@ -255,7 +256,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     {/* Contact Phone */}
                     <div className="space-y-2">
                         <Label className="flex items-center gap-1">
-                            <span className="material-symbols-rounded text-sm">call</span>
+                            <Phone className="size-4" aria-hidden="true" />
                             Teléfono de contacto *
                         </Label>
                         <Input
@@ -268,7 +269,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
                     {/* Alert banner */}
                     <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-                        <span className="material-symbols-rounded mt-0.5 text-lg" aria-hidden="true">lightbulb</span>
+                        <Lightbulb className="mt-0.5 size-5" aria-hidden="true" />
                         <p><span className="font-semibold">Importante:</span> la alerta será visible para toda la comunidad. Verificá que el teléfono sea correcto.</p>
                     </div>
 
@@ -294,7 +295,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                                 </>
                             ) : (
                                 <>
-                                    <span className="material-symbols-rounded mr-2">campaign</span>
+                                    <Megaphone className="mr-2 size-5" aria-hidden="true" />
                                     Publicar alerta
                                 </>
                             )}

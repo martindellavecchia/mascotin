@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -96,8 +97,9 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
                                 size="sm"
                                 className="text-red-500 hover:text-red-600 hover:bg-red-50"
                                 onClick={() => handleRemoveMember(member.user.id)}
+                                aria-label="Eliminar miembro"
                             >
-                                <span className="material-symbols-rounded text-lg">logout</span>
+                                <LogOut className="size-5" aria-hidden="true" />
                             </Button>
                         )}
                     </div>

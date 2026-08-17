@@ -1,5 +1,6 @@
 'use client';
 
+import { Mars, Venus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -37,7 +38,7 @@ export default function StepBasicInfo({ data, updateData }: StepBasicInfoProps) 
                             className={`p-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-all ${data.gender === 'male' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 text-slate-600 hover:border-teal-200'
                                 }`}
                         >
-                            <span className="material-symbols-rounded">male</span> Macho
+                            <Mars className="size-5" aria-hidden="true" /> Macho
                         </button>
                         <button
                             type="button"
@@ -45,7 +46,7 @@ export default function StepBasicInfo({ data, updateData }: StepBasicInfoProps) 
                             className={`p-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-all ${data.gender === 'female' ? 'border-teal-500 bg-teal-50 text-teal-700 font-bold' : 'border-slate-200 text-slate-600 hover:border-teal-200'
                                 }`}
                         >
-                            <span className="material-symbols-rounded">female</span> Hembra
+                            <Venus className="size-5" aria-hidden="true" /> Hembra
                         </button>
                     </div>
                 </div>

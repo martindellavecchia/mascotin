@@ -1,5 +1,6 @@
 'use client';
 
+import { Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +31,7 @@ export default function ServiceCard({ title, provider, rating, reviews, price, i
                 </div>
 
                 <div className="flex items-center gap-1 mb-4">
-                    <span className="material-symbols-rounded text-yellow-400 text-sm filled">star</span>
+                    <Star className="size-4 fill-current text-yellow-400" aria-hidden="true" />
                     <span className="font-bold text-sm">{rating}</span>
                     <span className="text-xs text-gray-400">({reviews} res.)</span>
                 </div>

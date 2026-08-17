@@ -1,5 +1,6 @@
 'use client';
 
+import { CalendarDays, CircleHelp, Images, LayoutGrid, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FeedFiltersProps {
@@ -8,16 +9,18 @@ interface FeedFiltersProps {
 }
 
 export default function FeedFilters({ activeFilter, onFilterChange }: FeedFiltersProps) {
-    const filters = [
-        { id: 'all', label: 'Todo', icon: 'apps' },
-        { id: 'photos', label: 'Fotos', icon: 'photo_library' },
-        { id: 'events', label: 'Eventos', icon: 'event' },
-        { id: 'questions', label: 'Preguntas', icon: 'help' },
+    const filters: { id: string; label: string; icon: LucideIcon }[] = [
+        { id: 'all', label: 'Todo', icon: LayoutGrid },
+        { id: 'photos', label: 'Fotos', icon: Images },
+        { id: 'events', label: 'Eventos', icon: CalendarDays },
+        { id: 'questions', label: 'Preguntas', icon: CircleHelp },
     ];
 
     return (
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
-            {filters.map(filter => (
+            {filters.map((filter) => {
+                const Icon = filter.icon;
+                return (
                 <Button
                     key={filter.id}
                     variant={activeFilter === filter.id ? 'default' : 'outline'}
@@ -28,12 +31,11 @@ export default function FeedFilters({ activeFilter, onFilterChange }: FeedFilter
                         }`}
                     onClick={() => onFilterChange(filter.id)}
                 >
-                    <span className={`material-symbols-rounded text-lg ${activeFilter === filter.id ? '' : 'text-slate-400'}`}>
-                        {filter.icon}
-                    </span>
+                    <Icon className={`size-5 ${activeFilter === filter.id ? '' : 'text-slate-400'}`} aria-hidden="true" />
                     {filter.label}
                 </Button>
-            ))}
+                );
+            })}
         </div>
     );
 }

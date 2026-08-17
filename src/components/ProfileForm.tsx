@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { LoaderCircle, Upload, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -261,7 +262,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
                   onClick={() => removeImage(index)}
                   aria-label="Eliminar foto"
                 >
-                  <span className="material-symbols-rounded text-[16px] leading-none">close</span>
+                  <X className="size-4" aria-hidden="true" />
                 </Button>
               </div>
             ))}
@@ -270,10 +271,10 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
               <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
                 <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
                   {uploading ? (
-                    <span className="material-symbols-rounded text-[24px] leading-none text-teal-600 animate-spin">progress_activity</span>
+                    <LoaderCircle className="mb-0 size-6 animate-spin text-teal-600" aria-hidden="true" />
                   ) : (
                     <>
-                      <span className="material-symbols-rounded text-[32px] leading-none mb-2 text-teal-600">upload</span>
+                      <Upload className="mb-2 size-8 text-teal-600" aria-hidden="true" />
                       <p className="text-sm text-slate-600">Subir foto</p>
                     </>
                   )}
@@ -297,7 +298,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
         <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800" disabled={loading || uploading}>
           {loading ? (
             <>
-              <span className="material-symbols-rounded text-[16px] leading-none mr-2 animate-spin">progress_activity</span>
+              <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />
               Guardando...
             </>
           ) : (

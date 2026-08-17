@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Image as ImageIcon, MapPin, Send, Smile } from 'lucide-react';
 import { Pet } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -56,15 +57,15 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                         <div className="mt-3 flex animate-in flex-col gap-3 fade-in slide-in-from-top-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex min-w-0 flex-wrap gap-1 sm:gap-2">
                                 <Button variant="ghost" size="sm" className="min-h-10 rounded-full text-teal-600 hover:bg-teal-50 hover:text-teal-700">
-                                    <span className="material-symbols-rounded text-[20px] mr-1">image</span>
+                                    <ImageIcon className="mr-1 size-5" aria-hidden="true" />
                                     Foto
                                 </Button>
                                 <Button variant="ghost" size="sm" className="min-h-10 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-                                    <span className="material-symbols-rounded text-[20px] mr-1">location_on</span>
+                                    <MapPin className="mr-1 size-5" aria-hidden="true" />
                                     Ubicación
                                 </Button>
                                 <Button variant="ghost" size="sm" aria-label="Agregar estado de ánimo" className="min-h-10 min-w-10 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-                                    <span className="material-symbols-rounded text-[20px] mr-1">sentiment_satisfied</span>
+                                    <Smile className="mr-1 size-5" aria-hidden="true" />
                                 </Button>
                             </div>
                             <div className="grid grid-cols-2 gap-2 sm:flex">
@@ -85,7 +86,7 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                         <div className="mt-2 flex min-w-0 items-center justify-between gap-2 pl-2">
                             <p className="min-w-0 text-xs text-gray-400 [overflow-wrap:anywhere]">Publica fotos, consejos o preguntas...</p>
                             <Button variant="ghost" size="icon" aria-label="Expandir publicación" className="h-10 w-10 shrink-0 text-gray-500" onClick={() => setIsExpanded(true)}>
-                                <span className="material-symbols-rounded">send</span>
+                                <Send className="size-5" aria-hidden="true" />
                             </Button>
                         </div>
                     )}

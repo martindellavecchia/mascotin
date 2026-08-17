@@ -3,6 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import {
+    Briefcase,
+    CircleX,
+    Clock,
+    MapPin,
+    Plus,
+    RefreshCw,
+    Store,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -188,11 +197,11 @@ export default function ProviderPage() {
                                 <CardContent className="p-6">
                                     <div className="text-center mb-4">
                                         <div className="w-20 h-20 bg-teal-100 rounded-full mx-auto flex items-center justify-center mb-3">
-                                            <span className="material-symbols-rounded text-4xl text-teal-600">storefront</span>
+                                            <Store className="size-10 text-teal-600" aria-hidden="true" />
                                         </div>
                                         <h2 className="text-xl font-bold text-slate-800">{provider.businessName}</h2>
                                         <p className="text-sm text-slate-500 flex items-center justify-center gap-1">
-                                            <span className="material-symbols-rounded text-sm">location_on</span>
+                                            <MapPin className="size-3.5" aria-hidden="true" />
                                             {provider.location}
                                         </p>
                                     </div>
@@ -230,14 +239,14 @@ export default function ProviderPage() {
                                     <div className="flex items-center justify-between mb-4">
                                         <h2 className="text-xl font-bold text-slate-800">Mis Servicios</h2>
                                         <Button className="bg-teal-500 hover:bg-teal-600" onClick={() => setAddServiceOpen(true)}>
-                                            <span className="material-symbols-rounded mr-2">add</span>
+                                            <Plus className="mr-2 size-5" aria-hidden="true" />
                                             Agregar servicio
                                         </Button>
                                     </div>
                                     {services.length === 0 ? (
                                         <Card>
                                             <CardContent className="p-8 text-center">
-                                                <span className="material-symbols-rounded text-5xl text-slate-300 mb-2">work</span>
+                                                <Briefcase className="mb-2 size-12 text-slate-300" aria-hidden="true" />
                                                 <p className="text-slate-500">No tienes servicios aún.</p>
                                                 <Button variant="link" className="text-teal-600 mt-2" onClick={() => setAddServiceOpen(true)}>
                                                     Agregar tu primer servicio
@@ -316,7 +325,7 @@ export default function ProviderPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <span className="material-symbols-rounded text-teal-500">add_business</span>
+                                <Store className="size-5 text-teal-500" aria-hidden="true" />
                                 Solicitar acceso de proveedor
                             </CardTitle>
                         </CardHeader>
@@ -365,7 +374,7 @@ export default function ProviderPage() {
                     <Card className="text-center">
                         <CardContent className="p-8">
                             <div className="w-16 h-16 bg-amber-100 rounded-full mx-auto flex items-center justify-center mb-4">
-                                <span className="material-symbols-rounded text-3xl text-amber-600">schedule</span>
+                                <Clock className="size-8 text-amber-600" aria-hidden="true" />
                             </div>
                             <h1 className="text-2xl font-bold text-slate-800 mb-2">Tu solicitud está en revisión</h1>
                             <p className="text-slate-600 mb-4">
@@ -390,7 +399,7 @@ export default function ProviderPage() {
                     <Card className="text-center">
                         <CardContent className="p-8">
                             <div className="w-16 h-16 bg-red-100 rounded-full mx-auto flex items-center justify-center mb-4">
-                                <span className="material-symbols-rounded text-3xl text-red-600">cancel</span>
+                                <CircleX className="size-8 text-red-600" aria-hidden="true" />
                             </div>
                             <h1 className="text-2xl font-bold text-slate-800 mb-2">Tu solicitud fue rechazada</h1>
                             {providerRequest.adminNote && (
@@ -410,7 +419,7 @@ export default function ProviderPage() {
                                     setIsRegistering(true);
                                 }}
                             >
-                                <span className="material-symbols-rounded mr-2">refresh</span>
+                                <RefreshCw className="mr-2 size-5" aria-hidden="true" />
                                 Solicitar nuevamente
                             </Button>
                         </CardContent>
@@ -426,14 +435,14 @@ export default function ProviderPage() {
             <div className="container mx-auto px-4 py-8 max-w-2xl">
                 <Card className="text-center">
                     <CardContent className="p-8">
-                        <span className="material-symbols-rounded text-6xl text-teal-500 mb-4">storefront</span>
+                        <Store className="mb-4 size-16 text-teal-500" aria-hidden="true" />
                         <h1 className="text-2xl font-bold text-slate-800 mb-2">¿Ofreces servicios para mascotas?</h1>
                         <p className="text-slate-600 mb-6">
                             Únete como proveedor y llega a miles de dueños de mascotas.
                             Ofrece tus servicios de veterinaria, paseos, grooming y más.
                         </p>
                         <Button size="lg" className="bg-teal-500 hover:bg-teal-600" onClick={() => setIsRegistering(true)}>
-                            <span className="material-symbols-rounded mr-2">add_business</span>
+                            <Store className="mr-2 size-5" aria-hidden="true" />
                             Solicitar acceso de proveedor
                         </Button>
                     </CardContent>

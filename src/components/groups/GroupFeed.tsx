@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CalendarDays, CircleHelp, Image as ImageIcon, MessageCircle, Pencil, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -149,21 +150,21 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                 value="post"
                                 className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
-                                <span className="material-symbols-rounded mr-1 text-lg">edit</span>
+                                <Pencil className="mr-1 size-5" aria-hidden="true" />
                                 Publicación
                             </TabsTrigger>
                             <TabsTrigger
                                 value="event"
                                 className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
-                                <span className="material-symbols-rounded mr-1 text-lg">event</span>
+                                <CalendarDays className="mr-1 size-5" aria-hidden="true" />
                                 Evento
                             </TabsTrigger>
                             <TabsTrigger
                                 value="question"
                                 className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
-                                <span className="material-symbols-rounded mr-1 text-lg">help</span>
+                                <CircleHelp className="mr-1 size-5" aria-hidden="true" />
                                 Pregunta
                             </TabsTrigger>
                         </TabsList>
@@ -231,14 +232,14 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                             aria-label="Quitar imagen"
                                             className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
                                         >
-                                            <span className="material-symbols-rounded text-sm">close</span>
+                                            <X className="size-4" aria-hidden="true" />
                                         </button>
                                     </div>
                                 )}
 
                                 <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
                                     <label className={`flex min-h-11 cursor-pointer items-center gap-2 text-sm text-slate-500 transition-colors hover:text-teal-600 ${uploading ? 'cursor-not-allowed opacity-50' : ''}`}>
-                                        <span className="material-symbols-rounded">image</span>
+                                        <ImageIcon className="size-5" aria-hidden="true" />
                                         {uploading ? 'Subiendo...' : 'Agregar foto'}
                                         <input
                                             type="file"
@@ -268,7 +269,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                 <div className="text-center py-8 text-slate-500 animate-pulse">Cargando publicaciones...</div>
             ) : posts.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-12 text-center">
-                    <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">chat_bubble_outline</span>
+                    <MessageCircle className="mb-2 size-10 text-slate-300" aria-hidden="true" />
                     <p className="text-slate-500 [overflow-wrap:anywhere]">Aún no hay publicaciones. ¡Comienza la conversación!</p>
                 </div>
             ) : (

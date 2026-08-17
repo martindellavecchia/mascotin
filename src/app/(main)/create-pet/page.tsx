@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import { LoaderCircle, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PetForm from '@/components/PetForm';
 import OwnerForm from '@/components/OwnerForm';
@@ -45,7 +46,7 @@ function CreatePetContent() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
-        <span className="material-symbols-rounded w-12 h-12 text-teal-500 animate-spin">pending</span>
+        <LoaderCircle className="size-12 text-teal-500 animate-spin" aria-hidden="true" />
       </div>
     );
   }
@@ -56,7 +57,7 @@ function CreatePetContent() {
           <Card className="w-full max-w-2xl mx-auto shadow-sm border-0 bg-white">
             <CardHeader className="text-center pb-2">
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-rounded text-3xl text-teal-600">person_add</span>
+                <UserPlus className="size-8 text-teal-600" aria-hidden="true" />
               </div>
               <CardTitle className="text-2xl font-bold text-gray-900">
                 Completa tu Perfil de Dueño

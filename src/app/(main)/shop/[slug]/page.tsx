@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ArrowLeft, BadgeCheck, Lock, MapPin, MessageSquareText, Star, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -263,12 +264,12 @@ export default function StoreDetailPage() {
       <section className="border-b border-slate-200 bg-white">
         <div className="container mx-auto px-4 py-8">
           <Link href="/shop" className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-teal-700 hover:text-teal-800">
-            <span className="material-symbols-rounded text-lg">arrow_back</span>
+            <ArrowLeft className="size-5" aria-hidden="true" />
             Todos los negocios
           </Link>
           <div className="mt-5 grid min-w-0 gap-6 sm:grid-cols-[160px_1fr] sm:items-center xl:grid-cols-[160px_1fr_auto]">
             <div className="flex h-36 w-full items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-teal-100 to-orange-50 sm:h-40 sm:w-40">
-              {store.image ? <img src={store.image} alt={store.name} className="h-full w-full object-cover" /> : <span className="material-symbols-rounded text-7xl text-teal-700/35">storefront</span>}
+              {store.image ? <img src={store.image} alt={store.name} className="h-full w-full object-cover" /> : <Store className="size-20 text-teal-700/35" aria-hidden="true" />}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -282,10 +283,10 @@ export default function StoreDetailPage() {
               </div>
               <h1 className="mt-3 break-words text-3xl font-bold tracking-tight text-slate-900 [overflow-wrap:anywhere]">{store.name}</h1>
               <p className="mt-2 max-w-2xl break-words text-slate-600 [overflow-wrap:anywhere]">{store.description}</p>
-              {store.address && <p className="mt-3 flex min-w-0 items-start gap-1 break-words text-sm text-slate-500 [overflow-wrap:anywhere]"><span className="material-symbols-rounded shrink-0 text-lg">location_on</span>{store.address}</p>}
+              {store.address && <p className="mt-3 flex min-w-0 items-start gap-1 break-words text-sm text-slate-500 [overflow-wrap:anywhere]"><MapPin className="size-5 shrink-0" aria-hidden="true" />{store.address}</p>}
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-center sm:col-span-2 xl:col-span-1">
-              <p className="flex items-center justify-center gap-1 text-3xl font-bold text-slate-900"><span className="material-symbols-rounded text-3xl text-amber-500">star</span>{store.reviewCount ? store.ratingAverage.toFixed(1) : '—'}</p>
+              <p className="flex items-center justify-center gap-1 text-3xl font-bold text-slate-900"><Star className="size-8 text-amber-500" aria-hidden="true" fill="currentColor" />{store.reviewCount ? store.ratingAverage.toFixed(1) : '—'}</p>
               <p className="mt-1 text-sm text-slate-500">{store.reviewCount} reseñas verificadas</p>
               <p className="mt-2 max-w-48 text-xs leading-relaxed text-slate-500">{store.trust.description}</p>
             </div>
@@ -344,12 +345,12 @@ export default function StoreDetailPage() {
                             <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: es })}</p>
                           </div>
                           <div className="flex" aria-label={`${review.rating} de 5 estrellas`}>
-                            {[1, 2, 3, 4, 5].map((star) => <span key={star} className={`material-symbols-rounded text-lg ${star <= review.rating ? 'text-amber-500' : 'text-slate-200'}`}>star</span>)}
+                            {[1, 2, 3, 4, 5].map((star) => <Star key={star} className={`size-5 ${star <= review.rating ? 'text-amber-500' : 'text-slate-200'}`} aria-hidden="true" fill={star <= review.rating ? 'currentColor' : 'none'} />)}
                           </div>
                         </div>
                         {review.comment && <p className="mt-3 break-words text-sm leading-relaxed text-slate-600 [overflow-wrap:anywhere]">{review.comment}</p>}
                         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-                          <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50"><span className="material-symbols-rounded mr-1 text-sm">verified</span>Cita verificada</Badge>
+                          <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50"><BadgeCheck className="mr-1 size-3.5" aria-hidden="true" />Cita verificada</Badge>
                           {!review.isMine && <button onClick={() => void toggleHelpful(review)} className={`min-h-10 px-2 font-medium ${review.isHelpful ? 'text-teal-700' : 'text-slate-500 hover:text-teal-700'}`}>Útil ({review.helpfulCount})</button>}
                           {!review.isMine && <button onClick={() => setReportReview(review)} className="min-h-10 px-2 text-slate-500 hover:text-rose-600">Reportar</button>}
                         </div>
@@ -370,7 +371,7 @@ export default function StoreDetailPage() {
                   </CardContent>
                 </Card>
               )) : (
-                <Card className="border-dashed"><CardContent className="p-10 text-center"><span className="material-symbols-rounded text-5xl text-slate-300">reviews</span><h3 className="mt-2 font-semibold text-slate-800">Todavía no hay reseñas</h3><p className="mt-1 text-sm text-slate-500">La primera aparecerá después de una cita completada.</p></CardContent></Card>
+                <Card className="border-dashed"><CardContent className="p-10 text-center"><MessageSquareText className="mx-auto size-12 text-slate-300" aria-hidden="true" /><h3 className="mt-2 font-semibold text-slate-800">Todavía no hay reseñas</h3><p className="mt-1 text-sm text-slate-500">La primera aparecerá después de una cita completada.</p></CardContent></Card>
               )}
             </div>
           </section>
@@ -384,17 +385,17 @@ export default function StoreDetailPage() {
                 <div className="rounded-xl bg-teal-50 p-4 text-sm text-teal-800"><p className="font-semibold">Sos owner de este negocio</p><p className="mt-1">Podés responder reseñas, pero no calificar tu propio perfil.</p></div>
               ) : viewer.canReview ? (
                 <div>
-                  <Badge className="mb-3 bg-emerald-50 text-emerald-700 hover:bg-emerald-50"><span className="material-symbols-rounded mr-1 text-sm">verified</span>Cita verificada</Badge>
+                  <Badge className="mb-3 bg-emerald-50 text-emerald-700 hover:bg-emerald-50"><BadgeCheck className="mr-1 size-3.5" aria-hidden="true" />Cita verificada</Badge>
                   <p className="text-sm font-medium text-slate-700">{viewer.userReview ? 'Editá tu calificación' : '¿Cómo fue el servicio?'}</p>
                   <div className="mt-2 flex gap-1" role="group" aria-label="Calificación">
-                    {[1, 2, 3, 4, 5].map((star) => <button key={star} onClick={() => setRating(star)} aria-label={`${star} estrellas`} className="flex size-10 items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"><span className={`material-symbols-rounded text-3xl ${star <= rating ? 'text-amber-500' : 'text-slate-200 hover:text-amber-300'}`}>star</span></button>)}
+                    {[1, 2, 3, 4, 5].map((star) => <button key={star} onClick={() => setRating(star)} aria-label={`${star} estrellas`} className="flex size-10 items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"><Star className={`size-8 ${star <= rating ? 'text-amber-500' : 'text-slate-200 hover:text-amber-300'}`} aria-hidden="true" fill={star <= rating ? 'currentColor' : 'none'} /></button>)}
                   </div>
                   <Textarea className="mt-3" value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Contá qué salió bien y qué podría mejorar (mín. 20 caracteres)" rows={5} />
                   <Button className="mt-3 w-full bg-teal-600 hover:bg-teal-700" onClick={() => void saveReview()} disabled={reviewLoading}>{reviewLoading ? 'Guardando...' : viewer.userReview ? 'Actualizar reseña' : 'Publicar reseña'}</Button>
                   {viewer.userReview && <Button variant="ghost" className="mt-1 w-full text-rose-600 hover:text-rose-700" onClick={() => void deleteReview()} disabled={reviewLoading}>Eliminar mi reseña</Button>}
                 </div>
               ) : (
-                <div className="text-sm text-slate-600"><div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100"><span className="material-symbols-rounded text-slate-500">lock</span></div><p className="font-semibold text-slate-800">Reseñas verificadas</p><p className="mt-1">Podrás calificar cuando el negocio marque una cita tuya como completada.</p></div>
+                <div className="text-sm text-slate-600"><div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100"><Lock className="size-5 text-slate-500" aria-hidden="true" /></div><p className="font-semibold text-slate-800">Reseñas verificadas</p><p className="mt-1">Podrás calificar cuando el negocio marque una cita tuya como completada.</p></div>
               )}
             </CardContent>
           </Card>

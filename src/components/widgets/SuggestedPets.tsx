@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Heart, HeartCrack, PawPrint } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
+import { getPetTypeLabel } from '@/lib/petTypeIcon';
 
 interface SuggestedPet {
     id: string;
@@ -84,7 +86,6 @@ export default function SuggestedPets({
                 } else if (isLike) {
                     toast.success('Like enviado');
                 }
-                // Remove from suggestions
                 setSuggestions(prev => prev.filter(p => p.id !== toPetId));
             } else {
                 toast.error(data.error || 'Error');
@@ -101,7 +102,7 @@ export default function SuggestedPets({
             <Card>
                 <CardHeader className="pb-3">
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
-                        <span className="material-symbols-rounded text-teal-500">pets</span>
+                        <PawPrint className="text-teal-500" aria-hidden="true" />
                         Amigos compatibles
                     </CardTitle>
                 </CardHeader>
@@ -125,7 +126,7 @@ export default function SuggestedPets({
             <Card>
                 <CardHeader className="pb-3">
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
-                        <span className="material-symbols-rounded text-teal-500">pets</span>
+                        <PawPrint className="text-teal-500" aria-hidden="true" />
                         Amigos compatibles
                     </CardTitle>
                 </CardHeader>
@@ -142,30 +143,25 @@ export default function SuggestedPets({
         <Card>
             <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <span className="material-symbols-rounded text-teal-500">pets</span>
+                    <PawPrint className="text-teal-500" aria-hidden="true" />
                     Amigos compatibles
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
                 {suggestions.map((pet) => (
                     <div key={pet.id} className="flex items-center gap-3 group">
-                        {/* Pet Avatar with Type Badge */}
                         <div className="relative">
                             <Avatar className="h-12 w-12 border-2 border-slate-100">
                                 {pet.image ? (
                                     <AvatarImage src={pet.image} alt={pet.name} />
                                 ) : (
                                     <AvatarFallback className="bg-teal-600 text-white">
-                                        <span className="material-symbols-rounded text-xl filled">
-                                            {getPetTypeIcon(pet.petType)}
-                                        </span>
+                                        <PetTypeIcon petType={pet.petType} className="size-6 text-white" />
                                     </AvatarFallback>
                                 )}
                             </Avatar>
                             <span className="absolute -bottom-1 -right-1 bg-white rounded-full shadow-sm border border-slate-100 w-5 h-5 flex items-center justify-center">
-                                <span className="material-symbols-rounded text-[12px] text-teal-700">
-                                    {getPetTypeIcon(pet.petType)}
-                                </span>
+                                <PetTypeIcon petType={pet.petType} className="size-3 text-teal-700" />
                             </span>
                         </div>
 
@@ -176,9 +172,7 @@ export default function SuggestedPets({
                             </p>
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex gap-1">
-                            {/* Dismiss Button */}
                             <Button
                                 size="icon"
                                 variant="ghost"
@@ -186,11 +180,11 @@ export default function SuggestedPets({
                                 onClick={() => handleSwipe(pet.id, false)}
                                 disabled={actionPetId === pet.id}
                                 title="No me interesa"
+                                aria-label="No me interesa"
                             >
-                                <span className="material-symbols-rounded text-lg">heart_broken</span>
+                                <HeartCrack className="size-5" aria-hidden="true" />
                             </Button>
 
-                            {/* Like Button */}
                             <Button
                                 size="icon"
                                 variant="ghost"
@@ -198,11 +192,12 @@ export default function SuggestedPets({
                                 onClick={() => handleSwipe(pet.id, true)}
                                 disabled={actionPetId === pet.id}
                                 title="Me gusta"
+                                aria-label="Me gusta"
                             >
                                 {actionPetId === pet.id ? (
                                     <div className="w-4 h-4 border-2 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
                                 ) : (
-                                    <span className="material-symbols-rounded text-lg filled">favorite</span>
+                                    <Heart className="size-5 fill-current" aria-hidden="true" />
                                 )}
                             </Button>
                         </div>

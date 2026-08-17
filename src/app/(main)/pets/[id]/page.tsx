@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { ArrowLeft, PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -161,7 +162,7 @@ export default function PetPassportPage() {
         href="/profile"
         className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-slate-600 hover:text-teal-700"
       >
-        <span className="material-symbols-rounded text-lg">arrow_back</span>
+        <ArrowLeft className="size-5" aria-hidden="true" />
         Mis mascotas
       </Link>
 
@@ -177,7 +178,7 @@ export default function PetPassportPage() {
             />
           ) : (
             <div className="flex h-full items-center justify-center text-slate-300">
-              <span className="material-symbols-rounded text-7xl">pets</span>
+              <PawPrint className="size-20" aria-hidden="true" />
             </div>
           )}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent px-6 pb-5 pt-16">

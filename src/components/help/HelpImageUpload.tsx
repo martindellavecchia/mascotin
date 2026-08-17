@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useId, useState } from 'react';
+import { ImagePlus, LoaderCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { shouldUnoptimizeImage } from '@/lib/media';
@@ -65,7 +66,7 @@ export default function HelpImageUpload({ images, onChange }: HelpImageUploadPro
               onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))}
               aria-label={`Eliminar foto ${index + 1}`}
             >
-              <span className="material-symbols-rounded text-base" aria-hidden="true">close</span>
+              <X className="size-4" aria-hidden="true" />
             </Button>
           </div>
         ))}
@@ -74,9 +75,11 @@ export default function HelpImageUpload({ images, onChange }: HelpImageUploadPro
             htmlFor={inputId}
             className="flex aspect-square min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-teal-200 bg-teal-50 text-center text-teal-700 transition-colors hover:border-teal-400"
           >
-            <span className="material-symbols-rounded text-3xl" aria-hidden="true">
-              {uploading ? 'progress_activity' : 'add_photo_alternate'}
-            </span>
+            {uploading ? (
+              <LoaderCircle className="size-8 animate-spin" aria-hidden="true" />
+            ) : (
+              <ImagePlus className="size-8" aria-hidden="true" />
+            )}
             <span className="mt-1 px-2 text-xs font-medium">{uploading ? 'Subiendo…' : 'Agregar foto'}</span>
             <input
               id={inputId}

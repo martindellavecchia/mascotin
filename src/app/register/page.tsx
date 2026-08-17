@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Eye, EyeOff, PawPrint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -115,7 +116,7 @@ export default function RegisterPage() {
         <header className="w-full shrink-0 pb-8 lg:pb-10">
           <Link href="/" className="flex min-h-11 w-fit items-center gap-2.5 text-slate-900">
             <div className="flex items-center justify-center size-10 rounded-lg bg-teal-600 text-white">
-              <span className="material-symbols-rounded text-2xl filled">pets</span>
+              <PawPrint className="size-7" aria-hidden="true" fill="currentColor" />
             </div>
             <span className="text-xl font-bold tracking-tight">MascoTin</span>
           </Link>
@@ -205,9 +206,7 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  <span className="material-symbols-rounded">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
                 </button>
               </div>
               <div className="flex gap-1 items-center mt-2">
@@ -266,9 +265,7 @@ export default function RegisterPage() {
                     showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
                   }
                 >
-                  <span className="material-symbols-rounded">
-                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showConfirmPassword ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
                 </button>
               </div>
               {formData.confirmPassword &&

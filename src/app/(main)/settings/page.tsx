@@ -4,6 +4,27 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import {
+    CalendarDays,
+    Eye,
+    Heart,
+    Home,
+    Key,
+    MessageCircle,
+    MessageSquare,
+    Monitor,
+    Moon,
+    Newspaper,
+    Bell,
+    Palette,
+    PawPrint,
+    Settings,
+    SlidersHorizontal,
+    Stethoscope,
+    Sun,
+    TriangleAlert,
+    type LucideIcon,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -240,7 +261,7 @@ export default function SettingsPage() {
             <div className="container mx-auto min-w-0 max-w-3xl px-4 py-8">
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <span className="material-symbols-rounded text-slate-500">settings</span>
+                        <Settings className="size-5 text-slate-500" aria-hidden="true" />
                         Configuración
                     </h1>
                     <p className="text-slate-500">Personaliza tu experiencia en MascoTin</p>
@@ -262,7 +283,7 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">visibility</span>
+                                    <Eye className="size-5 text-slate-400" aria-hidden="true" />
                                     Visibilidad del perfil
                                 </CardTitle>
                             </CardHeader>
@@ -283,7 +304,7 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">key</span>
+                                    <Key className="size-5 text-slate-400" aria-hidden="true" />
                                     Cambiar contraseña
                                 </CardTitle>
                             </CardHeader>
@@ -322,7 +343,7 @@ export default function SettingsPage() {
                         <Card className="border-red-200">
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2 text-red-600">
-                                    <span className="material-symbols-rounded">warning</span>
+                                    <TriangleAlert className="size-5" aria-hidden="true" />
                                     Eliminar cuenta
                                 </CardTitle>
                             </CardHeader>
@@ -368,7 +389,7 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">pets</span>
+                                    <PawPrint className="size-5 text-slate-400" aria-hidden="true" />
                                     Mascotas activas para matching
                                 </CardTitle>
                             </CardHeader>
@@ -386,7 +407,7 @@ export default function SettingsPage() {
                                                             <img src={img} alt={pet.name} className="h-10 w-10 shrink-0 rounded-full object-cover" />
                                                         ) : (
                                                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100">
-                                                                <span className="material-symbols-rounded text-teal-600">pets</span>
+                                                                <PawPrint className="size-5 text-teal-600" aria-hidden="true" />
                                                             </div>
                                                         )}
                                                         <div className="min-w-0">
@@ -414,7 +435,7 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">tune</span>
+                                    <SlidersHorizontal className="size-5 text-slate-400" aria-hidden="true" />
                                     Preferencias de matching
                                 </CardTitle>
                             </CardHeader>
@@ -482,7 +503,7 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">notifications</span>
+                                    <Bell className="size-5 text-slate-400" aria-hidden="true" />
                                     Notificaciones
                                 </CardTitle>
                             </CardHeader>
@@ -490,17 +511,17 @@ export default function SettingsPage() {
                                 <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">
                                     Configura qué notificaciones quieres recibir. Los cambios se aplican de inmediato.
                                 </p>
-                                {[
-                                    { key: 'notifyMatches' as const, label: 'Nuevos matches', desc: 'Cuando una mascota hace match con la tuya', icon: 'favorite' },
-                                    { key: 'notifyMessages' as const, label: 'Mensajes nuevos', desc: 'Cuando recibes un mensaje directo', icon: 'chat' },
-                                    { key: 'notifyComments' as const, label: 'Comentarios', desc: 'Cuando alguien comenta en tus publicaciones', icon: 'comment' },
-                                    { key: 'notifyEvents' as const, label: 'Eventos y actividades', desc: 'Nuevos eventos cerca de tu ubicación', icon: 'event' },
-                                    { key: 'notifyHealth' as const, label: 'Recordatorios de salud', desc: 'Vacunas, controles y turnos próximos', icon: 'medical_services' },
-                                    { key: 'notifyFoster' as const, label: 'Hogares de tránsito', desc: 'Solicitudes y novedades de los casos de ayuda', icon: 'home' },
-                                ].map(item => (
+                                {([
+                                    { key: 'notifyMatches' as const, label: 'Nuevos matches', desc: 'Cuando una mascota hace match con la tuya', icon: Heart },
+                                    { key: 'notifyMessages' as const, label: 'Mensajes nuevos', desc: 'Cuando recibes un mensaje directo', icon: MessageCircle },
+                                    { key: 'notifyComments' as const, label: 'Comentarios', desc: 'Cuando alguien comenta en tus publicaciones', icon: MessageSquare },
+                                    { key: 'notifyEvents' as const, label: 'Eventos y actividades', desc: 'Nuevos eventos cerca de tu ubicación', icon: CalendarDays },
+                                    { key: 'notifyHealth' as const, label: 'Recordatorios de salud', desc: 'Vacunas, controles y turnos próximos', icon: Stethoscope },
+                                    { key: 'notifyFoster' as const, label: 'Hogares de tránsito', desc: 'Solicitudes y novedades de los casos de ayuda', icon: Home },
+                                ] as Array<{ key: keyof Settings; label: string; desc: string; icon: LucideIcon }>).map(item => (
                                     <div key={item.key} className="flex min-w-0 items-center justify-between gap-4 py-2">
                                         <div className="flex min-w-0 items-center gap-3">
-                                            <span className="material-symbols-rounded shrink-0 text-slate-400">{item.icon}</span>
+                                            <item.icon className="size-5 shrink-0 text-slate-400" aria-hidden="true" />
                                             <div className="min-w-0">
                                                 <p className="font-medium text-slate-700">{item.label}</p>
                                                 <p className="text-sm text-slate-500">{item.desc}</p>
@@ -521,7 +542,7 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">feed</span>
+                                    <Newspaper className="size-5 text-slate-400" aria-hidden="true" />
                                     Preferencias del feed
                                 </CardTitle>
                             </CardHeader>
@@ -545,17 +566,17 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <span className="material-symbols-rounded text-slate-400">palette</span>
+                                    <Palette className="size-5 text-slate-400" aria-hidden="true" />
                                     Tema
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                    {[
-                                        { value: 'light', label: 'Claro', icon: 'light_mode', disabled: false },
-                                        { value: 'dark', label: 'Oscuro', icon: 'dark_mode', disabled: true },
-                                        { value: 'system', label: 'Sistema', icon: 'desktop_windows', disabled: true },
-                                    ].map(t => (
+                                    {([
+                                        { value: 'light', label: 'Claro', icon: Sun, disabled: false },
+                                        { value: 'dark', label: 'Oscuro', icon: Moon, disabled: true },
+                                        { value: 'system', label: 'Sistema', icon: Monitor, disabled: true },
+                                    ] as Array<{ value: string; label: string; icon: LucideIcon; disabled: boolean }>).map(t => (
                                         <button
                                             key={t.value}
                                             onClick={() => handleThemeChange(t.value)}
@@ -568,7 +589,7 @@ export default function SettingsPage() {
                                                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                                             }`}
                                         >
-                                            <span className="material-symbols-rounded text-2xl">{t.icon}</span>
+                                            <t.icon className="size-7" aria-hidden="true" />
                                             <span className="text-sm font-medium">{t.label}</span>
                                             {t.disabled && <span className="text-[11px]">Próximamente</span>}
                                         </button>

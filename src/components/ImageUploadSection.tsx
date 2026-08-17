@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { LoaderCircle, Star, Upload, X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -103,7 +104,11 @@ export function ImageUploadSection({
               title="Usar como foto de perfil"
               aria-label="Usar como foto de perfil"
             >
-              <span className={`material-symbols-rounded text-[16px] leading-none ${thumbnailIndex === index ? 'text-white filled' : 'text-slate-500'}`}>star</span>
+              <Star
+                className={`size-4 ${thumbnailIndex === index ? 'text-white' : 'text-slate-500'}`}
+                fill={thumbnailIndex === index ? 'currentColor' : undefined}
+                aria-hidden="true"
+              />
             </Button>
             <Button
               type="button"
@@ -113,7 +118,7 @@ export function ImageUploadSection({
               onClick={() => removeImage(index)}
               aria-label="Eliminar foto"
             >
-              <span className="material-symbols-rounded text-[16px] leading-none">close</span>
+              <X className="size-4" aria-hidden="true" />
             </Button>
             {thumbnailIndex === index && (
               <div className="absolute bottom-0 left-0 right-0 bg-teal-500 text-white text-xs text-center py-1 font-medium">
@@ -127,10 +132,10 @@ export function ImageUploadSection({
           <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
             <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
               {uploading ? (
-                <span className="material-symbols-rounded text-[24px] leading-none text-teal-500 animate-spin">progress_activity</span>
+                <LoaderCircle className="size-6 animate-spin text-teal-500" aria-hidden="true" />
               ) : (
                 <>
-                  <span className="material-symbols-rounded text-[32px] leading-none mb-2 text-teal-500">upload</span>
+                  <Upload className="mb-2 size-8 text-teal-500" aria-hidden="true" />
                   <p className="text-sm text-slate-600">Subir foto</p>
                 </>
               )}

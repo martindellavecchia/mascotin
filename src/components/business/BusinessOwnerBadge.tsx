@@ -1,5 +1,6 @@
 'use client';
 
+import { Store } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -21,9 +22,7 @@ export default function BusinessOwnerBadge({ className, compact = false }: Busin
             role="img"
             aria-label="Owner de negocio verificado"
           >
-            <span className="material-symbols-rounded text-[12px] leading-none">
-              storefront
-            </span>
+            <Store className="size-3" aria-hidden="true" />
           </span>
         </TooltipTrigger>
         <TooltipContent side="top">Owner de negocio en MascoTin</TooltipContent>

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
+import { CircleAlert, PawPrint, Plus } from 'lucide-react';
 import HomeClientShell from '@/components/home/HomeClientShell';
 import { Button } from '@/components/ui/button';
 import { authOptions } from '@/lib/auth';
@@ -25,9 +26,7 @@ function GuestHome() {
         <header className="relative z-10 px-6 sm:px-10 pt-6 sm:pt-8">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-              <span className="material-symbols-rounded text-white text-2xl filled">
-                pets
-              </span>
+              <PawPrint className="size-7 text-white" aria-hidden="true" fill="currentColor" />
             </div>
             <span className="text-2xl sm:text-3xl font-bold tracking-tight">
               MascoTin
@@ -76,6 +75,7 @@ function GuestHome() {
               src="/images/community-dog.jpg"
               alt="Persona con su perro en casa"
               fill
+              sizes="(min-width: 768px) 50vw, calc(100vw - 48px)"
               className="object-cover"
             />
           </div>
@@ -94,9 +94,7 @@ function HomeError({ session: _session }: { session: Session }) {
   return (
     <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[60vh]">
       <div className="w-full max-w-md text-center px-4">
-        <span className="material-symbols-rounded text-5xl text-slate-400 mb-4">
-          error
-        </span>
+        <CircleAlert className="mb-4 size-12 text-slate-400" aria-hidden="true" />
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
           Error al cargar
         </h2>
@@ -116,9 +114,7 @@ function NoPetsHome({ session: _session }: { session: Session }) {
     <>
       <main className="flex-1 container mx-auto px-4 py-6 flex flex-col items-center justify-center min-h-[60vh]">
         <div className="w-full max-w-md text-center px-4">
-          <span className="material-symbols-rounded text-5xl text-teal-600 mb-4 filled">
-            pets
-          </span>
+          <PawPrint className="mb-4 size-12 text-teal-600" aria-hidden="true" fill="currentColor" />
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-3">
             Registra tu primera mascota
           </h2>
@@ -128,7 +124,7 @@ function NoPetsHome({ session: _session }: { session: Session }) {
           </p>
           <Button asChild className="bg-teal-700 hover:bg-teal-800 rounded-lg">
             <Link href="/create-pet">
-              <span className="material-symbols-rounded mr-2">add</span>
+              <Plus className="mr-2 size-5" aria-hidden="true" />
               Registrar mascota
             </Link>
           </Button>

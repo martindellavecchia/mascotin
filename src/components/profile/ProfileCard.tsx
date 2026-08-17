@@ -1,3 +1,4 @@
+import { MapPin, PawPrint, Trees } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +32,7 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
 
                     {location && (
                         <div className="flex items-center justify-center gap-1 mt-2 text-teal-600">
-                            <span className="material-symbols-rounded text-lg">location_on</span>
+                            <MapPin className="size-5" aria-hidden="true" />
                             <span className="text-sm font-medium">{location}</span>
                         </div>
                     )}
@@ -39,13 +40,13 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
                 <div className="flex flex-wrap justify-center gap-2 mt-4">
                     {owner.hasYard && (
                         <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 gap-1">
-                            <span className="material-symbols-rounded text-sm">yard</span>
+                            <Trees className="size-4" aria-hidden="true" />
                             Tiene patio
                         </Badge>
                     )}
                     {owner.hasOtherPets && (
                         <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 gap-1">
-                            <span className="material-symbols-rounded text-sm">pets</span>
+                            <PawPrint className="size-4" aria-hidden="true" />
                             Otras mascotas
                         </Badge>
                     )}

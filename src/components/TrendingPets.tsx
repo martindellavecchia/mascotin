@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Heart, Trophy, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Pet } from '@/types';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
+import { PetTypeIcon } from '@/components/PetTypeIcon';
+import { getPetTypeLabel } from '@/lib/petTypeIcon';
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
 export default function TrendingPets() {
@@ -37,8 +39,7 @@ export default function TrendingPets() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <span className="material-symbols-rounded w-5 h-5 text-orange-500">trending_up</span>
-                        Mascotas en tendencia
+                        <TrendingUp className="size-5 text-orange-500" aria-hidden="true" />                        Mascotas en tendencia
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -59,8 +60,7 @@ export default function TrendingPets() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <span className="material-symbols-rounded w-5 h-5 text-orange-500">trending_up</span>
-                        Mascotas en tendencia
+                        <TrendingUp className="size-5 text-orange-500" aria-hidden="true" />                        Mascotas en tendencia
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -75,10 +75,10 @@ export default function TrendingPets() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <span className="material-symbols-rounded w-5 h-5 text-orange-500">trending_up</span>
-                    Mascotas en tendencia
-                </CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="size-5 text-orange-500" aria-hidden="true" />
+                        Mascotas en tendencia
+                    </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -108,9 +108,7 @@ export default function TrendingPets() {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
-                                            <span className="material-symbols-rounded text-4xl text-teal-600">
-                                              {getPetTypeIcon(pet.petType)}
-                                            </span>
+                                            <PetTypeIcon petType={pet.petType} className="size-10 text-teal-600" />
                                         </div>
                                     )}
                                     {index < 3 && (
@@ -120,7 +118,7 @@ export default function TrendingPets() {
                                         </div>
                                     )}
                                     <div className="absolute top-2 right-2 bg-slate-900/70 text-white px-2 py-0.5 rounded-md text-xs font-semibold flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-xs">emoji_events</span>
+                                        <Trophy className="size-3" aria-hidden="true" />
                                         {pet.level}
                                     </div>
                                 </div>
@@ -129,7 +127,7 @@ export default function TrendingPets() {
                                     <div className="flex items-center justify-between mt-1">
                                         <span className="text-xs text-gray-500">{getPetTypeLabel(pet.petType)}</span>
                                         <Badge variant="outline" className="text-xs bg-teal-50 text-teal-700">
-                                            <span className="material-symbols-rounded text-xs mr-1">favorite</span>
+                                            <Heart className="mr-1 size-3" aria-hidden="true" />
                                             {pet.totalMatches}
                                         </Badge>
                                     </div>

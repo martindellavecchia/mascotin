@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { MapPin, Search, Star, Store } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -97,7 +98,7 @@ export default function ShopPage() {
               <Link href="/map">Ver mapa pet-friendly</Link>
             </Button>
             <div className="relative mx-auto mt-7 max-w-2xl">
-              <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+              <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -166,7 +167,7 @@ export default function ShopPage() {
         ) : stores.length === 0 ? (
           <Card className="border-dashed border-slate-300 bg-white">
             <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <span className="material-symbols-rounded text-5xl text-slate-300">storefront</span>
+              <Store className="size-12 text-slate-300" aria-hidden="true" />
               <h3 className="mt-3 text-lg font-semibold text-slate-900">Todavía no hay negocios con esos filtros</h3>
               <p className="mt-1 max-w-md text-sm text-slate-500">Probá otra búsqueda o publicá tu negocio desde el panel de proveedor.</p>
               <Button asChild className="mt-5 bg-teal-600 hover:bg-teal-700">
@@ -183,7 +184,7 @@ export default function ShopPage() {
                     {store.image ? (
                       <img src={store.image} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="material-symbols-rounded absolute left-6 top-6 text-6xl text-teal-700/30">storefront</span>
+                      <Store className="absolute left-6 top-6 size-16 text-teal-700/30" aria-hidden="true" />
                     )}
                     <Badge className="absolute left-4 top-4 border-white/70 bg-white/90 text-slate-700 shadow-sm hover:bg-white">
                       {store.category.name}
@@ -195,14 +196,14 @@ export default function ShopPage() {
                         <h3 className="truncate text-lg font-bold text-slate-900 group-hover:text-teal-700">{store.name}</h3>
                         {store.address && (
                           <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
-                            <span className="material-symbols-rounded text-sm">location_on</span>
+                            <MapPin className="size-3.5" aria-hidden="true" />
                             {store.address}
                           </p>
                         )}
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="flex items-center justify-end gap-1 font-bold text-slate-900">
-                          <span className="material-symbols-rounded text-base text-amber-500">star</span>
+                          <Star className="size-4 text-amber-500" aria-hidden="true" fill="currentColor" />
                           {store.reviewCount ? store.ratingAverage.toFixed(1) : 'Nuevo'}
                         </p>
                         <p className="text-xs text-slate-400">{store.reviewCount} reseñas</p>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { CalendarDays, Users } from 'lucide-react';
 import GroupsSidebar from './GroupsSidebar';
 import UpcomingEventsWidget from './UpcomingEventsWidget';
 import QuickActions from '@/components/widgets/QuickActions';
@@ -18,14 +19,14 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
             href="/community/groups"
             className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 sm:flex-none"
           >
-            <span className="material-symbols-rounded text-lg">groups</span>
+            <Users className="size-5" aria-hidden="true" />
             Ver grupos
           </Link>
           <Link
             href="/community/events"
             className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 sm:flex-none"
           >
-            <span className="material-symbols-rounded text-lg">calendar_month</span>
+            <CalendarDays className="size-5" aria-hidden="true" />
             Eventos
           </Link>
         </nav>

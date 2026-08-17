@@ -2,6 +2,24 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import {
+  Circle,
+  GraduationCap,
+  Hospital,
+  ImageOff,
+  Leaf,
+  LoaderCircle,
+  Phone,
+  Scissors,
+  Star,
+  Stethoscope,
+  Syringe,
+  Upload,
+  Users,
+  Waves,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -474,7 +492,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                     onChange={field.onChange}
                     className="sr-only"
                   />
-                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-slate-400'}`}>vaccines</span>
+                  <Syringe className={`size-5 ${field.value ? 'text-teal-600' : 'text-slate-400'}`} aria-hidden="true" />
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
                     {form.watch('gender') === 'female' ? 'Vacunada' : 'Vacunado'}
                   </span>
@@ -496,7 +514,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                     onChange={field.onChange}
                     className="sr-only"
                   />
-                  <span className={`material-symbols-rounded text-xl ${field.value ? 'text-teal-600' : 'text-slate-400'}`}>medical_services</span>
+                  <Stethoscope className={`size-5 ${field.value ? 'text-teal-600' : 'text-slate-400'}`} aria-hidden="true" />
                   <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
                     {form.watch('gender') === 'female' ? 'Castrada' : 'Castrado'}
                   </span>
@@ -542,15 +560,17 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
         <div className="space-y-3">
           <Label className="text-slate-700 font-medium">Actividades Favoritas</Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              { id: 'walk', label: 'Pasear', icon: 'directions_walk' },
-              { id: 'play', label: 'Jugar', icon: 'sports_tennis' },
-              { id: 'fetch', label: 'Buscar', icon: 'toys' },
-              { id: 'swim', label: 'Nadar', icon: 'pool' },
-              { id: 'socialize', label: 'Socializar', icon: 'groups' },
-              { id: 'groom', label: 'Aseo', icon: 'content_cut' },
-              { id: 'training', label: 'Entrenar', icon: 'school' }
-            ].map((activity) => (
+            {([
+              { id: 'walk', label: 'Pasear', icon: Leaf },
+              { id: 'play', label: 'Jugar', icon: Circle },
+              { id: 'fetch', label: 'Buscar', icon: Circle },
+              { id: 'swim', label: 'Nadar', icon: Waves },
+              { id: 'socialize', label: 'Socializar', icon: Users },
+              { id: 'groom', label: 'Aseo', icon: Scissors },
+              { id: 'training', label: 'Entrenar', icon: GraduationCap },
+            ] as { id: ActivityOption; label: string; icon: LucideIcon }[]).map((activity) => {
+              const ActivityIcon = activity.icon;
+              return (
               <label
                 key={activity.id}
                 className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${form.watch('activities')?.includes(activity.id as ActivityOption)
@@ -572,10 +592,11 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                   }}
                   className="sr-only"
                 />
-                <span className="material-symbols-rounded text-lg text-teal-700">{activity.icon}</span>
+                <ActivityIcon className="size-5 text-teal-700" aria-hidden="true" />
                 <span className="text-sm font-medium">{activity.label}</span>
               </label>
-            ))}
+              );
+            })}
           </div>
           <p className="text-xs text-slate-500 mt-2">Selecciona al menos una actividad</p>
         </div>
@@ -664,7 +685,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                     onChange={field.onChange}
                     className="sr-only"
                   />
-                  <span className="material-symbols-rounded text-xl text-teal-600">phone</span>
+                  <Phone className="size-5 text-teal-600" aria-hidden="true" />
                   <div>
                     <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
                       Compartir teléfono
@@ -688,7 +709,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                     onChange={field.onChange}
                     className="sr-only"
                   />
-                  <span className="material-symbols-rounded text-xl text-teal-600">local_hospital</span>
+                  <Hospital className="size-5 text-teal-600" aria-hidden="true" />
                   <div>
                     <span className={`text-sm font-medium block ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
                       Compartir veterinaria
@@ -728,9 +749,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                     className="object-cover"
                   />
                 ) : (
-                  <span className="material-symbols-rounded flex h-full items-center justify-center text-4xl text-teal-700">
-                    broken_image
-                  </span>
+                  <ImageOff className="size-10 text-teal-700" aria-hidden="true" />
                 )}
                 <Button
                   type="button"
@@ -743,9 +762,15 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                   aria-label={isThumbnail ? `Foto ${index + 1} es la foto de perfil actual` : `Usar Foto ${index + 1} como foto de perfil`}
                   aria-pressed={isThumbnail}
                 >
-                  <span className={`material-symbols-rounded text-[16px] leading-none ${isThumbnail ? 'text-white filled' : 'text-slate-500'} ${isSavingThumbnail ? 'animate-spin' : ''}`}>
-                    {isSavingThumbnail ? 'progress_activity' : 'star'}
-                  </span>
+                  {isSavingThumbnail ? (
+                    <LoaderCircle className={`size-4 animate-spin ${isThumbnail ? 'text-white' : 'text-slate-500'}`} aria-hidden="true" />
+                  ) : (
+                    <Star
+                      className={`size-4 ${isThumbnail ? 'text-white' : 'text-slate-500'}`}
+                      fill={isThumbnail ? 'currentColor' : undefined}
+                      aria-hidden="true"
+                    />
+                  )}
                 </Button>
                 <Button
                   type="button"
@@ -764,7 +789,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                   }}
                   aria-label="Eliminar foto"
                 >
-                  <span className="material-symbols-rounded text-[16px] leading-none">close</span>
+                  <X className="size-4" aria-hidden="true" />
                 </Button>
                 {isThumbnail && (
                   <div className="absolute bottom-0 left-0 right-0 bg-teal-500 text-white text-xs text-center py-1 font-medium">
@@ -779,10 +804,10 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
               <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
                 <label htmlFor="image-upload" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
                   {uploading ? (
-                    <span className="material-symbols-rounded text-[24px] leading-none text-teal-500 animate-spin">progress_activity</span>
+                    <LoaderCircle className="mb-0 size-6 animate-spin text-teal-500" aria-hidden="true" />
                   ) : (
                     <>
-                      <span className="material-symbols-rounded text-[32px] leading-none mb-2 text-teal-500">upload</span>
+                      <Upload className="mb-2 size-8 text-teal-500" aria-hidden="true" />
                       <p className="text-sm text-slate-600">Subir foto</p>
                     </>
                   )}
@@ -819,7 +844,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
           <Button type="submit" className="w-full flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading || savingThumbnailIndex !== null}>
             {loading ? (
               <>
-                <span className="material-symbols-rounded text-[16px] leading-none mr-2 animate-spin">progress_activity</span>
+                <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />
                 {initialData?.id ? 'Actualizando...' : 'Guardando...'}
               </>
             ) : (

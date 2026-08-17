@@ -45,7 +45,7 @@ export function normalizeImages(images: string | string[] | null | undefined): s
     return parseImages(images).filter(Boolean);
 }
 
-/** @deprecated Use getPetTypeIcon from @/lib/petTypeIcon */
+/** @deprecated Use PetTypeIcon from @/components/PetTypeIcon */
 export function getPetEmoji(petType: string): string {
     switch (petType) {
         case 'dog': return 'dog';

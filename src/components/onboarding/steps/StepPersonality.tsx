@@ -1,5 +1,15 @@
 'use client';
 
+import {
+    Bone,
+    Circle,
+    Footprints,
+    GraduationCap,
+    Scissors,
+    Users,
+    Waves,
+    type LucideIcon,
+} from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,14 +25,14 @@ interface StepPersonalityProps {
 }
 
 export default function StepPersonality({ data, updateData }: StepPersonalityProps) {
-    const activitiesList = [
-        { id: 'walk', label: 'Pasear', icon: 'directions_walk' },
-        { id: 'play', label: 'Jugar', icon: 'sports_tennis' },
-        { id: 'fetch', label: 'Buscar', icon: 'toys' },
-        { id: 'swim', label: 'Nadar', icon: 'pool' },
-        { id: 'socialize', label: 'Socializar', icon: 'groups' },
-        { id: 'groom', label: 'Aseo', icon: 'content_cut' },
-        { id: 'training', label: 'Entrenar', icon: 'school' },
+    const activitiesList: { id: string; label: string; icon: LucideIcon }[] = [
+        { id: 'walk', label: 'Pasear', icon: Footprints },
+        { id: 'play', label: 'Jugar', icon: Circle },
+        { id: 'fetch', label: 'Buscar', icon: Bone },
+        { id: 'swim', label: 'Nadar', icon: Waves },
+        { id: 'socialize', label: 'Socializar', icon: Users },
+        { id: 'groom', label: 'Aseo', icon: Scissors },
+        { id: 'training', label: 'Entrenar', icon: GraduationCap },
     ];
 
     const toggleActivity = (id: string) => {
@@ -58,7 +68,9 @@ export default function StepPersonality({ data, updateData }: StepPersonalityPro
             <div className="space-y-2">
                 <Label>Actividades favoritas</Label>
                 <div className="grid grid-cols-3 gap-2">
-                    {activitiesList.map(act => (
+                    {activitiesList.map((act) => {
+                        const ActivityIcon = act.icon;
+                        return (
                         <button
                             key={act.id}
                             type="button"
@@ -68,10 +80,11 @@ export default function StepPersonality({ data, updateData }: StepPersonalityPro
                                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                                 }`}
                         >
-                            <span className="material-symbols-rounded text-xl text-teal-700">{act.icon}</span>
+                            <ActivityIcon className="size-6 text-teal-700" aria-hidden="true" />
                             <span>{act.label}</span>
                         </button>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 

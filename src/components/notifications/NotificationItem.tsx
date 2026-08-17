@@ -1,34 +1,58 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { timeAgo } from '@/lib/utils';
+import {
+  Bell,
+  CalendarCheck,
+  CalendarDays,
+  CircleAlert,
+  ClipboardCheck,
+  Eye,
+  Flag,
+  HandHeart,
+  Handshake,
+  Heart,
+  HeartHandshake,
+  Home,
+  House,
+  MessageCircle,
+  MessagesSquare,
+  MessageSquare,
+  PawPrint,
+  Stethoscope,
+  Store,
+  ThumbsUp,
+  UserPlus,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Notification } from '@/hooks/useNotifications';
+import { timeAgo } from '@/lib/utils';
 
-const ICON_MAP: Record<string, string> = {
-  MATCH: 'favorite',
-  MESSAGE: 'chat',
-  GROUP_MESSAGE: 'forum',
-  COMMENT: 'comment',
-  LIKE: 'thumb_up',
-  APPOINTMENT: 'calendar_month',
-  EVENT_ATTEND: 'event_available',
-  PROVIDER_REQUEST: 'storefront',
-  GROUP_JOIN: 'group_add',
-  LOST_PET_ALERT: 'emergency',
-  SIGHTING: 'visibility',
-  ADOPTION_APPLICATION: 'volunteer_activism',
-  ADOPTION_MATCH: 'pets',
-  FOSTER_OFFER: 'home',
-  FOSTER_RESPONSE: 'volunteer_activism',
-  FOSTER_PLACEMENT: 'handshake',
-  FOSTER_CASE_ALERT: 'home_health',
-  FOSTER_ADOPTION: 'family_home',
-  VOLUNTEER_OFFER: 'volunteer_activism',
-  VOLUNTEER_RESPONSE: 'handshake',
-  VOLUNTEER_ASSIGNMENT: 'assignment_turned_in',
-  SOLIDARITY_ADOPTION_ALERT: 'pets',
-  SOLIDARITY_VETERINARY_ALERT: 'medical_services',
-  CONTENT_REPORT: 'flag',
+const ICON_MAP: Record<string, LucideIcon> = {
+  MATCH: Heart,
+  MESSAGE: MessageCircle,
+  GROUP_MESSAGE: MessagesSquare,
+  COMMENT: MessageSquare,
+  LIKE: ThumbsUp,
+  APPOINTMENT: CalendarDays,
+  EVENT_ATTEND: CalendarCheck,
+  PROVIDER_REQUEST: Store,
+  GROUP_JOIN: UserPlus,
+  LOST_PET_ALERT: CircleAlert,
+  SIGHTING: Eye,
+  ADOPTION_APPLICATION: HandHeart,
+  ADOPTION_MATCH: PawPrint,
+  FOSTER_OFFER: Home,
+  FOSTER_RESPONSE: HandHeart,
+  FOSTER_PLACEMENT: Handshake,
+  FOSTER_CASE_ALERT: HeartHandshake,
+  FOSTER_ADOPTION: House,
+  VOLUNTEER_OFFER: HandHeart,
+  VOLUNTEER_RESPONSE: Handshake,
+  VOLUNTEER_ASSIGNMENT: ClipboardCheck,
+  SOLIDARITY_ADOPTION_ALERT: PawPrint,
+  SOLIDARITY_VETERINARY_ALERT: Stethoscope,
+  CONTENT_REPORT: Flag,
 };
 
 const COLOR_MAP: Record<string, string> = {
@@ -66,7 +90,7 @@ interface NotificationItemProps {
 
 export default function NotificationItem({ notification, onRead, onClose }: NotificationItemProps) {
   const router = useRouter();
-  const icon = ICON_MAP[notification.type] || 'notifications';
+  const Icon = ICON_MAP[notification.type] || Bell;
   const color = COLOR_MAP[notification.type] || 'text-slate-500';
 
   const handleClick = () => {
@@ -86,9 +110,7 @@ export default function NotificationItem({ notification, onRead, onClose }: Noti
         !notification.read ? 'bg-teal-50/50' : ''
       }`}
     >
-      <span className={`material-symbols-rounded text-xl mt-0.5 shrink-0 ${color}`}>
-        {icon}
-      </span>
+      <Icon className={`size-6 mt-0.5 shrink-0 ${color}`} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-snug ${!notification.read ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
           {notification.title}

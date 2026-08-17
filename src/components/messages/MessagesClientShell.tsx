@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, MessageCircle } from 'lucide-react';
 import ConversationList from '@/components/messages/ConversationList';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
@@ -164,9 +165,7 @@ export default function MessagesClientShell({
     if (!selectedId || !selectedType) {
       return (
         <div className="flex h-full min-h-0 min-w-0 flex-col items-center justify-center bg-slate-50/50 p-6 text-center text-slate-400 sm:p-8">
-          <span className="material-symbols-rounded mb-4 text-6xl text-slate-300">
-            chat_bubble
-          </span>
+          <MessageCircle className="mb-4 size-16 text-slate-300" aria-hidden="true" />
           <h3 className="mb-2 text-xl font-semibold text-slate-600">
             Tus Mensajes
           </h3>
@@ -189,7 +188,7 @@ export default function MessagesClientShell({
               onClick={clearSelection}
               aria-label="Volver a conversaciones"
             >
-              <span className="material-symbols-rounded">arrow_back</span>
+              <ArrowLeft className="size-5" aria-hidden="true" />
             </Button>
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-200">
               {group?.image && (
@@ -231,7 +230,7 @@ export default function MessagesClientShell({
             onClick={clearSelection}
             aria-label="Volver a conversaciones"
           >
-            <span className="material-symbols-rounded">arrow_back</span>
+            <ArrowLeft className="size-5" aria-hidden="true" />
           </Button>
           <span className="text-sm font-medium text-slate-700">Conversación</span>
         </div>

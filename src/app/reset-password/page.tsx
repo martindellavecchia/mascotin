@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { CircleAlert, CircleCheck, Eye, EyeOff, PawPrint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { passwordSchema } from '@/lib/schemas';
@@ -23,7 +24,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center size-16 rounded-full bg-red-100 text-red-600 mx-auto">
-          <span className="material-symbols-rounded text-3xl">error</span>
+          <CircleAlert className="size-8" aria-hidden="true" />
         </div>
         <h1 className="text-2xl font-extrabold text-slate-800">Enlace inválido</h1>
         <p className="text-slate-600">
@@ -79,7 +80,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
-          <span className="material-symbols-rounded text-3xl">check_circle</span>
+          <CircleCheck className="size-8" aria-hidden="true" />
         </div>
         <h1 className="text-2xl font-extrabold text-slate-800">Contraseña actualizada</h1>
         <p className="text-slate-600">
@@ -120,7 +121,7 @@ function ResetPasswordForm() {
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
-              <span className="material-symbols-rounded">{showPassword ? 'visibility_off' : 'visibility'}</span>
+              {showPassword ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
             </button>
           </div>
           <p className="ml-1 text-xs leading-relaxed text-slate-500">
@@ -169,7 +170,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-[440px]">
         <div className="flex items-center gap-3 text-slate-800 mb-10 justify-center">
           <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600">
-            <span className="material-symbols-rounded text-2xl">pets</span>
+            <PawPrint className="size-7" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
         </div>

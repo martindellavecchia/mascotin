@@ -2,6 +2,32 @@
 
 import { memo, useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+    CalendarDays,
+    Camera,
+    Check,
+    ChevronRight,
+    CircleAlert,
+    CircleCheck,
+    CircleHelp,
+    Clock,
+    Flag,
+    HandHeart,
+    Heart,
+    HeartHandshake,
+    MapPin,
+    MessageCircle,
+    MoreHorizontal,
+    PawPrint,
+    Pencil,
+    Phone,
+    Send,
+    Settings,
+    Share2,
+    Star,
+    Trash2,
+    type LucideIcon,
+} from 'lucide-react';
 import { Post, Comment } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
@@ -52,6 +78,14 @@ interface ExtendedPost extends Post {
         comments: number;
     };
 }
+
+const POST_TYPE_ICONS: Record<string, LucideIcon> = {
+    foster_case: HeartHandshake,
+    event: CalendarDays,
+    question: CircleHelp,
+    recommendation: Star,
+    photo: Camera,
+};
 
 interface PostCardProps {
     post: ExtendedPost;
@@ -189,7 +223,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {isFosterCase && post.rescueCase && (
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-3 py-2 text-orange-900">
                     <span className="inline-flex items-center gap-1.5 text-sm font-bold">
-                        <span className="material-symbols-rounded text-lg" aria-hidden="true">volunteer_activism</span>
+                        <HandHeart className="size-5" aria-hidden="true" />
                         RED SOLIDARIA
                     </span>
                     <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold">
@@ -201,9 +235,11 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {post.postType === 'lost_pet' && (
                 <div className={`flex flex-col items-start justify-between gap-2 border-b px-3 py-2 text-sm sm:flex-row sm:items-center ${isResolved ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'}`}>
                     <div className="flex min-w-0 items-center gap-1.5 text-white">
-                        <span className="material-symbols-rounded">
-                            {isResolved ? 'check_circle' : 'emergency'}
-                        </span>
+                        {isResolved ? (
+                            <CircleCheck className="size-5 shrink-0" aria-hidden="true" />
+                        ) : (
+                            <CircleAlert className="size-5 shrink-0" aria-hidden="true" />
+                        )}
                         <span className="text-sm font-bold [overflow-wrap:anywhere]">
                             {isResolved ? '¡MASCOTA ENCONTRADA!' : 'MASCOTA PERDIDA'}
                         </span>
@@ -258,7 +294,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         {post.pet && (
                             <span className="inline-flex min-w-0 items-center gap-0.5 text-xs text-slate-500 [overflow-wrap:anywhere]">
                               con {post.pet.name}
-                              <span className="material-symbols-rounded text-sm text-teal-600">pets</span>
+                              <PawPrint className="size-4 text-teal-600" aria-hidden="true" />
                             </span>
                         )}
                     </div>
@@ -268,7 +304,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             <>
                                 <span>•</span>
                                 <span className="flex min-w-0 items-start gap-0.5 [overflow-wrap:anywhere]">
-                                    <span className="material-symbols-rounded shrink-0 text-[14px]">location_on</span>
+                                    <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
                                     {post.location}
                                 </span>
                             </>
@@ -279,20 +315,20 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 {currentUserId && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-400">
-                                <span className="material-symbols-rounded">more_horiz</span>
+                            <Button variant="ghost" size="icon" className="text-slate-400" aria-label="Más opciones">
+                                <MoreHorizontal className="size-5" aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {post.author?.id === currentUserId && !isFosterCase && (
                                 <>
                                     <DropdownMenuItem onClick={() => onEdit?.(post)}>
-                                        <span className="material-symbols-rounded mr-2 text-slate-500">edit</span>
+                                        <Pencil className="mr-2 size-4 text-slate-500" aria-hidden="true" />
                                         Editar
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                                        <span className="material-symbols-rounded mr-2">delete</span>
+                                        <Trash2 className="mr-2 size-4" aria-hidden="true" />
                                         Eliminar
                                     </DropdownMenuItem>
                                 </>
@@ -300,7 +336,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             {isFosterCase && post.canManage && post.rescueCase && (
                                 <DropdownMenuItem asChild>
                                     <Link href={`/hogares-de-transito/casos/${post.rescueCase.id}`}>
-                                        <span className="material-symbols-rounded mr-2 text-slate-500">settings</span>
+                                        <Settings className="mr-2 size-4 text-slate-500" aria-hidden="true" />
                                         Gestionar caso
                                     </Link>
                                 </DropdownMenuItem>
@@ -325,7 +361,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                     }}
                                     className="text-red-600 focus:text-red-600"
                                 >
-                                    <span className="material-symbols-rounded mr-2">flag</span>
+                                    <Flag className="mr-2 size-4" aria-hidden="true" />
                                     Reportar
                                 </DropdownMenuItem>
                             )}
@@ -342,9 +378,10 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             post.postType === 'recommendation' ? 'bg-amber-50 text-amber-700' :
                             post.postType === 'photo' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
                         }`}>
-                        <span className="material-symbols-rounded text-sm mr-1">
-                            {post.postType === 'foster_case' ? 'home_health' : post.postType === 'event' ? 'event' : post.postType === 'question' ? 'help' : post.postType === 'recommendation' ? 'star' : 'photo_camera'}
-                        </span>
+                        {(() => {
+                            const PostTypeIcon = POST_TYPE_ICONS[post.postType] ?? Camera;
+                            return <PostTypeIcon className="mr-1 size-4" aria-hidden="true" />;
+                        })()}
                         {post.postType === 'foster_case' ? 'Caso de tránsito' : post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : 'Foto'}
                     </Badge>
                 </div>
@@ -404,12 +441,12 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1 text-sm text-teal-800">
-                                <span className="material-symbols-rounded text-lg">schedule</span>
+                                <Clock className="size-5" aria-hidden="true" />
                                 {format(new Date(post.eventDate), 'HH:mm')}
                             </div>
                             {post.eventLocation && (
                                 <div className="mt-1 flex min-w-0 items-start gap-1 text-sm text-teal-700 [overflow-wrap:anywhere]">
-                                    <span className="material-symbols-rounded shrink-0 text-lg">location_on</span>
+                                    <MapPin className="size-5 shrink-0" aria-hidden="true" />
                                     {post.eventLocation}
                                 </div>
                             )}
@@ -422,7 +459,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             >
                                 {isAttending ? (
                                     <>
-                                        <span className="material-symbols-rounded text-sm mr-1">check</span>
+                                        <Check className="mr-1 size-4" aria-hidden="true" />
                                         Asistiré
                                     </>
                                 ) : 'Asistir'}
@@ -438,13 +475,13 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     <div className="space-y-1">
                         {post.lastSeenLocation && (
                             <div className="flex min-w-0 items-start gap-2 text-sm text-red-700">
-                                <span className="material-symbols-rounded shrink-0 text-lg">location_on</span>
+                                <MapPin className="size-5 shrink-0" aria-hidden="true" />
                                 <span className="min-w-0 [overflow-wrap:anywhere]"><strong>Visto por última vez:</strong> {post.lastSeenLocation}</span>
                             </div>
                         )}
                         {post.contactPhone && (
                             <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-0.5 text-sm text-red-700">
-                                <span className="material-symbols-rounded shrink-0 text-lg">call</span>
+                                <Phone className="size-5 shrink-0" aria-hidden="true" />
                                 <span className="shrink-0"><strong>Contacto:</strong></span>
                                 <a href={`tel:${post.contactPhone}`} className="inline-flex min-h-11 min-w-0 items-center font-bold underline [overflow-wrap:anywhere] hover:text-red-800">
                                     {post.contactPhone}
@@ -532,7 +569,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 aria-label="Enviar comentario"
                                 className="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:text-teal-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 disabled:opacity-50"
                             >
-                                <span className="material-symbols-rounded text-[20px]">send</span>
+                                <Send className="size-5" aria-hidden="true" />
                             </button>
                         </div>
                     </div>
@@ -548,7 +585,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     aria-label={isLiked ? 'Quitar me gusta' : 'Me gusta'}
                     aria-pressed={isLiked}
                 >
-                    <span className={`material-symbols-rounded text-[16px] ${isLiked ? 'filled' : ''}`}>favorite</span>
+                    <Heart className="size-4" fill={isLiked ? 'currentColor' : undefined} aria-hidden="true" />
                     <span className="text-xs">Me gusta</span>
                 </Button>
 
@@ -559,12 +596,12 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     aria-label={showComments ? 'Ocultar comentarios' : 'Mostrar comentarios'}
                     aria-expanded={showComments}
                 >
-                    <span className="material-symbols-rounded text-[16px]">chat_bubble</span>
+                    <MessageCircle className="size-4" aria-hidden="true" />
                     <span className="text-xs">Comentar</span>
                 </Button>
 
-                <Button variant="ghost" size="sm" className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600">
-                    <span className="material-symbols-rounded text-[16px]">share</span>
+                <Button variant="ghost" size="sm" className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600" aria-label="Compartir">
+                    <Share2 className="size-4" aria-hidden="true" />
                     <span className="text-xs">Compartir</span>
                 </Button>
             </div>

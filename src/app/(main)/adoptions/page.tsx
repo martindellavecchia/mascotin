@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -206,7 +207,7 @@ function AdoptionsContent() {
         ) : listings.length === 0 ? (
           <Card className="border-dashed md:col-span-2">
             <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <span className="material-symbols-rounded text-5xl text-slate-300">pets</span>
+              <PawPrint className="size-12 text-slate-300" aria-hidden="true" />
               <h3 className="mt-3 text-lg font-semibold text-slate-900">Todavía no hay fichas de adopción</h3>
               <p className="mt-1 max-w-md text-sm text-slate-500">
                 Cuando alguien publique una mascota en adopción, va a aparecer acá. También podés armar tu perfil de adoptante o publicar una ficha.

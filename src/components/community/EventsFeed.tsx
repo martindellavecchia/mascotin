@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { MessagesSquare } from 'lucide-react';
 import CreatePostCard from './CreatePostCard';
 import EditPostModal from './EditPostModal';
 import PostCard from '@/components/feed/PostCard';
@@ -173,7 +174,7 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
             {posts.length === 0 ? (
                 <Card>
                     <CardContent className="py-12 text-center">
-                        <span className="material-symbols-rounded text-5xl text-slate-300 mb-4 block">forum</span>
+                        <MessagesSquare className="mb-4 block size-12 text-slate-300" aria-hidden="true" />
                         <h3 className="font-semibold text-slate-700 mb-2">No hay publicaciones aún</h3>
                         <p className="text-sm text-slate-500">¡Sé el primero en compartir algo!</p>
                     </CardContent>

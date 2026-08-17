@@ -3,6 +3,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import {
+    Ban,
+    IdCard,
+    Inbox,
+    Key,
+    LockOpen,
+    MoreVertical,
+    Search,
+    Shield,
+    ShieldUser,
+    Star,
+    Store,
+    Trash2,
+    Users,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -326,7 +341,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="flex items-center gap-2 text-xl font-bold text-slate-800 sm:text-2xl">
-                            <span className="material-symbols-rounded text-teal-600">admin_panel_settings</span>
+                            <Shield className="size-5 text-teal-600" aria-hidden="true" />
                             Panel de Administración
                         </h1>
                         <p className="text-slate-500">Gestiona usuarios, roles y proveedores</p>
@@ -375,7 +390,7 @@ export default function AdminPage() {
                                         </SelectContent>
                                     </Select>
                                     <Button className="w-full sm:w-auto" onClick={fetchUsers} variant="outline">
-                                        <span className="material-symbols-rounded mr-2">search</span>
+                                        <Search className="mr-2 size-5" aria-hidden="true" />
                                         Buscar
                                     </Button>
                                 </div>
@@ -430,23 +445,25 @@ export default function AdminPage() {
                                                     <td className="p-4 text-right">
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon">
-                                                                    <span className="material-symbols-rounded">more_vert</span>
+                                                                <Button variant="ghost" size="icon" aria-label="Más opciones">
+                                                                    <MoreVertical className="size-5" aria-hidden="true" />
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'role')}>
-                                                                    <span className="material-symbols-rounded mr-2 text-slate-500">badge</span>
+                                                                    <IdCard className="mr-2 size-5 text-slate-500" aria-hidden="true" />
                                                                     Cambiar Rol
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'block')}>
-                                                                    <span className="material-symbols-rounded mr-2 text-slate-500">
-                                                                        {user.isBlocked ? 'lock_open' : 'block'}
-                                                                    </span>
+                                                                    {user.isBlocked ? (
+                                                                        <LockOpen className="mr-2 size-5 text-slate-500" aria-hidden="true" />
+                                                                    ) : (
+                                                                        <Ban className="mr-2 size-5 text-slate-500" aria-hidden="true" />
+                                                                    )}
                                                                     {user.isBlocked ? 'Desbloquear' : 'Bloquear'}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'password')}>
-                                                                    <span className="material-symbols-rounded mr-2 text-slate-500">key</span>
+                                                                    <Key className="mr-2 size-5 text-slate-500" aria-hidden="true" />
                                                                     Resetear Contraseña
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuSeparator />
@@ -454,7 +471,7 @@ export default function AdminPage() {
                                                                     onClick={() => openAction(user, 'delete')}
                                                                     className="text-red-600"
                                                                 >
-                                                                    <span className="material-symbols-rounded mr-2">delete</span>
+                                                                    <Trash2 className="mr-2 size-5" aria-hidden="true" />
                                                                     Eliminar
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
@@ -522,7 +539,7 @@ export default function AdminPage() {
                                     </div>
                                 ) : providerRequests.length === 0 ? (
                                     <div className="p-8 text-center text-slate-400">
-                                        <span className="material-symbols-rounded text-4xl mb-2">inbox</span>
+                                        <Inbox className="mb-2 size-10" aria-hidden="true" />
                                         <p>No hay solicitudes {requestFilter === 'PENDING' ? 'pendientes' : requestFilter === 'APPROVED' ? 'aprobadas' : 'rechazadas'}</p>
                                     </div>
                                 ) : (
@@ -598,14 +615,14 @@ export default function AdminPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Card>
                                 <CardContent className="p-6 text-center">
-                                    <span className="material-symbols-rounded text-4xl text-slate-400 mb-2">group</span>
+                                    <Users className="mb-2 size-10 text-slate-400" aria-hidden="true" />
                                     <p className="text-3xl font-bold text-slate-800">{pagination.total}</p>
                                     <p className="text-slate-500">Usuarios Totales</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-6 text-center">
-                                    <span className="material-symbols-rounded text-4xl text-teal-400 mb-2">storefront</span>
+                                    <Store className="mb-2 size-10 text-teal-400" aria-hidden="true" />
                                     <p className="text-3xl font-bold text-slate-800">
                                         {users.filter(u => u.role === 'PROVIDER').length}
                                     </p>
@@ -614,7 +631,7 @@ export default function AdminPage() {
                             </Card>
                             <Card>
                                 <CardContent className="p-6 text-center">
-                                    <span className="material-symbols-rounded text-4xl text-teal-500 mb-2">shield_person</span>
+                                    <ShieldUser className="mb-2 size-10 text-teal-500" aria-hidden="true" />
                                     <p className="text-3xl font-bold text-slate-800">
                                         {users.filter(u => u.role === 'ADMIN').length}
                                     </p>
@@ -636,7 +653,7 @@ export default function AdminPage() {
                                     </div>
                                 ) : providers.length === 0 ? (
                                     <div className="p-8 text-center text-slate-400">
-                                        <span className="material-symbols-rounded text-4xl mb-2">storefront</span>
+                                        <Store className="mb-2 size-10" aria-hidden="true" />
                                         <p>No hay proveedores registrados</p>
                                     </div>
                                 ) : (
@@ -672,7 +689,7 @@ export default function AdminPage() {
                                                         <td className="p-4 text-slate-600">{provider.location}</td>
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-1">
-                                                                <span className="material-symbols-rounded text-amber-400 text-sm filled">star</span>
+                                                                <Star className="size-3.5 text-amber-400" aria-hidden="true" fill="currentColor" />
                                                                 <span className="font-medium">{provider.rating?.toFixed(1) || 'N/A'}</span>
                                                                 <span className="text-slate-400 text-sm">({provider.reviewCount || 0})</span>
                                                             </div>
@@ -697,8 +714,9 @@ export default function AdminPage() {
                                                                         }
                                                                     }
                                                                 }}
+                                                                aria-label="Eliminar"
                                                             >
-                                                                <span className="material-symbols-rounded">delete</span>
+                                                                <Trash2 className="size-5" aria-hidden="true" />
                                                             </Button>
                                                         </td>
                                                     </tr>

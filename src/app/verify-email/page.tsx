@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { ArrowRight, CircleAlert, CircleCheck, PawPrint } from 'lucide-react';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -53,7 +54,7 @@ function VerifyEmailContent() {
       {status === 'success' && (
         <>
           <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
-            <span className="material-symbols-rounded text-3xl">check_circle</span>
+            <CircleCheck className="size-8" aria-hidden="true" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-800">Email verificado</h1>
           <p className="text-slate-600">{message}</p>
@@ -62,7 +63,7 @@ function VerifyEmailContent() {
             className="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full bg-teal-500 hover:bg-teal-600 text-white font-bold transition-all shadow-lg shadow-teal-500/25"
           >
             Iniciar sesión
-            <span className="material-symbols-rounded">arrow_forward</span>
+            <ArrowRight className="size-5" aria-hidden="true" />
           </a>
         </>
       )}
@@ -70,7 +71,7 @@ function VerifyEmailContent() {
       {status === 'error' && (
         <>
           <div className="flex items-center justify-center size-16 rounded-full bg-red-100 text-red-600 mx-auto">
-            <span className="material-symbols-rounded text-3xl">error</span>
+            <CircleAlert className="size-8" aria-hidden="true" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-800">Error de verificación</h1>
           <p className="text-slate-600">{message}</p>
@@ -92,7 +93,7 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-[440px]">
         <div className="flex items-center gap-3 text-slate-800 mb-10 justify-center">
           <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600">
-            <span className="material-symbols-rounded text-2xl">pets</span>
+            <PawPrint className="size-7" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
         </div>

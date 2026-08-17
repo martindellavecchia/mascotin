@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,7 +127,7 @@ export default function CreateGroupModal({ open, onOpenChange, onSuccess }: Crea
                                     htmlFor="image-upload"
                                     className={`flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <span className="material-symbols-rounded text-slate-400">upload_file</span>
+                                    <Upload className="size-5 text-slate-400" aria-hidden="true" />
                                     <span className="text-sm text-slate-600">
                                         {image ? 'Cambiar imagen' : 'Subir imagen de portada'}
                                     </span>
