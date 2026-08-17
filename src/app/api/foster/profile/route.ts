@@ -70,6 +70,7 @@ export async function PUT(request: Request) {
       location: parsed.data.location,
       latitude: coordinates.latitude,
       longitude: coordinates.longitude,
+      radiusKm: parsed.data.radiusKm,
       availableFrom: parsed.data.availableFrom ? new Date(`${parsed.data.availableFrom}T00:00:00.000Z`) : null,
       availableUntil: parsed.data.availableUntil ? new Date(`${parsed.data.availableUntil}T23:59:59.999Z`) : null,
       maxDurationDays: parsed.data.maxDurationDays,

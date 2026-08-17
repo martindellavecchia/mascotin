@@ -323,6 +323,7 @@ export const fosterProfileSchema = z.object({
   acceptsSizes: z.array(z.enum(['small', 'medium', 'large', 'any'])).min(1, 'Elegí al menos un tamaño'),
   capacity: z.number().int().min(1).max(5),
   ...locationFields,
+  radiusKm: z.number().int().min(1).max(50).default(5),
   availableFrom: z.string().date().optional().or(z.literal('')),
   availableUntil: z.string().date().optional().or(z.literal('')),
   maxDurationDays: z.number().int().min(1).max(90),
@@ -374,6 +375,11 @@ export const createRescueCaseSchema = z.object({
 
 export const updateRescueCaseRadiusSchema = z.object({
   searchRadiusKm: z.number().int().min(1).max(50),
+});
+
+export const rescueInterestSchema = z.object({
+  needType: z.enum(['FOSTER', 'VETERINARY', 'TRANSPORT', 'SUPPLIES', 'FIELD_SUPPORT']).default('FOSTER'),
+  message: z.string().trim().min(1, 'Escribí un mensaje').max(2000).optional(),
 });
 
 export const respondFosterOfferSchema = z.object({
@@ -504,6 +510,7 @@ export type CreateAdoptionApplicationData = z.infer<typeof createAdoptionApplica
 export type FosterProfileData = z.infer<typeof fosterProfileSchema>;
 export type CreateRescueCaseData = z.infer<typeof createRescueCaseSchema>;
 export type RescueCasePublicationData = z.infer<typeof rescueCasePublicationSchema>;
+export type RescueInterestData = z.infer<typeof rescueInterestSchema>;
 export type FosterAlertPreferencesData = z.infer<typeof fosterAlertPreferencesSchema>;
 export type VolunteerProfileData = z.infer<typeof volunteerProfileSchema>;
 export type SolidarityAlertProfileData = z.infer<typeof solidarityAlertProfileSchema>;

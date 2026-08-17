@@ -105,7 +105,7 @@ export async function POST(
       type: 'FOSTER_PLACEMENT',
       title: 'Te eligieron para este tránsito',
       body: 'Ya pueden conversar y coordinar la entrega dentro de MascoTin',
-      link: `/hogares-de-transito/casos/${offer.rescueCaseId}`,
+      link: `/hogares-de-transito/casos/${offer.rescueCaseId}?contact=1&kind=foster&offer=${offer.id}`,
       entityId: placement.id,
     });
 

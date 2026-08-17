@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
@@ -13,34 +14,57 @@ interface FosterMessage {
 }
 
 interface FosterChatProps {
+  fosterOfferId?: string;
+  volunteerOfferId?: string;
   placementId?: string;
   volunteerAssignmentId?: string;
   currentUserId: string;
   enabled: boolean;
   context?: 'foster' | 'volunteer';
+  onConversationChange?: (conversation: { status: string; canWrite: boolean }) => void;
 }
 
-export default function FosterChat({ placementId, volunteerAssignmentId, currentUserId, enabled, context = 'foster' }: FosterChatProps) {
+export default function FosterChat({ fosterOfferId, volunteerOfferId, placementId, volunteerAssignmentId, currentUserId, enabled, context = 'foster', onConversationChange }: FosterChatProps) {
   const [messages, setMessages] = useState<FosterMessage[]>([]);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [serverCanWrite, setServerCanWrite] = useState(enabled);
   const endRef = useRef<HTMLDivElement>(null);
-  const endpoint = volunteerAssignmentId
-    ? `/api/volunteer/assignments/${volunteerAssignmentId}/messages`
-    : `/api/foster/placements/${placementId}/messages`;
+  const endpoint = fosterOfferId
+    ? `/api/foster/offers/${fosterOfferId}/messages`
+    : volunteerOfferId
+      ? `/api/volunteer/offers/${volunteerOfferId}/messages`
+      : volunteerAssignmentId
+        ? `/api/volunteer/assignments/${volunteerAssignmentId}/messages`
+        : `/api/foster/placements/${placementId}/messages`;
 
   const load = useCallback(async () => {
-    const response = await fetch(`${endpoint}?limit=50`);
-    const data = await response.json();
-    if (response.ok && data.success) setMessages(data.messages || []);
-  }, [endpoint]);
+    try {
+      const response = await fetch(`${endpoint}?limit=50`);
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error();
+      setMessages(data.messages || []);
+      setLoadError(false);
+      if (data.conversation) {
+        const conversation = { status: String(data.conversation.status), canWrite: Boolean(data.conversation.canWrite) };
+        setServerCanWrite(conversation.canWrite);
+        onConversationChange?.(conversation);
+      }
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint, onConversationChange]);
 
   useEffect(() => {
     void load();
-    if (!enabled) return;
+    if (!enabled || !serverCanWrite) return;
     const interval = window.setInterval(() => void load(), 15_000);
     return () => window.clearInterval(interval);
-  }, [enabled, load]);
+  }, [enabled, load, serverCanWrite]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,7 +101,11 @@ export default function FosterChat({ placementId, volunteerAssignmentId, current
         <p className="text-xs text-slate-500">{context === 'volunteer' ? 'Usen este espacio para coordinar únicamente la tarea acordada.' : 'Usen este espacio para coordinar la entrega y los cuidados.'}</p>
       </div>
       <div className="max-h-80 min-h-48 space-y-3 overflow-y-auto bg-slate-50 p-4" aria-live="polite">
-        {messages.length === 0 ? (
+        {loading ? (
+          <p className="py-12 text-center text-sm text-slate-600">Cargando conversación…</p>
+        ) : loadError ? (
+          <div className="space-y-3 py-10 text-center"><p className="text-sm text-slate-600">No pudimos cargar los mensajes.</p><Button variant="outline" size="sm" onClick={() => void load()}>Reintentar</Button></div>
+        ) : messages.length === 0 ? (
           <p className="py-12 text-center text-sm text-slate-600">Todavía no hay mensajes.</p>
         ) : messages.map((message) => {
           const own = message.senderId === currentUserId;
@@ -94,9 +122,11 @@ export default function FosterChat({ placementId, volunteerAssignmentId, current
         })}
         <div ref={endRef} />
       </div>
-      {enabled ? (
+      {!loading && !loadError && enabled && serverCanWrite ? (
         <div className="grid gap-2 border-t border-slate-100 p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <Label htmlFor={`rescue-message-${fosterOfferId || volunteerOfferId || placementId || volunteerAssignmentId}`} className="sr-only">Mensaje privado</Label>
           <Textarea
+            id={`rescue-message-${fosterOfferId || volunteerOfferId || placementId || volunteerAssignmentId}`}
             value={content}
             onChange={(event) => setContent(event.target.value)}
             placeholder="Escribí un mensaje"
@@ -113,9 +143,9 @@ export default function FosterChat({ placementId, volunteerAssignmentId, current
             {sending ? 'Enviando…' : 'Enviar'}
           </Button>
         </div>
-      ) : (
+      ) : !loading && !loadError ? (
         <p className="border-t border-slate-100 p-3 text-center text-xs text-slate-500">La conversación quedó cerrada.</p>
-      )}
+      ) : null}
     </div>
   );
 }

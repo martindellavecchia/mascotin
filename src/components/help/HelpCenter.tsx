@@ -163,6 +163,8 @@ export default function HelpCenter() {
   const [loading, setLoading] = useState(true);
   const [caseDialogOpen, setCaseDialogOpen] = useState(searchParams.get('create') === 'case');
   const [profileDialogOpen, setProfileDialogOpen] = useState(searchParams.get('create') === 'profile');
+  const requestedReturnTo = searchParams.get('returnTo');
+  const returnTo = requestedReturnTo?.startsWith('/hogares-de-transito/casos/') ? requestedReturnTo : null;
   const requestedTab = searchParams.get('view');
   const initialTab = ['offers', 'home', 'volunteer', 'alerts'].includes(requestedTab || '') ? requestedTab! : 'cases';
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -388,7 +390,7 @@ export default function HelpCenter() {
               {profile ? (
                 <>
                   <div className="grid gap-3 text-sm sm:grid-cols-3">
-                    <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Zona</p><p className="mt-1 font-medium text-slate-900">{profile.location}</p></div>
+                    <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Zona y radio</p><p className="mt-1 font-medium text-slate-900">{profile.location} · {profile.radiusKm} km</p></div>
                     <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Capacidad</p><p className="mt-1 font-medium text-slate-900">{profile.occupiedSlots}/{profile.capacity} lugares ocupados</p></div>
                     <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Duración máxima</p><p className="mt-1 font-medium text-slate-900">{profile.maxDurationDays} días</p></div>
                   </div>
@@ -404,7 +406,7 @@ export default function HelpCenter() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="volunteer"><VolunteerPanel /></TabsContent>
+        <TabsContent value="volunteer"><VolunteerPanel returnTo={returnTo} initialProfileOpen={searchParams.get('create') === 'volunteer'} /></TabsContent>
 
         <TabsContent value="alerts"><SolidarityAlerts /></TabsContent>
       </Tabs>
@@ -425,7 +427,8 @@ export default function HelpCenter() {
           <FosterProfileForm profile={profile} onSaved={(saved) => {
             setProfile(saved);
             setProfileDialogOpen(false);
-            void load();
+            if (returnTo) router.push(returnTo);
+            else void load();
           }} />
         </DialogContent>
       </Dialog>

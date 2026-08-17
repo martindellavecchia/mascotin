@@ -7,6 +7,7 @@ import {
   scoreFosterCandidate,
 } from '@/lib/foster';
 import { createNotification } from '@/lib/notifications';
+import { setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 const OFFER_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
@@ -14,14 +15,29 @@ function expiresAt() {
   return new Date(Date.now() + OFFER_LIFETIME_MS);
 }
 export async function expireFosterOffers(): Promise<number> {
-  const result = await db.fosterOffer.updateMany({
-    where: {
-      status: 'PENDING',
-      expiresAt: { lt: new Date() },
-    },
-    data: { status: 'EXPIRED' },
+  const expired = await db.fosterOffer.findMany({
+    where: { status: { in: ['PENDING', 'INTERESTED'] }, expiresAt: { lt: new Date() } },
+    select: { id: true, rescueCaseId: true, status: true },
   });
-  return result.count;
+  if (expired.length === 0) return 0;
+  const caseIds = [...new Set(expired.map((offer) => offer.rescueCaseId))];
+  return db.$transaction(async (tx) => {
+    const result = await tx.fosterOffer.updateMany({
+      where: { id: { in: expired.map((offer) => offer.id) }, status: { in: ['PENDING', 'INTERESTED'] } },
+      data: { status: 'EXPIRED' },
+    });
+    for (const caseId of caseIds) {
+      const [remaining, placement, fosterNeed] = await Promise.all([
+        tx.fosterOffer.count({ where: { rescueCaseId: caseId, status: { in: ['INTERESTED', 'SELECTED'] } } }),
+        tx.fosterPlacement.count({ where: { rescueCaseId: caseId, status: { in: ['COORDINATING', 'ACTIVE', 'AWAITING_ADOPTION'] } } }),
+        tx.rescueNeed.findUnique({ where: { rescueCaseId_type: { rescueCaseId: caseId, type: 'FOSTER' } }, select: { status: true } }),
+      ]);
+      if (fosterNeed?.status === 'INTERESTED' && remaining === 0 && placement === 0) {
+        await setCaseNeedStatus(tx, caseId, 'FOSTER', 'OPEN');
+      }
+    }
+    return result.count;
+  });
 }
 
 async function blockedUserIds(userId: string, candidateUserIds: string[]) {

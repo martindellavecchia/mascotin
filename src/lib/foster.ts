@@ -42,6 +42,7 @@ export interface FosterCandidate {
   occupiedSlots: number;
   latitude: number;
   longitude: number;
+  radiusKm: number;
   availableFrom: Date | null;
   availableUntil: Date | null;
   maxDurationDays: number;
@@ -131,7 +132,10 @@ export function scoreFosterCandidate(
   const destination = toGeoPoint(candidate.latitude, candidate.longitude);
   if (!origin || !destination) return null;
 
-  const radiusKm = normalizeFosterRadius(need.searchRadiusKm);
+  const radiusKm = Math.min(
+    normalizeFosterRadius(need.searchRadiusKm),
+    normalizeFosterRadius(candidate.radiusKm),
+  );
   const distanceKm = haversineKm(origin, destination);
   if (distanceKm > radiusKm) return null;
 

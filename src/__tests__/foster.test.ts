@@ -30,6 +30,7 @@ const candidate: FosterCandidate = {
   occupiedSlots: 0,
   latitude: -34.61,
   longitude: -58.39,
+  radiusKm: 5,
   availableFrom: null,
   availableUntil: new Date('2026-09-30T12:00:00.000Z'),
   maxDurationDays: 30,
@@ -63,6 +64,13 @@ describe('foster matching', () => {
         now
       )
     ).toBeNull();
+  });
+
+  it('uses the smaller radius between the case and the home profile', () => {
+    const fartherCandidate = { ...candidate, latitude: -34.63, longitude: -58.3816 };
+
+    expect(scoreFosterCandidate({ ...need, searchRadiusKm: 10 }, { ...fartherCandidate, radiusKm: 2 }, now)).toBeNull();
+    expect(scoreFosterCandidate({ ...need, searchRadiusKm: 10 }, { ...fartherCandidate, radiusKm: 5 }, now)).not.toBeNull();
   });
 
   it('excludes incompatible species, sizes and availability windows', () => {

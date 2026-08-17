@@ -150,6 +150,9 @@ export async function getFeedPage({
             urgency: post.rescueCase.urgency,
             requestedDays: post.rescueCase.requestedDays,
             primaryNeed: post.rescueCase.needs.find((need) => need.isPrimary)?.type || 'FOSTER',
+            openNeedTypes: post.rescueCase.needs
+              .filter((need) => ['OPEN', 'INTERESTED'].includes(need.status))
+              .map((need) => need.type),
             additionalNeeds: post.rescueCase.needs.filter((need) => !need.isPrimary).map((need) => ({ type: need.type, status: need.status })),
             adoptionListingId:
               post.rescueCase.adoptionListing?.status === 'OPEN' || post.rescueCase.adoptionListing?.status === 'PENDING'

@@ -4,6 +4,7 @@ import {
   fosterAdoptionDraftSchema,
   fosterAlertPreferencesSchema,
   fosterProfileSchema,
+  rescueInterestSchema,
   rescueCasePublicationSchema,
   updateRescueCaseRadiusSchema,
 } from '@/lib/schemas';
@@ -52,6 +53,7 @@ describe('foster schemas', () => {
   it('uses a 5 km case radius by default', () => {
     const parsed = createRescueCaseSchema.parse(validCase);
     expect(parsed.searchRadiusKm).toBe(5);
+    expect(fosterProfileSchema.parse(validProfile).radiusKm).toBe(5);
   });
 
   it('accepts configurable radii only between 1 and 50 km', () => {
@@ -68,6 +70,16 @@ describe('foster schemas', () => {
   it('trims foster chat messages and rejects empty content', () => {
     expect(fosterMessageSchema.parse({ content: '  ¿Cómo coordinamos?  ' }).content).toBe('¿Cómo coordinamos?');
     expect(fosterMessageSchema.safeParse({ content: '   ' }).success).toBe(false);
+  });
+
+  it('keeps foster as the compatible contact default and validates the optional note', () => {
+    expect(rescueInterestSchema.parse({})).toEqual({ needType: 'FOSTER' });
+    expect(rescueInterestSchema.parse({ needType: 'TRANSPORT', message: '  Puedo mañana  ' })).toEqual({
+      needType: 'TRANSPORT',
+      message: 'Puedo mañana',
+    });
+    expect(rescueInterestSchema.safeParse({ message: ' '.repeat(4) }).success).toBe(false);
+    expect(rescueInterestSchema.safeParse({ message: 'a'.repeat(2001) }).success).toBe(false);
   });
 
   it('keeps foster alerts opt-in with a configurable 1-50 km radius', () => {

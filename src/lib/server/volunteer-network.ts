@@ -259,7 +259,9 @@ export async function respondVolunteerOffer(offerId: string, userId: string, res
     type: 'VOLUNTEER_RESPONSE',
     title: response === 'INTERESTED' ? 'Una persona quiere ayudar' : 'Respuesta de voluntariado',
     body: response === 'INTERESTED' ? 'Revisá la oferta y seleccioná a la persona responsable.' : 'La persona indicó que esta vez no puede tomar la tarea.',
-    link: `/hogares-de-transito/casos/${offer.need.rescueCaseId}`,
+    link: response === 'INTERESTED'
+      ? `/hogares-de-transito/casos/${offer.need.rescueCaseId}?contact=1&kind=volunteer&offer=${offer.id}`
+      : `/hogares-de-transito/casos/${offer.need.rescueCaseId}`,
     entityId: offer.id,
     dedupeKey: `volunteer-response:${offer.id}:${response}`,
   });
@@ -323,7 +325,7 @@ export async function selectVolunteerOffer(offerId: string, userId: string) {
       type: 'VOLUNTEER_ASSIGNMENT',
       title: 'Te seleccionaron para ayudar',
       body: 'La tarea quedó activa y ya pueden coordinar por el chat privado.',
-      link: `/hogares-de-transito/casos/${initial.need.rescueCaseId}`,
+      link: `/hogares-de-transito/casos/${initial.need.rescueCaseId}?contact=1&kind=volunteer&offer=${initial.id}`,
       entityId: assignment.id,
       dedupeKey: `volunteer-assignment:${assignment.id}`,
     });

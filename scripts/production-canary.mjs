@@ -104,6 +104,7 @@ try {
   await responseJson(await fosterApi.put('/api/foster/profile', { data: {
     acceptsSpecies: ['dog'], acceptsSizes: ['medium', 'any'], capacity: 2,
     location: 'Palermo, CABA', latitude: -34.5889, longitude: -58.4305,
+    radiusKm: 5,
     availableFrom: '', availableUntil: '', maxDurationDays: 30, housingType: 'house',
     hasYard: true, hasKids: false, hasOtherPets: false, experience: 'experienced', notes: 'Canary aislado',
     adultDeclared: true, termsAccepted: true,
@@ -184,36 +185,58 @@ try {
   const wall = await responseJson(await requesterApi.get('/api/posts?postType=foster_case&limit=20'), 'consultar muro');
   const wallPost = wall.posts.find((post) => post.rescueCase?.id === caseId);
   if (!wallPost) throw new Error('El caso publicado no apareció en el muro');
+  if (!['FOSTER', 'TRANSPORT', 'VETERINARY'].every((needType) => wallPost.rescueCase.openNeedTypes.includes(needType))) {
+    throw new Error('El muro no expuso todas las necesidades abiertas del caso');
+  }
   for (const privateKey of ['latitude', 'longitude', 'contactPhone', 'lastSeenLocation']) {
     if (Object.hasOwn(wallPost, privateKey)) throw new Error(`El muro expuso el campo privado ${privateKey}`);
   }
 
-  const fosterOverview = await responseJson(await fosterApi.get('/api/rescue-cases'), 'ofertas de hogar');
-  const fosterOffer = fosterOverview.offers.find((offer) => offer.rescueCase.id === caseId);
-  if (!fosterOffer) throw new Error('No se generó oferta de hogar compatible');
-  await responseJson(await fosterApi.patch(`/api/foster/offers/${fosterOffer.id}/respond`, { data: { response: 'INTERESTED' } }), 'interés de hogar');
+  const fosterContact = await responseJson(await fosterApi.post(`/api/rescue-cases/${caseId}/interest`, { data: {
+    needType: 'FOSTER', message: 'Puedo alojarlo durante los siete días del caso canario.',
+  } }), 'contacto de hogar desde el muro');
+  if (fosterContact.kind !== 'FOSTER' || fosterContact.status !== 'INTERESTED') throw new Error('El contacto de hogar no quedó interesado');
+  await responseJson(await requesterApi.post(`/api/foster/offers/${fosterContact.offerId}/messages`, { data: {
+    content: 'Gracias. Coordinemos los detalles antes de seleccionar el hogar.',
+  } }), 'respuesta previa a la selección del hogar');
   let detail = await responseJson(await requesterApi.get(`/api/rescue-cases/${caseId}`), 'detalle para seleccionar hogar');
-  const interestedFoster = detail.case.offers.find((offer) => offer.status === 'INTERESTED');
+  const interestedFoster = detail.case.offers.find((offer) => offer.id === fosterContact.offerId && offer.status === 'INTERESTED');
+  if (!interestedFoster || interestedFoster.source !== 'WALL') throw new Error('La oferta de hogar no conservó el origen WALL');
   const selectedFoster = await responseJson(await requesterApi.post(`/api/foster/offers/${interestedFoster.id}/select`), 'seleccionar hogar');
   const placementId = selectedFoster.placement.id;
   await responseJson(await requesterApi.post(`/api/foster/placements/${placementId}/confirm`), 'confirmar entrega responsable');
   await responseJson(await fosterApi.post(`/api/foster/placements/${placementId}/confirm`), 'confirmar recepción hogar');
   await responseJson(await requesterApi.post(`/api/foster/placements/${placementId}/messages`, { data: { content: 'Mensaje canario de coordinación de tránsito.' } }), 'chat de tránsito');
-  const fosterChat = await responseJson(await fosterApi.get(`/api/foster/placements/${placementId}/messages?limit=20`), 'leer chat de tránsito');
-  if (!fosterChat.messages.some((message) => message.content.includes('canario'))) throw new Error('El chat de tránsito no persistió el mensaje');
+  const fosterChat = await responseJson(await fosterApi.get(`/api/foster/offers/${fosterContact.offerId}/messages?limit=20`), 'leer historial continuo de tránsito');
+  if (fosterChat.messages.length < 3 || !fosterChat.messages.some((message) => message.content.includes('canario'))) {
+    throw new Error('El chat de tránsito no conservó el historial anterior y posterior a la selección');
+  }
 
   const volunteerOverview = await responseJson(await volunteerApi.get('/api/volunteer/offers'), 'ofertas de voluntariado');
   const operationalOffers = volunteerOverview.offers.filter((offer) => offer.rescueCase.id === caseId && ['TRANSPORT', 'VETERINARY'].includes(offer.need.type));
   if (operationalOffers.length !== 2) throw new Error(`Se esperaban 2 ofertas operativas y llegaron ${operationalOffers.length}`);
   const assignmentIds = [];
+  const volunteerContactIds = [];
   for (const offer of operationalOffers) {
-    await responseJson(await volunteerApi.patch(`/api/volunteer/offers/${offer.id}/respond`, { data: { response: 'INTERESTED' } }), `interés ${offer.need.type}`);
+    const contact = await responseJson(await volunteerApi.post(`/api/rescue-cases/${caseId}/interest`, { data: {
+      needType: offer.need.type, message: `Puedo colaborar con ${offer.need.type} en el caso canario.`,
+    } }), `contacto ${offer.need.type} desde el muro`);
+    if (contact.kind !== 'VOLUNTEER' || contact.status !== 'INTERESTED') throw new Error(`El contacto ${offer.need.type} no quedó interesado`);
+    volunteerContactIds.push(contact.offerId);
+    await responseJson(await requesterApi.post(`/api/volunteer/offers/${contact.offerId}/messages`, { data: {
+      content: `Coordinemos ${offer.need.type} antes de confirmar a la persona responsable.`,
+    } }), `respuesta previa ${offer.need.type}`);
     detail = await responseJson(await requesterApi.get(`/api/rescue-cases/${caseId}`), `selección ${offer.need.type}`);
-    const interested = detail.case.volunteerOffers.find((candidate) => candidate.id === offer.id && candidate.status === 'INTERESTED');
+    const interested = detail.case.volunteerOffers.find((candidate) => candidate.id === contact.offerId && candidate.status === 'INTERESTED');
+    if (!interested || interested.source !== 'WALL') throw new Error(`La oferta ${offer.need.type} no conservó el origen WALL`);
     const selected = await responseJson(await requesterApi.post(`/api/volunteer/offers/${interested.id}/select`), `asignar ${offer.need.type}`);
     assignmentIds.push(selected.assignment.id);
   }
   await responseJson(await volunteerApi.post(`/api/volunteer/assignments/${assignmentIds[0]}/messages`, { data: { content: 'Mensaje canario de tarea operativa.' } }), 'chat de voluntariado');
+  const volunteerChat = await responseJson(await requesterApi.get(`/api/volunteer/offers/${volunteerContactIds[0]}/messages?limit=20`), 'leer historial continuo de voluntariado');
+  if (volunteerChat.messages.length < 3 || !volunteerChat.messages.some((message) => message.content.includes('tarea operativa'))) {
+    throw new Error('El chat de voluntariado no conservó el historial anterior y posterior a la selección');
+  }
   for (const assignmentId of assignmentIds) {
     await responseJson(await requesterApi.post(`/api/volunteer/assignments/${assignmentId}/complete`), 'completar voluntariado');
   }
@@ -246,8 +269,34 @@ try {
     where: { userId: users.adoptante.id, type: 'SOLIDARITY_ADOPTION_ALERT', entityId: listingId },
   });
   if (!internalAlert) throw new Error('No se persistió la notificación interna de adopción');
+  const wallContactNotification = await db.notification.findFirst({
+    where: { userId: users.responsable.id, type: 'FOSTER_RESPONSE', entityId: fosterContact.offerId },
+  });
+  if (!wallContactNotification || wallContactNotification.body.includes('Puedo alojarlo')) {
+    throw new Error('La notificación del contacto faltó o expuso el texto privado de la nota');
+  }
 
   await db.syntheticRun.update({ where: { id: run.id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+  await db.rateLimitBucket.deleteMany({
+    where: {
+      key: {
+        in: Object.values(users).flatMap((user) => [
+          `rescue-contact:${user.id}`,
+          `rescue-message:${user.id}`,
+        ]),
+      },
+    },
+  });
+  await db.syntheticRun.delete({ where: { id: run.id } });
+  const [remainingRuns, remainingUsers, remainingCases] = await Promise.all([
+    db.syntheticRun.count({ where: { id: run.id } }),
+    db.user.count({ where: { syntheticRunId: run.id } }),
+    db.rescueCase.count({ where: { id: caseId } }),
+  ]);
+  if (remainingRuns !== 0 || remainingUsers !== 0 || remainingCases !== 0) {
+    throw new Error('La limpieza exacta del SyntheticRun no eliminó todos sus datos');
+  }
+  runId = undefined;
   console.log(JSON.stringify({
     success: true,
     runId: run.id,
@@ -256,6 +305,8 @@ try {
     wallPostId: wallPost.id,
     placementId,
     volunteerAssignmentIds: assignmentIds,
+    fosterContactOfferId: fosterContact.offerId,
+    volunteerContactOfferIds: volunteerContactIds,
     listingId,
     applicationId: application.application.id,
     internalNotificationId: internalAlert.id,
@@ -265,6 +316,7 @@ try {
     },
     finalStatus: finalDetail.case.status,
     expiresAt: run.expiresAt.toISOString(),
+    cleanup: { runId: run.id, deleted: true },
   }, null, 2));
 } catch (error) {
   if (runId) {

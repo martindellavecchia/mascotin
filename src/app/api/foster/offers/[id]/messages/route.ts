@@ -6,7 +6,6 @@ import {
   getRescueContactMessages,
   RescueContactMessageError,
   sendRescueContactMessage,
-  volunteerOfferIdForAssignment,
 } from '@/lib/server/rescue-contact-messages';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -16,15 +15,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const after = parseMessageCursor(rawAfter);
   if (rawAfter && !after) return NextResponse.json({ success: false, error: 'Cursor inválido' }, { status: 400 });
   try {
-    const offerId = await volunteerOfferIdForAssignment((await params).id, auth.session.user.id);
     const result = await getRescueContactMessages({
-      kind: 'VOLUNTEER', offerId, userId: auth.session.user.id, after,
+      kind: 'FOSTER',
+      offerId: (await params).id,
+      userId: auth.session.user.id,
+      after,
       limit: clampMessageLimit(new URL(request.url).searchParams.get('limit')),
     });
     return NextResponse.json({ success: true, ...result });
   } catch (error) {
-    if (error instanceof RescueContactMessageError) return NextResponse.json({ success: false, error: error.message }, { status: error.status });
-    console.error('Error loading assignment messages:', error);
+    if (error instanceof RescueContactMessageError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.status });
+    }
+    console.error('Error loading foster contact messages:', error);
     return NextResponse.json({ success: false, error: 'No se pudo cargar la conversación' }, { status: 500 });
   }
 }
@@ -35,15 +38,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const parsed = fosterMessageSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ success: false, error: 'Mensaje inválido' }, { status: 400 });
   try {
-    const offerId = await volunteerOfferIdForAssignment((await params).id, auth.session.user.id);
     const message = await sendRescueContactMessage({
-      kind: 'VOLUNTEER', offerId, userId: auth.session.user.id,
-      userName: auth.session.user.name, content: parsed.data.content,
+      kind: 'FOSTER',
+      offerId: (await params).id,
+      userId: auth.session.user.id,
+      userName: auth.session.user.name,
+      content: parsed.data.content,
     });
     return NextResponse.json({ success: true, message }, { status: 201 });
   } catch (error) {
-    if (error instanceof RescueContactMessageError) return NextResponse.json({ success: false, error: error.message }, { status: error.status });
-    console.error('Error sending assignment message:', error);
+    if (error instanceof RescueContactMessageError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: error.status });
+    }
+    console.error('Error sending foster contact message:', error);
     return NextResponse.json({ success: false, error: 'No se pudo enviar el mensaje' }, { status: 500 });
   }
 }

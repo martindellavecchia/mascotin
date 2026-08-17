@@ -43,6 +43,7 @@ interface ExtendedPost extends Post {
         urgency: string;
         requestedDays: number;
         primaryNeed: RescueNeedType;
+        openNeedTypes?: RescueNeedType[];
         additionalNeeds: Array<{ type: RescueNeedType; status: string }>;
         adoptionListingId: string | null;
     } | null;
@@ -76,6 +77,17 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     const [comments, setComments] = useState<Comment[]>([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [newComment, setNewComment] = useState('');
+    const openNeedTypes = post.rescueCase?.openNeedTypes || [];
+    const contactNeed = post.rescueCase && openNeedTypes.includes(post.rescueCase.primaryNeed)
+        ? post.rescueCase.primaryNeed
+        : openNeedTypes[0];
+    const contactLabels: Partial<Record<RescueNeedType, string>> = {
+        FOSTER: 'Ofrecer tránsito',
+        TRANSPORT: 'Ayudar con el traslado',
+        VETERINARY: 'Acompañar al veterinario',
+        SUPPLIES: 'Ayudar con insumos',
+        FIELD_SUPPORT: 'Apoyar el rescate',
+    };
 
     useEffect(() => {
         setIsResolved(post.isResolved || false);
@@ -361,16 +373,18 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         </p>
                     )}
                     <Button asChild className="mt-3 w-full" variant={post.rescueCase.adoptionListingId ? 'default' : 'outline'}>
-                        <Link href={post.rescueCase.adoptionListingId ? `/adoptions/${post.rescueCase.adoptionListingId}` : `/hogares-de-transito/casos/${post.rescueCase.id}`}>
+                        <Link href={post.rescueCase.adoptionListingId
+                            ? `/adoptions/${post.rescueCase.adoptionListingId}`
+                            : post.canManage || !contactNeed
+                                ? `/hogares-de-transito/casos/${post.rescueCase.id}`
+                                : `/hogares-de-transito/casos/${post.rescueCase.id}?contact=1&need=${contactNeed}`}>
                             {post.rescueCase.adoptionListingId
                                 ? 'Ver adopción'
-                                : ['SEARCHING', 'INTERESTED'].includes(post.rescueCase.status)
-                                    ? post.rescueCase.primaryNeed === 'FOSTER'
-                                        ? 'Quiero ofrecer tránsito'
-                                        : post.rescueCase.primaryNeed === 'VETERINARY'
-                                            ? 'Consultar veterinarias'
-                                            : 'Ofrecer ayuda'
-                                    : 'Seguir el caso'}
+                                : post.canManage
+                                    ? 'Gestionar caso'
+                                    : contactNeed
+                                        ? contactLabels[contactNeed] || 'Quiero ayudar'
+                                        : 'Seguir el caso'}
                         </Link>
                     </Button>
                 </div>

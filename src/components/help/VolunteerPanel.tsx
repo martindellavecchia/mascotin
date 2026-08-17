@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import VolunteerProfileForm from '@/components/help/VolunteerProfileForm';
 import type { VolunteerProfileView } from '@/components/help/types';
 import { Badge } from '@/components/ui/badge';
@@ -36,13 +37,14 @@ interface VolunteerAssignmentView {
   rescueCase: { id: string; species: string; size: string; urgency: string; location: string; images: string[] };
 }
 
-export default function VolunteerPanel() {
+export default function VolunteerPanel({ returnTo, initialProfileOpen = false }: { returnTo?: string | null; initialProfileOpen?: boolean }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<VolunteerProfileView | null>(null);
   const [offers, setOffers] = useState<VolunteerOfferView[]>([]);
   const [assignments, setAssignments] = useState<VolunteerAssignmentView[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(initialProfileOpen);
   const [cancelReasons, setCancelReasons] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
@@ -141,7 +143,7 @@ export default function VolunteerPanel() {
       </section>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[92svh] max-w-3xl overflow-y-auto"><DialogHeader className="sr-only"><DialogTitle>Perfil de voluntariado</DialogTitle><DialogDescription>Disponibilidad para tareas solidarias</DialogDescription></DialogHeader><VolunteerProfileForm profile={profile} onSaved={(saved) => { setProfile(saved); setDialogOpen(false); void load(); }} /></DialogContent>
+        <DialogContent className="max-h-[92svh] max-w-3xl overflow-y-auto"><DialogHeader className="sr-only"><DialogTitle>Perfil de voluntariado</DialogTitle><DialogDescription>Disponibilidad para tareas solidarias</DialogDescription></DialogHeader><VolunteerProfileForm profile={profile} onSaved={(saved) => { setProfile(saved); setDialogOpen(false); if (returnTo) router.push(returnTo); else void load(); }} /></DialogContent>
       </Dialog>
     </div>
   );

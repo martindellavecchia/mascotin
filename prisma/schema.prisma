@@ -100,6 +100,11 @@ enum VolunteerRole {
   SUPPLIES_LOGISTICS
 }
 
+enum RescueOfferSource {
+  MATCHING
+  WALL
+}
+
 enum VolunteerOfferStatus {
   PENDING
   INTERESTED
@@ -615,6 +620,8 @@ model Message {
   matchId               String?
   groupId               String?
   adoptionApplicationId String?
+  fosterOfferId         String?
+  volunteerOfferId      String?
   fosterPlacementId     String?
   volunteerAssignmentId String?
   senderId              String
@@ -626,6 +633,8 @@ model Message {
   match               Match?               @relation(fields: [matchId], references: [id], onDelete: Cascade)
   group               Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
   adoptionApplication AdoptionApplication? @relation(fields: [adoptionApplicationId], references: [id], onDelete: Cascade)
+  fosterOffer         FosterOffer?         @relation(fields: [fosterOfferId], references: [id], onDelete: Cascade)
+  volunteerOffer      VolunteerOffer?      @relation(fields: [volunteerOfferId], references: [id], onDelete: Cascade)
   fosterPlacement     FosterPlacement?     @relation(fields: [fosterPlacementId], references: [id], onDelete: Cascade)
   volunteerAssignment VolunteerAssignment? @relation(fields: [volunteerAssignmentId], references: [id], onDelete: Cascade)
   sender              User                 @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
@@ -634,6 +643,8 @@ model Message {
   @@index([matchId])
   @@index([groupId])
   @@index([adoptionApplicationId])
+  @@index([fosterOfferId])
+  @@index([volunteerOfferId])
   @@index([fosterPlacementId])
   @@index([volunteerAssignmentId])
   @@index([senderId])
@@ -949,6 +960,7 @@ model FosterProfile {
   location          String
   latitude          Float
   longitude         Float
+  radiusKm          Int                 @default(5)
   availableFrom     DateTime?
   availableUntil    DateTime?
   maxDurationDays   Int                 @default(30)
@@ -1036,6 +1048,7 @@ model FosterOffer {
   rescueCaseId    String
   fosterProfileId String
   status          FosterOfferStatus @default(PENDING)
+  source          RescueOfferSource @default(MATCHING)
   distanceKm      Float
   score           Int
   reasons         String            @default("[]")
@@ -1048,6 +1061,7 @@ model FosterOffer {
   rescueCase    RescueCase       @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
   fosterProfile FosterProfile    @relation(fields: [fosterProfileId], references: [id], onDelete: Cascade)
   placement     FosterPlacement?
+  messages      Message[]
 
   @@unique([rescueCaseId, fosterProfileId])
   @@index([fosterProfileId, status, createdAt])
@@ -1173,6 +1187,7 @@ model VolunteerOffer {
   volunteerProfileId String
   role               VolunteerRole
   status             VolunteerOfferStatus @default(PENDING)
+  source             RescueOfferSource    @default(MATCHING)
   distanceKm         Float
   score              Int
   reasons            String               @default("[]")
@@ -1185,6 +1200,7 @@ model VolunteerOffer {
   need             RescueNeed           @relation(fields: [needId], references: [id], onDelete: Cascade)
   volunteerProfile VolunteerProfile     @relation(fields: [volunteerProfileId], references: [id], onDelete: Cascade)
   assignment       VolunteerAssignment?
+  messages         Message[]
 
   @@unique([needId, volunteerProfileId])
   @@index([volunteerProfileId, status, createdAt])
@@ -1290,6 +1306,16 @@ model PushDelivery {
 
   @@unique([notificationId, subscriptionId])
   @@index([status, attempts, updatedAt])
+}
+
+model RateLimitBucket {
+  key             String   @id
+  count           Int
+  windowStartedAt DateTime
+  expiresAt       DateTime
+  updatedAt       DateTime @updatedAt
+
+  @@index([expiresAt])
 }
 
 model SyntheticRun {

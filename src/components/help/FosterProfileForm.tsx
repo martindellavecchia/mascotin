@@ -29,6 +29,7 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
     location: profile?.location || '',
     latitude: profile?.latitude,
     longitude: profile?.longitude,
+    radiusKm: profile?.radiusKm || 5,
     availableFrom: dateValue(profile?.availableFrom),
     availableUntil: dateValue(profile?.availableUntil),
     maxDurationDays: profile?.maxDurationDays || 30,
@@ -151,6 +152,21 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
               className="pr-14"
             />
             <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">días</span>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="foster-radius">Radio para recibir casos</Label>
+          <div className="relative">
+            <Input
+              id="foster-radius"
+              type="number"
+              min={1}
+              max={50}
+              value={form.radiusKm}
+              onChange={(event) => setForm((current) => ({ ...current, radiusKm: Number(event.target.value) }))}
+              className="pr-10"
+            />
+            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">km</span>
           </div>
         </div>
         <div className="space-y-2 sm:col-span-2 lg:col-span-1">

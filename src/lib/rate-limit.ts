@@ -1,3 +1,5 @@
+import { db } from '@/lib/db';
+
 interface RateLimitEntry {
   timestamps: number[];
 }
@@ -20,6 +22,7 @@ interface RateLimitConfig {
   maxRequests: number;
   /** Time window in milliseconds */
   windowMs: number;
+  distributed?: boolean;
 }
 
 interface RateLimitResult {
@@ -116,6 +119,38 @@ async function rateLimitWithUpstash(key: string, config: RateLimitConfig): Promi
   };
 }
 
+async function rateLimitWithDatabase(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
+  const now = new Date();
+  const nextExpiration = new Date(now.getTime() + config.windowMs);
+  const rows = await db.$queryRaw<Array<{ count: number; expiresAt: Date }>>`
+    INSERT INTO "RateLimitBucket" ("key", "count", "windowStartedAt", "expiresAt", "updatedAt")
+    VALUES (${key}, 1, ${now}, ${nextExpiration}, ${now})
+    ON CONFLICT ("key") DO UPDATE SET
+      "count" = CASE
+        WHEN "RateLimitBucket"."expiresAt" <= EXCLUDED."windowStartedAt" THEN 1
+        ELSE "RateLimitBucket"."count" + 1
+      END,
+      "windowStartedAt" = CASE
+        WHEN "RateLimitBucket"."expiresAt" <= EXCLUDED."windowStartedAt" THEN EXCLUDED."windowStartedAt"
+        ELSE "RateLimitBucket"."windowStartedAt"
+      END,
+      "expiresAt" = CASE
+        WHEN "RateLimitBucket"."expiresAt" <= EXCLUDED."windowStartedAt" THEN EXCLUDED."expiresAt"
+        ELSE "RateLimitBucket"."expiresAt"
+      END,
+      "updatedAt" = EXCLUDED."updatedAt"
+    RETURNING "count", "expiresAt"
+  `;
+  const current = rows[0];
+  if (!current) throw new Error('No se pudo registrar el límite distribuido');
+  const allowed = current.count <= config.maxRequests;
+  return {
+    allowed,
+    remaining: Math.max(config.maxRequests - current.count, 0),
+    retryAfterMs: allowed ? 0 : Math.max(current.expiresAt.getTime() - now.getTime(), 0),
+  };
+}
+
 export async function rateLimit(
   key: string,
   config: RateLimitConfig
@@ -130,7 +165,21 @@ export async function rateLimit(
     }
   }
 
+  if (config.distributed) {
+    try {
+      return await rateLimitWithDatabase(key, config);
+    } catch (error) {
+      console.error('Distributed database rate limit failed closed:', error);
+      return { allowed: false, remaining: 0, retryAfterMs: config.windowMs };
+    }
+  }
+
   return rateLimitInMemory(key, config);
+}
+
+export async function cleanupExpiredRateLimitBuckets(): Promise<number> {
+  const result = await db.rateLimitBucket.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+  return result.count;
 }
 
 // Pre-configured rate limiters for common use cases
@@ -151,4 +200,8 @@ export const RATE_LIMITS = {
   review: { maxRequests: 10, windowMs: 60000 },
   /** Review reports: 5 per 10 minutes */
   reviewReport: { maxRequests: 5, windowMs: 600000 },
+  /** New rescue contacts: 10 per 10 minutes */
+  rescueContact: { maxRequests: 10, windowMs: 600000, distributed: true },
+  /** Rescue coordination messages: 30 per minute */
+  rescueMessage: { maxRequests: 30, windowMs: 60000, distributed: true },
 } as const;

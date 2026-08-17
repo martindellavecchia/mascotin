@@ -285,7 +285,7 @@ export async function expressFosterInterest(caseId: string, userId: string) {
     type: 'FOSTER_RESPONSE',
     title: 'Un hogar puede ayudar',
     body: 'Revisá el perfil y elegí si querés coordinar la entrega.',
-    link: `/hogares-de-transito/casos/${caseId}`,
+    link: `/hogares-de-transito/casos/${caseId}?contact=1&kind=foster&offer=${offer.id}`,
     entityId: offer.id,
     dedupeKey: `foster-interest:${offer.id}`,
   });

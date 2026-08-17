@@ -8,6 +8,7 @@ export interface FosterProfileView {
   location: string;
   latitude: number;
   longitude: number;
+  radiusKm: number;
   availableFrom: string | null;
   availableUntil: string | null;
   maxDurationDays: number;
