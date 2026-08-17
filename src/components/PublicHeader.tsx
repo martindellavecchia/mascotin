@@ -19,7 +19,7 @@ export default function PublicHeader() {
             <Link href="/shop">Servicios</Link>
           </Button>
           <Button asChild className="min-h-11 bg-teal-600 hover:bg-teal-700">
-            <Link href="/inicio">Ir a la app</Link>
+            <Link href="/inicio" prefetch={false}>Ir a la app</Link>
           </Button>
         </div>
       </div>

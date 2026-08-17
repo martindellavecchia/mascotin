@@ -31,6 +31,60 @@ export interface PublicStoreCard {
   services: Array<{ id: string; name: string; price: number; duration: number }>;
 }
 
+export const PUBLIC_STORE_CARD_KEYS = [
+  'id',
+  'name',
+  'slug',
+  'description',
+  'address',
+  'image',
+  'category',
+  'ratingAverage',
+  'reviewCount',
+  'trust',
+  'services',
+] as const satisfies ReadonlyArray<keyof PublicStoreCard>;
+
+export interface PublicStoreDetail {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  address: string | null;
+  image: string | null;
+  images: string[];
+  tags: string[];
+  category: { id: string; name: string };
+  ratingAverage: number;
+  reviewCount: number;
+  trust: ReturnType<typeof withStoreTrustPresentation>;
+  services: Array<{
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    duration: number;
+  }>;
+  reviews: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    businessReply: string | null;
+    businessReplyAt: Date | null;
+    createdAt: Date;
+    author: {
+      name: string | null;
+      image: string | null;
+      isBusinessOwner: boolean;
+    };
+    helpfulCount: number;
+  }>;
+}
+
+export type StoreInteractionProps = { id: string; slug: string };
+export type ServiceBookProps = { id: string; name: string; price: number };
+export type ReviewActionProps = { id: string; helpfulCount: number };
+
 export type StoreReviewEligibility =
   | 'unauthenticated'
   | 'eligible'
@@ -45,6 +99,12 @@ export interface StoreViewerState {
   ownReview: { id: string; rating: number; comment: string | null } | null;
   helpfulReviewIds: string[];
 }
+
+type DirectorySortRow = PublicStoreCard & {
+  featured: boolean;
+  distanceKm: number | null;
+  weightedScore: number;
+};
 
 export function hasHighCardinalityStoreFilters(filters: StoreDirectoryFilters) {
   return Boolean(
@@ -70,7 +130,28 @@ export const getCachedActiveStoreCategories = unstable_cache(
   { revalidate: 3600, tags: [STORE_CACHE_TAGS.categories] }
 );
 
-export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {}) {
+export function toPublicStoreCard(card: PublicStoreCard): PublicStoreCard {
+  return {
+    id: card.id,
+    name: card.name,
+    slug: card.slug,
+    description: card.description,
+    address: card.address,
+    image: card.image,
+    category: card.category,
+    ratingAverage: card.ratingAverage,
+    reviewCount: card.reviewCount,
+    trust: card.trust,
+    services: card.services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      duration: service.duration,
+    })),
+  };
+}
+
+export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {}): Promise<PublicStoreCard[]> {
   const search = filters.search?.trim();
   const categoryId = filters.categoryId;
   const minRating = Number(filters.minRating || 0);
@@ -96,28 +177,24 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
 
   const stores = await db.store.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      address: true,
+      image: true,
+      latitude: true,
+      longitude: true,
+      plan: true,
+      featuredUntil: true,
+      ratingAverage: true,
+      reviewCount: true,
       category: { select: { id: true, name: true } },
-      provider: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          owner: { select: { image: true } },
-        },
-      },
       bookingServices: {
         select: { id: true, name: true, price: true, duration: true },
         orderBy: { price: 'asc' },
         take: 3,
-      },
-      promotions: {
-        where: {
-          startsAt: { lte: new Date() },
-          endsAt: { gte: new Date() },
-        },
-        select: { title: true, body: true },
-        take: 1,
       },
     },
     take: 100,
@@ -127,8 +204,9 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
     ? toGeoPoint(Number(near.split(',')[0]), Number(near.split(',')[1]))
     : null;
 
-  const formatted = stores.map((store) => {
+  const ranked: DirectorySortRow[] = stores.map((store) => {
     const point = toGeoPoint(store.latitude, store.longitude);
+    const trust = withStoreTrustPresentation(getStoreTrustSummary(store.ratingAverage, store.reviewCount));
     return {
       id: store.id,
       name: store.name,
@@ -136,34 +214,21 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
       description: store.description,
       address: store.address,
       image: store.image,
-      images: parseStoreImages(store.images),
-      latitude: store.latitude,
-      longitude: store.longitude,
-      tags: parseJsonStringArray(store.tags),
-      plan: store.plan,
-      featured: isFeaturedStore(store.plan, store.featuredUntil),
-      distanceKm: origin && point ? Math.round(haversineKm(origin, point) * 10) / 10 : null,
       category: store.category,
-      owner: store.provider
-        ? {
-            id: store.provider.id,
-            name: store.provider.name,
-            image: store.provider.image || store.provider.owner?.image || null,
-          }
-        : null,
       ratingAverage: store.ratingAverage,
       reviewCount: store.reviewCount,
-      trust: withStoreTrustPresentation(getStoreTrustSummary(store.ratingAverage, store.reviewCount)),
-      weightedScore: getWeightedStoreScore(store.ratingAverage, store.reviewCount),
+      trust,
       services: store.bookingServices,
-      promotions: store.promotions,
+      featured: isFeaturedStore(store.plan, store.featuredUntil),
+      distanceKm: origin && point ? Math.round(haversineKm(origin, point) * 10) / 10 : null,
+      weightedScore: getWeightedStoreScore(store.ratingAverage, store.reviewCount),
     };
   }).filter((store) => {
     if (!origin || store.distanceKm === null) return true;
     return store.distanceKm <= radius;
   });
 
-  formatted.sort((a, b) => {
+  ranked.sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
     if (sortBy === 'rating') return b.ratingAverage - a.ratingAverage || b.reviewCount - a.reviewCount;
     if (sortBy === 'reviews') return b.reviewCount - a.reviewCount || b.ratingAverage - a.ratingAverage;
@@ -171,7 +236,7 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
     return b.weightedScore - a.weightedScore || b.reviewCount - a.reviewCount;
   });
 
-  return formatted;
+  return ranked.map((store) => toPublicStoreCard(store));
 }
 
 export const getCachedPublicStoreDirectory = unstable_cache(
@@ -180,72 +245,62 @@ export const getCachedPublicStoreDirectory = unstable_cache(
   { revalidate: 300, tags: [STORE_CACHE_TAGS.directory] }
 );
 
-function mapPublicStore(store: {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  phone: string | null;
-  email: string | null;
-  address: string | null;
-  image: string | null;
-  images: string | null;
-    tags: string | null;
-    providerId: string | null;
-  ratingAverage: number;
-  reviewCount: number;
-  category: { id: string; name: string };
-  provider: {
-    id: string;
-    name: string | null;
-    image: string | null;
-    owner: { image: string | null } | null;
-  } | null;
-  bookingServices: Array<{
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    duration: number;
-  }>;
-  reviews: Array<{
-    id: string;
-    rating: number;
-    comment: string | null;
-    businessReply: string | null;
-    businessReplyAt: Date | null;
-    createdAt: Date;
-    authorId: string;
-    author: {
-      id: string;
-      name: string | null;
-      image: string | null;
-      owner: { image: string | null } | null;
-      stores: Array<{ id: string }>;
-    };
-    helpfulVotes: Array<{ userId: string }>;
-  }>;
-}) {
+export const storeDetailSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  description: true,
+  address: true,
+  image: true,
+  images: true,
+  tags: true,
+  ratingAverage: true,
+  reviewCount: true,
+  category: { select: { id: true, name: true } },
+  bookingServices: {
+    select: { id: true, name: true, description: true, price: true, duration: true },
+    orderBy: { createdAt: 'desc' as const },
+  },
+  reviews: {
+    where: { status: 'PUBLISHED' as const },
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      businessReply: true,
+      businessReplyAt: true,
+      createdAt: true,
+      author: {
+        select: {
+          name: true,
+          image: true,
+          owner: { select: { image: true } },
+          stores: {
+            where: { isActive: true },
+            select: { id: true },
+            take: 1,
+          },
+        },
+      },
+      _count: { select: { helpfulVotes: true } },
+    },
+    orderBy: { createdAt: 'desc' as const },
+  },
+} satisfies Prisma.StoreSelect;
+
+type StoreDetailQueryResult = Prisma.StoreGetPayload<{ select: typeof storeDetailSelect }>;
+
+export function mapPublicStoreDetail(store: StoreDetailQueryResult): PublicStoreDetail {
   return {
     id: store.id,
     name: store.name,
     slug: store.slug,
     description: store.description,
-    phone: store.phone,
-    email: store.email,
     address: store.address,
     image: store.image,
     images: parseStoreImages(store.images),
     tags: parseJsonStringArray(store.tags),
-    providerId: store.providerId,
     category: store.category,
-    owner: store.provider
-      ? {
-          id: store.provider.id,
-          name: store.provider.name,
-          image: store.provider.image || store.provider.owner?.image || null,
-        }
-      : null,
     ratingAverage: store.ratingAverage,
     reviewCount: store.reviewCount,
     trust: withStoreTrustPresentation(getStoreTrustSummary(store.ratingAverage, store.reviewCount)),
@@ -258,60 +313,23 @@ function mapPublicStore(store: {
       businessReplyAt: review.businessReplyAt,
       createdAt: review.createdAt,
       author: {
-        id: review.author.id,
         name: review.author.name,
         image: review.author.image || review.author.owner?.image || null,
         isBusinessOwner: review.author.stores.length > 0,
       },
-      helpfulCount: review.helpfulVotes.length,
+      helpfulCount: review._count.helpfulVotes,
     })),
   };
 }
 
-const storeDetailInclude = {
-  category: { select: { id: true, name: true } },
-  provider: {
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      owner: { select: { image: true } },
-    },
-  },
-  bookingServices: {
-    select: { id: true, name: true, description: true, price: true, duration: true },
-    orderBy: { createdAt: 'desc' as const },
-  },
-  reviews: {
-    where: { status: 'PUBLISHED' as const },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          owner: { select: { image: true } },
-          stores: {
-            where: { isActive: true },
-            select: { id: true },
-            take: 1,
-          },
-        },
-      },
-      helpfulVotes: { select: { userId: true } },
-    },
-    orderBy: { createdAt: 'desc' as const },
-  },
-};
-
-export async function getPublicStoreBySlug(slug: string) {
+export async function getPublicStoreBySlug(slug: string): Promise<PublicStoreDetail | null> {
   const store = await db.store.findFirst({
     where: { slug, isActive: true },
-    include: storeDetailInclude,
+    select: storeDetailSelect,
   });
 
   if (!store) return null;
-  return mapPublicStore(store);
+  return mapPublicStoreDetail(store);
 }
 
 export function getCachedPublicStoreBySlug(slug: string) {
@@ -351,14 +369,6 @@ export async function getStoreViewerState(slug: string, userId?: string | null):
     select: {
       id: true,
       providerId: true,
-      reviews: {
-        where: { status: 'PUBLISHED' },
-        select: {
-          id: true,
-          authorId: true,
-          helpfulVotes: { select: { userId: true } },
-        },
-      },
     },
   });
 
@@ -366,7 +376,7 @@ export async function getStoreViewerState(slug: string, userId?: string | null):
   if (!userId) return anonymousStoreViewer();
 
   const isOwner = store.providerId === userId;
-  const [completedAppointment, userReview] = await Promise.all([
+  const [completedAppointment, userReview, helpfulVotes] = await Promise.all([
     db.appointment.findFirst({
       where: {
         userId,
@@ -379,6 +389,10 @@ export async function getStoreViewerState(slug: string, userId?: string | null):
     db.storeReview.findUnique({
       where: { storeId_authorId: { storeId: store.id, authorId: userId } },
       select: { id: true, rating: true, comment: true },
+    }),
+    db.reviewHelpful.findMany({
+      where: { userId, review: { storeId: store.id, status: 'PUBLISHED' } },
+      select: { reviewId: true },
     }),
   ]);
 
@@ -397,10 +411,6 @@ export async function getStoreViewerState(slug: string, userId?: string | null):
     reviewEligibility,
     ownReviewId: userReview?.id || null,
     ownReview: userReview,
-    helpfulReviewIds: store.reviews
-      .filter((review) => review.helpfulVotes.some((vote) => vote.userId === userId))
-      .map((review) => review.id),
+    helpfulReviewIds: helpfulVotes.map((vote) => vote.reviewId),
   };
 }
-
-export type PublicStoreDetail = NonNullable<Awaited<ReturnType<typeof getPublicStoreBySlug>>>;

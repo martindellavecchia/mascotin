@@ -1,6 +1,5 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import StoreDetailClient from '@/components/shop/StoreDetailClient';
+import { notFound } from 'next/navigation';
+import StoreDetailView from '@/components/shop/StoreDetailView';
 import { logStoreQuery } from '@/lib/server/store-cache';
 import { getCachedPublicStoreBySlug } from '@/lib/server/stores';
 
@@ -22,14 +21,7 @@ export default async function StoreDetailPage({
     cache_mode: 'ISR',
   });
 
-  if (!store) {
-    return (
-      <div className="min-h-screen bg-slate-50 px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-slate-900">No encontramos este negocio</h1>
-        <Button asChild className="mt-5"><Link href="/shop">Volver a negocios</Link></Button>
-      </div>
-    );
-  }
+  if (!store) notFound();
 
-  return <StoreDetailClient store={store} />;
+  return <StoreDetailView store={store} />;
 }

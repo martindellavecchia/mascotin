@@ -100,7 +100,7 @@ export default function ShopDirectory({
               Descubrí servicios por categoría y decidí con reseñas verificadas de clientes reales.
             </p>
             <Button asChild variant="outline" className="mt-4">
-              <Link href="/map">Ver mapa pet-friendly</Link>
+              <Link href="/map" prefetch={false}>Ver mapa pet-friendly</Link>
             </Button>
             <div className="relative mx-auto mt-7 max-w-2xl">
               <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
@@ -159,7 +159,7 @@ export default function ShopDirectory({
             </p>
           </div>
           <Button asChild variant="outline" className="hidden border-teal-200 text-teal-700 sm:inline-flex">
-            <Link href="/provider">Publicá o administrá tu negocio</Link>
+            <Link href="/provider" prefetch={false}>Publicá o administrá tu negocio</Link>
           </Button>
         </div>
 
@@ -178,7 +178,7 @@ export default function ShopDirectory({
               <h3 className="mt-3 text-lg font-semibold text-slate-900">Todavía no hay negocios con esos filtros</h3>
               <p className="mt-1 max-w-md text-sm text-slate-500">Probá otra búsqueda o publicá tu negocio desde el panel de proveedor.</p>
               <Button asChild className="mt-5 bg-teal-600 hover:bg-teal-700">
-                <Link href="/provider">Ir al panel de proveedor</Link>
+                <Link href="/provider" prefetch={false}>Ir al panel de proveedor</Link>
               </Button>
             </CardContent>
           </Card>
