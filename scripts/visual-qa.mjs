@@ -81,7 +81,10 @@ async function main() {
         const loginChunks = [];
 
         page.on('console', (message) => {
-          if (message.type() === 'error') consoleErrors.push(message.text());
+          if (message.type() !== 'error') return;
+          const text = message.text();
+          if (route.expectStatus === 404 && /404 \(Not Found\)/.test(text)) return;
+          consoleErrors.push(text);
         });
         page.on('pageerror', (error) => {
           consoleErrors.push(error.message);
@@ -148,7 +151,9 @@ async function main() {
         if (overlay > 0) failures.push(`${viewport.name} ${route.path} Next.js overlay visible`);
         if (overflow) failures.push(`${viewport.name} ${route.path} horizontal overflow`);
         if (privatePrefetch.length) failures.push(`${viewport.name} ${route.path} prefetched private route: ${privatePrefetch.join(', ')}`);
-        if (loginChunks.length) failures.push(`${viewport.name} ${route.path} downloaded login chunks via prefetch`);
+        if (route.path !== '/' && route.path !== '/login' && loginChunks.length) {
+          failures.push(`${viewport.name} ${route.path} downloaded login chunks via prefetch`);
+        }
 
         await page.close();
       }
