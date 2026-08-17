@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { ensureDefaultStoreCategories } from '@/lib/stores';
+import { categoriesCacheControl, logStoreQuery } from '@/lib/server/store-cache';
+import { getCachedActiveStoreCategories } from '@/lib/server/stores';
 
 export async function GET() {
+  const started = Date.now();
   try {
-    await ensureDefaultStoreCategories(db);
-
-    const categories = await db.storeCategory.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, description: true },
-      orderBy: { name: 'asc' },
+    const categories = await getCachedActiveStoreCategories();
+    logStoreQuery({
+      route: '/api/store-categories',
+      duration_ms: Date.now() - started,
+      result_count: categories.length,
+      cache_mode: 'ISR',
     });
 
-    return NextResponse.json({ success: true, categories });
+    return NextResponse.json(
+      { success: true, categories },
+      { headers: { 'Cache-Control': categoriesCacheControl() } }
+    );
   } catch (error) {
     console.error('Error fetching store categories:', error);
     return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { assignStoreSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // PATCH - Assign store to a provider (user)
 export async function PATCH(
@@ -62,6 +63,7 @@ export async function PATCH(
         data: { role: 'PROVIDER' },
       }),
     ]);
+    await invalidatePublicStoreCache(updatedStore);
 
     return NextResponse.json({
       success: true,
@@ -122,6 +124,8 @@ export async function DELETE(
         data: { role: 'OWNER' },
       });
     }
+
+    await invalidatePublicStoreCache(updatedStore);
 
     return NextResponse.json({
       success: true,

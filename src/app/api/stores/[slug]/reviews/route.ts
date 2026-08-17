@@ -6,6 +6,7 @@ import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { recalculateStoreRating } from '@/lib/stores';
 import { createNotification } from '@/lib/notifications';
 import { isPlaceReviewCategory } from '@/lib/places';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 export async function POST(
   request: Request,
@@ -107,6 +108,7 @@ export async function POST(
         entityId: review.id,
       }).catch(console.error);
     }
+    await invalidatePublicStoreCache(store);
 
     return NextResponse.json({ success: true, review }, { status: existing ? 200 : 201 });
   } catch (error) {

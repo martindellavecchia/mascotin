@@ -6,6 +6,8 @@ import { resolveCoordinates } from '@/lib/pet-payload';
 import { providerCreateStoreSchema } from '@/lib/schemas';
 import { createUniqueStoreSlug, ensureDefaultStoreCategories, parseStoreImages } from '@/lib/stores';
 import { getStoreTrustSummary } from '@/lib/store-reputation';
+import { invalidateStoreCategoriesCache } from '@/lib/server/store-cache';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // GET - Get my assigned stores (provider view)
 export async function GET() {
@@ -126,6 +128,8 @@ export async function POST(request: Request) {
 
       return created;
     });
+    invalidateStoreCategoriesCache();
+    await invalidatePublicStoreCache(store);
 
     return NextResponse.json(
       {

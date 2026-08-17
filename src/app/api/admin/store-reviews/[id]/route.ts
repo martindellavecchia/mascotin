@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireAdminWrite } from '@/lib/admin';
 import { reviewModerationSchema } from '@/lib/schemas';
 import { recalculateStoreRating } from '@/lib/stores';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 export async function PATCH(
   request: Request,
@@ -22,7 +23,7 @@ export async function PATCH(
     }
     const existing = await db.storeReview.findUnique({
       where: { id },
-      select: { id: true, storeId: true },
+      select: { id: true, storeId: true, store: { select: { slug: true } } },
     });
     if (!existing) {
       return NextResponse.json({ success: false, error: 'Reseña no encontrada' }, { status: 404 });
@@ -39,6 +40,7 @@ export async function PATCH(
       await recalculateStoreRating(tx, existing.storeId);
       return updated;
     });
+    await invalidatePublicStoreCache({ id: existing.storeId, slug: existing.store.slug });
     return NextResponse.json({ success: true, review });
   } catch (error) {
     console.error('Error moderating review:', error);

@@ -1,0 +1,81 @@
+import { readFileSync } from 'fs';
+import path from 'path';
+import { db } from '@/lib/db';
+import { getStoreViewerState } from '@/lib/server/stores';
+
+jest.mock('@/lib/db', () => ({
+  db: {
+    store: { findFirst: jest.fn(), findUnique: jest.fn() },
+    appointment: { findFirst: jest.fn() },
+    storeReview: { findUnique: jest.fn() },
+  },
+}));
+jest.mock('@/lib/stores', () => ({ parseStoreImages: () => [] }));
+jest.mock('next/cache', () => ({
+  revalidateTag: jest.fn(),
+  unstable_cache: (fn: () => unknown) => fn,
+}));
+
+const mockedDb = db as unknown as {
+  store: { findFirst: jest.Mock };
+  appointment: { findFirst: jest.Mock };
+  storeReview: { findUnique: jest.Mock };
+};
+
+function readSource(relativePath: string) {
+  return readFileSync(path.join(process.cwd(), relativePath), 'utf8');
+}
+
+describe('public store APIs', () => {
+  it('does not write default categories during public GET', () => {
+    const source = readSource('src/app/api/store-categories/route.ts');
+    expect(source).not.toContain('ensureDefaultStoreCategories');
+    expect(source).toContain('getCachedActiveStoreCategories');
+    expect(source).toContain('categoriesCacheControl');
+  });
+
+  it('server-renders /shop with cached categories and stores', () => {
+    const shopPage = readSource('src/app/(public)/shop/page.tsx');
+    expect(shopPage).not.toContain("'use client'");
+    expect(shopPage).toContain('initialStores');
+    expect(shopPage).toContain('getCachedPublicStoreDirectory');
+    expect(shopPage).toContain('revalidate = 300');
+  });
+
+  it('caches the unfiltered directory and bypasses cache for high-cardinality filters', () => {
+    const source = readSource('src/app/api/stores/route.ts');
+    expect(source).toContain('hasHighCardinalityStoreFilters');
+    expect(source).toContain('getCachedPublicStoreDirectory');
+    expect(source).toContain('getPublicStoreDirectory');
+    expect(source).toContain('directoryCacheControl');
+    expect(source).toContain('noStoreCacheControl');
+  });
+
+  it('keeps the viewer endpoint private, envelope-shaped and never 401', () => {
+    const source = readSource('src/app/api/stores/[slug]/viewer/route.ts');
+    expect(source).toContain('privateNoStoreCacheControl');
+    expect(source).toContain('success: true, data: viewer');
+    expect(source).not.toContain('status: 401');
+    expect(source).toContain('getCachedSession');
+  });
+
+  it('returns anonymous viewer state for visitors', async () => {
+    mockedDb.store.findFirst.mockResolvedValueOnce({
+      id: 'store-1',
+      providerId: 'owner-1',
+      reviews: [],
+    });
+
+    const viewer = await getStoreViewerState('paw-spa', null);
+
+    expect(viewer).toEqual({
+      isAuthenticated: false,
+      isOwner: false,
+      reviewEligibility: 'unauthenticated',
+      ownReviewId: null,
+      ownReview: null,
+      helpfulReviewIds: [],
+    });
+    expect(mockedDb.appointment.findFirst).not.toHaveBeenCalled();
+  });
+});

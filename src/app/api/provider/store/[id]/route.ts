@@ -6,6 +6,7 @@ import { resolveCoordinates } from '@/lib/pet-payload';
 import { providerUpdateStoreSchema, storeServiceSchema } from '@/lib/schemas';
 import { createUniqueStoreSlug, parseStoreImages } from '@/lib/stores';
 import { getStoreTrustSummary } from '@/lib/store-reputation';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // GET - Get my store details
 export async function GET(
@@ -136,6 +137,8 @@ export async function PATCH(
       },
     });
 
+    await invalidatePublicStoreCache({ id: updated.id, slug: updated.slug });
+
     return NextResponse.json({
       success: true,
       store: {
@@ -203,6 +206,7 @@ export async function POST(
         duration: parsed.data.duration,
       },
     });
+    await invalidatePublicStoreCache(store);
 
     return NextResponse.json({ success: true, service }, { status: 201 });
   } catch (error) {

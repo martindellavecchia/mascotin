@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { storeServiceSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // GET - List services for a store
 export async function GET(
@@ -67,6 +68,7 @@ export async function POST(
         ...parsed.data,
       },
     });
+    await invalidatePublicStoreCache({ id: params.id, slug: store.slug });
 
     return NextResponse.json({ success: true, service }, { status: 201 });
   } catch (error) {

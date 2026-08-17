@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { createStoreCategorySchema } from '@/lib/schemas';
+import { invalidateStoreCategoriesCache, invalidateStoreDirectoryCache } from '@/lib/server/store-cache';
 
 // GET - List all store categories
 export async function GET() {
@@ -54,6 +55,8 @@ export async function POST(request: Request) {
     const category = await db.storeCategory.create({
       data: parsed.data,
     });
+    invalidateStoreCategoriesCache();
+    invalidateStoreDirectoryCache();
 
     return NextResponse.json({ success: true, category }, { status: 201 });
   } catch (error) {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { storeServiceSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // PATCH - Update a store service
 export async function PATCH(
@@ -35,6 +36,7 @@ export async function PATCH(
       where: { id: params.serviceId },
       data: parsed.data,
     });
+    await invalidatePublicStoreCache({ id: params.id });
 
     return NextResponse.json({ success: true, service: updated });
   } catch (error) {
@@ -66,6 +68,7 @@ export async function DELETE(
     }
 
     await db.storeService.delete({ where: { id: params.serviceId } });
+    await invalidatePublicStoreCache({ id: params.id });
 
     return NextResponse.json({ success: true, message: 'Servicio eliminado' });
   } catch (error) {

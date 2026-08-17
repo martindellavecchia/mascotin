@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/api-helpers';
 import { businessReplySchema, storeReviewSchema } from '@/lib/schemas';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { recalculateStoreRating } from '@/lib/stores';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 interface ReviewParams {
   slug: string;
@@ -26,7 +27,7 @@ export async function PATCH(
     const [{ slug, reviewId }, body] = await Promise.all([params, request.json()]);
     const review = await db.storeReview.findFirst({
       where: { id: reviewId, store: { OR: [{ id: slug }, { slug }] } },
-      include: { store: { select: { id: true, providerId: true } } },
+      include: { store: { select: { id: true, slug: true, providerId: true } } },
     });
     if (!review) {
       return NextResponse.json({ success: false, error: 'Reseña no encontrada' }, { status: 404 });
@@ -44,6 +45,7 @@ export async function PATCH(
         where: { id: review.id },
         data: { businessReply: parsed.data.businessReply, businessReplyAt: new Date() },
       });
+      await invalidatePublicStoreCache(review.store);
       return NextResponse.json({ success: true, review: updated });
     }
 
@@ -73,6 +75,7 @@ export async function PATCH(
       await recalculateStoreRating(tx, review.store.id);
       return saved;
     });
+    await invalidatePublicStoreCache(review.store);
     return NextResponse.json({ success: true, review: updated });
   } catch (error) {
     console.error('Error updating review:', error);
@@ -91,7 +94,7 @@ export async function DELETE(
     const { slug, reviewId } = await params;
     const review = await db.storeReview.findFirst({
       where: { id: reviewId, authorId: auth.session.user.id, store: { OR: [{ id: slug }, { slug }] } },
-      select: { id: true, storeId: true },
+      select: { id: true, storeId: true, store: { select: { slug: true } } },
     });
     if (!review) {
       return NextResponse.json(
@@ -103,6 +106,7 @@ export async function DELETE(
       await tx.storeReview.delete({ where: { id: review.id } });
       await recalculateStoreRating(tx, review.storeId);
     });
+    await invalidatePublicStoreCache({ id: review.storeId, slug: review.store.slug });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting review:', error);

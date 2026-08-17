@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { updateStoreSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // GET - Get single store with full details
 export async function GET(
@@ -90,6 +91,7 @@ export async function PATCH(
         provider: { select: { id: true, name: true, email: true } },
       },
     });
+    await invalidatePublicStoreCache(store);
 
     return NextResponse.json({ success: true, store });
   } catch (error) {
@@ -132,6 +134,7 @@ export async function DELETE(
     }
 
     await db.store.delete({ where: { id: params.id } });
+    await invalidatePublicStoreCache(existing);
 
     return NextResponse.json({ success: true, message: 'Tienda eliminada' });
   } catch (error) {

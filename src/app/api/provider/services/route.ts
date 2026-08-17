@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { storeServiceSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 // GET - Get all services for current provider
 export async function GET() {
@@ -97,6 +98,9 @@ export async function POST(request: Request) {
                 duration,
             },
         });
+        if (store) {
+            await invalidatePublicStoreCache(store);
+        }
 
         return NextResponse.json({
             success: true,

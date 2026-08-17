@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { storePromotionSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 export async function GET(
   _request: Request,
@@ -53,6 +54,7 @@ export async function POST(
       where: { id: store.id },
       data: { plan: 'FEATURED', featuredUntil: new Date(parsed.data.endsAt) },
     });
+    await invalidatePublicStoreCache(store);
 
     return NextResponse.json({ success: true, promotion }, { status: 201 });
   } catch {

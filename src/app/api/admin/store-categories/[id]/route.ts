@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { updateStoreCategorySchema } from '@/lib/schemas';
+import { invalidateStoreCategoriesCache, invalidateStoreDirectoryCache } from '@/lib/server/store-cache';
 
 // GET - Get single category with its stores
 export async function GET(
@@ -77,6 +78,8 @@ export async function PATCH(
       where: { id: params.id },
       data: parsed.data,
     });
+    invalidateStoreCategoriesCache();
+    invalidateStoreDirectoryCache();
 
     return NextResponse.json({ success: true, category });
   } catch (error) {
@@ -109,6 +112,8 @@ export async function DELETE(
     }
 
     await db.storeCategory.delete({ where: { id: params.id } });
+    invalidateStoreCategoriesCache();
+    invalidateStoreDirectoryCache();
 
     return NextResponse.json({ success: true, message: 'Categoría eliminada' });
   } catch (error) {

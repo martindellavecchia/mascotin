@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { createStoreSchema } from '@/lib/schemas';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 function slugify(text: string): string {
   return text
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
         category: { select: { id: true, name: true } },
       },
     });
+    await invalidatePublicStoreCache(store);
 
     return NextResponse.json({ success: true, store }, { status: 201 });
   } catch (error) {
