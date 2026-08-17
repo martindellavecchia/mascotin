@@ -18,6 +18,7 @@ import { DetailsSection } from './DetailsSection';
 import { ActivitiesSection } from './ActivitiesSection';
 import CompatibilityFields from '@/components/pets/CompatibilityFields';
 import { parseJsonStringArray } from '@/lib/json-array';
+import type { Pet } from '@/types';
 import {
   isRenderableImage,
   normalizePetImageSelection,
@@ -46,6 +47,7 @@ interface PetFormProps {
   ownerId: string;
   initialData?: any;
   onSuccess?: (pet: any) => void;
+  onThumbnailChange?: (pet: Pet) => void;
   onCancel?: () => void;
 }
 
@@ -74,11 +76,12 @@ function parseActivities(activitiesData: unknown): ActivityOption[] {
   return [];
 }
 
-export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: PetFormProps) {
+export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailChange, onCancel }: PetFormProps) {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>(parseImageUrls(initialData?.images));
   const [uploading, setUploading] = useState(false);
   const [thumbnailIndex, setThumbnailIndex] = useState<number>(initialData?.thumbnailIndex ?? 0);
+  const [savingThumbnailIndex, setSavingThumbnailIndex] = useState<number | null>(null);
 
   const form = useForm({
     resolver: zodResolver(petSchema),
@@ -111,6 +114,58 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       shareVetOnScan: initialData?.shareVetOnScan ?? false,
     },
   });
+
+  const persistThumbnailSelection = async (
+    nextImages: string[],
+    nextIndex: number,
+    previousIndex: number
+  ): Promise<boolean> => {
+    setThumbnailIndex(nextIndex);
+
+    if (!initialData?.id) {
+      toast.success('Foto principal seleccionada');
+      return true;
+    }
+
+    setSavingThumbnailIndex(nextIndex);
+
+    try {
+      const response = await fetch(`/api/pet/${initialData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          images: JSON.stringify(nextImages),
+          thumbnailIndex: nextIndex,
+        }),
+      });
+      const data = await response.json().catch(() => null) as { pet?: Pet; error?: string } | null;
+
+      if (!response.ok || !data?.pet) {
+        throw new Error(data?.error || 'No se pudo actualizar la foto de perfil');
+      }
+
+      onThumbnailChange?.(data.pet);
+      toast.success('Foto de perfil actualizada');
+      return true;
+    } catch (error) {
+      setThumbnailIndex(previousIndex);
+      toast.error(error instanceof Error ? error.message : 'No se pudo actualizar la foto de perfil');
+      return false;
+    } finally {
+      setSavingThumbnailIndex(null);
+    }
+  };
+
+  const handleThumbnailSelection = async (index: number) => {
+    if (savingThumbnailIndex !== null) return;
+
+    if (index === thumbnailIndex) {
+      toast.info('Esta ya es la foto de perfil');
+      return;
+    }
+
+    await persistThumbnailSelection(images, index, thumbnailIndex);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -159,9 +214,10 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
 
       if (newImages.length > 0) {
         const updatedImages = [...images, ...newImages];
+        const nextThumbnailIndex = images.length;
         setImages(updatedImages);
         form.setValue('images', updatedImages, { shouldValidate: true });
-        setThumbnailIndex(images.length);
+        await persistThumbnailSelection(updatedImages, nextThumbnailIndex, thumbnailIndex);
       }
     } catch {
         toast.error('Error al subir imagen. Inténtalo de nuevo.');
@@ -647,13 +703,21 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
 
         <div>
           <Label>Imágenes ({images.length}/6)</Label>
-          <p className="text-xs text-slate-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
+          <p className="text-xs text-slate-500 mb-2">
+            {initialData?.id
+              ? 'Elegí una estrella y la foto principal se guardará automáticamente.'
+              : 'Elegí una estrella para definir la foto principal.'}
+          </p>
           <div className="mt-2 grid grid-cols-3 gap-4">
-            {images.map((image, index) => (
-              <div
-                key={index}
-                className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${thumbnailIndex === index ? 'ring-4 ring-teal-500' : ''}`}
-              >
+            {images.map((image, index) => {
+              const isThumbnail = thumbnailIndex === index;
+              const isSavingThumbnail = savingThumbnailIndex === index;
+
+              return (
+                <div
+                  key={index}
+                  className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${isThumbnail ? 'ring-4 ring-teal-500' : ''}`}
+                >
                 {isRenderableImage(image) ? (
                   <Image
                     src={image}
@@ -670,14 +734,18 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                 )}
                 <Button
                   type="button"
-                  variant={thumbnailIndex === index ? "default" : "outline"}
+                  variant={isThumbnail ? "default" : "outline"}
                   size="icon"
-                  className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${thumbnailIndex === index ? 'bg-teal-500 hover:bg-teal-600' : 'bg-white/80 hover:bg-teal-50'}`}
-                  onClick={() => setThumbnailIndex(index)}
-                  title="Usar como foto de perfil"
-                  aria-label="Usar como foto de perfil"
+                  className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${isThumbnail ? 'bg-teal-500 hover:bg-teal-600' : 'bg-white/80 hover:bg-teal-50'}`}
+                  onClick={() => void handleThumbnailSelection(index)}
+                  disabled={savingThumbnailIndex !== null}
+                  title={isThumbnail ? 'Foto de perfil actual' : 'Usar como foto de perfil'}
+                  aria-label={isThumbnail ? `Foto ${index + 1} es la foto de perfil actual` : `Usar Foto ${index + 1} como foto de perfil`}
+                  aria-pressed={isThumbnail}
                 >
-                  <span className={`material-symbols-rounded text-[16px] leading-none ${thumbnailIndex === index ? 'text-white filled' : 'text-slate-500'}`}>star</span>
+                  <span className={`material-symbols-rounded text-[16px] leading-none ${isThumbnail ? 'text-white filled' : 'text-slate-500'} ${isSavingThumbnail ? 'animate-spin' : ''}`}>
+                    {isSavingThumbnail ? 'progress_activity' : 'star'}
+                  </span>
                 </Button>
                 <Button
                   type="button"
@@ -698,13 +766,14 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                 >
                   <span className="material-symbols-rounded text-[16px] leading-none">close</span>
                 </Button>
-                {thumbnailIndex === index && (
+                {isThumbnail && (
                   <div className="absolute bottom-0 left-0 right-0 bg-teal-500 text-white text-xs text-center py-1 font-medium">
-                    Foto de perfil
+                    {isSavingThumbnail ? 'Guardando...' : 'Foto principal actual'}
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
 
             {images.length < 6 && (
               <div className="aspect-square rounded-lg border-2 border-dashed border-teal-300 flex items-center justify-center bg-teal-50">
@@ -742,12 +811,12 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
               variant="outline"
               className="w-full sm:w-auto"
               onClick={onCancel}
-              disabled={loading || uploading}
+              disabled={loading || uploading || savingThumbnailIndex !== null}
             >
               Cancelar
             </Button>
           )}
-          <Button type="submit" className="w-full flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading}>
+          <Button type="submit" className="w-full flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading || savingThumbnailIndex !== null}>
             {loading ? (
               <>
                 <span className="material-symbols-rounded text-[16px] leading-none mr-2 animate-spin">progress_activity</span>

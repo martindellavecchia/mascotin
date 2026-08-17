@@ -304,11 +304,21 @@ function ProfileContent() {
               <PetForm
                 ownerId={owner.id}
                 initialData={editingPet}
+                onThumbnailChange={(updatedPet) => {
+                  setPets((currentPets) => currentPets.map((pet) =>
+                    pet.id === updatedPet.id ? updatedPet : pet
+                  ));
+                  setEditingPet((currentPet) =>
+                    currentPet?.id === updatedPet.id ? updatedPet : currentPet
+                  );
+                }}
                 onSuccess={(newPet) => {
                   if (editingPet) {
-                    setPets(pets.map(p => p.id === newPet.id ? newPet : p));
+                    setPets((currentPets) => currentPets.map((pet) =>
+                      pet.id === newPet.id ? newPet : pet
+                    ));
                   } else {
-                    setPets([newPet, ...pets]);
+                    setPets((currentPets) => [newPet, ...currentPets]);
                   }
                   setShowPetForm(false);
                   setEditingPet(null);

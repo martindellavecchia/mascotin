@@ -117,14 +117,28 @@ describe('PetForm', () => {
     });
 
     it('makes a newly uploaded photo the profile image when editing', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ url: 'data:image/webp;base64,abc' }),
-      }) as jest.Mock;
+      const onThumbnailChange = jest.fn();
+      const fetchMock = jest.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ url: 'data:image/webp;base64,abc' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            pet: {
+              id: 'pet-1',
+              images: JSON.stringify(['/images/old.jpg', 'data:image/webp;base64,abc']),
+              thumbnailIndex: 1,
+            },
+          }),
+        });
+      global.fetch = fetchMock as jest.Mock;
       const user = userEvent.setup();
       const { container } = render(
         <PetForm
           {...defaultProps}
+          onThumbnailChange={onThumbnailChange}
           initialData={{
             id: 'pet-1',
             images: JSON.stringify(['/images/old.jpg']),
@@ -140,7 +154,72 @@ describe('PetForm', () => {
       await waitFor(() => {
         expect(screen.getByAltText('Foto 2')).toBeInTheDocument();
       });
-      expect(screen.getByAltText('Foto 2').parentElement).toHaveTextContent('Foto de perfil');
+      expect(screen.getByAltText('Foto 2').parentElement).toHaveTextContent('Foto principal actual');
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+      const updateRequest = fetchMock.mock.calls[1][1] as RequestInit;
+      expect(JSON.parse(updateRequest.body as string)).toMatchObject({ thumbnailIndex: 1 });
+      expect(onThumbnailChange).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'pet-1',
+        thumbnailIndex: 1,
+      }));
+    });
+
+    it('saves a different profile photo immediately when its star is clicked', async () => {
+      const updatedPet = {
+        id: 'pet-1',
+        images: JSON.stringify(['/images/first.jpg', '/images/second.jpg']),
+        thumbnailIndex: 1,
+      };
+      const fetchMock = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ pet: updatedPet }),
+      });
+      const onThumbnailChange = jest.fn();
+      global.fetch = fetchMock as jest.Mock;
+      const user = userEvent.setup();
+
+      render(
+        <PetForm
+          {...defaultProps}
+          onThumbnailChange={onThumbnailChange}
+          initialData={{
+            id: 'pet-1',
+            images: updatedPet.images,
+            thumbnailIndex: 0,
+          }}
+        />
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Usar Foto 2 como foto de perfil' }));
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+      const updateRequest = fetchMock.mock.calls[0][1] as RequestInit;
+      expect(JSON.parse(updateRequest.body as string)).toEqual({
+        images: updatedPet.images,
+        thumbnailIndex: 1,
+      });
+      expect(await screen.findByRole('button', {
+        name: 'Foto 2 es la foto de perfil actual',
+      })).toHaveAttribute('aria-pressed', 'true');
+      expect(onThumbnailChange).toHaveBeenCalledWith(updatedPet);
+    });
+
+    it('clearly identifies the current photo when there is only one image', () => {
+      render(
+        <PetForm
+          {...defaultProps}
+          initialData={{
+            id: 'pet-1',
+            images: JSON.stringify(['/images/only.jpg']),
+            thumbnailIndex: 0,
+          }}
+        />
+      );
+
+      expect(screen.getByRole('button', {
+        name: 'Foto 1 es la foto de perfil actual',
+      })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByText('Foto principal actual')).toBeInTheDocument();
     });
   });
 
