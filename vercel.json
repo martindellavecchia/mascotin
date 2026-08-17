@@ -4,7 +4,6 @@
   "devCommand": "next dev -p 3000",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["gru1"],
   "crons": [
     {
       "path": "/api/cron/maintenance",
