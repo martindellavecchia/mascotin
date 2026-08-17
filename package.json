@@ -6,7 +6,7 @@
     "dev": "next dev -p 3000",
     "build": "prisma generate && next build",
     "start": "next start -p 3000",
-    "lint": "eslint src middleware.ts next.config.ts tailwind.config.ts",
+    "lint": "eslint src next.config.ts tailwind.config.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "canary:production": "node scripts/production-canary.mjs",
