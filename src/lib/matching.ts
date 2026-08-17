@@ -33,6 +33,7 @@ export interface MatchableCandidatePet {
   longitude?: number | null;
   matchIntent?: string | null;
   images: string;
+  thumbnailIndex?: number | null;
   owner: {
     location: string | null;
     bio: string | null;
@@ -202,7 +203,7 @@ export function scorePetMatch(
     name: candidate.name,
     petType: candidate.petType,
     breed: candidate.breed,
-    image: getPrimaryImageUrl(candidate.images),
+    image: getPrimaryImageUrl(candidate.images, candidate.thumbnailIndex ?? 0),
     matchScore: score,
     matchReason: reasons.length > 0 ? reasons.join(' • ') : 'Nuevo amigo',
     distanceKm,

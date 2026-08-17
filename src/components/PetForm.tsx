@@ -18,6 +18,12 @@ import { DetailsSection } from './DetailsSection';
 import { ActivitiesSection } from './ActivitiesSection';
 import CompatibilityFields from '@/components/pets/CompatibilityFields';
 import { parseJsonStringArray } from '@/lib/json-array';
+import {
+  isRenderableImage,
+  normalizePetImageSelection,
+  parseImageUrls,
+  shouldUnoptimizeImage,
+} from '@/lib/media';
 
 const TEMPERAMENT_OPTIONS = ['sociable', 'territorial', 'anxious', 'playful', 'calm', 'independent'] as const;
 const MATCH_INTENT_OPTIONS = ['walk', 'play', 'social', 'sit'] as const;
@@ -49,16 +55,6 @@ type ActivityOption = (typeof ACTIVITY_OPTIONS)[number];
 function isActivityOption(value: unknown): value is ActivityOption {
   return typeof value === 'string' && ACTIVITY_OPTIONS.includes(value as ActivityOption);
 }
-function parseImages(imagesJson: string | undefined): string[] {
-  if (!imagesJson) return [];
-  try {
-    const parsed = JSON.parse(imagesJson);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    return [];
-  }
-}
-
 function parseActivities(activitiesData: unknown): ActivityOption[] {
   if (!activitiesData) return [];
 
@@ -80,7 +76,7 @@ function parseActivities(activitiesData: unknown): ActivityOption[] {
 
 export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: PetFormProps) {
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState<string[]>(parseImages(initialData?.images));
+  const [images, setImages] = useState<string[]>(parseImageUrls(initialData?.images));
   const [uploading, setUploading] = useState(false);
   const [thumbnailIndex, setThumbnailIndex] = useState<number>(initialData?.thumbnailIndex ?? 0);
 
@@ -100,7 +96,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       bio: initialData?.bio || '',
       activities: parseActivities(initialData?.activities),
       location: initialData?.location || '',
-      images: parseImages(initialData?.images),
+      images: parseImageUrls(initialData?.images),
       goodWithKids: initialData?.goodWithKids || 'unknown',
       goodWithDogs: initialData?.goodWithDogs || 'unknown',
       goodWithCats: initialData?.goodWithCats || 'unknown',
@@ -123,56 +119,56 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
     const newImages: string[] = [];
     setUploading(true);
 
-    for (let i = 0; i < files.length && images.length + newImages.length < 6; i++) {
-      const file = files[i];
+    try {
+      for (let i = 0; i < files.length && images.length + newImages.length < 6; i++) {
+        const file = files[i];
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('La imagen debe ser menor a 5MB');
-        continue;
-      }
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('La imagen debe ser menor a 5MB');
+          continue;
+        }
 
-      if (!file.type.startsWith('image/')) {
-        toast.error('Solo se permiten imágenes');
-        continue;
-      }
+        if (!file.type.startsWith('image/')) {
+          toast.error('Solo se permiten imágenes');
+          continue;
+        }
 
-      const formData = new FormData();
-      formData.append('file', file);
+        const formData = new FormData();
+        formData.append('file', file);
 
-      try {
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          toast.error(`Error al subir imagen: ${response.status}`);
+          const error = await response.json().catch(() => null) as { error?: string } | null;
+          toast.error(error?.error || `Error al subir imagen: ${response.status}`);
           continue;
         }
 
-        const data = await response.json();
-        if (data.url) {
+        const data = await response.json() as { url?: string; error?: string };
+        if (data.url && isRenderableImage(data.url)) {
           newImages.push(data.url);
-          // Sincronizar con el formulario
-          form.setValue('images', [...images, ...newImages]);
         } else if (data.error) {
           toast.error(data.error);
+        } else {
+          toast.error('La imagen procesada no tiene un formato compatible');
         }
-      } catch (error) {
-        toast.error('Error al subir imagen. Inténtalo de nuevo.');
       }
+
+      if (newImages.length > 0) {
+        const updatedImages = [...images, ...newImages];
+        setImages(updatedImages);
+        form.setValue('images', updatedImages, { shouldValidate: true });
+        setThumbnailIndex(images.length);
+      }
+    } catch {
+        toast.error('Error al subir imagen. Inténtalo de nuevo.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
-
-    setImages([...images, ...newImages]);
-    setUploading(false);
-  };
-
-  const removeImage = (index: number) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    setImages(updatedImages);
-    // Sincronizar con el formulario
-    form.setValue('images', updatedImages);
   };
 
   const onSubmit = async (values: any) => {
@@ -188,6 +184,12 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       return;
     }
 
+    const imageSelection = normalizePetImageSelection(finalImages, thumbnailIndex);
+    if (!imageSelection) {
+      toast.error('Las imágenes de la mascota no tienen un formato compatible');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -195,8 +197,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
       const payload = {
         ...values,
         ownerId,
-        images: JSON.stringify(finalImages),
-        thumbnailIndex,
+        images: JSON.stringify(imageSelection.images),
+        thumbnailIndex: imageSelection.thumbnailIndex,
         activities: Array.isArray(values.activities) ? values.activities : [values.activities].filter(Boolean),
       };
 
@@ -652,7 +654,20 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                 key={index}
                 className={`relative aspect-square rounded-lg overflow-hidden bg-teal-100 ${thumbnailIndex === index ? 'ring-4 ring-teal-500' : ''}`}
               >
-                <Image src={image} alt={`Foto ${index + 1}`} fill className="object-cover" />
+                {isRenderableImage(image) ? (
+                  <Image
+                    src={image}
+                    alt={`Foto ${index + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 30vw, 180px"
+                    unoptimized={shouldUnoptimizeImage(image)}
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="material-symbols-rounded flex h-full items-center justify-center text-4xl text-teal-700">
+                    broken_image
+                  </span>
+                )}
                 <Button
                   type="button"
                   variant={thumbnailIndex === index ? "default" : "outline"}
@@ -708,6 +723,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel }: P
                     accept="image/*"
                     multiple
                     className="hidden"
+                    disabled={uploading}
                     onChange={handleImageUpload}
                   />
                 </label>

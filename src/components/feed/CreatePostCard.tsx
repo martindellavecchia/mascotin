@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { getPrimaryImageUrl } from '@/lib/media';
 
 interface CreatePostCardProps {
     pets: Pet[];
@@ -19,13 +20,16 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
     const [isExpanded, setIsExpanded] = useState(false);
 
     const activePet = pets.find(p => p.id === selectedPetId);
+    const activePetImage = activePet
+        ? getPrimaryImageUrl(activePet.images, activePet.thumbnailIndex)
+        : null;
 
     return (
         <Card className="mb-6 min-w-0 border-teal-100/50 bg-white p-3 shadow-sm sm:p-4">
             <div className="flex min-w-0 gap-3 sm:gap-4">
                 <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
-                    {activePet?.images && activePet.images.length > 0 ? (
-                        <img src={JSON.parse(activePet.images)[0] || activePet.images[0]} className="w-full h-full object-cover" alt="Pet" />
+                    {activePetImage ? (
+                        <img src={activePetImage} className="w-full h-full object-cover" alt={activePet?.name || 'Mascota'} />
                     ) : (
                         <Avatar className="w-full h-full">
                             <AvatarImage src={userImage || undefined} />

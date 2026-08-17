@@ -34,6 +34,7 @@ interface PassportPet {
   bio: string;
   location: string;
   images: string;
+  thumbnailIndex: number;
   vaccinated: boolean;
   neutered: boolean;
   goodWithKids?: string | null;
@@ -134,7 +135,7 @@ export default function PetPassportPage() {
     );
   }
 
-  const image = getPrimaryImageUrl(pet.images);
+  const image = getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
   const temperament = parseJsonStringArray(pet.temperament);
   const intents = parseJsonStringArray(pet.matchIntent);
   const healthRows = [

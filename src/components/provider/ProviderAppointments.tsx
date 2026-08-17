@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { getPrimaryImageUrl } from '@/lib/media';
 
 interface Appointment {
     id: string;
@@ -26,6 +27,7 @@ interface Appointment {
         petType: string;
         breed: string | null;
         images: string;
+        thumbnailIndex: number;
     };
     user: {
         id: string;
@@ -111,14 +113,8 @@ export default function ProviderAppointments() {
         }
     };
 
-    const getPetImage = (pet: Appointment['pet']) => {
-        try {
-            const images = JSON.parse(pet.images || '[]');
-            return images[0] || null;
-        } catch {
-            return null;
-        }
-    };
+    const getPetImage = (pet: Appointment['pet']) =>
+        getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
 
     if (loading) {
         return (

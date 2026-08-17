@@ -35,6 +35,7 @@ export async function GET(request: Request) {
           size: true,
           energy: true,
           images: true,
+          thumbnailIndex: true,
           goodWithKids: true,
           goodWithDogs: true,
           specialNeeds: true,

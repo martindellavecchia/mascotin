@@ -100,6 +100,7 @@ const PET_SELECT = {
   activities: true,
   location: true,
   images: true,
+  thumbnailIndex: true,
   latitude: true,
   longitude: true,
   goodWithKids: true,
@@ -269,6 +270,7 @@ export async function getHomeBootstrapData(
           select: {
             name: true,
             images: true,
+            thumbnailIndex: true,
             petType: true,
           },
         },

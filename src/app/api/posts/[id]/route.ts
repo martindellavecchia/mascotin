@@ -22,7 +22,7 @@ export async function GET(
                     select: { id: true, name: true, image: true }
                 },
                 pet: {
-                    select: { id: true, name: true, images: true, petType: true }
+                    select: { id: true, name: true, images: true, thumbnailIndex: true, petType: true }
                 },
                 _count: {
                     select: { likes: true, comments: true }

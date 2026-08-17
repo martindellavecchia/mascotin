@@ -3,10 +3,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { safeParseImages } from "@/lib/utils";
 import Link from "next/link";
 import type { Pet } from "@/types";
-import { shouldUnoptimizeImage } from "@/lib/media";
+import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from "@/lib/media";
 
 interface PetCardProps {
     pet: Pet;
@@ -15,13 +14,8 @@ interface PetCardProps {
 }
 
 export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
-    const petImages = safeParseImages(pet.images).filter((img): img is string =>
-        typeof img === 'string' && img.length > 0
-    );
-
-    const thumbnailIdx = pet.thumbnailIndex ?? 0;
-    const thumbnailImage = petImages[thumbnailIdx] || petImages[0];
-    const showImage = Boolean(thumbnailImage) && (thumbnailImage.startsWith('http') || thumbnailImage.startsWith('/'));
+    const thumbnailImage = getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
+    const showImage = isRenderableImage(thumbnailImage);
 
     let displaySize = pet.size;
     if (displaySize && displaySize.includes(' ')) {
@@ -56,6 +50,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                         alt={pet.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 420px"
                         unoptimized={shouldUnoptimizeImage(thumbnailImage)}
                     />
                 ) : (

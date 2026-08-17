@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PetForm from '@/components/PetForm';
 
 describe('PetForm', () => {
+  const originalFetch = global.fetch;
   const mockOnSuccess = jest.fn();
   const mockOnCancel = jest.fn();
   const defaultProps = {
@@ -14,6 +15,10 @@ describe('PetForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   describe('Rendering', () => {
@@ -109,6 +114,33 @@ describe('PetForm', () => {
       await userEvent.type(ageInput, '5');
 
       expect(ageInput).toHaveValue(5);
+    });
+
+    it('makes a newly uploaded photo the profile image when editing', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ url: 'data:image/webp;base64,abc' }),
+      }) as jest.Mock;
+      const user = userEvent.setup();
+      const { container } = render(
+        <PetForm
+          {...defaultProps}
+          initialData={{
+            id: 'pet-1',
+            images: JSON.stringify(['/images/old.jpg']),
+            thumbnailIndex: 0,
+          }}
+        />
+      );
+      const input = container.querySelector('#image-upload') as HTMLInputElement;
+      const file = new File(['photo'], 'nueva-foto.jpg', { type: 'image/jpeg' });
+
+      await user.upload(input, file);
+
+      await waitFor(() => {
+        expect(screen.getByAltText('Foto 2')).toBeInTheDocument();
+      });
+      expect(screen.getByAltText('Foto 2').parentElement).toHaveTextContent('Foto de perfil');
     });
   });
 

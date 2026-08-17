@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import sharp from 'sharp';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +11,7 @@ const MAX_INPUT_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_OUTPUT_FILE_SIZE = 600 * 1024;
 const MAX_IMAGE_DIMENSION = 1200;
 const OUTPUT_IMAGE_QUALITY = 78;
+const log = logger.forRoute('/api/upload', 'POST');
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -75,6 +77,13 @@ export async function POST(request: Request) {
       url: dataUrl,
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Error al procesar la imagen' }, { status: 500 });
+    log.error('Image processing failed', error, { userId: session.user.id });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'No pudimos leer esa imagen. Probá con un archivo JPG, PNG o WebP.',
+      },
+      { status: 422 }
+    );
   }
 }

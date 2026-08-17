@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Pet } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import { toast } from 'sonner';
+import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 
 interface PetProfileSidebarProps {
     pet: Pet | null;
@@ -23,33 +24,6 @@ interface HealthRecord {
     type: string;
     name: string;
     dueDate: string | null;
-}
-
-// Helper to parse images safely
-function getFirstImage(images: string | string[] | undefined | null): string | null {
-    if (!images) return null;
-
-    // If it's already an array
-    if (Array.isArray(images)) {
-        return images.length > 0 ? images[0] : null;
-    }
-
-    // If it's a JSON string
-    if (typeof images === 'string') {
-        try {
-            const parsed = JSON.parse(images);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed[0];
-            }
-        } catch {
-            // If it's just a URL string
-            if (images.startsWith('http') || images.startsWith('/')) {
-                return images;
-            }
-        }
-    }
-
-    return null;
 }
 
 export default function PetProfileSidebar({
@@ -120,7 +94,7 @@ export default function PetProfileSidebar({
     const weightDisplay = pet.weight ? `${pet.weight}kg` : '-- kg';
     const nextHealthRecord = healthRecords[0];
     const daysUntil = nextHealthRecord ? getDaysUntil(nextHealthRecord.dueDate) : null;
-    const petImage = getFirstImage(pet.images);
+    const petImage = getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
 
     return (
         <div className="space-y-4">
@@ -130,7 +104,7 @@ export default function PetProfileSidebar({
                     <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wide">Mis Mascotas</p>
                     <div className="flex gap-3">
                         {pets.map(p => {
-                            const img = getFirstImage(p.images);
+                            const img = getPrimaryImageUrl(p.images, p.thumbnailIndex);
                             const isSelected = p.id === selectedPetId;
                             return (
                                 <button
@@ -141,10 +115,17 @@ export default function PetProfileSidebar({
                                         : 'border-2 border-transparent hover:bg-slate-50'
                                         }`}
                                 >
-                                    <div className={`w-11 h-11 rounded-full overflow-hidden ${isSelected ? 'ring-2 ring-teal-500 ring-offset-2' : ''
+                                    <div className={`relative w-11 h-11 rounded-full overflow-hidden ${isSelected ? 'ring-2 ring-teal-500 ring-offset-2' : ''
                                         }`}>
                                         {img ? (
-                                            <img src={img} alt={p.name} className="w-full h-full object-cover" />
+                                            <Image
+                                                src={img}
+                                                alt={p.name}
+                                                fill
+                                                sizes="44px"
+                                                unoptimized={shouldUnoptimizeImage(img)}
+                                                className="object-cover"
+                                            />
                                         ) : (
                                             <div className="w-full h-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold">
                                                 {p.name[0]}

@@ -24,6 +24,7 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { getPrimaryImageUrl } from '@/lib/media';
 
 interface Settings {
     theme: string;
@@ -47,6 +48,7 @@ interface Pet {
     petType: string;
     breed: string | null;
     images: string;
+    thumbnailIndex: number;
     isActive: boolean;
 }
 
@@ -231,12 +233,7 @@ export default function SettingsPage() {
 
     if (!settings) return null;
 
-    const getPetImage = (pet: Pet) => {
-        try {
-            const images = JSON.parse(pet.images);
-            return images[0] || null;
-        } catch { return null; }
-    };
+    const getPetImage = (pet: Pet) => getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
 
     return (
         <div className="min-h-screen bg-slate-50">

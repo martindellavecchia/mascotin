@@ -6,8 +6,8 @@ import type { Pet } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
-import { safeParseActivities, safeParseImages } from '@/lib/utils';
+import { getImageUrlsWithPrimaryFirst, shouldUnoptimizeImage } from '@/lib/media';
+import { safeParseActivities } from '@/lib/utils';
 
 interface PetCardProps {
   pet: Pet;
@@ -51,15 +51,13 @@ export default function PetCard({
   onPass,
   actionsDisabled = false,
 }: PetCardProps) {
-  const images = safeParseImages(typeof pet.images === 'string' ? pet.images : null)
-    .filter((image): image is string => typeof image === 'string' && image.length > 0);
+  const images = getImageUrlsWithPrimaryFirst(pet.images, pet.thumbnailIndex);
   const activities = Array.isArray(pet.activities)
     ? pet.activities
     : safeParseActivities(pet.activities);
   const [imageIndex, setImageIndex] = useState(0);
 
-  const supportedImages = images.filter(isRenderableImage);
-  const displayImages = supportedImages;
+  const displayImages = images;
   const mainImage = displayImages[Math.min(imageIndex, Math.max(displayImages.length - 1, 0))];
   const hasImage = Boolean(mainImage);
 

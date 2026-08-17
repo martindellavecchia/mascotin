@@ -53,6 +53,8 @@ export interface Pet {
   activities: string[];
   location: string;
   images: string;
+  imageUrls?: string[];
+  primaryImageUrl?: string | null;
   thumbnailIndex?: number;
   latitude?: number | null;
   longitude?: number | null;

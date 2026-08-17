@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { petSchema } from '@/lib/schemas';
 import { createEmergencyToken, createPublicSlug } from '@/lib/passport';
 import { extractPassportFields, resolveCoordinates } from '@/lib/pet-payload';
+import { normalizePetImageSelection } from '@/lib/media';
 
 // POST - Create new pet
 export async function POST(request: Request) {
@@ -68,13 +69,14 @@ export async function POST(request: Request) {
       return null;
     };
 
-    const imagesArray = parseStringArray(images);
-    if (!imagesArray) {
+    const imageSelection = normalizePetImageSelection(images, thumbnailIndex);
+    if (!imageSelection) {
       return NextResponse.json(
-        { success: false, error: 'Invalid images format' },
+        { success: false, error: 'Formato de imágenes inválido' },
         { status: 400 }
       );
     }
+    const imagesArray = imageSelection.images;
 
     const activitiesArray = parseStringArray(activities);
     if (!activitiesArray) {
@@ -164,7 +166,7 @@ export async function POST(request: Request) {
         activities: JSON.stringify(activitiesArray),
         location,
         images: JSON.stringify(imagesArray),
-        thumbnailIndex: thumbnailIndex ?? 0,
+        thumbnailIndex: imageSelection.thumbnailIndex,
         latitude: coords?.latitude,
         longitude: coords?.longitude,
         publicSlug: createPublicSlug(name, tempId),

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { extractPassportFields, resolveCoordinates } from '@/lib/pet-payload';
+import { normalizePetImageSelection } from '@/lib/media';
 
 // GET - Get pet by ID
 export async function GET(
@@ -104,6 +105,20 @@ export async function PUT(
         const coords = location
           ? await resolveCoordinates(location, pet.latitude, pet.longitude)
           : null;
+        const shouldUpdateImages = images !== undefined || thumbnailIndex !== undefined;
+        const imageSelection = shouldUpdateImages
+          ? normalizePetImageSelection(
+              images !== undefined ? images : pet.images,
+              thumbnailIndex !== undefined ? thumbnailIndex : pet.thumbnailIndex
+            )
+          : null;
+
+        if (shouldUpdateImages && !imageSelection) {
+            return NextResponse.json(
+                { success: false, error: 'Formato de imágenes inválido' },
+                { status: 400 }
+            );
+        }
 
         const updatedPet = await db.pet.update({
             where: { id },
@@ -121,8 +136,10 @@ export async function PUT(
                 ...(bio !== undefined && { bio }),
                 ...(activities !== undefined && { activities: typeof activities === 'string' ? activities : JSON.stringify(activities) }),
                 ...(location !== undefined && { location }),
-                ...(images !== undefined && { images: typeof images === 'string' ? images : JSON.stringify(images) }),
-                ...(thumbnailIndex !== undefined && { thumbnailIndex }),
+                ...(imageSelection && {
+                    images: JSON.stringify(imageSelection.images),
+                    thumbnailIndex: imageSelection.thumbnailIndex,
+                }),
                 ...(isActive !== undefined && { isActive }),
                 ...(coords && { latitude: coords.latitude, longitude: coords.longitude }),
                 ...Object.fromEntries(

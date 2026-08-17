@@ -1,37 +1,14 @@
 
 import type { Pet } from '@/types';
 import Image from 'next/image';
-import { safeParseImages } from '@/lib/utils';
 import { getPetTypeIcon } from '@/lib/petTypeIcon';
-import { shouldUnoptimizeImage } from '@/lib/media';
+import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
 interface PetSelectorProps {
   pets: Pet[];
   selectedPetId: string | null;
   onSelect: (petId: string) => void;
   onCreateNew?: () => void;
-}
-
-// Helper function para obtener la primera imagen de forma segura
-function getFirstImage(imagesJson: string | null | undefined): string {
-  const images = safeParseImages(imagesJson);
-  if (images.length > 0 && images[0]) {
-    const url = images[0];
-    // Validate URL to prevent XSS
-    if (url.startsWith('javascript:') || url.startsWith('data:') || url.includes('<')) {
-      return '/placeholder.svg';
-    }
-    // Manejar diferentes formatos de URL
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    if (url.startsWith('/')) {
-      return url;
-    }
-    // URL relativa sin /
-    return '/' + url;
-  }
-  return '/placeholder.svg';
 }
 
 export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew }: PetSelectorProps) {
@@ -62,8 +39,8 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
 
       <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
         {pets.map(pet => {
-          const firstImage = getFirstImage(pet.images);
-          const hasValidImage = firstImage !== '/placeholder.svg';
+          const firstImage = getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
+          const hasValidImage = isRenderableImage(firstImage);
           const isSelected = selectedPetId === pet.id;
 
           return (
@@ -83,6 +60,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
                       src={firstImage}
                       alt={pet.name}
                       fill
+                      sizes="64px"
                       className="object-cover"
                       unoptimized={shouldUnoptimizeImage(firstImage)}
                       onError={(e) => {

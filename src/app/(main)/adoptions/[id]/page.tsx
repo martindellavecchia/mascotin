@@ -28,6 +28,7 @@ interface ListingDetail {
     petType: string;
     bio: string;
     images: string;
+    thumbnailIndex: number;
     goodWithKids: string | null;
     goodWithDogs: string | null;
     energy: string;
@@ -103,7 +104,7 @@ export default function AdoptionDetailPage() {
     );
   }
 
-  const image = getPrimaryImageUrl(listing.pet.images);
+  const image = getPrimaryImageUrl(listing.pet.images, listing.pet.thumbnailIndex);
   const isOwner = listing.listedByUserId === session?.user?.id;
   const currentApplication = !isOwner ? listing.applications?.[0] : undefined;
   const applicationStatus = currentApplication?.status === 'ACCEPTED'

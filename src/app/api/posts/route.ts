@@ -100,7 +100,8 @@ export async function POST(req: Request) {
                     pet: {
                         select: {
                             name: true,
-                            images: true
+                            images: true,
+                            thumbnailIndex: true,
                         }
                     }
                 }

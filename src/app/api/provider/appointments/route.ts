@@ -65,6 +65,7 @@ export async function GET(request: Request) {
                         petType: true,
                         breed: true,
                         images: true,
+                        thumbnailIndex: true,
                     },
                 },
                 user: {

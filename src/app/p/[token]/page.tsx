@@ -22,7 +22,7 @@ export default async function EmergencyPassportPage({
 
   if (!pet) notFound();
 
-  const image = getPrimaryImageUrl(pet.images);
+  const image = getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
   const typeLabel =
     pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Mascota';
 

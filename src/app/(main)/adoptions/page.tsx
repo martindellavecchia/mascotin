@@ -27,6 +27,7 @@ interface AdoptionCard {
     breed: string | null;
     age: number;
     images: string;
+    thumbnailIndex: number;
     goodWithKids: string | null;
   };
 }
@@ -218,7 +219,7 @@ function AdoptionsContent() {
           </Card>
         ) : (
           listings.map((listing) => {
-            const image = getPrimaryImageUrl(listing.pet.images);
+            const image = getPrimaryImageUrl(listing.pet.images, listing.pet.thumbnailIndex);
             return (
               <Card key={listing.id} className="overflow-hidden">
                 <CardContent className="p-4 space-y-3">

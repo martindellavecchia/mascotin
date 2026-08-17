@@ -7,10 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import type { Pet } from '@/types';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { safeParseImages } from '@/lib/utils';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { getPetTypeIcon, getPetTypeLabel } from '@/lib/petTypeIcon';
-import { shouldUnoptimizeImage } from '@/lib/media';
+import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
 export default function TrendingPets() {
     const router = useRouter();
@@ -84,11 +83,8 @@ export default function TrendingPets() {
             <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {pets.map((pet, index) => {
-                        const images = safeParseImages(pet.images).filter((img): img is string =>
-                            typeof img === 'string' && img.length > 0
-                        );
-                        const firstImage = images[0];
-                        const showImage = Boolean(firstImage) && (firstImage.startsWith('http') || firstImage.startsWith('/'));
+                        const firstImage = getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
+                        const showImage = isRenderableImage(firstImage);
 
                         return (
                             <Card
@@ -107,6 +103,7 @@ export default function TrendingPets() {
                                             alt={pet.name}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform"
+                                            sizes="(max-width: 768px) 50vw, 220px"
                                             unoptimized={shouldUnoptimizeImage(firstImage)}
                                         />
                                     ) : (

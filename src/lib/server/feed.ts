@@ -61,6 +61,7 @@ export async function getFeedPage({
           id: true,
           name: true,
           images: true,
+          thumbnailIndex: true,
           breed: true,
           petType: true,
         },

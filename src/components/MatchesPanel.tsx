@@ -8,8 +8,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Pet } from '@/types';
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
-function MatchAvatar({ images, name }: { images: string | string[] | null | undefined; name: string }) {
-  const primary = getPrimaryImageUrl(images);
+function MatchAvatar({
+  images,
+  primaryImageUrl,
+  name,
+}: {
+  images: string | string[] | null | undefined;
+  primaryImageUrl?: string | null;
+  name: string;
+}) {
+  const primary = isRenderableImage(primaryImageUrl)
+    ? primaryImageUrl
+    : getPrimaryImageUrl(images);
   const src = isRenderableImage(primary) ? primary : null;
 
   return (
@@ -76,7 +86,11 @@ export default function MatchesPanel({ matches }: MatchesPanelProps) {
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <MatchAvatar images={match.images} name={match.name} />
+                    <MatchAvatar
+                      images={match.images}
+                      primaryImageUrl={match.primaryImageUrl}
+                      name={match.name}
+                    />
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate font-semibold text-slate-900">{match.name}</h3>
                       <p className="truncate text-sm text-slate-500">

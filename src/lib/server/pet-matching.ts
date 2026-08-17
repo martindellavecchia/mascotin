@@ -21,6 +21,7 @@ const CANDIDATE_SELECT = {
   longitude: true,
   matchIntent: true,
   images: true,
+  thumbnailIndex: true,
   owner: {
     select: {
       location: true,

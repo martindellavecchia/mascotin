@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Pet } from '@/types';
 import type { HomeBootstrapSuggestion } from '@/lib/server/home';
-import { isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
+import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/lib/media';
 
 interface CommunitySidebarProps {
   session: {
@@ -30,14 +30,7 @@ export default function CommunitySidebar({
           id: pet.id,
           name: pet.name,
           breed: pet.breed || 'Nuevo amigo',
-          image: (() => {
-            try {
-              const parsed = JSON.parse(pet.images);
-              return Array.isArray(parsed) ? parsed[0] : null;
-            } catch {
-              return pet.images || null;
-            }
-          })(),
+          image: getPrimaryImageUrl(pet.images, pet.thumbnailIndex),
           meta: 'Conexión reciente',
         }))
       : suggestions.slice(0, 3).map((pet) => ({
