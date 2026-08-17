@@ -155,7 +155,7 @@ export default function AdminPage() {
                 setUsers(data.users);
                 setPagination(data.pagination);
             } else if (res.status === 403) {
-                router.push('/');
+                router.push('/inicio');
                 toast.error('Acceso denegado');
             }
         } catch (error) {

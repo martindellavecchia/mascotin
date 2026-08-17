@@ -70,7 +70,7 @@ export default function MatchesPanel({ matches }: MatchesPanelProps) {
           </p>
           <button
             type="button"
-            onClick={() => router.push('/?tab=explore')}
+            onClick={() => router.push('/inicio?tab=explore')}
             className="mt-6 min-h-11 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
           >
             Ir a Descubrir

@@ -30,8 +30,8 @@ interface NavigationLink {
 }
 
 const NAV_LINKS: NavigationLink[] = [
-  { href: '/', label: 'Inicio', icon: Home, tab: 'home' },
-  { href: '/?tab=explore', label: 'Descubrir', icon: Search, tab: 'explore' },
+  { href: '/inicio', label: 'Inicio', icon: Home, tab: 'home' },
+  { href: '/inicio?tab=explore', label: 'Descubrir', icon: Search, tab: 'explore' },
   { href: '/community', label: 'Comunidad', icon: Users },
   { href: '/community/events', label: 'Eventos', icon: CalendarDays },
   { href: '/hogares-de-transito', label: 'Hogares de tránsito', icon: HeartHandshake },
@@ -129,7 +129,7 @@ export default function Header({ session }: HeaderProps) {
 
   const isActive = (path: string, tab?: 'home' | 'explore') => {
     if (pathname !== path) return false;
-    if (path !== '/') return true;
+    if (path !== '/inicio') return true;
     return tab === 'explore' ? homeTab === 'explore' : homeTab === 'home';
   };
 
@@ -137,19 +137,19 @@ export default function Header({ session }: HeaderProps) {
     event: MouseEvent<HTMLAnchorElement>,
     tab?: HomeTab
   ) => {
-    if (pathname !== '/' || !tab) return;
+    if (pathname !== '/inicio' || !tab) return;
 
     event.preventDefault();
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tab);
-    window.history.replaceState(window.history.state, '', `/?${params.toString()}`);
+    window.history.replaceState(window.history.state, '', `/inicio?${params.toString()}`);
     setHomeTab(tab);
     window.dispatchEvent(new Event('mascotin:home-tab'));
   };
 
   const isNavActive = (href: string, tab?: HomeTab) => {
     const path = href.split('?')[0];
-    if (path === '/') return isActive('/', tab);
+    if (path === '/inicio') return isActive('/inicio', tab);
     if (path === '/shop') return pathname.startsWith('/shop');
     if (path === '/community/events') return pathname.startsWith('/community/events');
     if (path === '/community') return pathname === '/community';
@@ -160,7 +160,7 @@ export default function Header({ session }: HeaderProps) {
     <header className="sticky top-0 z-50 h-16 w-full border-b border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:h-svh lg:w-[260px] lg:border-b-0 lg:border-r">
       <div className="mx-auto flex h-full min-w-0 items-center justify-between gap-1.5 px-3 sm:gap-3 sm:px-6 lg:flex-col lg:items-stretch lg:px-5 lg:py-7">
         <Link
-          href="/"
+          href="/inicio"
           className="flex min-h-11 min-w-0 shrink items-center gap-2 lg:px-1"
         >
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-teal-600 sm:size-10">

@@ -6,7 +6,7 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
   }),
-  usePathname: () => '/',
+  usePathname: () => '/inicio',
 }));
 
 jest.mock('next-auth/react', () => ({
@@ -70,7 +70,7 @@ describe('Header', () => {
     it('renders home link', () => {
       render(<Header session={mockSession} />);
 
-      expect(screen.getByRole('link', { name: /inicio/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /inicio/i })).toHaveAttribute('href', '/inicio');
     });
 
     it('renders community link', () => {

@@ -64,7 +64,7 @@ export default function CommunitySidebar({
             <p className="mt-3 text-sm font-medium text-slate-800">Todavía no tenés conexiones</p>
             <p className="mt-1 text-xs text-slate-500">Descubrí mascotas cerca y ampliá tu círculo.</p>
             <Link
-              href="/?tab=explore"
+              href="/inicio?tab=explore"
               className="mt-4 inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700"
             >
               Ir a Descubrir

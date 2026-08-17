@@ -27,7 +27,7 @@ export default function PetPairingWidget() {
                 </div>
 
                 <Button
-                    onClick={() => router.push('/?tab=explore')}
+                    onClick={() => router.push('/inicio?tab=explore')}
                     className="w-full bg-white text-teal-600 hover:bg-white/90 font-semibold"
                 >
                     Buscar Matches

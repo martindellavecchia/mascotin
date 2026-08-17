@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { MapPin, Search, Star, Store } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,6 @@ const trustClasses: Record<string, string> = {
 };
 
 export default function ShopPage() {
-  const { data: session } = useSession();
   const [stores, setStores] = useState<StoreCard[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
@@ -153,11 +151,9 @@ export default function ShopPage() {
               El orden combina la nota y la cantidad de experiencias verificadas.
             </p>
           </div>
-          {session?.user?.role === 'PROVIDER' && (
-            <Button asChild variant="outline" className="hidden border-teal-200 text-teal-700 sm:inline-flex">
-              <Link href="/provider">Administrar mi negocio</Link>
-            </Button>
-          )}
+          <Button asChild variant="outline" className="hidden border-teal-200 text-teal-700 sm:inline-flex">
+            <Link href="/provider">Publicá o administrá tu negocio</Link>
+          </Button>
         </div>
 
         {loading ? (

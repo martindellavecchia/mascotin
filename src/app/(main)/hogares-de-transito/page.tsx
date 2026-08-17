@@ -1,11 +1,10 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
 import HelpCenter from '@/components/help/HelpCenter';
-import { authOptions } from '@/lib/auth';
+import { getCachedSession } from '@/lib/session';
 
 export default async function FosterHomesPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getCachedSession();
   if (!session?.user?.id) redirect('/login');
 
   return (

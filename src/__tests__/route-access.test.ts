@@ -11,6 +11,16 @@ describe('route access helpers', () => {
     expect(isPublicPath('/')).toBe(true);
   });
 
+  it('keeps the store directory public', () => {
+    expect(isPublicPath('/shop')).toBe(true);
+    expect(isPublicPath('/shop/veterinaria-central')).toBe(true);
+  });
+
+  it('protects the authenticated home', () => {
+    expect(isPublicPath('/inicio')).toBe(false);
+    expect(isPublicPath('/inicio?tab=explore')).toBe(false);
+  });
+
   it('keeps public assets out of auth protection', () => {
     expect(isPublicPath('/robots.txt')).toBe(true);
     expect(isPublicPath('/logo.svg')).toBe(true);

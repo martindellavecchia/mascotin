@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { CircleAlert, Eye, EyeOff, PawPrint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { sanitizeCallbackUrl } from '@/lib/callback-url';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -54,7 +55,8 @@ export default function LoginPage() {
         }
       } else {
         toast.success('Bienvenido a MascoTin');
-        router.push('/');
+        const callbackUrl = sanitizeCallbackUrl(new URLSearchParams(window.location.search).get('callbackUrl'));
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {

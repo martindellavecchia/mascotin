@@ -13,7 +13,7 @@ export default function QuickActions({ showTitle = true, compact = false }: Quic
     const router = useRouter();
 
     const actions: Array<{ icon: LucideIcon; label: string; color: string; href: string }> = [
-        { icon: Search, label: 'Descubrir', color: 'bg-teal-50 text-teal-700', href: '/?tab=explore' },
+        { icon: Search, label: 'Descubrir', color: 'bg-teal-50 text-teal-700', href: '/inicio?tab=explore' },
         { icon: Store, label: 'Servicios', color: 'bg-slate-100 text-slate-700', href: '/shop' },
         { icon: HandHeart, label: 'Hogares', color: 'bg-orange-50 text-orange-700', href: '/hogares-de-transito' },
         { icon: CalendarDays, label: 'Eventos', color: 'bg-teal-50 text-teal-700', href: '/community/events' },

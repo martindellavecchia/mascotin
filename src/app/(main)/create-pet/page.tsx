@@ -84,7 +84,7 @@ function CreatePetContent() {
       <main className="flex-1 container mx-auto px-4 py-8 flex justify-center">
         <PetOnboardingWizard
           ownerId={owner.id}
-          onSuccess={() => router.push('/')}
+          onSuccess={() => router.push('/inicio')}
           onCancel={() => router.back()}
         />
       </main>

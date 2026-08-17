@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
 import MessagesClientShell from '@/components/messages/MessagesClientShell';
-import { authOptions } from '@/lib/auth';
 import { getMessagesBootstrapData } from '@/lib/server/messages';
+import { getCachedSession } from '@/lib/session';
 
 export default async function MessagesPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getCachedSession();
 
   if (!session?.user?.id) {
     redirect('/login');

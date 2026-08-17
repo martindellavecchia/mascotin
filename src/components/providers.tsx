@@ -1,6 +1,5 @@
 'use client';
 
-import { SessionProvider } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { ThemeProvider } from 'next-themes';
 
@@ -11,17 +10,15 @@ const SonnerToaster = dynamic(() =>
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        forcedTheme="light"
-        enableSystem={false}
-        disableTransitionOnChange
-      >
-        {children}
-        <SonnerToaster />
-      </ThemeProvider>
-    </SessionProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      forcedTheme="light"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
+      {children}
+      <SonnerToaster />
+    </ThemeProvider>
   );
 }

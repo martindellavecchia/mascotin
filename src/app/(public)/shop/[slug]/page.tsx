@@ -111,12 +111,18 @@ export default function StoreDetailPage() {
     }
   };
 
+  const fetchPetsForBooking = async () => {
+    const response = await fetch('/api/pet/mine');
+    if (response.status === 401) {
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(`/shop/${slug}`)}`;
+      return;
+    }
+    const data = await response.json();
+    if (data.success) setPets(data.pets || []);
+  };
+
   useEffect(() => {
     void fetchStore();
-    fetch('/api/pet/mine')
-      .then((response) => response.json())
-      .then((data) => data.success && setPets(data.pets || []))
-      .catch((error) => console.error('Error fetching pets:', error));
   }, [slug]);
 
   const nextDays = Array.from({ length: 7 }, (_, index) => {
@@ -311,7 +317,7 @@ export default function StoreDetailPage() {
                     </div>
                     <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                       <span className="text-xl font-bold text-teal-700">${service.price.toLocaleString('es-AR')}</span>
-                      <Button className="bg-teal-600 hover:bg-teal-700" onClick={() => { setBookingService(service); setPetId(pets[0]?.id || ''); setDate(''); }}>Reservar</Button>
+                      <Button className="bg-teal-600 hover:bg-teal-700" onClick={() => { setBookingService(service); setPetId(pets[0]?.id || ''); setDate(''); void fetchPetsForBooking(); }}>Reservar</Button>
                     </div>
                   </CardContent>
                 </Card>

@@ -29,8 +29,8 @@ export default function HeaderMobileMenu({
     if (path === '/community/events') return pathname.startsWith('/community/events');
     if (path === '/community') return pathname === '/community';
     if (path === '/shop') return pathname.startsWith('/shop');
-    if (path !== '/') return pathname === path || pathname.startsWith(`${path}/`);
-    if (pathname !== '/') return false;
+    if (path !== '/inicio') return pathname === path || pathname.startsWith(`${path}/`);
+    if (pathname !== '/inicio') return false;
     if (tab === 'explore') return homeTab === 'explore';
     if (tab === 'home') return !homeTab || homeTab === 'home';
     return true;

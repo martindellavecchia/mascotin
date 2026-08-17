@@ -93,7 +93,7 @@ export default function TrendingPets() {
                                 onClick={() => {
                                     toast.info(`¡Explorando ${pet.name}!`, { duration: 2000 });
                                     // Switch to explore tab - the main page will handle showing this pet
-                                    router.push('/?tab=explore');
+                                    router.push('/inicio?tab=explore');
                                 }}
                             >
                                 <div className="relative h-28 bg-gradient-to-br from-orange-100 to-yellow-100">

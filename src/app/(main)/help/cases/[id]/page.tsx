@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
 import RescueCaseDetail from '@/components/help/RescueCaseDetail';
-import { authOptions } from '@/lib/auth';
+import { getCachedSession } from '@/lib/session';
 
 export default async function RescueCasePage({
   params,
@@ -10,7 +9,7 @@ export default async function RescueCasePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ contact?: string; need?: string; kind?: string; offer?: string }>;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getCachedSession();
   if (!session?.user?.id) redirect('/login');
   const { id } = await params;
   const query = await searchParams;
