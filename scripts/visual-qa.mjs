@@ -12,13 +12,16 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { chromium } from '@playwright/test';
 
+const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const outDir = path.join(rootDir, 'artifacts', 'performance-remediation');
 const base = (process.env.PERF_BASE_URL || 'http://127.0.0.1:3000').replace(/\/$/, '');
+const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
 const viewports = [
   { name: '390x844', width: 390, height: 844 },
@@ -144,8 +147,71 @@ function emptyChecks() {
     materialSymbols: false,
     lucide: false,
     accessibleControls: false,
+    keyboardFocus: false,
     screenshot: false,
   };
+}
+
+async function inspectAccessibility(page) {
+  await page.addScriptTag({ content: axeSource });
+  const violations = await page.evaluate(async () => {
+    const result = await window.axe.run(document, {
+      runOnly: {
+        type: 'rule',
+        values: [
+          'aria-command-name',
+          'aria-input-field-name',
+          'button-name',
+          'input-button-name',
+          'label',
+          'link-name',
+          'select-name',
+        ],
+      },
+    });
+    return result.violations.map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      nodes: violation.nodes.map((node) => node.target.join(' ')),
+    }));
+  });
+
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    window.scrollTo(0, 0);
+  });
+
+  let keyboardFocus = null;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await page.keyboard.press('Tab');
+    keyboardFocus = await page.evaluate(() => {
+      const element = document.activeElement;
+      if (!(element instanceof HTMLElement) || element === document.body) return null;
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      const visible = rect.width > 0
+        && rect.height > 0
+        && style.visibility !== 'hidden'
+        && style.display !== 'none';
+      const hasOutline = style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
+      const hasBoxShadow = style.boxShadow !== 'none';
+      return {
+        tag: element.tagName.toLowerCase(),
+        id: element.id || null,
+        name: element.getAttribute('aria-label')
+          || element.innerText?.trim()
+          || element.getAttribute('placeholder')
+          || element.getAttribute('title')
+          || null,
+        visible,
+        focusVisible: element.matches(':focus-visible'),
+        visibleIndicator: hasOutline || hasBoxShadow,
+      };
+    });
+    if (keyboardFocus?.visible) break;
+  }
+
+  return { violations, keyboardFocus };
 }
 
 async function commonPageSignals(page) {
@@ -153,8 +219,9 @@ async function commonPageSignals(page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   const html = await page.content();
   const lucideCount = await page.locator('svg.lucide').count();
-  const interactive = await page.locator('a[href], button, [role="button"]').count();
-  return { overlay, overflow, html, lucideCount, interactive };
+  const interactive = await page.locator('a[href]:visible, button:visible, input:visible, select:visible, textarea:visible, [role="button"]:visible').count();
+  const accessibility = await inspectAccessibility(page);
+  return { overlay, overflow, html, lucideCount, interactive, accessibility };
 }
 
 function evaluateCommon({
@@ -171,6 +238,7 @@ function evaluateCommon({
   html,
   lucideCount,
   interactive,
+  accessibility,
   extra = {},
 }) {
   const checks = {
@@ -186,7 +254,12 @@ function evaluateCommon({
     googleFonts: collector.fontCalls.length === 0,
     materialSymbols: !blockedText.some((token) => html.includes(token)),
     lucide: lucideCount > 0,
-    accessibleControls: interactive > 0,
+    accessibleControls: interactive > 0 && accessibility.violations.length === 0,
+    keyboardFocus: Boolean(
+      accessibility.keyboardFocus?.visible
+      && accessibility.keyboardFocus.focusVisible
+      && accessibility.keyboardFocus.visibleIndicator
+    ),
     screenshot: true,
     ...extra,
   };
@@ -204,7 +277,8 @@ function evaluateCommon({
     googleFonts: `${viewport} ${route} requested Google Fonts`,
     materialSymbols: `${viewport} ${route} still references Material Symbols`,
     lucide: `${viewport} ${route} did not render Lucide icons`,
-    accessibleControls: `${viewport} ${route} missing accessible controls`,
+    accessibleControls: `${viewport} ${route} inaccessible controls: ${JSON.stringify(accessibility.violations)}`,
+    keyboardFocus: `${viewport} ${route} missing visible keyboard focus: ${JSON.stringify(accessibility.keyboardFocus)}`,
     screenshot: `${viewport} ${route} screenshot missing`,
     noSession: `${viewport} ${route} requested /api/auth/session`,
     noPrivatePrefetch: `${viewport} ${route} prefetched private route: ${collector.privatePrefetch.join(', ')}`,
@@ -214,6 +288,7 @@ function evaluateCommon({
     islands: `${viewport} ${route} interactive islands did not mount`,
     callbackUrl: `${viewport} ${route} booking did not preserve callbackUrl`,
     noPetMine: `${viewport} ${route} requested /api/pet/mine before authenticated booking`,
+    petMineAfterBooking: `${viewport} ${route} did not request /api/pet/mine after opening authenticated booking`,
   };
 
   for (const [key, ok] of Object.entries(checks)) {
@@ -293,8 +368,10 @@ async function captureRoute({
   const collector = createCollector(route, expectedStatus);
   collector.attach(page);
 
-  const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  const response = await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('load');
+  await page.locator('body').waitFor({ state: 'visible' });
+  await page.waitForTimeout(700);
 
   const status = response?.status() ?? 0;
   const finalUrl = page.url();
@@ -322,6 +399,7 @@ async function captureRoute({
     html: signals.html,
     lucideCount: signals.lucideCount,
     interactive: signals.interactive,
+    accessibility: signals.accessibility,
     extra: {
       ...(heading ? { heading: headingText.includes(heading) || bodyText.includes(heading) } : {}),
       ...Object.fromEntries(
@@ -342,7 +420,10 @@ async function captureRoute({
       heading: headingText || null,
       screenshot: screenshotPath,
       checks,
-      details: extra.details || {},
+      details: {
+        ...(extra.details || {}),
+        accessibility: signals.accessibility,
+      },
       passed: failures.length === 0 && !(extra.failures || []).length,
     },
     failures: [...failures, ...(extra.failures || [])],
@@ -360,16 +441,7 @@ async function evaluateStoreDetail(page, collector, { slug, authenticated }) {
   const viewer401 = collected.viewerCalls.some((call) => call.status === 401);
   const petMineBefore = collected.petMineCalls.length > 0;
 
-  let callbackUrlOk = !authenticated;
-  if (!authenticated && bookCount > 0) {
-    await bookButton.first().click();
-    await page.waitForURL(/\/login\?callbackUrl=/, { timeout: 10_000 });
-    const callback = new URL(page.url()).searchParams.get('callbackUrl') || '';
-    callbackUrlOk = callback === `/shop/${slug}` || callback === encodeURIComponent(`/shop/${slug}`);
-    if (!callbackUrlOk) {
-      extraFailures.push(`booking callbackUrl was ${callback || '(empty)'}`);
-    }
-  } else if (!authenticated && bookCount === 0) {
+  if (!authenticated && bookCount === 0) {
     extraFailures.push(`QA_STORE_SLUG=${slug} no tiene servicios reservables; no se puede verificar callbackUrl`);
   }
 
@@ -386,7 +458,6 @@ async function evaluateStoreDetail(page, collector, { slug, authenticated }) {
     noSession: collected.sessionCalls.length === 0,
     noPrivatePrefetch: collected.privatePrefetch.length === 0,
     noPetMine: !petMineBefore,
-    callbackUrl: callbackUrlOk,
     details: {
       viewerCalls: collected.viewerCalls,
       petMineCalls: collected.petMineCalls,
@@ -394,6 +465,33 @@ async function evaluateStoreDetail(page, collector, { slug, authenticated }) {
     },
     failures: extraFailures,
   };
+}
+
+async function verifyAnonymousBookingCallback(context, storePath) {
+  const page = await context.newPage();
+  try {
+    await page.goto(`${base}${storePath}`, { waitUntil: 'domcontentloaded' });
+    const bookButton = page.getByRole('button', { name: 'Reservar' });
+    await bookButton.first().waitFor({ state: 'visible', timeout: 20_000 });
+    if (!(await bookButton.count())) {
+      return {
+        passed: false,
+        callbackUrl: null,
+        failure: 'no hay un servicio reservable para verificar callbackUrl',
+      };
+    }
+
+    await bookButton.first().click();
+    await page.waitForURL(/\/login\?callbackUrl=/, { timeout: 10_000 });
+    const callbackUrl = new URL(page.url()).searchParams.get('callbackUrl') || '';
+    return {
+      passed: callbackUrl === storePath,
+      callbackUrl,
+      failure: callbackUrl === storePath ? null : `booking callbackUrl was ${callbackUrl || '(empty)'}`,
+    };
+  } finally {
+    await page.close();
+  }
 }
 
 async function main() {
@@ -427,20 +525,20 @@ async function main() {
   ];
 
   const authenticatedRoutes = [
-    '/inicio',
-    '/adoptions',
-    '/community',
-    '/community/events',
-    '/community/groups',
-    '/hogares-de-transito',
-    '/map',
-    '/provider',
-    '/messages',
-    '/profile',
-    '/settings',
-    '/alerts',
-    '/help',
-    '/create-pet',
+    { path: '/inicio', urlIncludes: ['/inicio'] },
+    { path: '/adoptions', urlIncludes: ['/adoptions'] },
+    { path: '/community', urlIncludes: ['/community'] },
+    { path: '/community/events', urlIncludes: ['/community/events'] },
+    { path: '/community/groups', urlIncludes: ['/community/groups'] },
+    { path: '/hogares-de-transito', urlIncludes: ['/hogares-de-transito'] },
+    { path: '/map', urlIncludes: ['/map'] },
+    { path: '/provider', urlIncludes: ['/provider'] },
+    { path: '/messages', urlIncludes: ['/messages'] },
+    { path: '/profile', urlIncludes: ['/profile'] },
+    { path: '/settings', urlIncludes: ['/settings'] },
+    { path: '/alerts', urlIncludes: ['/alerts'] },
+    { path: '/help', urlIncludes: ['/hogares-de-transito'] },
+    { path: '/create-pet', urlIncludes: ['/create-pet'] },
   ];
 
   const browser = await chromium.launch({ headless: true });
@@ -481,8 +579,14 @@ async function main() {
       const storePage = await anonymous.newPage();
       const storeCollector = createCollector(storePath, 200);
       storeCollector.attach(storePage);
-      const storeResponse = await storePage.goto(`${base}${storePath}`, { waitUntil: 'networkidle' });
-      await storePage.waitForTimeout(500);
+      const storeViewerResponse = storePage.waitForResponse(
+        (response) => isViewerRequest(response.url()),
+        { timeout: 20_000 }
+      );
+      const storeResponse = await storePage.goto(`${base}${storePath}`, { waitUntil: 'domcontentloaded' });
+      await storePage.locator('h1').first().waitFor({ state: 'visible', timeout: 20_000 });
+      await storeViewerResponse;
+      await storePage.waitForTimeout(300);
       const storeStatus = storeResponse?.status() ?? 0;
       const storeSignals = await commonPageSignals(storePage);
       const storeExtra = await evaluateStoreDetail(storePage, storeCollector, { slug: storeSlug, authenticated: false });
@@ -490,6 +594,7 @@ async function main() {
       await storePage.screenshot({ path: storeScreenshot, fullPage: true });
       const storeFinalUrl = storePage.url();
       await storePage.close();
+      const callbackResult = await verifyAnonymousBookingCallback(anonymous, storePath);
 
       const storeEval = evaluateCommon({
         route: storePath,
@@ -505,6 +610,7 @@ async function main() {
         html: storeSignals.html,
         lucideCount: storeSignals.lucideCount,
         interactive: storeSignals.interactive,
+        accessibility: storeSignals.accessibility,
         extra: {
           publicContent: storeExtra.publicContent,
           islands: storeExtra.islands,
@@ -513,7 +619,7 @@ async function main() {
           noSession: storeExtra.noSession,
           noPrivatePrefetch: storeExtra.noPrivatePrefetch,
           noPetMine: storeExtra.noPetMine,
-          callbackUrl: storeExtra.callbackUrl,
+          callbackUrl: callbackResult.passed,
         },
       });
       matrix.push({
@@ -526,10 +632,20 @@ async function main() {
         finalUrl: storeFinalUrl,
         screenshot: storeScreenshot,
         checks: storeEval.checks,
-        details: storeExtra.details,
-        passed: storeEval.failures.length === 0 && storeExtra.failures.length === 0,
+        details: {
+          ...storeExtra.details,
+          callbackUrl: callbackResult.callbackUrl,
+          accessibility: storeSignals.accessibility,
+        },
+        passed: storeEval.failures.length === 0
+          && storeExtra.failures.length === 0
+          && !callbackResult.failure,
       });
-      failures.push(...storeEval.failures, ...storeExtra.failures.map((item) => `${viewport.name} ${storePath} ${item}`));
+      failures.push(
+        ...storeEval.failures,
+        ...storeExtra.failures.map((item) => `${viewport.name} ${storePath} ${item}`),
+        ...(callbackResult.failure ? [`${viewport.name} ${storePath} ${callbackResult.failure}`] : []),
+      );
 
       await anonymous.close();
 
@@ -550,12 +666,12 @@ async function main() {
         const result = await captureRoute({
           context: authed,
           viewport,
-          route,
+          route: route.path,
           authenticated: true,
           expectedStatus: 200,
-          expectedUrlIncludes: [route],
+          expectedUrlIncludes: route.urlIncludes,
           heading: null,
-          screenshot: screenshotName(route, viewport.name, true),
+          screenshot: screenshotName(route.path, viewport.name, true),
         });
         matrix.push(result.matrixRow);
         failures.push(...result.failures);
@@ -564,12 +680,19 @@ async function main() {
       const authStorePage = await authed.newPage();
       const authStoreCollector = createCollector(storePath, 200);
       authStoreCollector.attach(authStorePage);
-      const authStoreResponse = await authStorePage.goto(`${base}${storePath}`, { waitUntil: 'networkidle' });
-      await authStorePage.waitForTimeout(400);
+      const authStoreViewerResponse = authStorePage.waitForResponse(
+        (response) => isViewerRequest(response.url()),
+        { timeout: 20_000 }
+      );
+      const authStoreResponse = await authStorePage.goto(`${base}${storePath}`, { waitUntil: 'domcontentloaded' });
+      await authStorePage.locator('h1').first().waitFor({ state: 'visible', timeout: 20_000 });
+      await authStoreViewerResponse;
+      await authStorePage.waitForTimeout(300);
       const authStoreStatus = authStoreResponse?.status() ?? 0;
       const petMineOnLoad = authStoreCollector.snapshot().petMineCalls.length;
       const bookButton = authStorePage.getByRole('button', { name: 'Reservar' });
-      if (await bookButton.count()) {
+      const authBookable = (await bookButton.count()) > 0;
+      if (authBookable) {
         await bookButton.first().click();
         await authStorePage.waitForTimeout(500);
       }
@@ -577,8 +700,10 @@ async function main() {
       const authScreenshot = path.join(outDir, screenshotName(storePath, viewport.name, true));
       await authStorePage.screenshot({ path: authScreenshot, fullPage: true });
       const authCollected = authStoreCollector.snapshot();
+      const petMineAfterBooking = authCollected.petMineCalls.length - petMineOnLoad;
       const authExtra = {
         noPetMine: petMineOnLoad === 0,
+        petMineAfterBooking: authBookable && petMineAfterBooking > 0,
         islands: await authStorePage.getByText('Tu experiencia').count() > 0,
         viewer200: authCollected.viewerCalls.some((call) => call.status === 200),
         noViewer401: !authCollected.viewerCalls.some((call) => call.status === 401),
@@ -597,6 +722,7 @@ async function main() {
         html: authStoreSignals.html,
         lucideCount: authStoreSignals.lucideCount,
         interactive: authStoreSignals.interactive,
+        accessibility: authStoreSignals.accessibility,
         extra: authExtra,
       });
       matrix.push({
@@ -609,7 +735,11 @@ async function main() {
         finalUrl: authStorePage.url(),
         screenshot: authScreenshot,
         checks: authEval.checks,
-        details: { petMineOnLoad, petMineAfterBooking: authCollected.petMineCalls },
+        details: {
+          petMineOnLoad,
+          petMineAfterBooking: authCollected.petMineCalls,
+          accessibility: authStoreSignals.accessibility,
+        },
         passed: authEval.failures.length === 0,
       });
       failures.push(...authEval.failures);

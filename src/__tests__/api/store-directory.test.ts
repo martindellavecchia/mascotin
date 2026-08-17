@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 import { db } from '@/lib/db';
-import { getStoreViewerState } from '@/lib/server/stores';
+import { getPublicMapStores, getStoreViewerState } from '@/lib/server/stores';
 
 jest.mock('@/lib/db', () => ({
   db: {
-    store: { findFirst: jest.fn(), findUnique: jest.fn() },
+    store: { findFirst: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() },
     appointment: { findFirst: jest.fn() },
     storeReview: { findUnique: jest.fn() },
     reviewHelpful: { findMany: jest.fn() },
@@ -18,7 +18,7 @@ jest.mock('next/cache', () => ({
 }));
 
 const mockedDb = db as unknown as {
-  store: { findFirst: jest.Mock };
+  store: { findFirst: jest.Mock; findMany: jest.Mock };
   appointment: { findFirst: jest.Mock };
   storeReview: { findUnique: jest.Mock };
   reviewHelpful: { findMany: jest.Mock };
@@ -51,6 +51,58 @@ describe('public store APIs', () => {
     expect(source).toContain('getPublicStoreDirectory');
     expect(source).toContain('directoryCacheControl');
     expect(source).toContain('noStoreCacheControl');
+  });
+
+  it('serves the map from a dedicated minimal cached DTO', async () => {
+    mockedDb.store.findMany.mockResolvedValueOnce([{
+      id: 'store-1',
+      name: 'Huellitas',
+      slug: 'huellitas',
+      address: 'Calle 123',
+      latitude: -34.6,
+      longitude: -58.38,
+      tags: '["veterinaria_24h"]',
+      plan: 'FREE',
+      featuredUntil: null,
+      category: { id: 'category-1', name: 'Veterinaria' },
+      ratingAverage: 4.8,
+      promotions: [{ title: 'Consulta bonificada' }],
+    }]);
+
+    const stores = await getPublicMapStores();
+
+    expect(mockedDb.store.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { isActive: true },
+      select: expect.objectContaining({
+        latitude: true,
+        longitude: true,
+        tags: true,
+        promotions: expect.objectContaining({
+          select: { title: true },
+          take: 1,
+        }),
+      }),
+      take: 100,
+    }));
+    expect(stores).toEqual([{
+      id: 'store-1',
+      name: 'Huellitas',
+      slug: 'huellitas',
+      address: 'Calle 123',
+      latitude: -34.6,
+      longitude: -58.38,
+      tags: ['veterinaria_24h'],
+      featured: false,
+      category: { id: 'category-1', name: 'Veterinaria' },
+      ratingAverage: 4.8,
+      promotions: [{ title: 'Consulta bonificada' }],
+    }]);
+
+    const mapPage = readSource('src/app/(main)/map/page.tsx');
+    const mapRoute = readSource('src/app/api/stores/map/route.ts');
+    expect(mapPage).toContain("fetch('/api/stores/map')");
+    expect(mapRoute).toContain('getCachedPublicMapStores');
+    expect(mapRoute).toContain('directoryCacheControl');
   });
 
   it('keeps the viewer endpoint private, envelope-shaped and never 401', () => {

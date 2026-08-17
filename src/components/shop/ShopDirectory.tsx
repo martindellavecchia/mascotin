@@ -115,7 +115,7 @@ export default function ShopDirectory({
 
           <div className="mx-auto mt-5 flex max-w-4xl flex-wrap items-center justify-center gap-3">
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger className="w-full bg-white sm:w-[210px]">
+              <SelectTrigger aria-label="Filtrar por categoría" className="w-full bg-white sm:w-[210px]">
                 <SelectValue placeholder="Categoría" />
               </SelectTrigger>
               <SelectContent>
@@ -126,7 +126,7 @@ export default function ShopDirectory({
               </SelectContent>
             </Select>
             <Select value={minRating} onValueChange={setMinRating}>
-              <SelectTrigger className="w-full bg-white sm:w-[170px]">
+              <SelectTrigger aria-label="Filtrar por calificación" className="w-full bg-white sm:w-[170px]">
                 <SelectValue placeholder="Calificación" />
               </SelectTrigger>
               <SelectContent>
@@ -137,7 +137,7 @@ export default function ShopDirectory({
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full bg-white sm:w-[190px]">
+              <SelectTrigger aria-label="Ordenar negocios" className="w-full bg-white sm:w-[190px]">
                 <SelectValue placeholder="Orden" />
               </SelectTrigger>
               <SelectContent>

@@ -36,6 +36,9 @@ describe('ShopDirectory', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Paw Spa' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Filtrar por categoría' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Filtrar por calificación' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Ordenar negocios' })).toBeInTheDocument();
     expect(screen.getByText('Publicá o administrá tu negocio')).toBeInTheDocument();
     expect(global.fetch).not.toHaveBeenCalled();
   });

@@ -9,9 +9,10 @@ export default function GuestHomePage() {
     <div className="min-h-screen bg-slate-950 text-white">
       <section className="relative min-h-[100svh] flex flex-col">
         <Image
-          src="/images/hero-dogs.jpg"
+          src="/images/hero-dogs.webp"
           alt="Dos perros jugando al aire libre"
           fill
+          sizes="100vw"
           className="object-cover object-center"
           priority
         />
@@ -55,7 +56,7 @@ export default function GuestHomePage() {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
             <Image
-              src="/images/community-dog.jpg"
+              src="/images/community-dog.webp"
               alt="Persona con su perro en casa"
               fill
               sizes="(min-width: 768px) 50vw, calc(100vw - 48px)"

@@ -92,7 +92,7 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Mascota</label>
               <Select value={petId} onValueChange={setPetId}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Seleccionar mascota">
                   <SelectValue placeholder="Seleccioná una mascota" />
                 </SelectTrigger>
                 <SelectContent>
@@ -105,7 +105,7 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Fecha y hora</label>
               <Select value={date} onValueChange={setDate}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Seleccionar fecha y hora">
                   <SelectValue placeholder="Seleccioná fecha" />
                 </SelectTrigger>
                 <SelectContent>

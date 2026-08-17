@@ -31,6 +31,20 @@ export interface PublicStoreCard {
   services: Array<{ id: string; name: string; price: number; duration: number }>;
 }
 
+export interface PublicMapStore {
+  id: string;
+  name: string;
+  slug: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  tags: string[];
+  featured: boolean;
+  category: { id: string; name: string };
+  ratingAverage: number;
+  promotions: Array<{ title: string }>;
+}
+
 export const PUBLIC_STORE_CARD_KEYS = [
   'id',
   'name',
@@ -242,6 +256,55 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
 export const getCachedPublicStoreDirectory = unstable_cache(
   () => getPublicStoreDirectory({}),
   ['store-directory-initial'],
+  { revalidate: 300, tags: [STORE_CACHE_TAGS.directory] }
+);
+
+export async function getPublicMapStores(): Promise<PublicMapStore[]> {
+  const now = new Date();
+  const stores = await db.store.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      address: true,
+      latitude: true,
+      longitude: true,
+      tags: true,
+      plan: true,
+      featuredUntil: true,
+      category: { select: { id: true, name: true } },
+      ratingAverage: true,
+      promotions: {
+        where: {
+          startsAt: { lte: now },
+          endsAt: { gte: now },
+        },
+        select: { title: true },
+        take: 1,
+      },
+    },
+    take: 100,
+  });
+
+  return stores.map((store) => ({
+    id: store.id,
+    name: store.name,
+    slug: store.slug,
+    address: store.address,
+    latitude: store.latitude,
+    longitude: store.longitude,
+    tags: parseJsonStringArray(store.tags),
+    featured: isFeaturedStore(store.plan, store.featuredUntil),
+    category: store.category,
+    ratingAverage: store.ratingAverage,
+    promotions: store.promotions,
+  }));
+}
+
+export const getCachedPublicMapStores = unstable_cache(
+  getPublicMapStores,
+  ['store-map'],
   { revalidate: 300, tags: [STORE_CACHE_TAGS.directory] }
 );
 

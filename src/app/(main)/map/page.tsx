@@ -48,7 +48,7 @@ export default function MapPage() {
       })
       .catch(() => undefined);
 
-    fetch('/api/stores')
+    fetch('/api/stores/map')
       .then((response) => response.json())
       .then((data) => {
         if (data.success) setStores(data.stores);

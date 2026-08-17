@@ -294,6 +294,7 @@ export default function SettingsPage() {
                                         <p className="text-sm text-slate-500">Otros usuarios pueden encontrar tu perfil y mascotas</p>
                                     </div>
                                     <Switch
+                                        aria-label="Hacer visible mi perfil"
                                         checked={settings.profileVisible}
                                         onCheckedChange={(v) => updateSetting({ profileVisible: v })}
                                     />
@@ -420,6 +421,7 @@ export default function SettingsPage() {
                                                             {pet.isActive ? 'Activa' : 'Pausada'}
                                                         </Badge>
                                                         <Switch
+                                                            aria-label={`${pet.isActive ? 'Pausar' : 'Activar'} perfil de ${pet.name}`}
                                                             checked={pet.isActive}
                                                             onCheckedChange={(v) => togglePetActive(pet.id, v)}
                                                         />
@@ -446,6 +448,7 @@ export default function SettingsPage() {
                                         <p className="text-sm text-slate-500">No aparecer en las búsquedas de otros usuarios</p>
                                     </div>
                                     <Switch
+                                        aria-label="Pausar matching"
                                         checked={settings.matchingPaused}
                                         onCheckedChange={(v) => updateSetting({ matchingPaused: v })}
                                     />
@@ -528,6 +531,7 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
                                         <Switch
+                                            aria-label={item.label}
                                             checked={Boolean(settings[item.key])}
                                             onCheckedChange={(v) => updateSetting({ [item.key]: v })}
                                         />
@@ -553,6 +557,7 @@ export default function SettingsPage() {
                                         <p className="text-sm text-slate-500">No mostrar publicaciones de mascotas que ya fueron encontradas</p>
                                     </div>
                                     <Switch
+                                        aria-label="Ocultar mascotas perdidas resueltas"
                                         checked={settings.hideResolvedLostPets}
                                         onCheckedChange={(v) => updateSetting({ hideResolvedLostPets: v })}
                                     />
