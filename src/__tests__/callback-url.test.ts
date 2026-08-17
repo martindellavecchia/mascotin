@@ -35,4 +35,3 @@ describe('sanitizeCallbackUrl', () => {
     expect(sanitizeCallbackUrl('/%5Cevil.example')).toBe('/inicio');
   });
 });
-
