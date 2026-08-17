@@ -21,6 +21,8 @@ import { shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { RESCUE_STATUS_LABELS, SIZE_LABELS, SPECIES_LABELS } from '@/lib/foster';
+import { RESCUE_NEED_LABELS } from '@/lib/rescue';
+import type { RescueNeedType } from '@prisma/client';
 
 interface ExtendedPost extends Post {
     postType?: string;
@@ -40,6 +42,8 @@ interface ExtendedPost extends Post {
         size: string;
         urgency: string;
         requestedDays: number;
+        primaryNeed: RescueNeedType;
+        additionalNeeds: Array<{ type: RescueNeedType; status: string }>;
         adoptionListingId: string | null;
     } | null;
     _count?: {
@@ -174,7 +178,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-3 py-2 text-orange-900">
                     <span className="inline-flex items-center gap-1.5 text-sm font-bold">
                         <span className="material-symbols-rounded text-lg" aria-hidden="true">volunteer_activism</span>
-                        HOGAR DE TRÁNSITO
+                        RED SOLIDARIA
                     </span>
                     <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold">
                         {RESCUE_STATUS_LABELS[post.rescueCase.status] || post.rescueCase.status}
@@ -348,9 +352,25 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         <span className="rounded-full bg-white px-2.5 py-1 font-medium">{SIZE_LABELS[post.rescueCase.size] || post.rescueCase.size}</span>
                         {post.rescueCase.urgency !== 'NORMAL' && <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-800">{post.rescueCase.urgency === 'CRITICAL' ? 'Crítico' : 'Urgente'}</span>}
                     </div>
+                    <p className="mt-2 text-xs font-semibold text-orange-950">
+                        Necesidad principal: {RESCUE_NEED_LABELS[post.rescueCase.primaryNeed]}
+                    </p>
+                    {post.rescueCase.additionalNeeds.length > 0 && (
+                        <p className="mt-1 text-xs text-orange-900">
+                            También necesita {post.rescueCase.additionalNeeds.map((need) => RESCUE_NEED_LABELS[need.type].toLowerCase()).join(', ')}
+                        </p>
+                    )}
                     <Button asChild className="mt-3 w-full" variant={post.rescueCase.adoptionListingId ? 'default' : 'outline'}>
                         <Link href={post.rescueCase.adoptionListingId ? `/adoptions/${post.rescueCase.adoptionListingId}` : `/hogares-de-transito/casos/${post.rescueCase.id}`}>
-                            {post.rescueCase.adoptionListingId ? 'Ver adopción' : ['SEARCHING', 'INTERESTED'].includes(post.rescueCase.status) ? 'Quiero ofrecer tránsito' : 'Ver estado del caso'}
+                            {post.rescueCase.adoptionListingId
+                                ? 'Ver adopción'
+                                : ['SEARCHING', 'INTERESTED'].includes(post.rescueCase.status)
+                                    ? post.rescueCase.primaryNeed === 'FOSTER'
+                                        ? 'Quiero ofrecer tránsito'
+                                        : post.rescueCase.primaryNeed === 'VETERINARY'
+                                            ? 'Consultar veterinarias'
+                                            : 'Ofrecer ayuda'
+                                    : 'Seguir el caso'}
                         </Link>
                     </Button>
                 </div>

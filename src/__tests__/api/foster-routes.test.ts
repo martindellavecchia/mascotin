@@ -90,7 +90,7 @@ describe('foster routes', () => {
     mockFosterOfferFindUnique.mockResolvedValue(offer);
     mockTransaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
       fosterOffer: { findUnique: jest.fn().mockResolvedValue(offer) },
-      rescueCase: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
+      rescueNeed: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
     }));
 
     const response = await selectOffer(
@@ -127,14 +127,27 @@ describe('foster routes', () => {
     const placementFindUnique = jest.fn()
       .mockResolvedValueOnce(coordinatingWithBoth)
       .mockResolvedValueOnce(activePlacement);
-    const rescueCaseUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
+    const rescueCaseUpdate = jest.fn().mockResolvedValue({ id: 'case-1', status: 'IN_FOSTER' });
+    const rescueCaseFindUnique = jest.fn()
+      .mockResolvedValueOnce({
+        id: 'case-1', status: 'COORDINATING', needs: [{ status: 'ACTIVE' }],
+        placements: [{ status: 'ACTIVE' }], adoptionDraft: null, adoptionListing: null,
+      })
+      .mockResolvedValueOnce({
+        id: 'case-1', status: 'IN_FOSTER', needs: [{ status: 'ACTIVE' }],
+        placements: [{ status: 'ACTIVE' }], adoptionDraft: null, adoptionListing: null,
+      });
     const eventCreate = jest.fn().mockResolvedValue({ id: 'event-1' });
     mockTransaction.mockImplementation(async (callback: (tx: unknown) => unknown) => callback({
       fosterPlacement: {
         updateMany: placementUpdateMany,
         findUnique: placementFindUnique,
       },
-      rescueCase: { updateMany: rescueCaseUpdateMany },
+      rescueNeed: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'need-1', rescueCaseId: 'case-1', type: 'FOSTER', status: 'ASSIGNED' }),
+        update: jest.fn().mockResolvedValue({ id: 'need-1', rescueCaseId: 'case-1', type: 'FOSTER', status: 'ACTIVE' }),
+      },
+      rescueCase: { findUnique: rescueCaseFindUnique, update: rescueCaseUpdate },
       rescueCaseEvent: { create: eventCreate },
     }));
 
@@ -146,8 +159,8 @@ describe('foster routes', () => {
 
     expect(response.status).toBe(200);
     expect(body.placement.status).toBe('ACTIVE');
-    expect(rescueCaseUpdateMany).toHaveBeenCalledWith({
-      where: { id: 'case-1', status: 'COORDINATING' },
+    expect(rescueCaseUpdate).toHaveBeenCalledWith({
+      where: { id: 'case-1' },
       data: { status: 'IN_FOSTER' },
     });
     expect(eventCreate).toHaveBeenCalledTimes(1);

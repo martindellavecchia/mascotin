@@ -47,13 +47,15 @@ export async function createOffersForCase(caseId: string): Promise<number> {
     where: { id: caseId },
     include: {
       offers: { select: { fosterProfileId: true } },
+      needs: { where: { type: 'FOSTER' }, select: { status: true } },
+      createdBy: { select: { syntheticRunId: true } },
     },
   });
 
-  if (!rescueCase || !['SEARCHING', 'INTERESTED'].includes(rescueCase.status)) return 0;
+  if (!rescueCase || !rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status))) return 0;
 
   const profiles = await db.fosterProfile.findMany({
-    where: { status: 'ACTIVE' },
+    where: { status: 'ACTIVE', user: { syntheticRunId: rescueCase.createdBy.syntheticRunId } },
     take: 200,
   });
   const blocked = await blockedUserIds(
@@ -114,7 +116,10 @@ export async function createOffersForCase(caseId: string): Promise<number> {
 }
 
 export async function createOffersForProfile(profileId: string): Promise<number> {
-  const profile = await db.fosterProfile.findUnique({ where: { id: profileId } });
+  const profile = await db.fosterProfile.findUnique({
+    where: { id: profileId },
+    include: { user: { select: { syntheticRunId: true } } },
+  });
   if (!profile || profile.status !== 'ACTIVE' || profile.occupiedSlots >= profile.capacity) return 0;
 
   const pendingCount = await db.fosterOffer.count({
@@ -125,9 +130,11 @@ export async function createOffersForProfile(profileId: string): Promise<number>
 
   const cases = await db.rescueCase.findMany({
     where: {
-      status: { in: ['SEARCHING', 'INTERESTED'] },
+      status: { notIn: ['CANCELLED', 'RESOLVED', 'NEEDS_ADOPTION'] },
       createdByUserId: { not: profile.userId },
       offers: { none: { fosterProfileId: profile.id } },
+      needs: { some: { type: 'FOSTER', status: { in: ['OPEN', 'INTERESTED'] } } },
+      createdBy: { syntheticRunId: profile.user.syntheticRunId },
     },
     orderBy: { createdAt: 'desc' },
     take: 50,

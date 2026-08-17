@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FosterProfileForm from '@/components/help/FosterProfileForm';
-import FosterAlertPreferences from '@/components/help/FosterAlertPreferences';
 import RescueCaseForm from '@/components/help/RescueCaseForm';
+import SolidarityAlerts from '@/components/help/SolidarityAlerts';
+import VolunteerPanel from '@/components/help/VolunteerPanel';
 import type {
   FosterOfferSummary,
   FosterProfileView,
@@ -24,6 +25,7 @@ import {
   SPECIES_LABELS,
 } from '@/lib/foster';
 import { shouldUnoptimizeImage } from '@/lib/media';
+import { RESCUE_NEED_LABELS } from '@/lib/rescue';
 import { toast } from 'sonner';
 
 const EMPTY_DASHBOARD: HelpDashboardData = {
@@ -34,13 +36,14 @@ const EMPTY_DASHBOARD: HelpDashboardData = {
 
 function statusClass(status: string) {
   if (['IN_FOSTER', 'RESOLVED'].includes(status)) return 'bg-emerald-100 text-emerald-800';
-  if (['INTERESTED', 'COORDINATING', 'NEEDS_ADOPTION'].includes(status)) return 'bg-orange-100 text-orange-800';
+  if (['INTERESTED', 'COORDINATING', 'ASSISTANCE_ACTIVE', 'NEEDS_ADOPTION'].includes(status)) return 'bg-orange-100 text-orange-800';
   if (status === 'CANCELLED') return 'bg-slate-200 text-slate-600';
   return 'bg-teal-100 text-teal-800';
 }
 
 function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
   const image = rescueCase.images[0];
+  const primaryNeed = rescueCase.needs.find((need) => need.isPrimary);
   return (
     <Card className="overflow-hidden">
       <div className="grid min-w-0 grid-cols-[96px_minmax(0,1fr)] sm:grid-cols-[128px_minmax(0,1fr)]">
@@ -69,6 +72,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
             <Badge className={statusClass(rescueCase.status)}>{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
           </div>
           <p className="line-clamp-2 text-sm text-slate-600">{rescueCase.description}</p>
+          {primaryNeed && <p className="text-xs font-semibold text-teal-800">Principal: {RESCUE_NEED_LABELS[primaryNeed.type]}</p>}
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
             <span>{rescueCase.searchRadiusKm} km de radio</span>
             <span>{rescueCase.offerCount} hogares contactados</span>
@@ -159,7 +163,9 @@ export default function HelpCenter() {
   const [loading, setLoading] = useState(true);
   const [caseDialogOpen, setCaseDialogOpen] = useState(searchParams.get('create') === 'case');
   const [profileDialogOpen, setProfileDialogOpen] = useState(searchParams.get('create') === 'profile');
-  const initialTab = searchParams.get('view') === 'offers' ? 'offers' : 'cases';
+  const requestedTab = searchParams.get('view');
+  const initialTab = ['offers', 'home', 'volunteer', 'alerts'].includes(requestedTab || '') ? requestedTab! : 'cases';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -227,7 +233,7 @@ export default function HelpCenter() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Hogares de tránsito</h1>
             <p className="mt-3 max-w-2xl text-slate-600">
-              Encontrá resguardo para un animal o abrí tu hogar de manera temporal. Tu dirección y ubicación exacta permanecen privadas.
+              Coordiná tránsito, voluntariado y continuidad hacia adopción. Las ubicaciones exactas y los datos personales permanecen privados.
             </p>
           </div>
           <div className="flex size-24 items-center justify-center rounded-full bg-teal-50 text-teal-700">
@@ -246,6 +252,7 @@ export default function HelpCenter() {
             {[
               { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: 'pets', action: () => setCaseDialogOpen(true) },
               { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: 'home', action: () => setProfileDialogOpen(true) },
+              { title: 'Ayudar como voluntario', description: 'Traslados, rescate y logística', icon: 'volunteer_activism', action: () => setActiveTab('volunteer') },
             ].map((item) => (
               <button
                 key={item.title}
@@ -313,7 +320,7 @@ export default function HelpCenter() {
         </div>
       </section>
 
-      <Tabs defaultValue={initialTab} className="space-y-5">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-auto min-h-11 w-max min-w-full justify-start">
             <TabsTrigger value="cases" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mis casos</TabsTrigger>
@@ -321,6 +328,8 @@ export default function HelpCenter() {
               Solicitudes {dashboard.offers.length > 0 && `(${dashboard.offers.length})`}
             </TabsTrigger>
             <TabsTrigger value="home" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mi hogar</TabsTrigger>
+            <TabsTrigger value="volunteer" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Voluntariado</TabsTrigger>
+            <TabsTrigger value="alerts" className="min-h-10 min-w-40 text-slate-700 data-[state=active]:text-teal-800">Alertas solidarias</TabsTrigger>
           </TabsList>
         </div>
 
@@ -393,8 +402,11 @@ export default function HelpCenter() {
               )}
             </CardContent>
           </Card>
-          <FosterAlertPreferences enabled={Boolean(profile)} />
         </TabsContent>
+
+        <TabsContent value="volunteer"><VolunteerPanel /></TabsContent>
+
+        <TabsContent value="alerts"><SolidarityAlerts /></TabsContent>
       </Tabs>
 
       <Dialog open={caseDialogOpen} onOpenChange={setCaseDialogOpen}>

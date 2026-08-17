@@ -39,6 +39,11 @@ enum NotificationType {
   FOSTER_PLACEMENT
   FOSTER_CASE_ALERT
   FOSTER_ADOPTION
+  VOLUNTEER_OFFER
+  VOLUNTEER_RESPONSE
+  VOLUNTEER_ASSIGNMENT
+  SOLIDARITY_ADOPTION_ALERT
+  SOLIDARITY_VETERINARY_ALERT
   CONTENT_REPORT
 }
 
@@ -58,10 +63,70 @@ enum RescueCaseStatus {
   SEARCHING
   INTERESTED
   COORDINATING
+  ASSISTANCE_ACTIVE
   IN_FOSTER
   RESOLVED
   NEEDS_ADOPTION
   CANCELLED
+}
+
+enum RescueNeedType {
+  FOSTER
+  VETERINARY
+  TRANSPORT
+  SUPPLIES
+  FIELD_SUPPORT
+}
+
+enum RescueNeedStatus {
+  OPEN
+  INTERESTED
+  ASSIGNED
+  ACTIVE
+  FULFILLED
+  CANCELLED
+}
+
+enum VolunteerProfileStatus {
+  ACTIVE
+  PAUSED
+  SUSPENDED
+}
+
+enum VolunteerRole {
+  TRANSPORT
+  VET_COMPANION
+  FIELD_SUPPORT
+  SUPPLIES_LOGISTICS
+}
+
+enum VolunteerOfferStatus {
+  PENDING
+  INTERESTED
+  DECLINED
+  SELECTED
+  CLOSED
+  EXPIRED
+}
+
+enum VolunteerAssignmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum SolidarityAlertType {
+  FOSTER
+  ADOPTION
+  VETERINARY
+}
+
+enum PushDeliveryStatus {
+  PENDING
+  SENT
+  RECEIVED
+  CLICKED
+  FAILED
 }
 
 enum RescueUrgency {
@@ -101,55 +166,62 @@ enum PetCareRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  password      String?
-  role          UserRole  @default(OWNER)
-  isBlocked     Boolean   @default(false)
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  password       String?
+  role           UserRole  @default(OWNER)
+  isBlocked      Boolean   @default(false)
+  emailVerified  DateTime?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  syntheticRunId String?
 
-  accounts             Account[]
-  sessions             Session[]
-  owner                Owner?
-  providerProfile      ProviderProfile?
-  profile              Profile? // Legacy - for backward compatibility
-  sentMessages         Message[]             @relation("SentMessages")
-  receivedMessages     Message[]             @relation("ReceivedMessages")
-  posts                Post[]
-  comments             Comment[]
-  likes                Like[]
-  appointments         Appointment[] // Citas como cliente
-  events               Event[]
-  eventAttendees       EventAttendee[]
-  eventDismissals      EventDismissal[]
-  invitationsSent      Invitation[]          @relation("InvitationsSent")
-  invitationsReceived  Invitation[]          @relation("InvitationsReceived")
-  createdGroups        Group[]
-  groupMemberships     GroupMember[]
-  blockedUsers         BlockedUser[]         @relation("BlockerUser")
-  blockedByUsers       BlockedUser[]         @relation("BlockedUser")
-  reports              Report[]              @relation("ReporterUser")
-  reportedBy           Report[]              @relation("ReportedUser")
-  stores               Store[]
-  providerRequests     ProviderRequest[]
-  settings             UserSettings?
-  notifications        Notification[]        @relation("UserNotifications")
-  actedNotifications   Notification[]        @relation("ActorNotifications")
-  storeReviews         StoreReview[]
-  helpfulReviewVotes   ReviewHelpful[]
-  reviewReports        ReviewReport[]
-  petSightings         PetSighting[]
-  adopterProfile       AdopterProfile?
-  adoptionListings     AdoptionListing[]
-  adoptionApplications AdoptionApplication[]
-  fosterProfile        FosterProfile?
-  rescueCases          RescueCase[]
-  rescueCaseEvents     RescueCaseEvent[]     @relation("RescueCaseEventActor")
-  fosterAdoptionDrafts FosterAdoptionDraft[] @relation("FosterAdoptionManager")
+  accounts               Account[]
+  sessions               Session[]
+  owner                  Owner?
+  providerProfile        ProviderProfile?
+  profile                Profile? // Legacy - for backward compatibility
+  sentMessages           Message[]               @relation("SentMessages")
+  receivedMessages       Message[]               @relation("ReceivedMessages")
+  posts                  Post[]
+  comments               Comment[]
+  likes                  Like[]
+  appointments           Appointment[] // Citas como cliente
+  events                 Event[]
+  eventAttendees         EventAttendee[]
+  eventDismissals        EventDismissal[]
+  invitationsSent        Invitation[]            @relation("InvitationsSent")
+  invitationsReceived    Invitation[]            @relation("InvitationsReceived")
+  createdGroups          Group[]
+  groupMemberships       GroupMember[]
+  blockedUsers           BlockedUser[]           @relation("BlockerUser")
+  blockedByUsers         BlockedUser[]           @relation("BlockedUser")
+  reports                Report[]                @relation("ReporterUser")
+  reportedBy             Report[]                @relation("ReportedUser")
+  stores                 Store[]
+  providerRequests       ProviderRequest[]
+  settings               UserSettings?
+  notifications          Notification[]          @relation("UserNotifications")
+  actedNotifications     Notification[]          @relation("ActorNotifications")
+  storeReviews           StoreReview[]
+  helpfulReviewVotes     ReviewHelpful[]
+  reviewReports          ReviewReport[]
+  petSightings           PetSighting[]
+  adopterProfile         AdopterProfile?
+  adoptionListings       AdoptionListing[]
+  adoptionApplications   AdoptionApplication[]
+  fosterProfile          FosterProfile?
+  rescueCases            RescueCase[]
+  rescueCaseEvents       RescueCaseEvent[]       @relation("RescueCaseEventActor")
+  fosterAdoptionDrafts   FosterAdoptionDraft[]   @relation("FosterAdoptionManager")
+  volunteerProfile       VolunteerProfile?
+  solidarityAlertProfile SolidarityAlertProfile?
+  pushSubscriptions      PushSubscription[]
+  syntheticRun           SyntheticRun?           @relation(fields: [syntheticRunId], references: [id], onDelete: Cascade)
+
+  @@index([syntheticRunId])
 }
 
 model UserSettings {
@@ -187,8 +259,9 @@ model Notification {
   dedupeKey String?          @unique
   createdAt DateTime         @default(now())
 
-  user  User  @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  actor User? @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+  user           User           @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor          User?          @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+  pushDeliveries PushDelivery[]
 
   @@index([userId, read, createdAt])
   @@index([userId, createdAt])
@@ -543,6 +616,7 @@ model Message {
   groupId               String?
   adoptionApplicationId String?
   fosterPlacementId     String?
+  volunteerAssignmentId String?
   senderId              String
   receiverId            String?
   content               String
@@ -553,6 +627,7 @@ model Message {
   group               Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
   adoptionApplication AdoptionApplication? @relation(fields: [adoptionApplicationId], references: [id], onDelete: Cascade)
   fosterPlacement     FosterPlacement?     @relation(fields: [fosterPlacementId], references: [id], onDelete: Cascade)
+  volunteerAssignment VolunteerAssignment? @relation(fields: [volunteerAssignmentId], references: [id], onDelete: Cascade)
   sender              User                 @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiver            User?                @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
@@ -560,6 +635,7 @@ model Message {
   @@index([groupId])
   @@index([adoptionApplicationId])
   @@index([fosterPlacementId])
+  @@index([volunteerAssignmentId])
   @@index([senderId])
   @@index([receiverId])
   @@index([createdAt])
@@ -929,10 +1005,30 @@ model RescueCase {
   communityPost   Post?
   adoptionDraft   FosterAdoptionDraft?
   adoptionListing AdoptionListing?     @relation("RescueCaseAdoptionListing")
+  needs           RescueNeed[]
 
   @@index([createdByUserId, status, createdAt])
   @@index([status, createdAt])
   @@index([latitude, longitude])
+}
+
+model RescueNeed {
+  id           String           @id @default(cuid())
+  rescueCaseId String
+  type         RescueNeedType
+  isPrimary    Boolean          @default(false)
+  details      String?
+  status       RescueNeedStatus @default(OPEN)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  rescueCase           RescueCase            @relation(fields: [rescueCaseId], references: [id], onDelete: Cascade)
+  volunteerOffers      VolunteerOffer[]
+  volunteerAssignments VolunteerAssignment[]
+
+  @@unique([rescueCaseId, type])
+  @@index([type, status, createdAt])
+  @@index([rescueCaseId, isPrimary])
 }
 
 model FosterOffer {
@@ -1041,6 +1137,172 @@ model FosterAdoptionDraft {
   selectedApplication AdoptionApplication? @relation("SelectedAdoptionApplication", fields: [selectedApplicationId], references: [id], onDelete: SetNull)
 
   @@index([managedByUserId, status, updatedAt])
+}
+
+model VolunteerProfile {
+  id                 String                 @id @default(cuid())
+  userId             String                 @unique
+  status             VolunteerProfileStatus @default(ACTIVE)
+  roles              String                 @default("[]")
+  location           String
+  latitude           Float
+  longitude          Float
+  radiusKm           Int                    @default(5)
+  availableFrom      DateTime?
+  availableUntil     DateTime?
+  maxConcurrentTasks Int                    @default(1)
+  occupiedTasks      Int                    @default(0)
+  notes              String?
+  adultDeclaredAt    DateTime
+  termsAcceptedAt    DateTime
+  termsVersion       String
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offers      VolunteerOffer[]
+  assignments VolunteerAssignment[]
+
+  @@index([status])
+  @@index([latitude, longitude])
+}
+
+model VolunteerOffer {
+  id                 String               @id @default(cuid())
+  needId             String
+  volunteerProfileId String
+  role               VolunteerRole
+  status             VolunteerOfferStatus @default(PENDING)
+  distanceKm         Float
+  score              Int
+  reasons            String               @default("[]")
+  expiresAt          DateTime
+  respondedAt        DateTime?
+  selectedAt         DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  need             RescueNeed           @relation(fields: [needId], references: [id], onDelete: Cascade)
+  volunteerProfile VolunteerProfile     @relation(fields: [volunteerProfileId], references: [id], onDelete: Cascade)
+  assignment       VolunteerAssignment?
+
+  @@unique([needId, volunteerProfileId])
+  @@index([volunteerProfileId, status, createdAt])
+  @@index([needId, status])
+  @@index([expiresAt])
+}
+
+model VolunteerAssignment {
+  id                 String                    @id @default(cuid())
+  needId             String
+  volunteerProfileId String
+  offerId            String                    @unique
+  status             VolunteerAssignmentStatus @default(ACTIVE)
+  startedAt          DateTime                  @default(now())
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancelledByUserId  String?
+  cancellationReason String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  need             RescueNeed       @relation(fields: [needId], references: [id], onDelete: Cascade)
+  volunteerProfile VolunteerProfile @relation(fields: [volunteerProfileId], references: [id], onDelete: Cascade)
+  offer            VolunteerOffer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  messages         Message[]
+
+  @@index([needId, status])
+  @@index([volunteerProfileId, status])
+}
+
+model SolidarityAlertProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  location          String
+  latitude          Float
+  longitude         Float
+  locationConsentAt DateTime
+  consentVersion    String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptions SolidaritySubscription[]
+
+  @@index([latitude, longitude])
+}
+
+model SolidaritySubscription {
+  id        String              @id @default(cuid())
+  profileId String
+  type      SolidarityAlertType
+  enabled   Boolean             @default(false)
+  radiusKm  Int                 @default(5)
+  species   String              @default("[]")
+  sizes     String              @default("[]")
+  urgencies String              @default("[]")
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  profile SolidarityAlertProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, type])
+  @@index([type, enabled])
+}
+
+model PushSubscription {
+  id            String    @id @default(cuid())
+  userId        String
+  endpoint      String    @unique
+  p256dh        String
+  auth          String
+  userAgent     String?
+  disabledAt    DateTime?
+  lastSuccessAt DateTime?
+  lastFailureAt DateTime?
+  failureCount  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries PushDelivery[]
+
+  @@index([userId, disabledAt])
+}
+
+model PushDelivery {
+  id             String             @id @default(cuid())
+  notificationId String
+  subscriptionId String
+  status         PushDeliveryStatus @default(PENDING)
+  payload        Json
+  attempts       Int                @default(0)
+  providerStatus Int?
+  lastError      String?
+  sentAt         DateTime?
+  receivedAt     DateTime?
+  clickedAt      DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  notification Notification     @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  subscription PushSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, subscriptionId])
+  @@index([status, attempts, updatedAt])
+}
+
+model SyntheticRun {
+  id          String    @id @default(cuid())
+  status      String    @default("ACTIVE")
+  expiresAt   DateTime
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  users User[]
+
+  @@index([status, expiresAt])
 }
 
 model StorePromotion {

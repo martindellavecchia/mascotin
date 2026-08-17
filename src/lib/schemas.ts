@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { containsPrivatePublicRescueData } from '@/lib/rescue';
 
 export const petSchema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(50),
@@ -348,8 +349,27 @@ export const createRescueCaseSchema = z.object({
   images: z.array(z.string()).min(1, 'Agregá al menos una foto').max(3),
   ...locationFields,
   searchRadiusKm: z.number().int().min(1).max(50).default(5),
-  requestedDays: z.number().int().min(1).max(90),
+  requestedDays: z.number().int().min(1).max(90).default(14),
+  primaryNeed: z.enum(['FOSTER', 'VETERINARY', 'TRANSPORT', 'SUPPLIES', 'FIELD_SUPPORT']).default('FOSTER'),
+  additionalNeeds: z.array(z.enum(['FOSTER', 'VETERINARY', 'TRANSPORT', 'SUPPLIES', 'FIELD_SUPPORT']))
+    .max(4, 'Podés sumar hasta cuatro ayudas complementarias')
+    .default([]),
+  needDetails: z.record(z.string(), z.string().trim().max(500)).optional(),
   consentAccepted: z.literal(true, { error: 'Debés aceptar el consentimiento de ubicación' }),
+}).superRefine((data, context) => {
+  const uniqueNeeds = new Set(data.additionalNeeds);
+  if (uniqueNeeds.size !== data.additionalNeeds.length) {
+    context.addIssue({ code: 'custom', path: ['additionalNeeds'], message: 'No repitas tipos de ayuda' });
+  }
+  if (uniqueNeeds.has(data.primaryNeed)) {
+    context.addIssue({ code: 'custom', path: ['additionalNeeds'], message: 'La ayuda principal no puede repetirse' });
+  }
+  const allowed = new Set(['FOSTER', 'VETERINARY', 'TRANSPORT', 'SUPPLIES', 'FIELD_SUPPORT']);
+  for (const key of Object.keys(data.needDetails || {})) {
+    if (!allowed.has(key)) {
+      context.addIssue({ code: 'custom', path: ['needDetails', key], message: 'Tipo de ayuda inválido' });
+    }
+  }
 });
 
 export const updateRescueCaseRadiusSchema = z.object({
@@ -365,7 +385,8 @@ export const completeFosterPlacementSchema = z.object({
 });
 
 export const rescueCasePublicationSchema = z.object({
-  summary: z.string().trim().min(20, 'El resumen debe tener al menos 20 caracteres').max(1000),
+  summary: z.string().trim().min(20, 'El resumen debe tener al menos 20 caracteres').max(1000)
+    .refine((value) => !containsPrivatePublicRescueData(value), 'No incluyas teléfonos, correos ni domicilios en el resumen público'),
   publicZone: z.string().trim().min(2, 'Indicá una zona general').max(120),
   imageIndex: z.number().int().min(0).max(2).default(0),
 });
@@ -375,6 +396,69 @@ export const fosterAlertPreferencesSchema = z.object({
   radiusKm: z.number().int().min(1).max(50).default(5),
   species: z.array(z.enum(['dog', 'cat', 'other'])).min(1, 'Elegí al menos una especie'),
   urgencies: z.array(z.enum(['NORMAL', 'HIGH', 'CRITICAL'])).min(1, 'Elegí al menos una urgencia'),
+});
+
+export const volunteerProfileSchema = z.object({
+  roles: z.array(z.enum(['TRANSPORT', 'VET_COMPANION', 'FIELD_SUPPORT', 'SUPPLIES_LOGISTICS']))
+    .min(1, 'Elegí al menos un tipo de ayuda'),
+  ...locationFields,
+  radiusKm: z.number().int().min(1).max(50).default(5),
+  availableFrom: z.string().date().optional().or(z.literal('')),
+  availableUntil: z.string().date().optional().or(z.literal('')),
+  maxConcurrentTasks: z.number().int().min(1).max(5),
+  notes: z.string().trim().max(1000).optional(),
+  adultDeclared: z.literal(true, { error: 'Debés confirmar que sos mayor de 18 años' }),
+  termsAccepted: z.literal(true, { error: 'Debés aceptar los términos del voluntariado' }),
+}).superRefine((data, context) => {
+  if (data.availableFrom && data.availableUntil && data.availableFrom > data.availableUntil) {
+    context.addIssue({ code: 'custom', path: ['availableUntil'], message: 'La fecha final debe ser posterior a la inicial' });
+  }
+});
+
+export const updateVolunteerProfileStatusSchema = z.object({
+  status: z.enum(['ACTIVE', 'PAUSED']),
+});
+
+export const respondVolunteerOfferSchema = z.object({
+  response: z.enum(['INTERESTED', 'DECLINED']),
+});
+
+export const cancelVolunteerAssignmentSchema = z.object({
+  reason: z.string().trim().min(3, 'Contanos brevemente el motivo').max(500),
+});
+
+const solidaritySubscriptionSchema = z.object({
+  type: z.enum(['FOSTER', 'ADOPTION', 'VETERINARY']),
+  enabled: z.boolean().default(false),
+  radiusKm: z.number().int().min(1).max(50).default(5),
+  species: z.array(z.enum(['dog', 'cat', 'other'])).default([]),
+  sizes: z.array(z.enum(['small', 'medium', 'large'])).default([]),
+  urgencies: z.array(z.enum(['NORMAL', 'HIGH', 'CRITICAL'])).default([]),
+});
+
+export const solidarityAlertProfileSchema = z.object({
+  ...locationFields,
+  locationConsent: z.literal(true, { error: 'Debés aceptar el uso privado de tu ubicación' }),
+  subscriptions: z.array(solidaritySubscriptionSchema).max(3).default([]),
+}).superRefine((data, context) => {
+  const types = data.subscriptions.map((subscription) => subscription.type);
+  if (new Set(types).size !== types.length) {
+    context.addIssue({ code: 'custom', path: ['subscriptions'], message: 'No repitas categorías de alertas' });
+  }
+});
+
+export const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url().max(2048),
+  expirationTime: z.number().nullable().optional(),
+  keys: z.object({
+    p256dh: z.string().min(20).max(500),
+    auth: z.string().min(8).max(500),
+  }),
+});
+
+export const pushReceiptSchema = z.object({
+  deliveryId: z.string().min(1),
+  event: z.enum(['RECEIVED', 'CLICKED']),
 });
 
 const knownUnknown = z.enum(['yes', 'no', 'unknown']);
@@ -421,5 +505,8 @@ export type FosterProfileData = z.infer<typeof fosterProfileSchema>;
 export type CreateRescueCaseData = z.infer<typeof createRescueCaseSchema>;
 export type RescueCasePublicationData = z.infer<typeof rescueCasePublicationSchema>;
 export type FosterAlertPreferencesData = z.infer<typeof fosterAlertPreferencesSchema>;
+export type VolunteerProfileData = z.infer<typeof volunteerProfileSchema>;
+export type SolidarityAlertProfileData = z.infer<typeof solidarityAlertProfileSchema>;
+export type PushSubscriptionData = z.infer<typeof pushSubscriptionSchema>;
 export type FosterAdoptionDraftData = z.infer<typeof fosterAdoptionDraftSchema>;
 export type StorePromotionData = z.infer<typeof storePromotionSchema>;

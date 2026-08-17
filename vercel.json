@@ -2,5 +2,11 @@
   "buildCommand": "prisma generate && next build",
   "devCommand": "next dev -p 3000",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/maintenance",
+      "schedule": "17 3 * * *"
+    }
+  ]
 }

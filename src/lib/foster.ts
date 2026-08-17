@@ -23,6 +23,7 @@ export const RESCUE_STATUS_LABELS: Record<string, string> = {
   SEARCHING: 'Buscando hogar',
   INTERESTED: 'Hay hogares interesados',
   COORDINATING: 'Coordinando entrega',
+  ASSISTANCE_ACTIVE: 'Ayuda operativa en curso',
   IN_FOSTER: 'En hogar de tránsito',
   RESOLVED: 'Resuelto',
   NEEDS_ADOPTION: 'Busca adopción',

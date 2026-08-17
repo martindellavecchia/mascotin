@@ -42,6 +42,32 @@ export interface RescueCaseSummary {
   isPublished?: boolean;
   adoptionDraft?: { id: string; status: string; listingId: string | null } | null;
   adoptionListing?: { id: string; status: string } | null;
+  needs: RescueNeedView[];
+}
+
+export type RescueNeedTypeValue = 'FOSTER' | 'VETERINARY' | 'TRANSPORT' | 'SUPPLIES' | 'FIELD_SUPPORT';
+
+export interface RescueNeedView {
+  id: string;
+  type: RescueNeedTypeValue;
+  isPrimary: boolean;
+  details: string | null;
+  status: 'OPEN' | 'INTERESTED' | 'ASSIGNED' | 'ACTIVE' | 'FULFILLED' | 'CANCELLED';
+}
+
+export interface VolunteerProfileView {
+  id: string;
+  status: 'ACTIVE' | 'PAUSED' | 'SUSPENDED';
+  roles: Array<'TRANSPORT' | 'VET_COMPANION' | 'FIELD_SUPPORT' | 'SUPPLIES_LOGISTICS'>;
+  location: string;
+  radiusKm: number;
+  availableFrom: string | null;
+  availableUntil: string | null;
+  maxConcurrentTasks: number;
+  occupiedTasks: number;
+  notes: string | null;
+  adultDeclaredAt: string;
+  termsAcceptedAt: string;
 }
 
 export interface FosterOfferSummary {

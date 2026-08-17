@@ -14,10 +14,10 @@ export async function GET() {
         }
 
         // Get trending pets (most matches/likes, excluding user's own pets)
-        const owner = await db.owner.findUnique({
-            where: { userId: session.user.id },
-            select: { id: true },
-        });
+        const [owner, viewer] = await Promise.all([
+            db.owner.findUnique({ where: { userId: session.user.id }, select: { id: true } }),
+            db.user.findUnique({ where: { id: session.user.id }, select: { syntheticRunId: true } }),
+        ]);
 
         const ownPetIds = owner
             ? (await db.pet.findMany({ where: { ownerId: owner.id }, select: { id: true } })).map(p => p.id)
@@ -28,6 +28,7 @@ export async function GET() {
             where: {
                 isActive: true,
                 id: { notIn: ownPetIds },
+                owner: { user: { syntheticRunId: viewer?.syntheticRunId || null } },
             },
             orderBy: [
                 { totalMatches: 'desc' },

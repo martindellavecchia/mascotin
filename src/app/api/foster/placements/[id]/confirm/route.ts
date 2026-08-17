@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
+import { recalculateRescueCaseStatus, setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 class PlacementConflict extends Error {}
 
@@ -59,10 +60,7 @@ export async function POST(
           data: { status: resumingAdoption ? 'AWAITING_ADOPTION' : 'ACTIVE', startedAt: now, outcome: resumingAdoption ? 'NEEDS_ADOPTION' : null },
         });
         if (activated.count === 1) {
-          await tx.rescueCase.updateMany({
-            where: { id: placement.rescueCaseId, status: 'COORDINATING' },
-            data: { status: resumingAdoption ? 'NEEDS_ADOPTION' : 'IN_FOSTER' },
-          });
+          await setCaseNeedStatus(tx, placement.rescueCaseId, 'FOSTER', 'ACTIVE');
           if (resumingAdoption && placement.rescueCase.adoptionDraft) {
             await tx.fosterAdoptionDraft.update({
               where: { id: placement.rescueCase.adoptionDraft.id },
@@ -76,13 +74,14 @@ export async function POST(
               },
             });
           }
+          const caseStatus = await recalculateRescueCaseStatus(tx, placement.rescueCaseId);
           await tx.rescueCaseEvent.create({
             data: {
               caseId: placement.rescueCaseId,
               actorId: auth.session.user.id,
               type: resumingAdoption ? 'ADOPTION_FOSTER_REPLACED' : 'HANDOFF_CONFIRMED',
               fromStatus: 'COORDINATING',
-              toStatus: resumingAdoption ? 'NEEDS_ADOPTION' : 'IN_FOSTER',
+              toStatus: caseStatus,
               details: JSON.stringify({ placementId: placement.id }),
             },
           });

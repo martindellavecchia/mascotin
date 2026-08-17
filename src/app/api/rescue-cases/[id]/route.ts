@@ -7,6 +7,8 @@ import {
   scoreFosterCandidate,
 } from '@/lib/foster';
 import { parseImageUrls } from '@/lib/media';
+import { matchesSolidaritySubscription, toGeneralZone } from '@/lib/rescue';
+import { serializeRescueNeeds } from '@/lib/server/rescue-needs';
 
 export async function GET(
   _request: Request,
@@ -19,7 +21,7 @@ export async function GET(
   const rescueCase = await db.rescueCase.findUnique({
     where: { id },
     include: {
-      createdBy: { select: { id: true, name: true, image: true } },
+      createdBy: { select: { id: true, name: true, image: true, syntheticRunId: true } },
       offers: {
         orderBy: [{ status: 'asc' }, { score: 'desc' }],
         include: {
@@ -53,12 +55,29 @@ export async function GET(
         },
       },
       adoptionListing: { select: { id: true, status: true } },
+      needs: {
+        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        include: {
+          volunteerOffers: {
+            orderBy: [{ status: 'asc' }, { score: 'desc' }],
+            include: { volunteerProfile: { include: { user: { select: { id: true, name: true, image: true } } } } },
+          },
+          volunteerAssignments: {
+            orderBy: { createdAt: 'desc' },
+            include: { volunteerProfile: { include: { user: { select: { id: true, name: true, image: true } } } } },
+          },
+        },
+      },
     },
   });
   if (!rescueCase) {
     return NextResponse.json({ success: false, error: 'Caso no encontrado' }, { status: 404 });
   }
 
+  const viewer = await db.user.findUnique({ where: { id: auth.session.user.id }, select: { syntheticRunId: true } });
+  if (rescueCase.createdBy.syntheticRunId !== (viewer?.syntheticRunId || null)) {
+    return NextResponse.json({ success: false, error: 'Caso no encontrado' }, { status: 404 });
+  }
   const isCreator = rescueCase.createdByUserId === auth.session.user.id;
   const viewerOffer = rescueCase.offers.find(
     (offer) => offer.fosterProfile.userId === auth.session.user.id
@@ -66,13 +85,44 @@ export async function GET(
   const viewerPlacement = rescueCase.placements.find(
     (placement) => placement.fosterProfile.userId === auth.session.user.id
   );
-  if (!isCreator && !viewerOffer && !viewerPlacement) {
+  const viewerVolunteerOffer = rescueCase.needs.flatMap((need) => need.volunteerOffers)
+    .find((offer) => offer.volunteerProfile.userId === auth.session.user.id);
+  const viewerVolunteerAssignment = rescueCase.needs.flatMap((need) => need.volunteerAssignments)
+    .find((assignment) => assignment.volunteerProfile.userId === auth.session.user.id);
+  if (!isCreator && !viewerOffer && !viewerPlacement && !viewerVolunteerOffer && !viewerVolunteerAssignment) {
     const profile = await db.fosterProfile.findUnique({ where: { userId: auth.session.user.id } });
-    const candidate = profile ? scoreFosterCandidate(rescueCase, profile) : null;
+    const fosterNeedOpen = rescueCase.needs.some((need) => need.type === 'FOSTER' && ['OPEN', 'INTERESTED'].includes(need.status));
+    const candidate = profile && fosterNeedOpen ? scoreFosterCandidate(rescueCase, profile) : null;
     const matchesSubscription = Boolean(
       profile && candidate && matchesFosterAlertPreferences(rescueCase, profile, candidate.distanceKm),
     );
-    const blockedRelationship = matchesSubscription
+    const solidarityProfile = await db.solidarityAlertProfile.findUnique({
+      where: { userId: auth.session.user.id },
+      include: { subscriptions: { where: { enabled: true } } },
+    });
+    const matchesSolidarity = Boolean(solidarityProfile && solidarityProfile.subscriptions.some((subscription) => {
+      const relevant = subscription.type === 'FOSTER'
+        ? fosterNeedOpen
+        : subscription.type === 'VETERINARY' && rescueCase.needs.some((need) => need.type === 'VETERINARY' && ['OPEN', 'INTERESTED'].includes(need.status));
+      return relevant && matchesSolidaritySubscription({
+        type: subscription.type,
+        species: rescueCase.species,
+        size: rescueCase.size,
+        urgency: rescueCase.urgency,
+        latitude: rescueCase.latitude,
+        longitude: rescueCase.longitude,
+      }, {
+        type: subscription.type,
+        enabled: subscription.enabled,
+        radiusKm: subscription.radiusKm,
+        species: subscription.species,
+        sizes: subscription.sizes,
+        urgencies: subscription.urgencies,
+        latitude: solidarityProfile.latitude,
+        longitude: solidarityProfile.longitude,
+      });
+    }));
+    const blockedRelationship = matchesSubscription || matchesSolidarity
       ? await db.blockedUser.findFirst({
           where: {
             OR: [
@@ -83,7 +133,7 @@ export async function GET(
           select: { id: true },
         })
       : null;
-    const canViewFromSubscription = matchesSubscription && !blockedRelationship;
+    const canViewFromSubscription = (matchesSubscription || matchesSolidarity) && !blockedRelationship;
     if (!rescueCase.communityPost?.isVisible && !canViewFromSubscription) {
       return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 403 });
     }
@@ -103,6 +153,7 @@ export async function GET(
         location: rescueCase.communityPost?.location || 'Cerca de tu zona',
         searchRadiusKm: rescueCase.searchRadiusKm,
         requestedDays: rescueCase.requestedDays,
+        needs: serializeRescueNeeds(rescueCase.needs).map((need) => ({ ...need, details: null })),
         createdAt: rescueCase.createdAt,
         offers: [],
         placements: [],
@@ -116,7 +167,7 @@ export async function GET(
         adoptionListingId: rescueCase.adoptionListing?.status === 'OPEN' || rescueCase.adoptionListing?.status === 'PENDING'
           ? rescueCase.adoptionListing.id
           : null,
-        canExpressInterest: Boolean(candidate && ['SEARCHING', 'INTERESTED'].includes(rescueCase.status)),
+        canExpressInterest: Boolean(candidate && fosterNeedOpen),
         hasFosterProfile: Boolean(profile),
       },
     });
@@ -137,7 +188,7 @@ export async function GET(
           acceptsSizes: parseFosterList(offer.fosterProfile.acceptsSizes),
           capacity: offer.fosterProfile.capacity,
           occupiedSlots: offer.fosterProfile.occupiedSlots,
-          location: offer.fosterProfile.location,
+          location: toGeneralZone(offer.fosterProfile.location),
           maxDurationDays: offer.fosterProfile.maxDurationDays,
           housingType: offer.fosterProfile.housingType,
           hasYard: offer.fosterProfile.hasYard,
@@ -175,7 +226,7 @@ export async function GET(
 
   return NextResponse.json({
     success: true,
-    viewerRole: isCreator ? 'CREATOR' : 'FOSTER',
+    viewerRole: isCreator ? 'CREATOR' : viewerOffer || viewerPlacement ? 'FOSTER' : 'VOLUNTEER',
     viewerUserId: auth.session.user.id,
     case: {
       id: rescueCase.id,
@@ -186,12 +237,13 @@ export async function GET(
       apparentCondition: rescueCase.apparentCondition,
       description: rescueCase.description,
       images: parseImageUrls(rescueCase.images),
-      location: rescueCase.location,
+      location: isCreator ? rescueCase.location : toGeneralZone(rescueCase.location),
       searchRadiusKm: rescueCase.searchRadiusKm,
       requestedDays: rescueCase.requestedDays,
       createdAt: rescueCase.createdAt,
       updatedAt: rescueCase.updatedAt,
-      createdBy: rescueCase.createdBy,
+      createdBy: { id: rescueCase.createdBy.id, name: rescueCase.createdBy.name, image: rescueCase.createdBy.image },
+      needs: serializeRescueNeeds(rescueCase.needs),
       offers: visibleOffers,
       placements,
       events: rescueCase.events,
@@ -204,6 +256,40 @@ export async function GET(
       adoptionListingId: rescueCase.adoptionListing?.id || null,
       canExpressInterest: false,
       hasFosterProfile: Boolean(viewerOffer || viewerPlacement),
+      volunteerOffers: isCreator
+        ? rescueCase.needs.flatMap((need) => need.volunteerOffers.map((offer) => ({
+            id: offer.id,
+            needId: need.id,
+            needType: need.type,
+            role: offer.role,
+            status: offer.status,
+            distanceKm: offer.distanceKm,
+            score: offer.score,
+            reasons: parseFosterList(offer.reasons),
+            expiresAt: offer.expiresAt,
+            volunteer: offer.volunteerProfile.user,
+          })))
+        : viewerVolunteerOffer ? [{
+            id: viewerVolunteerOffer.id,
+            role: viewerVolunteerOffer.role,
+            status: viewerVolunteerOffer.status,
+            distanceKm: viewerVolunteerOffer.distanceKm,
+            score: viewerVolunteerOffer.score,
+            reasons: parseFosterList(viewerVolunteerOffer.reasons),
+            expiresAt: viewerVolunteerOffer.expiresAt,
+          }] : [],
+      volunteerAssignments: rescueCase.needs.flatMap((need) => need.volunteerAssignments
+        .filter((assignment) => isCreator || assignment.volunteerProfile.userId === auth.session.user.id)
+        .map((assignment) => ({
+          id: assignment.id,
+          needId: need.id,
+          needType: need.type,
+          status: assignment.status,
+          startedAt: assignment.startedAt,
+          completedAt: assignment.completedAt,
+          cancelledAt: assignment.cancelledAt,
+          volunteer: assignment.volunteerProfile.user,
+        }))),
     },
   });
 }

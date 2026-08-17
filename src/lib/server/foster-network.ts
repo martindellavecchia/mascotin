@@ -9,6 +9,8 @@ import {
 import { parseImageUrls } from '@/lib/media';
 import { createNotification, createNotificationBulk } from '@/lib/notifications';
 import type { FosterAlertPreferencesData, RescueCasePublicationData } from '@/lib/schemas';
+import { SOLIDARITY_CONSENT_VERSION, toGeneralZone } from '@/lib/rescue';
+import { setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 const OFFER_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
@@ -48,6 +50,7 @@ export async function publishRescueCase(
   const caseImages = parseImageUrls(rescueCase.images);
   const selectedImage = caseImages[input.imageIndex] || caseImages[0];
   if (!selectedImage) throw new FosterNetworkError('El caso necesita al menos una foto', 409);
+  const publicZone = toGeneralZone(input.publicZone);
 
   return db.$transaction(async (tx) => {
     const post = rescueCase.communityPost
@@ -56,7 +59,7 @@ export async function publishRescueCase(
           data: {
             content: input.summary,
             images: JSON.stringify([selectedImage]),
-            location: input.publicZone,
+            location: publicZone,
             isVisible: true,
           },
         })
@@ -67,7 +70,7 @@ export async function publishRescueCase(
             postType: 'foster_case',
             content: input.summary,
             images: JSON.stringify([selectedImage]),
-            location: input.publicZone,
+            location: publicZone,
           },
         });
 
@@ -76,7 +79,7 @@ export async function publishRescueCase(
         caseId,
         actorId: userId,
         type: rescueCase.communityPost ? 'COMMUNITY_PUBLICATION_UPDATED' : 'COMMUNITY_PUBLISHED',
-        payload: { publicZone: input.publicZone },
+        payload: { publicZone },
       },
     });
     return post;
@@ -106,29 +109,66 @@ export async function updateFosterAlertPreferences(userId: string, input: Foster
   if (!profile) throw new FosterNetworkError('Primero creá tu perfil de hogar de tránsito', 404);
   if (profile.status === 'SUSPENDED') throw new FosterNetworkError('El perfil está suspendido', 403);
 
-  return db.fosterProfile.update({
-    where: { id: profile.id },
-    data: {
-      caseAlertsEnabled: input.enabled,
-      alertRadiusKm: input.radiusKm,
-      alertSpecies: JSON.stringify(input.species),
-      alertUrgencies: JSON.stringify(input.urgencies),
-    },
+  return db.$transaction(async (tx) => {
+    const updated = await tx.fosterProfile.update({
+      where: { id: profile.id },
+      data: {
+        caseAlertsEnabled: input.enabled,
+        alertRadiusKm: input.radiusKm,
+        alertSpecies: JSON.stringify(input.species),
+        alertUrgencies: JSON.stringify(input.urgencies),
+      },
+    });
+    const alertProfile = await tx.solidarityAlertProfile.upsert({
+      where: { userId },
+      update: {},
+      create: {
+        userId,
+        location: profile.location,
+        latitude: profile.latitude,
+        longitude: profile.longitude,
+        locationConsentAt: profile.termsAcceptedAt,
+        consentVersion: SOLIDARITY_CONSENT_VERSION,
+      },
+    });
+    await tx.solidaritySubscription.upsert({
+      where: { profileId_type: { profileId: alertProfile.id, type: 'FOSTER' } },
+      update: {
+        enabled: input.enabled,
+        radiusKm: input.radiusKm,
+        species: JSON.stringify(input.species),
+        urgencies: JSON.stringify(input.urgencies),
+      },
+      create: {
+        profileId: alertProfile.id,
+        type: 'FOSTER',
+        enabled: input.enabled,
+        radiusKm: input.radiusKm,
+        species: JSON.stringify(input.species),
+        urgencies: JSON.stringify(input.urgencies),
+      },
+    });
+    return updated;
   });
 }
 
 export async function notifySubscribedFosters(caseId: string) {
   const rescueCase = await db.rescueCase.findUnique({
     where: { id: caseId },
-    include: { offers: { select: { fosterProfileId: true } } },
+    include: {
+      offers: { select: { fosterProfileId: true } },
+      needs: { where: { type: 'FOSTER' }, select: { status: true } },
+      createdBy: { select: { syntheticRunId: true } },
+    },
   });
-  if (!rescueCase || !['SEARCHING', 'INTERESTED'].includes(rescueCase.status)) return 0;
+  if (!rescueCase || !rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status))) return 0;
 
   const profiles = await db.fosterProfile.findMany({
     where: {
       status: 'ACTIVE',
       caseAlertsEnabled: true,
       userId: { not: rescueCase.createdByUserId },
+      user: { syntheticRunId: rescueCase.createdBy.syntheticRunId },
     },
     take: 500,
   });
@@ -159,11 +199,21 @@ export async function notifySubscribedFosters(caseId: string) {
 
 export async function expressFosterInterest(caseId: string, userId: string) {
   const [rescueCase, profile] = await Promise.all([
-    db.rescueCase.findUnique({ where: { id: caseId }, include: { communityPost: true } }),
-    db.fosterProfile.findUnique({ where: { userId } }),
+    db.rescueCase.findUnique({
+      where: { id: caseId },
+      include: {
+        communityPost: true,
+        needs: { where: { type: 'FOSTER' }, select: { status: true } },
+        createdBy: { select: { syntheticRunId: true } },
+      },
+    }),
+    db.fosterProfile.findUnique({ where: { userId }, include: { user: { select: { syntheticRunId: true } } } }),
   ]);
   if (!rescueCase) throw new FosterNetworkError('Caso no encontrado', 404);
-  if (!['SEARCHING', 'INTERESTED'].includes(rescueCase.status)) {
+  if (profile && profile.user.syntheticRunId !== rescueCase.createdBy.syntheticRunId) {
+    throw new FosterNetworkError('Caso no encontrado', 404);
+  }
+  if (!rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status))) {
     throw new FosterNetworkError('El caso ya no está recibiendo hogares', 409);
   }
   if (!profile || profile.status !== 'ACTIVE') {
@@ -212,10 +262,7 @@ export async function expressFosterInterest(caseId: string, userId: string) {
             expiresAt: new Date(Date.now() + OFFER_LIFETIME_MS),
           },
         });
-    await tx.rescueCase.updateMany({
-      where: { id: caseId, status: 'SEARCHING' },
-      data: { status: 'INTERESTED' },
-    });
+    const transition = await setCaseNeedStatus(tx, caseId, 'FOSTER', 'INTERESTED');
     await tx.rescueCaseEvent.upsert({
       where: { eventKey: `foster-interest:${caseId}:${profile.id}` },
       update: {},
@@ -224,7 +271,7 @@ export async function expressFosterInterest(caseId: string, userId: string) {
         actorId: userId,
         type: 'FOSTER_INTERESTED',
         fromStatus: rescueCase.status,
-        toStatus: 'INTERESTED',
+        toStatus: transition?.caseStatus || rescueCase.status,
         eventKey: `foster-interest:${caseId}:${profile.id}`,
         payload: { distanceKm: candidate.distanceKm, score: candidate.score },
       },

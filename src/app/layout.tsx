@@ -16,8 +16,10 @@ export const metadata: Metadata = {
     "Plataforma para conectar dueños de mascotas con cuidadores profesionales, servicios veterinarios y comunidad local.",
   keywords: ["MascoTin", "mascotas", "cuidadores", "veterinarios", "servicios", "comunidad"],
   authors: [{ name: "MascoTin" }],
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.ico",
+    icon: [{ url: "/favicon.ico" }, { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: "/icons/icon-192.png",
   },
   openGraph: {
     title: "MascoTin",

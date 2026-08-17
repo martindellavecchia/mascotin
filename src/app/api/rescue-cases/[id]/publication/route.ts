@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-helpers';
 import { rescueCasePublicationSchema } from '@/lib/schemas';
 import { FosterNetworkError, publishRescueCase, unpublishRescueCase } from '@/lib/server/foster-network';
+import { notifySolidaritySubscribersForCase } from '@/lib/server/solidarity-alerts';
 
 function errorResponse(error: unknown) {
   if (error instanceof FosterNetworkError) {
@@ -21,6 +22,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
   try {
     const post = await publishRescueCase(id, auth.session.user.id, parsed.data);
+    await notifySolidaritySubscribersForCase(id);
     return NextResponse.json({ success: true, publication: { id: post.id, isVisible: post.isVisible } });
   } catch (error) {
     return errorResponse(error);

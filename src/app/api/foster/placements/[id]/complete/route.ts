@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
 import { completeFosterPlacementSchema } from '@/lib/schemas';
 import { FosterAdoptionError, startFosterAdoption } from '@/lib/server/foster-adoption';
+import { setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 class PlacementConflict extends Error {}
 
@@ -58,9 +59,9 @@ export async function POST(
     }
   }
 
-  const nextCaseStatus = 'RESOLVED' as const;
+  let nextCaseStatus = placement.rescueCase.status;
   try {
-    await db.$transaction(async (tx) => {
+    nextCaseStatus = await db.$transaction(async (tx) => {
       const claimed = await tx.fosterPlacement.updateMany({
         where: { id, status: 'ACTIVE' },
         data: {
@@ -74,20 +75,19 @@ export async function POST(
         where: { id: placement.fosterProfileId, occupiedSlots: { gt: 0 } },
         data: { occupiedSlots: { decrement: 1 } },
       });
-      await tx.rescueCase.updateMany({
-        where: { id: placement.rescueCaseId, status: 'IN_FOSTER' },
-        data: { status: nextCaseStatus },
-      });
+      const transition = await setCaseNeedStatus(tx, placement.rescueCaseId, 'FOSTER', 'FULFILLED');
+      const caseStatus = transition?.caseStatus || placement.rescueCase.status;
       await tx.rescueCaseEvent.create({
         data: {
           caseId: placement.rescueCaseId,
           actorId: auth.session.user.id,
           type: 'PLACEMENT_COMPLETED',
           fromStatus: 'IN_FOSTER',
-          toStatus: nextCaseStatus,
+          toStatus: caseStatus,
           details: JSON.stringify({ outcome: parsed.data.outcome }),
         },
       });
+      return caseStatus;
     });
   } catch (error) {
     if (error instanceof PlacementConflict) {
@@ -105,7 +105,7 @@ export async function POST(
     actorId: auth.session.user.id,
     type: 'FOSTER_PLACEMENT',
     title: 'Tránsito finalizado',
-    body: 'El caso fue marcado como resuelto',
+    body: nextCaseStatus === 'RESOLVED' ? 'El caso fue marcado como resuelto' : 'El tránsito terminó y las demás ayudas siguen en curso',
     link: `/hogares-de-transito/casos/${placement.rescueCaseId}`,
     entityId: placement.id,
   });

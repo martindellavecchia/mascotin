@@ -47,9 +47,10 @@ export async function getRankedPetMatches(options: {
   myPetIds: string[];
   limit?: number;
 }): Promise<ScoredMatch[]> {
-  const settings = await db.userSettings.findUnique({
-    where: { userId: options.userId },
-  });
+  const [settings, viewer] = await Promise.all([
+    db.userSettings.findUnique({ where: { userId: options.userId } }),
+    db.user.findUnique({ where: { id: options.userId }, select: { syntheticRunId: true } }),
+  ]);
   const preferences = parseMatchPreferences(settings);
 
   const [swipedPets, blockedRelations] = await Promise.all([
@@ -77,9 +78,10 @@ export async function getRankedPetMatches(options: {
     where: {
       isActive: true,
       id: { notIn: [...options.myPetIds, ...swipedPetIds] },
-      ...(blockedUserIds.length > 0
-        ? { owner: { userId: { notIn: blockedUserIds } } }
-        : {}),
+      owner: {
+        userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
+        user: { syntheticRunId: viewer?.syntheticRunId || null },
+      },
     },
     select: CANDIDATE_SELECT,
     take: 80,

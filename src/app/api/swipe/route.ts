@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Verify source pet belongs to current user
     const sourcePet = await db.pet.findUnique({
       where: { id: fromPetId },
-      include: { owner: true },
+      include: { owner: { include: { user: { select: { syntheticRunId: true } } } } },
     });
 
     if (!sourcePet || sourcePet.owner.userId !== session.user.id) {
@@ -51,10 +51,17 @@ export async function POST(request: Request) {
     // Verify target pet exists and is not owned by current user
     const targetPet = await db.pet.findUnique({
       where: { id: toPetId },
-      include: { owner: true },
+      include: { owner: { include: { user: { select: { syntheticRunId: true } } } } },
     });
 
     if (!targetPet) {
+      return NextResponse.json(
+        { success: false, error: 'Target pet not found' },
+        { status: 404 }
+      );
+    }
+
+    if (sourcePet.owner.user.syntheticRunId !== targetPet.owner.user.syntheticRunId) {
       return NextResponse.json(
         { success: false, error: 'Target pet not found' },
         { status: 404 }
@@ -199,4 +206,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

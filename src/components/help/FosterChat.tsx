@@ -13,22 +13,27 @@ interface FosterMessage {
 }
 
 interface FosterChatProps {
-  placementId: string;
+  placementId?: string;
+  volunteerAssignmentId?: string;
   currentUserId: string;
   enabled: boolean;
+  context?: 'foster' | 'volunteer';
 }
 
-export default function FosterChat({ placementId, currentUserId, enabled }: FosterChatProps) {
+export default function FosterChat({ placementId, volunteerAssignmentId, currentUserId, enabled, context = 'foster' }: FosterChatProps) {
   const [messages, setMessages] = useState<FosterMessage[]>([]);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const endpoint = volunteerAssignmentId
+    ? `/api/volunteer/assignments/${volunteerAssignmentId}/messages`
+    : `/api/foster/placements/${placementId}/messages`;
 
   const load = useCallback(async () => {
-    const response = await fetch(`/api/foster/placements/${placementId}/messages?limit=50`);
+    const response = await fetch(`${endpoint}?limit=50`);
     const data = await response.json();
     if (response.ok && data.success) setMessages(data.messages || []);
-  }, [placementId]);
+  }, [endpoint]);
 
   useEffect(() => {
     void load();
@@ -46,7 +51,7 @@ export default function FosterChat({ placementId, currentUserId, enabled }: Fost
     if (!message) return;
     setSending(true);
     try {
-      const response = await fetch(`/api/foster/placements/${placementId}/messages`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: message }),
@@ -69,7 +74,7 @@ export default function FosterChat({ placementId, currentUserId, enabled }: Fost
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="border-b border-slate-100 px-4 py-3">
         <h2 className="font-semibold text-slate-900">Conversación privada</h2>
-        <p className="text-xs text-slate-500">Usen este espacio para coordinar la entrega y los cuidados.</p>
+        <p className="text-xs text-slate-500">{context === 'volunteer' ? 'Usen este espacio para coordinar únicamente la tarea acordada.' : 'Usen este espacio para coordinar la entrega y los cuidados.'}</p>
       </div>
       <div className="max-h-80 min-h-48 space-y-3 overflow-y-auto bg-slate-50 p-4" aria-live="polite">
         {messages.length === 0 ? (

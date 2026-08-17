@@ -7,6 +7,7 @@ module.exports = {
     '^#/(.*)$': '<rootDir>/.next/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '\\.(css|less|scss)$': '<rootDir>/src/mocks/styleMock.js',
+    '^server-only$': '<rootDir>/src/mocks/serverOnlyMock.js',
   },
   testPathIgnorePatterns: [
     '<rootDir>/.next/',

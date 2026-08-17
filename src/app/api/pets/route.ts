@@ -49,11 +49,16 @@ export async function GET(request: Request) {
     const settings = await db.userSettings.findUnique({
       where: { userId: session.user.id },
     });
+    const viewer = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { syntheticRunId: true },
+    });
     const preferences = parseMatchPreferences(settings);
 
     const where: Prisma.PetWhereInput = {
       isActive: true,
       ownerId: { not: currentPet.ownerId },
+      owner: { user: { syntheticRunId: viewer?.syntheticRunId || null } },
     };
 
     if (petType) {
@@ -98,11 +103,10 @@ export async function GET(request: Request) {
       relation.blockerId === session.user.id ? relation.blockedId : relation.blockerId
     );
 
-    if (blockedUserIds.length > 0) {
-      where.owner = {
-        userId: { notIn: blockedUserIds },
-      };
-    }
+    where.owner = {
+      userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
+      user: { syntheticRunId: viewer?.syntheticRunId || null },
+    };
 
     const pets = await db.pet.findMany({
       where,

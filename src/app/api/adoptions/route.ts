@@ -4,6 +4,8 @@ import { requireAuth } from '@/lib/api-helpers';
 import { createAdoptionListingSchema } from '@/lib/schemas';
 import { resolveCoordinates } from '@/lib/pet-payload';
 import { withImageFields } from '@/lib/media';
+import { toGeneralZone } from '@/lib/rescue';
+import { notifySolidaritySubscribersForAdoption } from '@/lib/server/solidarity-alerts';
 
 export async function GET(request: Request) {
   const auth = await requireAuth();
@@ -11,9 +13,16 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || 'OPEN';
+  const viewer = await db.user.findUnique({
+    where: { id: auth.session.user.id },
+    select: { syntheticRunId: true },
+  });
 
   const listings = await db.adoptionListing.findMany({
-    where: status === '_all' ? {} : { status },
+    where: {
+      ...(status === '_all' ? {} : { status }),
+      listedBy: { syntheticRunId: viewer?.syntheticRunId || null },
+    },
     orderBy: { createdAt: 'desc' },
     include: {
       pet: {
@@ -29,7 +38,6 @@ export async function GET(request: Request) {
           goodWithKids: true,
           goodWithDogs: true,
           specialNeeds: true,
-          location: true,
         },
       },
       listedBy: { select: { id: true, name: true } },
@@ -41,7 +49,19 @@ export async function GET(request: Request) {
   return NextResponse.json({
     success: true,
     listings: listings.map((listing) => ({
-      ...listing,
+      id: listing.id,
+      petId: listing.petId,
+      listedByUserId: listing.listedByUserId,
+      sourceRescueCaseId: listing.sourceRescueCaseId,
+      status: listing.status,
+      character: listing.character,
+      specialNeeds: listing.specialNeeds,
+      requirements: listing.requirements,
+      location: listing.location,
+      createdAt: listing.createdAt,
+      updatedAt: listing.updatedAt,
+      listedBy: listing.listedBy,
+      _count: listing._count,
       pet: withImageFields(listing.pet),
     })),
   });
@@ -72,7 +92,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Esta mascota ya tiene una ficha activa' }, { status: 409 });
     }
 
-    const coords = await resolveCoordinates(parsed.data.location || pet.location, pet.latitude, pet.longitude);
+    const requestedLocation = parsed.data.location?.trim();
+    const listingLocation = requestedLocation || pet.location;
+    const reusesPetLocation = !requestedLocation || requestedLocation === pet.location?.trim();
+    const coords = await resolveCoordinates(
+      listingLocation,
+      reusesPetLocation ? pet.latitude : undefined,
+      reusesPetLocation ? pet.longitude : undefined,
+    );
+    if (!coords) {
+      return NextResponse.json(
+        { success: false, error: 'No pudimos ubicar la zona. Actualizá la ubicación antes de publicar.' },
+        { status: 400 },
+      );
+    }
+    const publicListingLocation = toGeneralZone(listingLocation);
     const listing = await db.adoptionListing.create({
       data: {
         petId: pet.id,
@@ -80,13 +114,26 @@ export async function POST(request: Request) {
         character: parsed.data.character,
         specialNeeds: parsed.data.specialNeeds,
         requirements: parsed.data.requirements,
-        location: parsed.data.location || pet.location,
-        latitude: coords?.latitude,
-        longitude: coords?.longitude,
+        location: publicListingLocation,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
       },
     });
+    await notifySolidaritySubscribersForAdoption(listing.id);
 
-    return NextResponse.json({ success: true, listing }, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      listing: {
+        id: listing.id,
+        petId: listing.petId,
+        status: listing.status,
+        character: listing.character,
+        specialNeeds: listing.specialNeeds,
+        requirements: listing.requirements,
+        location: listing.location,
+        createdAt: listing.createdAt,
+      },
+    }, { status: 201 });
   } catch {
     return NextResponse.json({ success: false, error: 'No se pudo crear la ficha' }, { status: 500 });
   }

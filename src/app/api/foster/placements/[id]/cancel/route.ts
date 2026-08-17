@@ -3,7 +3,8 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
 import { createOffersForCase } from '@/lib/server/foster';
-import { notifySubscribedFosters } from '@/lib/server/foster-network';
+import { notifySolidaritySubscribersForCase } from '@/lib/server/solidarity-alerts';
+import { setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 class PlacementConflict extends Error {}
 
@@ -56,23 +57,20 @@ export async function POST(
         where: { id: placement.offerId },
         data: { status: 'CLOSED' },
       });
-      await tx.rescueCase.updateMany({
-        where: { id: placement.rescueCaseId, status: awaitingAdoption ? 'NEEDS_ADOPTION' : 'COORDINATING' },
-        data: { status: 'SEARCHING' },
-      });
       if (awaitingAdoption && placement.adoptionDraft) {
         await tx.fosterAdoptionDraft.update({ where: { id: placement.adoptionDraft.id }, data: { status: 'PAUSED' } });
         if (placement.adoptionDraft.listingId) {
           await tx.adoptionListing.update({ where: { id: placement.adoptionDraft.listingId }, data: { status: 'CLOSED' } });
         }
       }
+      const transition = await setCaseNeedStatus(tx, placement.rescueCaseId, 'FOSTER', 'OPEN');
       await tx.rescueCaseEvent.create({
         data: {
           caseId: placement.rescueCaseId,
           actorId: auth.session.user.id,
           type: awaitingAdoption ? 'ADOPTION_FOSTER_CANCELLED' : 'COORDINATION_CANCELLED',
           fromStatus: awaitingAdoption ? 'NEEDS_ADOPTION' : 'COORDINATING',
-          toStatus: 'SEARCHING',
+          toStatus: transition?.caseStatus || placement.rescueCase.status,
         },
       });
     });
@@ -99,7 +97,7 @@ export async function POST(
       entityId: placement.id,
     }),
   ]);
-  await notifySubscribedFosters(placement.rescueCaseId);
+  await notifySolidaritySubscribersForCase(placement.rescueCaseId);
 
   return NextResponse.json({ success: true });
 }

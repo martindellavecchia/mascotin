@@ -13,7 +13,12 @@ export async function GET() {
       );
     }
 
+    const viewer = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { syntheticRunId: true },
+    });
     const profiles = await db.profile.findMany({
+      where: { user: { syntheticRunId: viewer?.syntheticRunId || null } },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });

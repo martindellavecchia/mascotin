@@ -1,7 +1,8 @@
 import { db } from '@/lib/db';
 import { NotificationType, Prisma } from '@prisma/client';
+import { enqueueNotificationPush, type PushContext } from '@/lib/server/push';
 
-interface CreateNotificationParams {
+export interface CreateNotificationParams {
   userId: string;
   actorId: string;
   type: NotificationType;
@@ -10,6 +11,7 @@ interface CreateNotificationParams {
   link?: string;
   entityId?: string;
   dedupeKey?: string;
+  pushContext?: PushContext;
 }
 
 // Map notification type to UserSettings preference field
@@ -32,14 +34,19 @@ const PREF_MAP: Record<NotificationType, string | null> = {
   FOSTER_PLACEMENT: 'notifyFoster',
   FOSTER_CASE_ALERT: 'notifyFoster',
   FOSTER_ADOPTION: 'notifyFoster',
+  VOLUNTEER_OFFER: 'notifyFoster',
+  VOLUNTEER_RESPONSE: 'notifyFoster',
+  VOLUNTEER_ASSIGNMENT: 'notifyFoster',
+  SOLIDARITY_ADOPTION_ALERT: 'notifyMatches',
+  SOLIDARITY_VETERINARY_ALERT: 'notifyHealth',
   CONTENT_REPORT: null,
 };
 
-export async function createNotification(params: CreateNotificationParams): Promise<void> {
-  const { userId, actorId, type, title, body, link, entityId, dedupeKey } = params;
+export async function createNotification(params: CreateNotificationParams) {
+  const { userId, actorId, type, title, body, link, entityId, dedupeKey, pushContext } = params;
 
   // Don't self-notify
-  if (userId === actorId) return;
+  if (userId === actorId) return null;
 
   // Check user preference
   const prefField = PREF_MAP[type];
@@ -48,16 +55,18 @@ export async function createNotification(params: CreateNotificationParams): Prom
       where: { userId },
       select: { [prefField]: true },
     });
-    if (settings && (settings as Record<string, boolean>)[prefField] === false) return;
+    if (settings && (settings as Record<string, boolean>)[prefField] === false) return null;
   }
 
   try {
-    await db.notification.create({
+    const notification = await db.notification.create({
       data: { userId, actorId, type, title, body, link, entityId, dedupeKey },
     });
+    await enqueueNotificationPush(notification.id, pushContext);
+    return notification;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002' && dedupeKey) {
-      return;
+      return null;
     }
     throw error;
   }
@@ -72,6 +81,8 @@ export async function createNotificationBulk(
   link?: string,
   entityId?: string,
   dedupeKeyPrefix?: string,
+  pushContext?: PushContext,
+  respectPreferences = true,
 ): Promise<void> {
   const filtered = recipientIds.filter(id => id !== actorId);
   if (filtered.length === 0) return;
@@ -79,7 +90,7 @@ export async function createNotificationBulk(
   const prefField = PREF_MAP[type];
   let allowedIds = filtered;
 
-  if (prefField) {
+  if (prefField && respectPreferences) {
     const optedOut = await db.userSettings.findMany({
       where: { userId: { in: filtered }, [prefField]: false },
       select: { userId: true },
@@ -90,7 +101,7 @@ export async function createNotificationBulk(
 
   if (allowedIds.length === 0) return;
 
-  await db.notification.createMany({
+  const notifications = await db.notification.createManyAndReturn({
     data: allowedIds.map(uid => ({
       userId: uid,
       actorId,
@@ -103,4 +114,5 @@ export async function createNotificationBulk(
     })),
     skipDuplicates: true,
   });
+  await Promise.allSettled(notifications.map((notification) => enqueueNotificationPush(notification.id, pushContext)));
 }

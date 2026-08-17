@@ -17,8 +17,29 @@ export async function GET(
   const listing = await db.adoptionListing.findUnique({
     where: { id },
     include: {
-      pet: true,
-      listedBy: { select: { id: true, name: true } },
+      pet: {
+        select: {
+          id: true,
+          name: true,
+          petType: true,
+          breed: true,
+          age: true,
+          size: true,
+          gender: true,
+          vaccinated: true,
+          neutered: true,
+          energy: true,
+          bio: true,
+          images: true,
+          thumbnailIndex: true,
+          goodWithKids: true,
+          goodWithDogs: true,
+          goodWithCats: true,
+          temperament: true,
+          specialNeeds: true,
+        },
+      },
+      listedBy: { select: { id: true, name: true, syntheticRunId: true } },
       applications: auth.session.user.id
         ? {
             where: {
@@ -42,7 +63,8 @@ export async function GET(
     },
   });
 
-  if (!listing) {
+  const viewer = await db.user.findUnique({ where: { id: auth.session.user.id }, select: { syntheticRunId: true } });
+  if (!listing || listing.listedBy.syntheticRunId !== (viewer?.syntheticRunId || null)) {
     return NextResponse.json({ success: false, error: 'Ficha no encontrada' }, { status: 404 });
   }
 
@@ -56,8 +78,19 @@ export async function GET(
   return NextResponse.json({
     success: true,
     listing: {
-      ...listing,
-      listedBy: listing.sourceRescueCaseId ? { id: 'foster-module', name: 'Hogar de tránsito' } : listing.listedBy,
+      id: listing.id,
+      petId: listing.petId,
+      listedByUserId: listing.listedByUserId,
+      sourceRescueCaseId: listing.sourceRescueCaseId,
+      status: listing.status,
+      character: listing.character,
+      specialNeeds: listing.specialNeeds,
+      requirements: listing.requirements,
+      location: listing.location,
+      createdAt: listing.createdAt,
+      updatedAt: listing.updatedAt,
+      applications: listing.applications,
+      listedBy: listing.sourceRescueCaseId ? { id: 'foster-module', name: 'Hogar de tránsito' } : { id: listing.listedBy.id, name: listing.listedBy.name },
       fosterDraft: undefined,
       pet: withImageFields(listing.pet),
       handoff: handoffRole && listing.fosterDraft ? {
@@ -86,13 +119,17 @@ export async function POST(
 
     const listing = await db.adoptionListing.findUnique({
       where: { id },
-      include: { pet: true },
+      include: { pet: true, listedBy: { select: { syntheticRunId: true } } },
     });
     if (!listing || listing.status !== 'OPEN') {
       return NextResponse.json({ success: false, error: 'La ficha no está abierta' }, { status: 400 });
     }
     if (listing.listedByUserId === auth.session.user.id) {
       return NextResponse.json({ success: false, error: 'No podés postularte a tu propia ficha' }, { status: 400 });
+    }
+    const viewer = await db.user.findUnique({ where: { id: auth.session.user.id }, select: { syntheticRunId: true } });
+    if (listing.listedBy.syntheticRunId !== (viewer?.syntheticRunId || null)) {
+      return NextResponse.json({ success: false, error: 'La ficha no está disponible' }, { status: 404 });
     }
 
     const adopter = await db.adopterProfile.findUnique({

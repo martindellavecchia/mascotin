@@ -10,7 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import HelpImageUpload from '@/components/help/HelpImageUpload';
 import LocationField from '@/components/help/LocationField';
 import { DEFAULT_FOSTER_RADIUS_KM } from '@/lib/foster';
+import { RESCUE_NEED_LABELS } from '@/lib/rescue';
 import { toast } from 'sonner';
+
+type NeedType = 'FOSTER' | 'VETERINARY' | 'TRANSPORT' | 'SUPPLIES' | 'FIELD_SUPPORT';
+const NEED_TYPES: NeedType[] = ['FOSTER', 'VETERINARY', 'TRANSPORT', 'SUPPLIES', 'FIELD_SUPPORT'];
 
 interface RescueCaseFormProps {
   onCreated: (caseId: string) => void;
@@ -29,6 +33,9 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
     longitude: undefined as number | undefined,
     searchRadiusKm: DEFAULT_FOSTER_RADIUS_KM,
     requestedDays: 14,
+    primaryNeed: 'FOSTER' as NeedType,
+    additionalNeeds: [] as NeedType[],
+    needDetails: {} as Partial<Record<NeedType, string>>,
     consentAccepted: false,
   });
 
@@ -46,11 +53,8 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
         toast.error(data.error || 'No se pudo crear el caso');
         return;
       }
-      toast.success(
-        data.offerCount > 0
-          ? `Caso creado y enviado a ${data.offerCount} hogares cercanos`
-          : 'Caso creado. Todavía no encontramos hogares compatibles.'
-      );
+      const matches = Number(data.offerCount || 0) + Number(data.volunteerOfferCount || 0);
+      toast.success(matches > 0 ? `Caso creado y enviado a ${matches} personas cercanas` : 'Caso creado. La red seguirá buscando ayuda compatible.');
       onCreated(data.case.id as string);
     } catch {
       toast.error('No se pudo crear el caso');
@@ -108,6 +112,55 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
         </div>
       </div>
 
+      <fieldset className="space-y-4 rounded-xl border border-teal-100 bg-teal-50/40 p-4">
+        <div>
+          <legend className="font-semibold text-slate-900">¿Qué ayuda necesita?</legend>
+          <p className="mt-1 text-sm text-slate-600">Elegí una necesidad principal y hasta cuatro complementarias.</p>
+        </div>
+        <div className="space-y-2">
+          <Label>Necesidad principal</Label>
+          <Select value={form.primaryNeed} onValueChange={(value) => setForm((current) => ({
+            ...current,
+            primaryNeed: value as NeedType,
+            additionalNeeds: current.additionalNeeds.filter((need) => need !== value),
+          }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{NEED_TYPES.map((type) => <SelectItem key={type} value={type}>{RESCUE_NEED_LABELS[type]}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-slate-800">Ayudas complementarias</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {NEED_TYPES.filter((type) => type !== form.primaryNeed).map((type) => (
+              <label key={type} className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3">
+                <Checkbox
+                  checked={form.additionalNeeds.includes(type)}
+                  onCheckedChange={(checked) => setForm((current) => ({
+                    ...current,
+                    additionalNeeds: checked === true
+                      ? [...current.additionalNeeds, type].slice(0, 4)
+                      : current.additionalNeeds.filter((need) => need !== type),
+                  }))}
+                />
+                <span className="text-sm text-slate-700">{RESCUE_NEED_LABELS[type]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        {[form.primaryNeed, ...form.additionalNeeds].map((type) => (
+          <div key={type} className="space-y-2">
+            <Label htmlFor={`need-detail-${type}`}>Detalle de {RESCUE_NEED_LABELS[type].toLowerCase()} <span className="font-normal text-slate-400">(opcional)</span></Label>
+            <Input
+              id={`need-detail-${type}`}
+              maxLength={500}
+              value={form.needDetails[type] || ''}
+              onChange={(event) => setForm((current) => ({ ...current, needDetails: { ...current.needDetails, [type]: event.target.value } }))}
+              placeholder="Información útil para coordinar esta ayuda"
+            />
+          </div>
+        ))}
+      </fieldset>
+
       <div className="space-y-2">
         <Label htmlFor="apparent-condition">Estado aparente</Label>
         <Input
@@ -142,7 +195,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
+        {[form.primaryNeed, ...form.additionalNeeds].includes('FOSTER') && <div className="space-y-2">
           <Label>Radio de búsqueda</Label>
           <Select
             value={String(form.searchRadiusKm)}
@@ -156,7 +209,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
             </SelectContent>
           </Select>
           <p className="text-xs text-slate-500">Empieza en 5 km y después podés ampliarlo o reducirlo.</p>
-        </div>
+        </div>}
         <div className="space-y-2">
           <Label htmlFor="requested-days">Tiempo estimado</Label>
           <div className="relative">

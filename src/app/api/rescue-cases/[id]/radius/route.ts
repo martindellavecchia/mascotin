@@ -3,7 +3,8 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { updateRescueCaseRadiusSchema } from '@/lib/schemas';
 import { createOffersForCase } from '@/lib/server/foster';
-import { notifySubscribedFosters } from '@/lib/server/foster-network';
+import { createVolunteerOffersForCase } from '@/lib/server/volunteer-network';
+import { notifySolidaritySubscribersForCase } from '@/lib/server/solidarity-alerts';
 
 export async function PATCH(
   request: Request,
@@ -18,16 +19,19 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: 'El radio debe estar entre 1 y 50 km' }, { status: 400 });
   }
 
-  const rescueCase = await db.rescueCase.findUnique({ where: { id } });
+  const rescueCase = await db.rescueCase.findUnique({
+    where: { id },
+    include: { needs: { select: { status: true } } },
+  });
   if (!rescueCase) {
     return NextResponse.json({ success: false, error: 'Caso no encontrado' }, { status: 404 });
   }
   if (rescueCase.createdByUserId !== auth.session.user.id) {
     return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 403 });
   }
-  if (!['SEARCHING', 'INTERESTED'].includes(rescueCase.status)) {
+  if (!rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status))) {
     return NextResponse.json(
-      { success: false, error: 'El radio solo puede cambiarse mientras se busca hogar' },
+      { success: false, error: 'El radio solo puede cambiarse mientras hay ayudas abiertas' },
       { status: 409 }
     );
   }
@@ -40,6 +44,14 @@ export async function PATCH(
     db.fosterOffer.updateMany({
       where: {
         rescueCaseId: id,
+        status: 'PENDING',
+        distanceKm: { gt: parsed.data.searchRadiusKm },
+      },
+      data: { status: 'CLOSED' },
+    }),
+    db.volunteerOffer.updateMany({
+      where: {
+        need: { rescueCaseId: id },
         status: 'PENDING',
         distanceKm: { gt: parsed.data.searchRadiusKm },
       },
@@ -58,11 +70,16 @@ export async function PATCH(
     }),
   ]);
 
-  const offerCount = await createOffersForCase(id);
-  await notifySubscribedFosters(id);
+  const [offerCount, volunteerOfferCount, alertCount] = await Promise.all([
+    createOffersForCase(id),
+    createVolunteerOffersForCase(id),
+    notifySolidaritySubscribersForCase(id),
+  ]);
   return NextResponse.json({
     success: true,
     searchRadiusKm: parsed.data.searchRadiusKm,
     newOfferCount: offerCount,
+    newVolunteerOfferCount: volunteerOfferCount,
+    alertCount,
   });
 }

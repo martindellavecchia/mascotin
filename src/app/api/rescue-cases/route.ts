@@ -6,7 +6,10 @@ import { parseImageUrls } from '@/lib/media';
 import { resolveCoordinates } from '@/lib/pet-payload';
 import { createRescueCaseSchema } from '@/lib/schemas';
 import { createOffersForCase, expireFosterOffers } from '@/lib/server/foster';
-import { notifySubscribedFosters } from '@/lib/server/foster-network';
+import { createRescueNeeds, serializeRescueNeeds } from '@/lib/server/rescue-needs';
+import { createVolunteerOffersForCase } from '@/lib/server/volunteer-network';
+import { notifySolidaritySubscribersForCase } from '@/lib/server/solidarity-alerts';
+import { toGeneralZone } from '@/lib/rescue';
 
 export async function GET() {
   const auth = await requireAuth();
@@ -33,6 +36,7 @@ export async function GET() {
         communityPost: { select: { isVisible: true } },
         adoptionDraft: { select: { id: true, status: true, listingId: true } },
         adoptionListing: { select: { id: true, status: true } },
+        needs: { orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }] },
       },
       take: 50,
     }),
@@ -87,6 +91,7 @@ export async function GET() {
       isPublished: Boolean(rescueCase.communityPost?.isVisible),
       adoptionDraft: rescueCase.adoptionDraft,
       adoptionListing: rescueCase.adoptionListing,
+      needs: serializeRescueNeeds(rescueCase.needs),
     })),
     offers: offers.map((offer) => ({
       id: offer.id,
@@ -105,7 +110,7 @@ export async function GET() {
         apparentCondition: offer.rescueCase.apparentCondition,
         description: offer.rescueCase.description,
         images: parseImageUrls(offer.rescueCase.images),
-        location: offer.rescueCase.location,
+        location: toGeneralZone(offer.rescueCase.location),
         requestedDays: offer.rescueCase.requestedDays,
         createdAt: offer.rescueCase.createdAt,
         createdBy: offer.rescueCase.createdBy,
@@ -117,7 +122,7 @@ export async function GET() {
       rescueCase: {
         id: placement.rescueCase.id,
         species: placement.rescueCase.species,
-        location: placement.rescueCase.location,
+        location: toGeneralZone(placement.rescueCase.location),
         images: parseImageUrls(placement.rescueCase.images),
       },
     })),
@@ -176,11 +181,18 @@ export async function POST(request: Request) {
           details: JSON.stringify({ radiusKm: created.searchRadiusKm }),
         },
       });
+      await createRescueNeeds(tx, created.id, {
+        primaryNeed: parsed.data.primaryNeed,
+        additionalNeeds: parsed.data.additionalNeeds,
+        needDetails: parsed.data.needDetails,
+      });
       return created;
     });
 
-    const offerCount = await createOffersForCase(rescueCase.id);
-    await notifySubscribedFosters(rescueCase.id);
+    const requestedNeeds = new Set([parsed.data.primaryNeed, ...parsed.data.additionalNeeds]);
+    const offerCount = requestedNeeds.has('FOSTER') ? await createOffersForCase(rescueCase.id) : 0;
+    const volunteerOfferCount = await createVolunteerOffersForCase(rescueCase.id);
+    const alertCount = await notifySolidaritySubscribersForCase(rescueCase.id);
 
     return NextResponse.json(
       {
@@ -191,8 +203,11 @@ export async function POST(request: Request) {
           location: rescueCase.location,
           searchRadiusKm: rescueCase.searchRadiusKm,
           images: parsed.data.images,
+          needs: [parsed.data.primaryNeed, ...parsed.data.additionalNeeds],
         },
         offerCount,
+        volunteerOfferCount,
+        alertCount,
       },
       { status: 201 }
     );

@@ -2,7 +2,10 @@ import 'server-only';
 
 import { db } from '@/lib/db';
 import { createNotification } from '@/lib/notifications';
+import { toGeneralZone } from '@/lib/rescue';
 import type { FosterAdoptionDraftData } from '@/lib/schemas';
+import { notifySolidaritySubscribersForAdoption } from '@/lib/server/solidarity-alerts';
+import { setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 export class FosterAdoptionError extends Error {
   constructor(message: string, readonly status: number) {
@@ -50,7 +53,7 @@ export async function startFosterAdoption(placementId: string, actorUserId: stri
         petId: placement.rescueCase.petId,
         bio: placement.rescueCase.description,
         specialNeeds: placement.rescueCase.apparentCondition,
-        publicZone: placement.fosterProfile.location,
+        publicZone: toGeneralZone(placement.fosterProfile.location),
         images: placement.rescueCase.images,
       },
     });
@@ -80,6 +83,7 @@ export async function updateFosterAdoptionDraft(caseId: string, userId: string, 
     throw new FosterAdoptionError('La ficha ya no puede editarse en este estado', 409);
   }
 
+  const publicZone = toGeneralZone(input.publicZone);
   return db.$transaction(async (tx) => {
     const updated = await tx.fosterAdoptionDraft.update({
       where: { id: draft.id },
@@ -98,7 +102,7 @@ export async function updateFosterAdoptionDraft(caseId: string, userId: string, 
         neutered: input.neutered,
         specialNeeds: optionalText(input.specialNeeds),
         requirements: optionalText(input.requirements),
-        publicZone: input.publicZone,
+        publicZone,
         images: JSON.stringify(input.images),
       },
     });
@@ -118,7 +122,7 @@ export async function updateFosterAdoptionDraft(caseId: string, userId: string, 
           vaccinated: input.vaccinated,
           neutered: input.neutered,
           specialNeeds: optionalText(input.specialNeeds),
-          location: input.publicZone,
+          location: publicZone,
           images: JSON.stringify(input.images),
         },
       });
@@ -130,7 +134,7 @@ export async function updateFosterAdoptionDraft(caseId: string, userId: string, 
           character: input.character,
           specialNeeds: optionalText(input.specialNeeds),
           requirements: optionalText(input.requirements),
-          location: input.publicZone,
+          location: publicZone,
         },
       });
     }
@@ -157,6 +161,7 @@ export async function publishFosterAdoption(caseId: string, userId: string) {
   const images = JSON.parse(draft.images) as unknown;
   if (!Array.isArray(images) || images.length === 0) throw new FosterAdoptionError('La ficha necesita al menos una foto', 400);
 
+  const publicZone = toGeneralZone(draft.publicZone);
   const result = await db.$transaction(async (tx) => {
     const owner = await tx.owner.upsert({
       where: { userId },
@@ -180,7 +185,7 @@ export async function publishFosterAdoption(caseId: string, userId: string) {
       energy: draft.energy!,
       bio: draft.bio!,
       activities: '[]',
-      location: draft.publicZone!,
+      location: publicZone,
       images: draft.images,
       goodWithKids: draft.goodWithKids,
       goodWithDogs: draft.goodWithDogs,
@@ -204,7 +209,9 @@ export async function publishFosterAdoption(caseId: string, userId: string) {
             character: draft.character,
             specialNeeds: draft.specialNeeds,
             requirements: draft.requirements,
-            location: draft.publicZone,
+            location: publicZone,
+            latitude: draft.rescueCase.latitude,
+            longitude: draft.rescueCase.longitude,
           },
         })
       : await tx.adoptionListing.create({
@@ -215,7 +222,7 @@ export async function publishFosterAdoption(caseId: string, userId: string) {
             character: draft.character,
             specialNeeds: draft.specialNeeds,
             requirements: draft.requirements,
-            location: draft.publicZone,
+            location: publicZone,
             latitude: draft.rescueCase.latitude,
             longitude: draft.rescueCase.longitude,
           },
@@ -252,6 +259,7 @@ export async function publishFosterAdoption(caseId: string, userId: string) {
     entityId: result.listing.id,
     dedupeKey: `foster-adoption-published:${caseId}`,
   });
+  await notifySolidaritySubscribersForAdoption(result.listing.id);
   return result;
 }
 
@@ -393,24 +401,25 @@ export async function confirmFosterAdoptionHandoff(
         data: { status: 'REJECTED' },
       }),
       tx.fosterAdoptionDraft.update({ where: { id: draft.id }, data: { status: 'COMPLETED' } }),
-      tx.rescueCase.update({ where: { id: draft.rescueCaseId }, data: { status: 'RESOLVED' } }),
       tx.fosterProfile.updateMany({
         where: { id: draft.placement.fosterProfileId, occupiedSlots: { gt: 0 } },
         data: { occupiedSlots: { decrement: 1 } },
       }),
-      tx.rescueCaseEvent.create({
-        data: {
-          caseId: draft.rescueCaseId,
-          actorId: userId,
-          type: 'ADOPTION_COMPLETED',
-          fromStatus: 'NEEDS_ADOPTION',
-          toStatus: 'RESOLVED',
-          eventKey: `adoption-completed:${draft.rescueCaseId}`,
-          payload: { listingId: listing.id, adopterId: selected.applicantId },
-        },
-      }),
     ]);
-    return { completed: true };
+    const transition = await setCaseNeedStatus(tx, draft.rescueCaseId, 'FOSTER', 'FULFILLED');
+    const caseStatus = transition?.caseStatus || 'RESOLVED';
+    await tx.rescueCaseEvent.create({
+      data: {
+        caseId: draft.rescueCaseId,
+        actorId: userId,
+        type: 'ADOPTION_COMPLETED',
+        fromStatus: 'NEEDS_ADOPTION',
+        toStatus: caseStatus,
+        eventKey: `adoption-completed:${draft.rescueCaseId}`,
+        payload: { listingId: listing.id, adopterId: selected.applicantId },
+      },
+    });
+    return { completed: true, caseStatus };
   });
 
   const counterpartId = isFoster ? selected.applicantId : draft.managedByUserId;
@@ -431,7 +440,9 @@ export async function confirmFosterAdoptionHandoff(
           actorId: userId,
           type: 'FOSTER_ADOPTION',
           title: 'El caso encontró familia definitiva',
-          body: `${draft.pet.name} fue adoptado y el caso quedó resuelto.`,
+          body: result.caseStatus === 'RESOLVED'
+            ? `${draft.pet.name} fue adoptado y el caso quedó resuelto.`
+            : `${draft.pet.name} fue adoptado; las demás ayudas del caso siguen en curso.`,
           link: `/hogares-de-transito/casos/${draft.rescueCaseId}`,
           entityId: draft.rescueCaseId,
           dedupeKey: `adoption-resolved:${draft.rescueCaseId}`,

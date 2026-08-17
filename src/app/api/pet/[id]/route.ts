@@ -19,19 +19,23 @@ export async function GET(
         }
 
         const { id } = await params;
-        const pet = await db.pet.findUnique({
-            where: { id },
-            include: { owner: true },
-        });
+        const [pet, viewer] = await Promise.all([
+            db.pet.findUnique({
+                where: { id },
+                include: { owner: { include: { user: { select: { syntheticRunId: true } } } } },
+            }),
+            db.user.findUnique({ where: { id: session.user.id }, select: { syntheticRunId: true } }),
+        ]);
 
-        if (!pet) {
+        if (!pet || pet.owner.user.syntheticRunId !== (viewer?.syntheticRunId || null)) {
             return NextResponse.json(
                 { success: false, error: 'Pet not found' },
                 { status: 404 }
             );
         }
 
-        return NextResponse.json({ success: true, pet });
+        const { user: _ownerUser, ...owner } = pet.owner;
+        return NextResponse.json({ success: true, pet: { ...pet, owner } });
     } catch (error) {
         return NextResponse.json(
             { success: false, error: 'Failed to fetch pet' },

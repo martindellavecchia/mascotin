@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import type { RescueNeedType } from '@prisma/client';
 
 const EditPostModal = dynamic(() => import('@/components/community/EditPostModal'), {
     ssr: false,
@@ -20,6 +21,17 @@ interface ExtendedPost extends Post {
         likes: number;
         comments: number;
     };
+    rescueCase?: {
+        id: string;
+        status: string;
+        species: string;
+        size: string;
+        urgency: string;
+        requestedDays: number;
+        primaryNeed: RescueNeedType;
+        additionalNeeds: Array<{ type: RescueNeedType; status: string }>;
+        adoptionListingId: string | null;
+    } | null;
 }
 
 interface FeedProps {

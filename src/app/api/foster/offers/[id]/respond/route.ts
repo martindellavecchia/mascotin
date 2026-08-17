@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
 import { respondFosterOfferSchema } from '@/lib/schemas';
+import { setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 export async function PATCH(
   request: Request,
@@ -47,21 +48,16 @@ export async function PATCH(
       where: { id },
       data: { status: nextStatus, respondedAt: new Date() },
     });
-    if (nextStatus === 'INTERESTED') {
-      await tx.rescueCase.updateMany({
-        where: { id: offer.rescueCaseId, status: 'SEARCHING' },
-        data: { status: 'INTERESTED' },
-      });
-    }
+    const transition = nextStatus === 'INTERESTED'
+      ? await setCaseNeedStatus(tx, offer.rescueCaseId, 'FOSTER', 'INTERESTED')
+      : null;
     await tx.rescueCaseEvent.create({
       data: {
         caseId: offer.rescueCaseId,
         actorId: auth.session.user.id,
         type: nextStatus === 'INTERESTED' ? 'FOSTER_INTERESTED' : 'FOSTER_DECLINED',
         fromStatus: offer.rescueCase.status,
-        toStatus: nextStatus === 'INTERESTED' && offer.rescueCase.status === 'SEARCHING'
-          ? 'INTERESTED'
-          : offer.rescueCase.status,
+        toStatus: transition?.caseStatus || offer.rescueCase.status,
       },
     });
   });

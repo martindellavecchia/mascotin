@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
+import { recalculateRescueCaseStatus } from '@/lib/server/rescue-needs';
 
 class SelectionConflict extends Error {}
 
@@ -41,14 +42,15 @@ export async function POST(
         throw new SelectionConflict('La disponibilidad del hogar cambió');
       }
 
-      const claimedCase = await tx.rescueCase.updateMany({
+      const claimedNeed = await tx.rescueNeed.updateMany({
         where: {
-          id: currentOffer.rescueCaseId,
-          status: { in: ['SEARCHING', 'INTERESTED'] },
+          rescueCaseId: currentOffer.rescueCaseId,
+          type: 'FOSTER',
+          status: { in: ['OPEN', 'INTERESTED'] },
         },
-        data: { status: 'COORDINATING' },
+        data: { status: 'ASSIGNED' },
       });
-      if (claimedCase.count !== 1) throw new SelectionConflict('El caso ya tiene un hogar seleccionado');
+      if (claimedNeed.count !== 1) throw new SelectionConflict('El caso ya tiene un hogar seleccionado');
 
       const claimedCapacity = await tx.fosterProfile.updateMany({
         where: {
@@ -83,13 +85,14 @@ export async function POST(
           expectedEndAt,
         },
       });
+      const caseStatus = await recalculateRescueCaseStatus(tx, currentOffer.rescueCaseId);
       await tx.rescueCaseEvent.create({
         data: {
           caseId: currentOffer.rescueCaseId,
           actorId: auth.session.user.id,
           type: 'FOSTER_SELECTED',
           fromStatus: currentOffer.rescueCase.status,
-          toStatus: 'COORDINATING',
+          toStatus: caseStatus,
           details: JSON.stringify({ placementId: created.id }),
         },
       });

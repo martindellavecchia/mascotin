@@ -20,7 +20,11 @@ export async function getFeedPage({
   limit = 10,
   cursor,
 }: FeedPageOptions) {
-  const where: Prisma.PostWhereInput = { isVisible: true };
+  const viewer = await db.user.findUnique({ where: { id: userId }, select: { syntheticRunId: true } });
+  const where: Prisma.PostWhereInput = {
+    isVisible: true,
+    author: { syntheticRunId: viewer?.syntheticRunId || null },
+  };
   if (petId) where.petId = petId;
   if (postType) where.postType = postType;
 
@@ -92,6 +96,10 @@ export async function getFeedPage({
           size: true,
           urgency: true,
           requestedDays: true,
+          needs: {
+            orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+            select: { type: true, isPrimary: true, status: true },
+          },
           adoptionListing: { select: { id: true, status: true } },
         },
       },
@@ -115,6 +123,10 @@ export async function getFeedPage({
     const isFosterCase = Boolean(post.rescueCase);
     return {
       ...normalizedPost,
+      latitude: isFosterCase ? undefined : normalizedPost.latitude,
+      longitude: isFosterCase ? undefined : normalizedPost.longitude,
+      contactPhone: isFosterCase ? undefined : normalizedPost.contactPhone,
+      lastSeenLocation: isFosterCase ? undefined : normalizedPost.lastSeenLocation,
       authorId: isFosterCase ? 'foster-module' : post.authorId,
       author: {
         ...(isFosterCase
@@ -136,6 +148,8 @@ export async function getFeedPage({
             size: post.rescueCase.size,
             urgency: post.rescueCase.urgency,
             requestedDays: post.rescueCase.requestedDays,
+            primaryNeed: post.rescueCase.needs.find((need) => need.isPrimary)?.type || 'FOSTER',
+            additionalNeeds: post.rescueCase.needs.filter((need) => !need.isPrimary).map((need) => ({ type: need.type, status: need.status })),
             adoptionListingId:
               post.rescueCase.adoptionListing?.status === 'OPEN' || post.rescueCase.adoptionListing?.status === 'PENDING'
                 ? post.rescueCase.adoptionListing.id

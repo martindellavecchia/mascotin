@@ -161,6 +161,11 @@ export interface Post {
     size: string;
     urgency: string;
     requestedDays: number;
+    primaryNeed: 'FOSTER' | 'VETERINARY' | 'TRANSPORT' | 'SUPPLIES' | 'FIELD_SUPPORT';
+    additionalNeeds: Array<{
+      type: 'FOSTER' | 'VETERINARY' | 'TRANSPORT' | 'SUPPLIES' | 'FIELD_SUPPORT';
+      status: string;
+    }>;
     adoptionListingId: string | null;
   } | null;
 }

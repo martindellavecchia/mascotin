@@ -23,6 +23,11 @@ const ICON_MAP: Record<string, string> = {
   FOSTER_PLACEMENT: 'handshake',
   FOSTER_CASE_ALERT: 'home_health',
   FOSTER_ADOPTION: 'family_home',
+  VOLUNTEER_OFFER: 'volunteer_activism',
+  VOLUNTEER_RESPONSE: 'handshake',
+  VOLUNTEER_ASSIGNMENT: 'assignment_turned_in',
+  SOLIDARITY_ADOPTION_ALERT: 'pets',
+  SOLIDARITY_VETERINARY_ALERT: 'medical_services',
   CONTENT_REPORT: 'flag',
 };
 
@@ -45,6 +50,11 @@ const COLOR_MAP: Record<string, string> = {
   FOSTER_PLACEMENT: 'text-emerald-600',
   FOSTER_CASE_ALERT: 'text-orange-600',
   FOSTER_ADOPTION: 'text-pink-600',
+  VOLUNTEER_OFFER: 'text-teal-600',
+  VOLUNTEER_RESPONSE: 'text-orange-600',
+  VOLUNTEER_ASSIGNMENT: 'text-emerald-600',
+  SOLIDARITY_ADOPTION_ALERT: 'text-pink-600',
+  SOLIDARITY_VETERINARY_ALERT: 'text-red-600',
   CONTENT_REPORT: 'text-rose-600',
 };
 

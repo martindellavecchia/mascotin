@@ -12,10 +12,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RESCUE_STATUS_LABELS, SIZE_LABELS, SPECIES_LABELS } from '@/lib/foster';
 import { shouldUnoptimizeImage } from '@/lib/media';
+import { RESCUE_NEED_LABELS, RESCUE_NEED_STATUS_LABELS } from '@/lib/rescue';
+import { VOLUNTEER_ROLE_LABELS } from '@/lib/volunteer';
 import { toast } from 'sonner';
+import type { RescueNeedTypeValue, RescueNeedView } from '@/components/help/types';
 
 interface OfferDetail {
   id: string;
@@ -79,10 +83,33 @@ interface CaseDetail {
   adoptionListingId: string | null;
   canExpressInterest: boolean;
   hasFosterProfile: boolean;
+  needs: RescueNeedView[];
+  volunteerOffers?: Array<{
+    id: string;
+    needId?: string;
+    needType?: RescueNeedTypeValue;
+    role: keyof typeof VOLUNTEER_ROLE_LABELS;
+    status: string;
+    distanceKm: number;
+    score: number;
+    reasons: string[];
+    expiresAt: string;
+    volunteer?: { id: string; name: string | null; image: string | null };
+  }>;
+  volunteerAssignments?: Array<{
+    id: string;
+    needId: string;
+    needType: RescueNeedTypeValue;
+    status: string;
+    startedAt: string;
+    completedAt: string | null;
+    cancelledAt: string | null;
+    volunteer: { id: string; name: string | null; image: string | null };
+  }>;
 }
 
 interface DetailResponse {
-  viewerRole: 'CREATOR' | 'FOSTER' | 'VISITOR';
+  viewerRole: 'CREATOR' | 'FOSTER' | 'VOLUNTEER' | 'VISITOR';
   viewerUserId: string;
   case: CaseDetail;
 }
@@ -106,6 +133,12 @@ const EVENT_LABELS: Record<string, string> = {
   ADOPTION_APPLICATION_SELECTED: 'Postulación de adopción seleccionada',
   ADOPTION_HANDOFF_CANCELLED: 'Coordinación de adopción cancelada',
   ADOPTION_COMPLETED: 'Adopción definitiva completada',
+  VOLUNTEER_MATCHING_RUN: 'Búsqueda de voluntariado realizada',
+  VOLUNTEER_INTERESTED: 'Una persona indicó que puede ayudar',
+  VOLUNTEER_DECLINED: 'Una persona rechazó la tarea',
+  VOLUNTEER_ASSIGNED: 'Tarea de voluntariado asignada',
+  VOLUNTEER_COMPLETED: 'Tarea de voluntariado completada',
+  VOLUNTEER_CANCELLED: 'Tarea cancelada y búsqueda reabierta',
 };
 
 function placementActive(placement: PlacementDetail) {
@@ -118,6 +151,8 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
   const [radius, setRadius] = useState('5');
+  const [cancelReason, setCancelReason] = useState('');
+  const [veterinarians, setVeterinarians] = useState<Array<{ id: string; name: string; slug: string; address: string | null; distanceKm: number; ratingAverage: number; link: string }> | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -161,6 +196,20 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
     }
   };
 
+  const loadVeterinarians = async () => {
+    setActing(true);
+    try {
+      const response = await fetch(`/api/rescue-cases/${caseId}/nearby-veterinarians`);
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error(payload.error || 'No se pudieron buscar veterinarias');
+      setVeterinarians(payload.veterinarians || []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudieron buscar veterinarias');
+    } finally {
+      setActing(false);
+    }
+  };
+
   if (loading) {
     return <div className="mx-auto max-w-6xl space-y-4 px-4 py-8"><div className="h-10 w-40 animate-pulse rounded bg-slate-200" /><div className="h-80 animate-pulse rounded-2xl bg-slate-200" /></div>;
   }
@@ -172,7 +221,10 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
   const image = rescueCase.images[0];
   const placement = rescueCase.placements.find(placementActive) || rescueCase.placements[0];
   const myOffer = data.viewerRole === 'FOSTER' ? rescueCase.offers[0] : undefined;
-  const canChangeRadius = data.viewerRole === 'CREATOR' && ['SEARCHING', 'INTERESTED'].includes(rescueCase.status);
+  const primaryNeed = rescueCase.needs.find((need) => need.isPrimary) || rescueCase.needs[0];
+  const canChangeRadius = data.viewerRole === 'CREATOR' && rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status));
+  const volunteerAssignment = rescueCase.volunteerAssignments?.find((assignment) => assignment.status === 'ACTIVE') || rescueCase.volunteerAssignments?.[0];
+  const myVolunteerOffer = data.viewerRole === 'VOLUNTEER' ? rescueCase.volunteerOffers?.[0] : undefined;
   const needsMyConfirmation = placement?.status === 'COORDINATING' && (
     data.viewerRole === 'CREATOR' ? !placement.requesterConfirmedAt : !placement.fosterConfirmedAt
   );
@@ -205,6 +257,20 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
                 <p className="mt-1 text-sm text-slate-600">{rescueCase.apparentCondition}</p>
               </div>
               <p className="whitespace-pre-wrap text-slate-700 [overflow-wrap:anywhere]">{rescueCase.description}</p>
+              <div className="space-y-3 rounded-xl border border-teal-100 bg-teal-50/50 p-4">
+                <p className="text-sm font-semibold text-slate-900">Necesidades del caso</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {rescueCase.needs.map((need) => (
+                    <div key={need.id} className="rounded-lg border border-teal-100 bg-white p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-slate-900">{RESCUE_NEED_LABELS[need.type]}{need.isPrimary ? ' · Principal' : ''}</p>
+                        <Badge variant="outline">{RESCUE_NEED_STATUS_LABELS[need.status]}</Badge>
+                      </div>
+                      {need.details && <p className="mt-2 text-xs text-slate-600">{need.details}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
               <div className="flex flex-wrap gap-2 text-xs text-slate-700">
                 <span className="rounded-full bg-slate-100 px-3 py-1.5">{rescueCase.requestedDays} días estimados</span>
                 <span className="rounded-full bg-slate-100 px-3 py-1.5">{rescueCase.searchRadiusKm} km de búsqueda</span>
@@ -215,17 +281,32 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
           {data.viewerRole === 'VISITOR' && (
             <Card className="border-orange-200 bg-orange-50/40">
               <CardContent className="space-y-3 p-5">
-                <h2 className="font-semibold text-slate-900">¿Podés ofrecer un hogar de tránsito?</h2>
-                <p className="text-sm text-slate-600">La ubicación exacta y el chat se habilitan sólo cuando participás y la persona responsable te selecciona.</p>
+                <h2 className="font-semibold text-slate-900">{primaryNeed ? `Ayudar con ${RESCUE_NEED_LABELS[primaryNeed.type].toLowerCase()}` : 'Acompañar este caso'}</h2>
+                <p className="text-sm text-slate-600">La ubicación exacta y el chat permanecen privados. El chat se habilita únicamente al quedar seleccionada una ayuda.</p>
                 {rescueCase.adoptionListingId ? (
                   <Button asChild><Link href={`/adoptions/${rescueCase.adoptionListingId}`}>Ver ficha de adopción</Link></Button>
-                ) : !rescueCase.hasFosterProfile ? (
+                ) : primaryNeed?.type === 'FOSTER' && !rescueCase.hasFosterProfile ? (
                   <Button asChild><Link href="/hogares-de-transito?create=profile">Crear perfil de hogar</Link></Button>
-                ) : rescueCase.canExpressInterest ? (
+                ) : primaryNeed?.type === 'FOSTER' && rescueCase.canExpressInterest ? (
                   <Button disabled={acting} onClick={() => void mutate(`/api/rescue-cases/${caseId}/interest`, { method: 'POST' }, 'Avisamos que podés ayudar')}>Quiero ofrecer tránsito</Button>
+                ) : primaryNeed?.type === 'VETERINARY' ? (
+                  <Button disabled={acting} onClick={() => void loadVeterinarians()}>Consultar veterinarias cercanas</Button>
+                ) : primaryNeed && primaryNeed.type !== 'FOSTER' ? (
+                  <Button asChild><Link href="/hogares-de-transito?view=volunteer">Activar voluntariado</Link></Button>
                 ) : (
                   <p className="rounded-lg bg-white p-3 text-sm text-slate-600">Tu perfil no tiene cupo, está fuera del radio o no coincide con este caso.</p>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {rescueCase.needs.some((need) => need.type === 'VETERINARY') && (
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Veterinarias cercanas</CardTitle><p className="text-sm text-slate-500">Se calcula con la ubicación privada del caso y sólo muestra información pública del directorio. No realiza diagnósticos, pagos ni reservas.</p></CardHeader>
+              <CardContent className="space-y-3">
+                {veterinarians === null ? <Button variant="outline" disabled={acting} onClick={() => void loadVeterinarians()}>Ver hasta cinco veterinarias</Button> : veterinarians.length === 0 ? <p className="text-sm text-slate-500">No encontramos veterinarias con ubicación registrada.</p> : veterinarians.map((veterinarian) => (
+                  <div key={veterinarian.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium text-slate-900">{veterinarian.name}</p><p className="mt-1 text-sm text-slate-500">{veterinarian.address || 'Dirección disponible en la ficha'} · {veterinarian.distanceKm.toFixed(1)} km</p></div><Button asChild variant="outline"><Link href={veterinarian.link}>Ver directorio</Link></Button></div>
+                ))}
               </CardContent>
             </Card>
           )}
@@ -273,6 +354,25 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
 
           {placement && <FosterChat placementId={placement.id} currentUserId={data.viewerUserId} enabled={['COORDINATING', 'ACTIVE', 'AWAITING_ADOPTION'].includes(placement.status)} />}
 
+          {volunteerAssignment && (
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Tarea de voluntariado · {RESCUE_NEED_LABELS[volunteerAssignment.needType]}</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-medium text-slate-900">Responsable: {volunteerAssignment.volunteer.name || 'Persona voluntaria'}</p><p className="text-sm text-slate-500">Aceptó únicamente esta tarea coordinada.</p></div><Badge className={volunteerAssignment.status === 'ACTIVE' ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-700'}>{volunteerAssignment.status === 'ACTIVE' ? 'Activa' : volunteerAssignment.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}</Badge></div>
+                {volunteerAssignment.status === 'ACTIVE' && (
+                  <div className="space-y-3 rounded-xl border border-slate-200 p-4">
+                    {data.viewerRole === 'CREATOR' && <Button disabled={acting} onClick={() => void mutate(`/api/volunteer/assignments/${volunteerAssignment.id}/complete`, { method: 'POST' }, 'Tarea completada')}>Marcar tarea completada</Button>}
+                    <div className="space-y-2"><Label htmlFor="volunteer-cancel-reason">Motivo para cancelar</Label><div className="flex flex-col gap-2 sm:flex-row"><Input id="volunteer-cancel-reason" value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} placeholder="Ej. cambió la disponibilidad" /><Button variant="outline" disabled={acting || cancelReason.trim().length < 3} onClick={() => void mutate(`/api/volunteer/assignments/${volunteerAssignment.id}/cancel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: cancelReason }) }, 'Tarea cancelada y búsqueda reabierta')}>Cancelar tarea</Button></div></div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {volunteerAssignment && ['CREATOR', 'VOLUNTEER'].includes(data.viewerRole) && (
+            <FosterChat volunteerAssignmentId={volunteerAssignment.id} currentUserId={data.viewerUserId} enabled={volunteerAssignment.status === 'ACTIVE'} context="volunteer" />
+          )}
+
           {rescueCase.adoptionDraft && <FosterAdoptionDraftForm caseId={caseId} />}
 
           {data.viewerRole === 'CREATOR' && (
@@ -290,6 +390,24 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
                 ))}
               </CardContent>
             </Card>
+          )}
+
+          {data.viewerRole === 'CREATOR' && (rescueCase.volunteerOffers?.length || 0) > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Personas voluntarias contactadas</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {rescueCase.volunteerOffers!.map((offer) => (
+                  <div key={offer.id} className="rounded-xl border border-slate-200 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-medium text-slate-900">{offer.volunteer?.name || 'Persona voluntaria'}</p><p className="text-sm text-slate-500">{VOLUNTEER_ROLE_LABELS[offer.role]} · {offer.distanceKm.toFixed(1)} km</p></div><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionada' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrada'}</Badge></div>
+                    {offer.status === 'INTERESTED' && !rescueCase.volunteerAssignments?.some((assignment) => assignment.needId === offer.needId && assignment.status === 'ACTIVE') && <Button className="mt-3" disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/select`, { method: 'POST' }, 'Tarea asignada. Ya pueden conversar.')}>Elegir responsable</Button>}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {data.viewerRole === 'VOLUNTEER' && myVolunteerOffer?.status === 'PENDING' && (
+            <Card><CardContent className="space-y-4 p-5"><h2 className="font-semibold text-slate-900">¿Podés tomar esta tarea?</h2><p className="text-sm text-slate-600">Mostrar interés no te asigna la tarea; la persona responsable deberá seleccionarte.</p><div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${myVolunteerOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Me interesa</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${myVolunteerOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div></CardContent></Card>
           )}
 
           {data.viewerRole === 'FOSTER' && myOffer?.status === 'PENDING' && (
@@ -314,7 +432,7 @@ export default function RescueCaseDetail({ caseId }: { caseId: string }) {
 
           <Card><CardHeader><CardTitle className="text-base">Actividad</CardTitle></CardHeader><CardContent>{rescueCase.events.length === 0 ? <p className="text-sm text-slate-500">Sin actividad registrada.</p> : <ol className="space-y-4">{rescueCase.events.map((event) => <li key={event.id} className="relative border-l border-slate-200 pl-4"><span className="absolute -left-1.5 top-1 size-3 rounded-full border-2 border-white bg-teal-500" /><p className="text-sm font-medium text-slate-800">{EVENT_LABELS[event.type] || event.type}</p><p className="mt-0.5 text-xs text-slate-600">{new Date(event.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p></li>)}</ol>}</CardContent></Card>
 
-          {data.viewerRole === 'CREATOR' && ['SEARCHING', 'INTERESTED'].includes(rescueCase.status) && (
+          {data.viewerRole === 'CREATOR' && rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status)) && (
             <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" className="w-full text-red-600 hover:bg-red-50 hover:text-red-700">Cancelar caso</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Cancelar la solicitud?</AlertDialogTitle><AlertDialogDescription>Se cerrarán las solicitudes enviadas a los hogares. Esta acción no puede deshacerse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={async () => { const ok = await mutate(`/api/rescue-cases/${caseId}/cancel`, { method: 'POST' }, 'Caso cancelado'); if (ok) router.push('/hogares-de-transito'); }}>Cancelar caso</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
           )}
         </aside>
