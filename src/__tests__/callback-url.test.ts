@@ -22,8 +22,17 @@ describe('sanitizeCallbackUrl', () => {
     expect(sanitizeCallbackUrl('%2F%2Fevil.example')).toBe('/inicio');
   });
 
+  it('rejects doubly encoded open redirects', () => {
+    expect(sanitizeCallbackUrl('%252F%252Fevil.example')).toBe('/inicio');
+    expect(sanitizeCallbackUrl('/%2F%2Fevil.example')).toBe('/inicio');
+    expect(sanitizeCallbackUrl('%2F%5Cevil.example')).toBe('/inicio');
+  });
+
   it('rejects backslashes and protocols inside the value', () => {
     expect(sanitizeCallbackUrl('/\\evil')).toBe('/inicio');
+    expect(sanitizeCallbackUrl('/foo\\bar')).toBe('/inicio');
     expect(sanitizeCallbackUrl('/login?next=https://evil.example')).toBe('/inicio');
+    expect(sanitizeCallbackUrl('/%5Cevil.example')).toBe('/inicio');
   });
 });
+

@@ -11,6 +11,7 @@
     "test:watch": "jest --watch",
     "canary:production": "node scripts/production-canary.mjs",
     "perf:audit": "node scripts/performance-audit.mjs",
+    "qa:visual": "node scripts/visual-qa.mjs",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

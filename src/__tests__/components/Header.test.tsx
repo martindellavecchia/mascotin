@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import Header from '@/components/Header';
 
 jest.mock('next/navigation', () => ({
@@ -54,72 +54,78 @@ describe('Header', () => {
     jest.clearAllMocks();
   });
 
+  async function renderHeader(session: typeof mockSession | null) {
+    await act(async () => {
+      render(<Header session={session} />);
+    });
+  }
+
   describe('Rendering', () => {
-    it('renders header component', () => {
-      render(<Header session={mockSession} />);
+    it('renders header component', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
     });
 
-    it('renders logo', () => {
-      render(<Header session={mockSession} />);
+    it('renders logo', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByText(/mascotin/i)).toBeInTheDocument();
     });
 
-    it('renders home link', () => {
-      render(<Header session={mockSession} />);
+    it('renders home link', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('link', { name: /inicio/i })).toHaveAttribute('href', '/inicio');
     });
 
-    it('renders community link', () => {
-      render(<Header session={mockSession} />);
+    it('renders community link', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('link', { name: /comunidad/i })).toBeInTheDocument();
     });
 
-    it('renders events link', () => {
-      render(<Header session={mockSession} />);
+    it('renders events link', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('link', { name: /eventos/i })).toBeInTheDocument();
     });
 
-    it('renders foster homes and map links', () => {
-      render(<Header session={mockSession} />);
+    it('renders foster homes and map links', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('link', { name: /hogares de tránsito/i })).toHaveAttribute('href', '/hogares-de-transito');
       expect(screen.getByRole('link', { name: /mapa/i })).toBeInTheDocument();
     });
 
-    it('renders services link', () => {
-      render(<Header session={mockSession} />);
+    it('renders services link', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('link', { name: /servicios/i })).toBeInTheDocument();
     });
 
-    it('renders messages link', () => {
-      render(<Header session={mockSession} />);
+    it('renders messages link', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('link', { name: /mensajes/i })).toBeInTheDocument();
     });
 
-    it('renders notifications button', () => {
-      render(<Header session={mockSession} />);
+    it('renders notifications button', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('button', { name: /notificaciones/i })).toBeInTheDocument();
     });
 
-    it('renders user avatar', () => {
-      render(<Header session={mockSession} />);
+    it('renders user avatar', async () => {
+      await renderHeader(mockSession);
 
       expect(screen.getByRole('button', { name: /user menu/i })).toBeInTheDocument();
     });
   });
 
   describe('Null Session', () => {
-    it('renders without crashing when session is null', () => {
-      render(<Header session={null} />);
+    it('renders without crashing when session is null', async () => {
+      await renderHeader(null);
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
     });

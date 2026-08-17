@@ -115,7 +115,8 @@ export default function Header({ session }: HeaderProps) {
   useEffect(() => {
     const syncTab = () => {
       const tab = new URLSearchParams(window.location.search).get('tab');
-      setHomeTab(tab === 'explore' || tab === 'matches' ? tab : 'home');
+      const nextTab = tab === 'explore' || tab === 'matches' ? tab : 'home';
+      setHomeTab((current) => (current === nextTab ? current : nextTab));
     };
 
     syncTab();

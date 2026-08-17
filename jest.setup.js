@@ -98,6 +98,15 @@ if (typeof Headers === 'undefined') {
     set(key, value) {
       this.map.set(key, value);
     }
+    getSetCookie() {
+      return [];
+    }
+  };
+}
+
+if (typeof Headers !== 'undefined' && typeof Headers.prototype.getSetCookie !== 'function') {
+  Headers.prototype.getSetCookie = function getSetCookie() {
+    return [];
   };
 }
 

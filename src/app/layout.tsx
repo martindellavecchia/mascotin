@@ -52,8 +52,12 @@ export default function RootLayout({
             {children}
           </Providers>
         </ErrorBoundary>
-        <Analytics />
-        <SpeedInsights />
+        {process.env.VERCEL ? (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        ) : null}
       </body>
     </html>
   );
