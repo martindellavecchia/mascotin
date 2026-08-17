@@ -8,6 +8,7 @@ jest.mock('@/lib/db', () => ({
     store: { findFirst: jest.fn(), findUnique: jest.fn() },
     appointment: { findFirst: jest.fn() },
     storeReview: { findUnique: jest.fn() },
+    reviewHelpful: { findMany: jest.fn() },
   },
 }));
 jest.mock('@/lib/stores', () => ({ parseStoreImages: () => [] }));
@@ -20,6 +21,7 @@ const mockedDb = db as unknown as {
   store: { findFirst: jest.Mock };
   appointment: { findFirst: jest.Mock };
   storeReview: { findUnique: jest.Mock };
+  reviewHelpful: { findMany: jest.Mock };
 };
 
 function readSource(relativePath: string) {
@@ -63,7 +65,6 @@ describe('public store APIs', () => {
     mockedDb.store.findFirst.mockResolvedValueOnce({
       id: 'store-1',
       providerId: 'owner-1',
-      reviews: [],
     });
 
     const viewer = await getStoreViewerState('paw-spa', null);
@@ -77,5 +78,38 @@ describe('public store APIs', () => {
       helpfulReviewIds: [],
     });
     expect(mockedDb.appointment.findFirst).not.toHaveBeenCalled();
+    expect(mockedDb.reviewHelpful.findMany).not.toHaveBeenCalled();
+  });
+
+  it('loads helpful votes scoped to the authenticated user', async () => {
+    mockedDb.store.findFirst.mockResolvedValueOnce({
+      id: 'store-1',
+      providerId: 'owner-1',
+    });
+    mockedDb.appointment.findFirst.mockResolvedValueOnce({ id: 'appt-1' });
+    mockedDb.storeReview.findUnique.mockResolvedValueOnce(null);
+    mockedDb.reviewHelpful.findMany.mockResolvedValueOnce([{ reviewId: 'rev-1' }]);
+
+    const viewer = await getStoreViewerState('paw-spa', 'user-1');
+
+    expect(mockedDb.reviewHelpful.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', review: { storeId: 'store-1', status: 'PUBLISHED' } },
+      select: { reviewId: true },
+    });
+    expect(viewer).toMatchObject({
+      isAuthenticated: true,
+      helpfulReviewIds: ['rev-1'],
+      reviewEligibility: 'eligible',
+    });
+  });
+
+  it('disables prefetch for authenticated app entrypoints', () => {
+    const header = readSource('src/components/PublicHeader.tsx');
+    const directory = readSource('src/components/shop/ShopDirectory.tsx');
+    expect(header).toContain('href="/inicio" prefetch={false}');
+    expect(directory).toContain('href="/map" prefetch={false}');
+    expect(directory).toContain('href="/provider" prefetch={false}');
+    expect(header).toContain('href="/shop"');
+    expect(header).not.toMatch(/href="\/shop"[^>]*prefetch=\{false\}/);
   });
 });

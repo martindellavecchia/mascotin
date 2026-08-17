@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { invalidatePublicStoreCache } from '@/lib/server/stores';
 
 export async function POST(
   request: Request,
@@ -19,7 +20,7 @@ export async function POST(
     const { slug, reviewId } = await params;
     const review = await db.storeReview.findFirst({
       where: { id: reviewId, status: 'PUBLISHED', store: { OR: [{ id: slug }, { slug }], isActive: true } },
-      select: { id: true },
+      select: { id: true, store: { select: { id: true, slug: true } } },
     });
     if (!review) {
       return NextResponse.json({ success: false, error: 'Reseña no encontrada' }, { status: 404 });
@@ -33,6 +34,13 @@ export async function POST(
       await db.reviewHelpful.create({ data: { reviewId, userId: auth.session.user.id } });
     }
     const helpfulCount = await db.reviewHelpful.count({ where: { reviewId } });
+
+    try {
+      await invalidatePublicStoreCache(review.store);
+    } catch (invalidateError) {
+      console.error('Failed to invalidate store cache after helpful vote:', invalidateError);
+    }
+
     return NextResponse.json({ success: true, isHelpful: !existing, helpfulCount });
   } catch (error) {
     console.error('Error toggling helpful review:', error);
