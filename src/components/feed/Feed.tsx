@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, FilePlus } from 'lucide-react';
 import { Post, Pet } from '@/types';
 import PostCard from './PostCard';
+import CreatePostCard from '@/components/community/CreatePostCard';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import type { RescueNeedType } from '@prisma/client';
@@ -57,6 +59,7 @@ export default function Feed({
     const [posts, setPosts] = useState<ExtendedPost[]>(initialPosts);
     const [loading, setLoading] = useState(initialPosts.length === 0);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [loadError, setLoadError] = useState(false);
     const [editingPost, setEditingPost] = useState<ExtendedPost | null>(null);
     const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
     const [hasMore, setHasMore] = useState(initialHasMore);
@@ -68,6 +71,7 @@ export default function Feed({
             setLoadingMore(true);
         } else {
             setLoading(true);
+            setLoadError(false);
         }
 
         const url = cursor
@@ -93,6 +97,7 @@ export default function Feed({
             setHasMore(result.data.hasMore || false);
         } else {
             toast.error('Error cargando el feed');
+            if (!isLoadMore) setLoadError(true);
         }
 
         setLoading(false);
@@ -134,11 +139,23 @@ export default function Feed({
         [posts, currentUserId, currentUserImage, handleDelete, handleEdit]
     );
 
+    const composer = (
+        <CreatePostCard
+            userImage={currentUserImage || undefined}
+            userName="Tu perfil"
+            pets={pets}
+            initialPetId={selectedPetId}
+            onPostCreated={() => void fetchPosts()}
+        />
+    );
+
     if (loading) {
         return (
-            <div className="space-y-4">
-                {[1, 2].map(i => (
-                    <div key={i} className="bg-white p-4 rounded-xl shadow-sm h-40 animate-pulse">
+            <div>
+                {composer}
+                <div className="space-y-4">
+                  {[1, 2].map(i => (
+                    <div key={i} className="h-40 animate-pulse rounded-lg border border-border bg-surface p-4">
                         <div className="flex gap-3 mb-4">
                             <div className="w-10 h-10 bg-slate-200 rounded-full" />
                             <div className="space-y-2 flex-1">
@@ -148,23 +165,39 @@ export default function Feed({
                         </div>
                         <div className="h-16 bg-slate-200 rounded" />
                     </div>
-                ))}
+                  ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div>
+              {composer}
+              <EmptyState
+                compact
+                title="No pudimos cargar las publicaciones"
+                description="Tu borrador y la mascota activa se mantienen."
+                action={<Button variant="outline" onClick={() => void fetchPosts()}>Intentar de nuevo</Button>}
+              />
             </div>
         );
     }
 
     if (posts.length === 0) {
         return (
-            <div className="text-center py-10 bg-white rounded-xl shadow-sm border border-slate-100">
-                <FilePlus className="mb-2 size-10 text-slate-300" aria-hidden="true" />
-                <p className="text-slate-500">No hay publicaciones aún.</p>
+            <div>
+              {composer}
+              <EmptyState compact icon={<FilePlus className="size-10" aria-hidden="true" />} title="Todavía no hay publicaciones" description="Podés ser la primera persona en compartir una novedad." />
             </div>
         );
     }
 
     return (
-        <div className="space-y-4">
-            {postCards}
+        <div>
+            {composer}
+            <div className="space-y-4">{postCards}</div>
 
             {/* Load More Button */}
             {hasMore && (

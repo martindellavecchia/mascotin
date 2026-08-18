@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowRight, CircleAlert, CircleCheck, PawPrint } from 'lucide-react';
+import { ArrowRight, CircleAlert, CircleCheck } from 'lucide-react';
+import BrandLink from '@/components/brand/BrandLink';
+import { Button } from '@/components/ui/button';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -43,44 +46,40 @@ function VerifyEmailContent() {
     <div className="text-center space-y-4">
       {status === 'loading' && (
         <>
-          <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
             <div className="w-8 h-8 border-[3px] border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-800">Verificando email...</h1>
-          <p className="text-slate-600">Espera un momento mientras verificamos tu correo.</p>
+          <h1 className="text-2xl font-bold text-slate-800">Verificando correo...</h1>
+          <p className="text-slate-600">Esperá un momento mientras verificamos tu correo.</p>
         </>
       )}
 
       {status === 'success' && (
         <>
-          <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
             <CircleCheck className="size-8" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-800">Email verificado</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Correo verificado</h1>
           <p className="text-slate-600">{message}</p>
-          <a
-            href="/login"
-            className="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full bg-teal-500 hover:bg-teal-600 text-white font-bold transition-all shadow-lg shadow-teal-500/25"
-          >
-            Iniciar sesión
-            <ArrowRight className="size-5" aria-hidden="true" />
-          </a>
+          <Button asChild className="mt-4">
+            <Link href="/login">Iniciar sesión<ArrowRight className="ml-2 size-5" aria-hidden="true" /></Link>
+          </Button>
         </>
       )}
 
       {status === 'error' && (
         <>
-          <div className="flex items-center justify-center size-16 rounded-full bg-red-100 text-red-600 mx-auto">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-red-100 text-red-600">
             <CircleAlert className="size-8" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-800">Error de verificación</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Error de verificación</h1>
           <p className="text-slate-600">{message}</p>
-          <a
+          <Link
             href="/login"
             className="mt-4 inline-flex min-h-11 items-center text-teal-600 font-bold hover:text-teal-700 transition-colors"
           >
             Volver al inicio de sesión
-          </a>
+          </Link>
         </>
       )}
     </div>
@@ -89,14 +88,9 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 px-6">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background px-6">
       <div className="w-full max-w-[440px]">
-        <div className="flex items-center gap-3 text-slate-800 mb-10 justify-center">
-          <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600">
-            <PawPrint className="size-7" aria-hidden="true" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
-        </div>
+        <BrandLink priority className="mb-10 flex w-full justify-center" logoClassName="h-12" />
 
         <Suspense fallback={<div className="text-center text-slate-500">Cargando...</div>}>
           <VerifyEmailContent />

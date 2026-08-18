@@ -16,9 +16,9 @@ const profileSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   bio: z.string().min(10, 'La bio debe tener al menos 10 caracteres').max(500, 'Máximo 500 caracteres'),
   age: z.number().min(18, 'Debes tener al menos 18 años').max(100, 'Edad no válida'),
-  gender: z.enum(['male', 'female'], 'Selecciona tu género'),
+  gender: z.enum(['male', 'female'], 'Seleccioná tu género'),
   location: z.string().min(2, 'La ubicación es requerida'),
-  interests: z.string().min(1, 'Agrega al menos un interés'),
+  interests: z.string().min(1, 'Agregá al menos un interés'),
 });
 
 interface ProfileFormProps {
@@ -182,7 +182,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona tu género" />
+                    <SelectValue placeholder="Seleccioná tu género" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -217,7 +217,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
               <FormLabel>Biografía</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Cuéntanos sobre ti..."
+                  placeholder="Contanos sobre vos..."
                   className="resize-none"
                   rows={4}
                   {...field}
@@ -258,7 +258,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 size-7 gap-0 rounded-full p-0"
+                  className="absolute top-2 right-2 size-7 gap-0 rounded-md p-0"
                   onClick={() => removeImage(index)}
                   aria-label="Eliminar foto"
                 >
@@ -302,7 +302,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
               Guardando...
             </>
           ) : (
-            'Guardar Perfil'
+            'Guardar perfil'
           )}
         </Button>
       </form>

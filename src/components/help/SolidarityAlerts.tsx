@@ -122,7 +122,7 @@ export default function SolidarityAlerts() {
               />
               <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                 <Checkbox checked={locationConsent} onCheckedChange={(checked) => setLocationConsent(checked === true)} />
-                <span>Acepto que MascoTin use esta ubicación sólo para calcular coincidencias. Nadie verá mis coordenadas.</span>
+                <span>Acepto que Huella use esta ubicación sólo para calcular coincidencias. Nadie verá mis coordenadas.</span>
               </label>
             </CardContent>
           </Card>

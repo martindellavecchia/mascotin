@@ -14,7 +14,9 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -178,8 +180,8 @@ export default function ProviderPage() {
 
     if (loading || status === 'loading') {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8 flex justify-center">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto flex max-w-6xl justify-center px-4 py-8">
                     <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
                 </div>
             </div>
@@ -189,15 +191,16 @@ export default function ProviderPage() {
     // Already a provider — show dashboard
     if (provider) {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+                    <PageHeader title="Panel de proveedor" description="Gestioná tu negocio, servicios y citas desde un solo lugar." />
+                    <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
                         <div className="lg:col-span-1">
                             <Card>
                                 <CardContent className="p-6">
                                     <div className="text-center mb-4">
-                                        <div className="w-20 h-20 bg-teal-100 rounded-full mx-auto flex items-center justify-center mb-3">
-                                            <Store className="size-10 text-teal-600" aria-hidden="true" />
+                                        <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-lg bg-primary-soft">
+                                            <Store className="size-7 text-primary" aria-hidden="true" />
                                         </div>
                                         <h2 className="text-xl font-bold text-slate-800">{provider.businessName}</h2>
                                         <p className="text-sm text-slate-500 flex items-center justify-center gap-1">
@@ -205,10 +208,10 @@ export default function ProviderPage() {
                                             {provider.location}
                                         </p>
                                     </div>
-                                    <div className="flex justify-center gap-4 mb-4">
+                                    <dl className="mb-4 grid grid-cols-3 divide-x divide-border border-y border-border py-3">
                                         <div className="text-center">
                                             <p className="text-2xl font-bold text-teal-600">{provider.rating.toFixed(1)}</p>
-                                            <p className="text-xs text-slate-500">Rating</p>
+                                            <p className="text-xs text-slate-500">Calificación</p>
                                         </div>
                                         <div className="text-center">
                                             <p className="text-2xl font-bold text-slate-700">{provider.reviewCount}</p>
@@ -218,7 +221,7 @@ export default function ProviderPage() {
                                             <p className="text-2xl font-bold text-slate-700">{services.length}</p>
                                             <p className="text-xs text-slate-500">Servicios</p>
                                         </div>
-                                    </div>
+                                    </dl>
                                     {provider.description && (
                                         <p className="text-sm text-slate-600 text-center">{provider.description}</p>
                                     )}
@@ -237,27 +240,22 @@ export default function ProviderPage() {
                                 </TabsContent>
                                 <TabsContent value="services">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-xl font-bold text-slate-800">Mis Servicios</h2>
-                                        <Button className="bg-teal-500 hover:bg-teal-600" onClick={() => setAddServiceOpen(true)}>
+                                        <h2 className="text-xl font-bold text-slate-800">Mis servicios</h2>
+                                        <Button onClick={() => setAddServiceOpen(true)}>
                                             <Plus className="mr-2 size-5" aria-hidden="true" />
                                             Agregar servicio
                                         </Button>
                                     </div>
                                     {services.length === 0 ? (
-                                        <Card>
-                                            <CardContent className="p-8 text-center">
-                                                <Briefcase className="mb-2 size-12 text-slate-300" aria-hidden="true" />
-                                                <p className="text-slate-500">No tienes servicios aún.</p>
-                                                <Button variant="link" className="text-teal-600 mt-2" onClick={() => setAddServiceOpen(true)}>
-                                                    Agregar tu primer servicio
-                                                </Button>
-                                            </CardContent>
-                                        </Card>
+                                        <EmptyState
+                                            icon={<Briefcase className="size-11" aria-hidden="true" />}
+                                            title="Todavía no publicaste servicios"
+                                            action={<Button onClick={() => setAddServiceOpen(true)}>Agregar el primero</Button>}
+                                        />
                                     ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="divide-y divide-border border-y border-border bg-surface">
                                             {services.map(service => (
-                                                <Card key={service.id} className="hover:shadow-md transition-shadow">
-                                                    <CardContent className="p-4">
+                                                <div key={service.id} className="p-4">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <h3 className="font-semibold text-slate-800">{service.name}</h3>
                                                             <Badge variant="outline">{service.duration} min</Badge>
@@ -267,8 +265,7 @@ export default function ProviderPage() {
                                                             <span className="text-lg font-bold text-teal-600">${service.price.toLocaleString()}</span>
                                                             <span className="text-xs text-slate-400">{service._count?.appointments || 0} reservas</span>
                                                         </div>
-                                                    </CardContent>
-                                                </Card>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
@@ -307,7 +304,7 @@ export default function ProviderPage() {
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setAddServiceOpen(false)}>Cancelar</Button>
-                            <Button className="bg-teal-500 hover:bg-teal-600" onClick={handleAddService} disabled={submitting}>
+                            <Button onClick={handleAddService} disabled={submitting}>
                                 {submitting ? 'Guardando...' : 'Guardar servicio'}
                             </Button>
                         </DialogFooter>
@@ -320,8 +317,8 @@ export default function ProviderPage() {
     // Request form
     if (isRegistering) {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8 max-w-xl">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto max-w-xl px-4 py-8 sm:px-6">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -340,12 +337,12 @@ export default function ProviderPage() {
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-slate-700">Descripción</label>
-                                <Textarea placeholder="Cuéntanos sobre tu negocio..." value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                                <Textarea placeholder="Contanos sobre tu negocio" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-slate-700">¿Por qué quieres ser proveedor? *</label>
+                                <label className="text-sm font-medium text-slate-700">¿Por qué querés ser proveedor? *</label>
                                 <Textarea
-                                    placeholder="Cuéntanos tu experiencia y motivación..."
+                                    placeholder="Contanos tu experiencia y motivación"
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
                                     rows={3}
@@ -355,7 +352,7 @@ export default function ProviderPage() {
                                 <Button variant="outline" onClick={() => setIsRegistering(false)} className="flex-1">
                                     Cancelar
                                 </Button>
-                                <Button className="flex-1 bg-teal-500 hover:bg-teal-600" onClick={handleSubmitRequest} disabled={submitting}>
+                                <Button className="flex-1" onClick={handleSubmitRequest} disabled={submitting}>
                                     {submitting ? 'Enviando...' : 'Enviar solicitud'}
                                 </Button>
                             </div>
@@ -369,11 +366,11 @@ export default function ProviderPage() {
     // Pending request
     if (providerRequest?.status === 'PENDING') {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8 max-w-2xl">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
                     <Card className="text-center">
                         <CardContent className="p-8">
-                            <div className="w-16 h-16 bg-amber-100 rounded-full mx-auto flex items-center justify-center mb-4">
+                            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-amber-100">
                                 <Clock className="size-8 text-amber-600" aria-hidden="true" />
                             </div>
                             <h1 className="text-2xl font-bold text-slate-800 mb-2">Tu solicitud está en revisión</h1>
@@ -394,11 +391,11 @@ export default function ProviderPage() {
     // Rejected request
     if (providerRequest?.status === 'REJECTED') {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8 max-w-2xl">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
                     <Card className="text-center">
                         <CardContent className="p-8">
-                            <div className="w-16 h-16 bg-red-100 rounded-full mx-auto flex items-center justify-center mb-4">
+                            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-red-100">
                                 <CircleX className="size-8 text-red-600" aria-hidden="true" />
                             </div>
                             <h1 className="text-2xl font-bold text-slate-800 mb-2">Tu solicitud fue rechazada</h1>
@@ -408,9 +405,8 @@ export default function ProviderPage() {
                                     <p className="text-slate-700">{providerRequest.adminNote}</p>
                                 </div>
                             )}
-                            <p className="text-slate-600 mb-6">Puedes enviar una nueva solicitud con información actualizada.</p>
+                            <p className="mb-6 text-slate-600">Podés enviar una nueva solicitud con información actualizada.</p>
                             <Button
-                                className="bg-teal-500 hover:bg-teal-600"
                                 onClick={() => {
                                     setBusinessName('');
                                     setDescription('');
@@ -431,17 +427,16 @@ export default function ProviderPage() {
 
     // No request yet — show call to action
     return (
-        <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="min-h-screen bg-background">
+            <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
                 <Card className="text-center">
                     <CardContent className="p-8">
                         <Store className="mb-4 size-16 text-teal-500" aria-hidden="true" />
-                        <h1 className="text-2xl font-bold text-slate-800 mb-2">¿Ofreces servicios para mascotas?</h1>
+                        <h1 className="mb-2 text-2xl font-bold text-slate-800">¿Ofrecés servicios para mascotas?</h1>
                         <p className="text-slate-600 mb-6">
-                            Únete como proveedor y llega a miles de dueños de mascotas.
-                            Ofrece tus servicios de veterinaria, paseos, grooming y más.
+                            Publicá tus servicios, recibí consultas y administrá las citas desde Huella.
                         </p>
-                        <Button size="lg" className="bg-teal-500 hover:bg-teal-600" onClick={() => setIsRegistering(true)}>
+                        <Button size="lg" onClick={() => setIsRegistering(true)}>
                             <Store className="mr-2 size-5" aria-hidden="true" />
                             Solicitar acceso de proveedor
                         </Button>

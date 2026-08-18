@@ -44,7 +44,7 @@ describe('HelpCenter', () => {
 
     expect(screen.getByRole('heading', { name: 'Ayuda temporal' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Adopción definitiva' })).toBeInTheDocument();
-    expect(screen.queryByText('Módulo principal de MascoTin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Módulo principal de Huella')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Encontré una mascota/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ofrecer mi hogar/i })).toBeInTheDocument();
 

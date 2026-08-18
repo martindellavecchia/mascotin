@@ -6,7 +6,9 @@ import { PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import LostPetForm from '@/components/community/LostPetForm';
@@ -110,12 +112,10 @@ function AlertsPageContent() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Alertas</h1>
-          <p className="text-slate-500">Mascotas perdidas, encontradas y avistamientos.</p>
-        </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+      <PageHeader
+        title="Alertas"
+        description="Mascotas perdidas, encontradas y avistamientos de la comunidad."
+        action={<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button
             variant="outline"
             className="w-full sm:w-auto"
@@ -133,8 +133,8 @@ function AlertsPageContent() {
           >
             Reportar perdida
           </Button>
-        </div>
-      </div>
+        </div>}
+      />
 
       <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="min-w-0">
         <TabsList className="grid h-auto w-full grid-cols-3">
@@ -158,14 +158,14 @@ function AlertsPageContent() {
           </Card>
         ))}
         {!loading && loadError && (
-          <Card className="p-8 text-center">
-            <h2 className="font-semibold text-slate-900">No pudimos cargar las alertas</h2>
-            <p className="mt-1 text-sm text-slate-500">Intentá nuevamente en unos segundos.</p>
-            <Button className="mt-4" variant="outline" onClick={() => void load()}>Reintentar</Button>
-          </Card>
+          <EmptyState
+            title="No pudimos cargar las alertas"
+            description="Intentá nuevamente en unos segundos."
+            action={<Button variant="outline" onClick={() => void load()}>Reintentar</Button>}
+          />
         )}
         {!loading && !loadError && alerts.length === 0 && (
-          <Card className="p-8 text-center text-slate-500">No hay alertas en esta sección.</Card>
+          <EmptyState title="No hay alertas en esta sección" />
         )}
         {!loading && !loadError && alerts.map((alert) => {
           const image = getPrimaryImageUrl(alert.images);
@@ -205,7 +205,7 @@ function AlertsPageContent() {
                     Registrar avistamiento
                   </Button>
                   {sightingPostId === alert.id && (
-                    <div className="space-y-2 rounded-xl bg-slate-50 p-3">
+                    <div className="space-y-2 border-t border-border pt-3">
                       <Input
                         placeholder="Dónde la viste"
                         value={sightingLocation}

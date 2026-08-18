@@ -74,8 +74,8 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
     };
 
     const nextStep = () => {
-        if (currentStep === 1 && !formData.petType) return toast.error('Selecciona un tipo de mascota');
-        if (currentStep === 2 && (!formData.name || !formData.gender)) return toast.error('Completa los campos requeridos');
+        if (currentStep === 1 && !formData.petType) return toast.error('Seleccioná un tipo de mascota');
+        if (currentStep === 2 && (!formData.name || !formData.gender)) return toast.error('Completá los campos requeridos');
 
         setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     };
@@ -110,7 +110,7 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
         }
 
         if (!location) {
-            return toast.error('La ubicación es requerida. Completa tu perfil de dueño primero.');
+            return toast.error('La ubicación es obligatoria. Completá tu perfil primero.');
         }
 
         const activities = formData.activities.filter((a) =>
@@ -162,7 +162,7 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
                 <Progress value={(currentStep / totalSteps) * 100} className="h-2 bg-teal-100" />
             </div>
 
-            <Card className="p-6 min-h-[400px] flex flex-col justify-between shadow-lg border-teal-50">
+            <Card className="flex min-h-[400px] flex-col justify-between p-6">
                 <div className="flex-1">
                     {currentStep === 1 && <StepPetType value={formData.petType} onChange={(val) => updateData({ petType: val })} />}
                     {currentStep === 2 && <StepBasicInfo data={formData} updateData={updateData} />}
@@ -182,14 +182,14 @@ export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: Pe
                     </Button>
 
                     {currentStep < totalSteps ? (
-                        <Button onClick={nextStep} className="bg-teal-500 hover:bg-teal-600 px-8">
+                        <Button onClick={nextStep} className="px-8">
                             Siguiente
                         </Button>
                     ) : (
                         <Button
                             onClick={handleSubmit}
                             disabled={loading}
-                            className="bg-teal-500 hover:bg-teal-600 text-white px-8"
+                            className="px-8"
                         >
                             {loading ? 'Creando...' : 'Finalizar'}
                         </Button>

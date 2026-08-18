@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import HomeClientShell from '@/components/home/HomeClientShell';
 
@@ -212,9 +212,11 @@ describe('HomeClientShell', () => {
   });
 
   it('fetches explore data only after opening the explore tab', async () => {
-    const user = userEvent.setup();
     renderShell();
-    await user.click(screen.getByRole('button', { name: /descubrir/i }));
+    window.history.replaceState(null, '', '/?tab=explore&petId=pet-1');
+    act(() => {
+      window.dispatchEvent(new Event('huella:home-tab'));
+    });
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/pets?currentPetId=pet-1');
@@ -237,7 +239,8 @@ describe('HomeClientShell', () => {
     const replaceState = jest.spyOn(window.history, 'replaceState');
     const user = userEvent.setup();
     renderShell();
-    await user.click(screen.getByRole('button', { name: /descubrir/i }));
+    await user.click(screen.getByRole('button', { name: /círculo/i }));
+    await user.click(screen.getByRole('button', { name: /seguir descubriendo/i }));
 
     expect(replaceState).toHaveBeenCalled();
     const url = String(replaceState.mock.calls.at(-1)?.[2] || '');

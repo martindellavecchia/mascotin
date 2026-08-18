@@ -26,7 +26,7 @@ export const RESCUE_STATUS_LABELS: Record<string, string> = {
   ASSISTANCE_ACTIVE: 'Ayuda operativa en curso',
   IN_FOSTER: 'En hogar de tránsito',
   RESOLVED: 'Resuelto',
-  NEEDS_ADOPTION: 'Busca adopción',
+  NEEDS_ADOPTION: 'En búsqueda de adopción',
   CANCELLED: 'Cancelado',
 };
 

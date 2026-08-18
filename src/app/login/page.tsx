@@ -5,7 +5,8 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CircleAlert, Eye, EyeOff, PawPrint } from 'lucide-react';
+import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import BrandLink from '@/components/brand/BrandLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { sanitizeCallbackUrl } from '@/lib/callback-url';
@@ -54,7 +55,7 @@ export default function LoginPage() {
           }
         }
       } else {
-        toast.success('Bienvenido a MascoTin');
+        toast.success('Bienvenido a Huella');
         const callbackUrl = sanitizeCallbackUrl(new URLSearchParams(window.location.search).get('callbackUrl'));
         router.push(callbackUrl);
         router.refresh();
@@ -70,18 +71,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen w-full flex-row">
       <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-12 lg:px-20 xl:px-24 bg-slate-50 relative">
         <header className="absolute top-0 left-0 w-full p-6 sm:p-8 lg:p-10">
-          <Link href="/" className="flex items-center gap-2.5 text-slate-900">
-            <div className="flex items-center justify-center size-10 rounded-lg bg-teal-600 text-white">
-              <PawPrint className="size-7" aria-hidden="true" fill="currentColor" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">MascoTin</span>
-          </Link>
+          <BrandLink priority logoClassName="h-11" />
         </header>
 
         <div className="w-full max-w-[420px] mx-auto mt-16 sm:mt-0">
           <div className="mb-8 space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
-              Inicia sesión
+              Iniciá sesión
             </h1>
             <p className="text-slate-600 text-base leading-relaxed">
               Accede para conectar a tu mascota con amigos, comunidad y servicios.
@@ -96,7 +92,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="hola@mascotin.com"
+                placeholder="hola@huella.app"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -149,7 +145,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-semibold text-base"
+              className="h-12 w-full text-base"
               disabled={loading}
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
@@ -176,9 +172,9 @@ export default function LoginPage() {
           className="object-cover object-center"
           sizes="(min-width: 1024px) 60vw, 0px"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/25 to-transparent" />
+        <div className="absolute inset-0 bg-slate-950/55" />
         <div className="relative z-10 flex flex-col justify-end p-12 xl:p-16 w-full">
-          <p className="text-white text-4xl font-bold tracking-tight mb-2">MascoTin</p>
+          <p className="text-white text-4xl font-bold tracking-tight mb-2">Huella</p>
           <p className="text-white/85 text-lg max-w-md leading-relaxed">
             Donde las mascotas encuentran compañía y sus dueños, una comunidad.
           </p>

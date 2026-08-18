@@ -104,7 +104,7 @@ export async function POST(
       actorId: auth.session.user.id,
       type: 'FOSTER_PLACEMENT',
       title: 'Te eligieron para este tránsito',
-      body: 'Ya pueden conversar y coordinar la entrega dentro de MascoTin',
+      body: 'Ya pueden conversar y coordinar la entrega dentro de Huella',
       link: `/hogares-de-transito/casos/${offer.rescueCaseId}?contact=1&kind=foster&offer=${offer.id}`,
       entityId: placement.id,
     });

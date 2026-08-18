@@ -63,7 +63,7 @@ export default function SuggestedPets({
 
     const handleSwipe = async (toPetId: string, isLike: boolean) => {
         if (!selectedPetId) {
-            toast.error('Selecciona una mascota primero');
+            toast.error('Seleccioná una mascota primero');
             return;
         }
 

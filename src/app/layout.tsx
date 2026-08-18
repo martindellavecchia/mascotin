@@ -13,27 +13,27 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "MascoTin | Conecta con cuidadores y servicios para tu mascota",
+  title: "Huella | Comunidad, cuidado y encuentros para mascotas",
   description:
-    "Plataforma para conectar dueños de mascotas con cuidadores profesionales, servicios veterinarios y comunidad local.",
-  keywords: ["MascoTin", "mascotas", "cuidadores", "veterinarios", "servicios", "comunidad"],
-  authors: [{ name: "MascoTin" }],
+    "Una red cercana para conocer mascotas, coordinar ayuda, participar en comunidad y encontrar servicios confiables.",
+  keywords: ["Huella", "mascotas", "hogares de tránsito", "adopción", "servicios", "comunidad"],
+  authors: [{ name: "Huella" }],
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/favicon.ico" }, { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
-    apple: "/icons/icon-192.png",
+    icon: [{ url: "/brand/huella-logo.png", sizes: "any", type: "image/png" }],
+    apple: "/brand/huella-logo.png",
   },
   openGraph: {
-    title: "MascoTin",
-    description: "Conecta con cuidadores y servicios para el bienestar de tu mascota",
+    title: "Huella",
+    description: "Comunidad, cuidado y encuentros para mascotas",
     url: "https://mascotin.app",
-    siteName: "MascoTin",
+    siteName: "Huella",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MascoTin",
-    description: "Conecta con cuidadores y servicios para el bienestar de tu mascota",
+    title: "Huella",
+    description: "Comunidad, cuidado y encuentros para mascotas",
   },
 };
 
@@ -45,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${plusJakartaSans.variable} font-sans antialiased bg-slate-50`}
+        className={`${plusJakartaSans.variable} bg-background font-sans text-foreground antialiased`}
       >
         <ErrorBoundary>
           <Providers>

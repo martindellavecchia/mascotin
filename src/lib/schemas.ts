@@ -21,7 +21,7 @@ export const petSchema = z.object({
     message: "El nivel de energía es requerido",
   }),
   bio: z.string().min(10, "La bio debe tener al menos 10 caracteres").max(500),
-  activities: z.array(z.enum(['walk', 'play', 'fetch', 'swim', 'socialize', 'groom', 'training'])).min(1, "Selecciona al menos una actividad"),
+  activities: z.array(z.enum(['walk', 'play', 'fetch', 'swim', 'socialize', 'groom', 'training'])).min(1, "Seleccioná al menos una actividad"),
   location: z.string().min(2, "La ubicación es requerida").max(100),
   images: z.array(z.string())
     .min(1, "Al menos una imagen es requerida")

@@ -29,7 +29,7 @@ export function ActivitiesSection({ form }: ActivitiesSectionProps) {
           </label>
         ))}
       </div>
-      <p className="text-xs text-gray-500 mt-2">Selecciona al menos una actividad</p>
+      <p className="text-xs text-gray-500 mt-2">Seleccioná al menos una actividad</p>
     </div>
   );
 }

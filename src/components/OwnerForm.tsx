@@ -136,7 +136,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="absolute bottom-0 right-0 p-2 bg-teal-500 text-white rounded-full shadow-md hover:bg-teal-600 transition-colors disabled:opacity-50"
+              className="absolute bottom-0 right-0 rounded-lg bg-primary p-2 text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50"
               aria-label="Cambiar foto de perfil"
             >
               {uploading ? (
@@ -161,7 +161,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre Completo</FormLabel>
+              <FormLabel>Nombre completo</FormLabel>
               <FormControl>
                 <Input placeholder="Tu nombre" {...field} />
               </FormControl>
@@ -206,7 +206,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
               <FormLabel>Biografía (opcional)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Cuéntanos sobre ti como dueño de mascota..."
+                  placeholder="Contanos sobre vos y tus mascotas..."
                   className="resize-none"
                   rows={3}
                   {...field}
@@ -220,7 +220,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
         />
 
         <div className="space-y-3">
-          <Label className="text-gray-700 font-medium">Información Adicional</Label>
+          <Label className="text-gray-700 font-medium">Información adicional</Label>
           <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
@@ -264,14 +264,14 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
           </div>
         </div>
 
-        <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading}>
+        <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
               Guardando...
             </>
           ) : (
-            'Guardar Perfil de Dueño'
+            'Guardar perfil'
           )}
         </Button>
       </form>

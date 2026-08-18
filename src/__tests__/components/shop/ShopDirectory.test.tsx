@@ -39,7 +39,7 @@ describe('ShopDirectory', () => {
     expect(screen.getByRole('combobox', { name: 'Filtrar por categoría' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Filtrar por calificación' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Ordenar negocios' })).toBeInTheDocument();
-    expect(screen.getByText('Publicá o administrá tu negocio')).toBeInTheDocument();
+    expect(screen.getByText('Administrar un negocio')).toBeInTheDocument();
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
@@ -121,6 +121,6 @@ describe('ShopDirectory', () => {
       jest.advanceTimersByTime(250);
     });
 
-    expect(await screen.findByText(/Todavía no hay negocios con esos filtros/i)).toBeInTheDocument();
+    expect(await screen.findByText(/No encontramos negocios con esos filtros/i)).toBeInTheDocument();
   });
 });

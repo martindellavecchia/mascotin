@@ -25,7 +25,7 @@ export default function BusinessOwnerBadge({ className, compact = false }: Busin
             <Store className="size-3" aria-hidden="true" />
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top">Owner de negocio en MascoTin</TooltipContent>
+        <TooltipContent side="top">Owner de negocio en Huella</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

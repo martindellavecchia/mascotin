@@ -24,7 +24,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
 
     if (empty) {
         return (
-            <Card className="shadow-sm border-0 bg-white">
+            <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg flex items-center gap-2">
                         <Info className="size-5 text-teal-500" aria-hidden="true" />
@@ -33,7 +33,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                 </CardHeader>
                 <CardContent>
                     <p className="text-slate-500 text-sm mb-3">
-                        Aún no has escrito tu biografía. Cuéntales a otros dueños un poco sobre ti.
+                        Todavía no escribiste tu biografía. Contale a la comunidad un poco sobre vos.
                     </p>
                     {onEdit && (
                         <Button
@@ -56,7 +56,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
     const content = expanded ? displayBio : displayBio.slice(0, 150) + (isLongText ? '...' : '');
 
     return (
-        <Card className="shadow-sm border-0 bg-white">
+        <Card>
             <CardHeader className="pb-2">
                 <CardTitle
                     className="text-lg flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors"

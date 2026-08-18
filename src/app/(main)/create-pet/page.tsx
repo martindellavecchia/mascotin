@@ -4,8 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoaderCircle, UserPlus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PetForm from '@/components/PetForm';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import OwnerForm from '@/components/OwnerForm';
 import type { Owner, Pet } from '@/types';
 import PetOnboardingWizard from '@/components/onboarding/PetOnboardingWizard';
@@ -45,25 +44,25 @@ function CreatePetContent() {
   if (status === 'unauthenticated') return null;
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <LoaderCircle className="size-12 text-teal-500 animate-spin" aria-hidden="true" />
       </div>
     );
   }
   if (!owner) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <main className="flex-1 container mx-auto px-4 py-8">
-          <Card className="w-full max-w-2xl mx-auto shadow-sm border-0 bg-white">
+          <Card className="mx-auto w-full max-w-2xl">
             <CardHeader className="text-center pb-2">
-              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-primary-soft">
                 <UserPlus className="size-8 text-teal-600" aria-hidden="true" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">
-                Completa tu Perfil de Dueño
-              </CardTitle>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Completá tu perfil
+              </h1>
               <p className="text-gray-500 mt-2">
-                Antes de registrar una mascota, necesitamos algunos datos sobre ti
+                Antes de registrar una mascota, necesitamos algunos datos sobre vos.
               </p>
             </CardHeader>
             <CardContent>
@@ -80,8 +79,8 @@ function CreatePetContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <main className="flex-1 container mx-auto px-4 py-8 flex justify-center">
+    <div className="flex min-h-screen flex-col bg-background">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 justify-center px-4 py-8 sm:px-6">
         <PetOnboardingWizard
           ownerId={owner.id}
           onSuccess={() => router.push('/inicio')}
@@ -94,7 +93,7 @@ function CreatePetContent() {
 
 export default function CreatePetPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-12 h-12 border-4 border-green-200 border-t-teal-500 rounded-full animate-spin" />
     </div>}>
       <CreatePetContent />

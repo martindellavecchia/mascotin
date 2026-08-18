@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ title, price, image, category }: ProductCardProps) {
     return (
-        <Card className="overflow-hidden group hover:shadow-lg transition-all">
+        <Card className="group overflow-hidden transition-colors hover:border-primary/40">
             <div className="relative h-48 overflow-hidden">
                 <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <Badge className="absolute top-3 right-3 bg-white/90 text-gray-800 hover:bg-white">{category}</Badge>
@@ -23,7 +23,7 @@ export default function ProductCard({ title, price, image, category }: ProductCa
                 <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">{title}</h3>
                 <div className="flex items-center justify-between mt-4">
                     <span className="font-bold text-lg text-gray-900">${price.toLocaleString()}</span>
-                    <Button size="sm" className="rounded-full w-8 h-8 p-0 bg-teal-500 hover:bg-teal-600" aria-label="Agregar al carrito">
+                    <Button size="sm" className="h-8 w-8 rounded-md bg-teal-500 p-0 hover:bg-teal-600" aria-label="Agregar al carrito">
                         <Plus className="size-4 text-white" aria-hidden="true" />
                     </Button>
                 </div>

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, MailCheck, PawPrint } from 'lucide-react';
+import { LoaderCircle, Mail, MailCheck } from 'lucide-react';
+import BrandLink from '@/components/brand/BrandLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -27,7 +28,7 @@ export default function ForgotPasswordPage() {
 
       if (data.success) {
         setSent(true);
-        toast.success('Revisa tu correo electrónico');
+        toast.success('Revisá tu correo electrónico');
       } else {
         toast.error(data.error || 'Error al procesar solicitud');
       }
@@ -39,24 +40,18 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 px-6">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background px-6">
       <div className="w-full max-w-[440px]">
-        {/* Header Logo */}
-        <div className="flex items-center gap-3 text-slate-800 mb-10 justify-center">
-          <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600">
-            <PawPrint className="size-7" aria-hidden="true" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
-        </div>
+        <BrandLink priority className="mb-10 flex w-full justify-center" logoClassName="h-12" />
 
         {sent ? (
           <div className="text-center space-y-4">
-            <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <MailCheck className="size-8" aria-hidden="true" />
             </div>
-            <h1 className="text-2xl font-extrabold text-slate-800">Revisa tu correo</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Revisá tu correo</h1>
             <p className="text-slate-600">
-              Si el email <span className="font-semibold">{email}</span> está registrado, recibirás instrucciones para restablecer tu contraseña.
+              Si el correo <span className="font-semibold">{email}</span> está registrado, vas a recibir instrucciones para restablecer tu contraseña.
             </p>
             <Link href="/login" className="mt-4 inline-flex min-h-11 items-center text-teal-600 font-bold hover:text-teal-700 transition-colors">
               Volver al inicio de sesión
@@ -69,7 +64,7 @@ export default function ForgotPasswordPage() {
                 Recuperar <span className="text-teal-500">contraseña</span>
               </h1>
               <p className="text-slate-600 text-base font-medium">
-                Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
+                Ingresá tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
               </p>
             </div>
 
@@ -80,12 +75,12 @@ export default function ForgotPasswordPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="hola@mascotin.com"
+                    placeholder="hola@huella.app"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
-                    className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
+                    className="h-12 w-full pr-11 text-base"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                     <Mail className="size-5" aria-hidden="true" />
@@ -96,12 +91,13 @@ export default function ForgotPasswordPage() {
               <div className="pt-2">
                 <Button
                   type="submit"
-                  className="group relative flex w-full h-14 items-center justify-center overflow-hidden rounded-full bg-teal-500 hover:bg-teal-600 text-white font-bold text-lg tracking-wide transition-all shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40"
+                  size="lg"
+                  className="w-full"
                   disabled={loading}
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                      <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />
                       Enviando...
                     </>
                   ) : (

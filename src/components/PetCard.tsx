@@ -89,7 +89,7 @@ export default function PetCard({
   };
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <article className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface">
       <div className="grid min-h-0 lg:min-h-[520px] lg:grid-cols-[47%_53%] 2xl:min-h-[640px]">
         <div className="relative min-h-[200px] overflow-hidden bg-slate-100 sm:min-h-[240px] lg:min-h-full">
           {hasImage ? (
@@ -120,7 +120,7 @@ export default function PetCard({
               size="icon"
               variant="secondary"
               onClick={nextImage}
-              className="absolute bottom-5 right-5 size-11 rounded-full border border-white/50 bg-white/90 text-slate-900 hover:bg-white"
+              className="absolute bottom-5 right-5 size-11 rounded-md border border-white/50 bg-white/90 text-slate-900 hover:bg-white"
               aria-label="Ver siguiente foto"
             >
               <ArrowRight className="size-5" aria-hidden="true" />
@@ -145,14 +145,14 @@ export default function PetCard({
               <Avatar className="size-12 border border-slate-200">
                 {pet.owner?.image && <AvatarImage src={pet.owner.image} alt={pet.owner.name} />}
                 <AvatarFallback className="bg-teal-50 text-sm font-bold text-teal-700">
-                  {(pet.owner?.name || 'MascoTin').slice(0, 2).toUpperCase()}
+                  {(pet.owner?.name || 'Huella').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate font-semibold text-slate-900">
-                  {pet.owner?.name || 'Comunidad MascoTin'}
+                  {pet.owner?.name || 'Comunidad Huella'}
                 </p>
-                <p className="text-sm text-slate-500">Dueño en MascoTin</p>
+                <p className="text-sm text-slate-500">Responsable en Huella</p>
               </div>
             </div>
           </div>
@@ -194,12 +194,10 @@ export default function PetCard({
           </div>
 
           <div className="mt-auto border-t border-slate-200 pt-6">
-            <p className="mb-5 break-words text-sm text-slate-500">
-              <span className="font-semibold text-slate-800">
-                {pet.matchReason?.includes('paseo') ? 'Compañero de paseo' : 'Buena afinidad'}
-              </span>
+            <p className="mb-5 break-words text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">Por qué podría llevarse bien</span>
               {activePetName ? ` con ${activePetName}` : ''}
-              {pet.matchReason ? `: ${pet.matchReason}` : ': comparten ritmo de paseo y sociabilidad.'}
+              {pet.matchReason ? `: ${pet.matchReason}` : ': revisá su perfil y preferencias antes de decidir.'}
             </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[0.8fr_1.2fr]">
               <Button
@@ -207,7 +205,7 @@ export default function PetCard({
                 variant="outline"
                 onClick={onPass}
                 disabled={actionsDisabled}
-                className="h-12 rounded-xl border-slate-300 bg-white text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                className="h-12 text-sm"
               >
                 Ahora no
               </Button>
@@ -215,9 +213,9 @@ export default function PetCard({
                 type="button"
                 onClick={onLike}
                 disabled={actionsDisabled}
-                className="h-12 rounded-xl bg-teal-600 text-sm font-semibold text-white hover:bg-teal-700"
+                className="h-12 text-sm"
               >
-                <PawPrint className="mr-2 size-5" fill="currentColor" aria-hidden="true" />
+                <Heart className="mr-2 size-5" aria-hidden="true" />
                 Quiero conocer{pet.gender === 'female' ? 'la' : 'lo'}
               </Button>
             </div>

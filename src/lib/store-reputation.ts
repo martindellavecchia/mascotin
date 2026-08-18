@@ -45,7 +45,7 @@ export function getStoreTrustSummary(
   if (reviewCount < 3) {
     return {
       level: 'NEW',
-      label: 'Nuevo en MascoTin',
+      label: 'Nuevo en Huella',
       description: 'Todavía no tiene suficientes reseñas verificadas.',
     };
   }

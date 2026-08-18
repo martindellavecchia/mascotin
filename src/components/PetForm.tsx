@@ -339,7 +339,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona" />
+                      <SelectValue placeholder="Seleccioná" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -546,7 +546,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
               <FormLabel>Biografía de la Mascota</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Cuéntanos sobre tu mascota..."
+                  placeholder="Contanos sobre tu mascota..."
                   className="resize-none"
                   rows={4}
                   {...field}
@@ -598,7 +598,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
               );
             })}
           </div>
-          <p className="text-xs text-slate-500 mt-2">Selecciona al menos una actividad</p>
+          <p className="text-xs text-slate-500 mt-2">Seleccioná al menos una actividad</p>
         </div>
 
         <div className="space-y-3">
@@ -755,7 +755,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                   type="button"
                   variant={isThumbnail ? "default" : "outline"}
                   size="icon"
-                  className={`absolute top-2 left-2 size-7 gap-0 rounded-full p-0 ${isThumbnail ? 'bg-teal-500 hover:bg-teal-600' : 'bg-white/80 hover:bg-teal-50'}`}
+                  className={`absolute left-2 top-2 size-7 gap-0 rounded-lg p-0 ${isThumbnail ? 'bg-primary hover:bg-primary-hover' : 'bg-white/80 hover:bg-primary-soft'}`}
                   onClick={() => void handleThumbnailSelection(index)}
                   disabled={savingThumbnailIndex !== null}
                   title={isThumbnail ? 'Foto de perfil actual' : 'Usar como foto de perfil'}
@@ -776,7 +776,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 size-7 gap-0 rounded-full p-0"
+                  className="absolute right-2 top-2 size-7 gap-0 rounded-lg p-0"
                   onClick={() => {
                     const newImages = images.filter((_, i) => i !== index);
                     setImages(newImages);
@@ -841,7 +841,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
               Cancelar
             </Button>
           )}
-          <Button type="submit" className="w-full flex-1 bg-teal-500 hover:bg-teal-600 text-white rounded-lg" disabled={loading || uploading || savingThumbnailIndex !== null}>
+          <Button type="submit" className="w-full flex-1" disabled={loading || uploading || savingThumbnailIndex !== null}>
             {loading ? (
               <>
                 <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />

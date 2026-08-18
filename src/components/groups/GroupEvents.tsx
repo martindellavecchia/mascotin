@@ -212,7 +212,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                     {events.map((event) => (
                         <Card
                             key={event.id}
-                            className="group-card flex min-w-0 cursor-pointer flex-col gap-4 p-4 transition-shadow hover:shadow-md sm:flex-row"
+                            className="group-card flex min-w-0 cursor-pointer flex-col gap-4 p-4 transition-colors hover:border-primary/35 sm:flex-row"
                             onClick={() => (isCreator || event.authorId === currentUserId) && setViewingEvent(event)}
                         >
                             <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-24 sm:w-24">

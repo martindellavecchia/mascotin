@@ -233,7 +233,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
           onCheckedChange={(checked) => setForm((current) => ({ ...current, consentAccepted: checked === true }))}
         />
         <span>
-          Acepto que MascoTin use la ubicación exacta únicamente para calcular distancias. Otros usuarios verán solo la zona.
+          Acepto que Huella use la ubicación exacta únicamente para calcular distancias. Otros usuarios verán solo la zona.
         </span>
       </label>
 

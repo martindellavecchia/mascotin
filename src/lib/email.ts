@@ -7,7 +7,7 @@ interface EmailOptions {
 function getEmailConfig() {
   return {
     resendApiKey: process.env.RESEND_API_KEY,
-    from: process.env.EMAIL_FROM || 'MascoTin <no-reply@mascotin.app>',
+    from: process.env.EMAIL_FROM || 'Huella <no-reply@mascotin.app>',
   };
 }
 
@@ -57,11 +57,11 @@ export function buildVerificationEmail(name: string, token: string): EmailOption
   const url = `${getBaseUrl()}/verify-email?token=${token}`;
   return {
     to: '',
-    subject: 'Verifica tu email - MascoTin',
+    subject: 'Verificá tu correo - Huella',
     html: `
       <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
         <h2>¡Hola ${name}!</h2>
-        <p>Gracias por registrarte en MascoTin. Para completar tu registro, verifica tu email haciendo clic en el siguiente enlace:</p>
+        <p>Gracias por registrarte en Huella. Para completar tu registro, verificá tu correo haciendo clic en el siguiente enlace:</p>
         <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0;">
           Verificar Email
         </a>
@@ -76,11 +76,11 @@ export function buildPasswordResetEmail(name: string, token: string): EmailOptio
   const url = `${getBaseUrl()}/reset-password?token=${token}`;
   return {
     to: '',
-    subject: 'Restablecer contraseña - MascoTin',
+    subject: 'Restablecer contraseña - Huella',
     html: `
       <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
         <h2>¡Hola ${name}!</h2>
-        <p>Recibimos una solicitud para restablecer tu contraseña. Haz clic en el siguiente enlace para crear una nueva:</p>
+        <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el siguiente enlace para crear una nueva:</p>
         <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0;">
           Restablecer Contraseña
         </a>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,13 +32,28 @@ export default function ConversationList({
     selectedType,
     onSelect
 }: ConversationListProps) {
+    const [search, setSearch] = useState('');
+    const normalizedSearch = search.trim().toLocaleLowerCase('es');
+    const visibleMatches = normalizedSearch
+        ? matches.filter((match) => `${match.name} ${match.breed || ''}`.toLocaleLowerCase('es').includes(normalizedSearch))
+        : matches;
+    const visibleGroups = normalizedSearch
+        ? groups.filter((group) => `${group.name} ${group.description}`.toLocaleLowerCase('es').includes(normalizedSearch))
+        : groups;
+
     return (
         <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
             <div className="shrink-0 border-b border-slate-100 p-4">
-                <h2 className="text-lg font-bold text-slate-800 mb-3">Mensajes</h2>
+                <h1 className="mb-3 text-lg font-bold text-foreground">Mensajes</h1>
                 <div className="relative mb-3">
                     <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                    <Input aria-label="Buscar conversaciones" placeholder="Buscar..." className="min-h-11 rounded-full border-slate-200 bg-slate-50 pl-10 text-sm" />
+                    <Input
+                        aria-label="Buscar conversaciones"
+                        placeholder="Buscar conversaciones"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        className="min-h-11 bg-background pl-10 text-sm"
+                    />
                 </div>
             </div>
 
@@ -47,20 +63,20 @@ export default function ConversationList({
                 className="flex min-h-0 min-w-0 flex-1 flex-col"
             >
                 <div className="px-4">
-                    <TabsList className="w-full bg-slate-100 p-1">
+                    <TabsList className="w-full">
                         <TabsTrigger value="matches" className="flex-1 text-xs">Chats</TabsTrigger>
                         <TabsTrigger value="groups" className="flex-1 text-xs">Grupos</TabsTrigger>
                     </TabsList>
                 </div>
 
                 <TabsContent value="matches" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
-                    {matches.length === 0 ? (
+                    {visibleMatches.length === 0 ? (
                         <div className="p-6 text-center text-slate-400">
                             <PawPrint className="mb-2 size-10" aria-hidden="true" />
-                            <p className="text-sm">No tienes matches aún.</p>
+                            <p className="text-sm">{normalizedSearch ? 'No encontramos conversaciones.' : 'Todavía no tenés encuentros.'}</p>
                         </div>
                     ) : (
-                        matches.map((match) => (
+                        visibleMatches.map((match) => (
                             <button
                                 type="button"
                                 key={match.matchId}
@@ -77,7 +93,7 @@ export default function ConversationList({
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-slate-900 text-sm truncate">{match.name}</p>
                                     <p className="truncate text-xs text-teal-600">{match.breed || 'Mascota'}</p>
-                                    <p className="text-sm text-slate-400 truncate">Toca para chatear...</p>
+                                    <p className="truncate text-sm text-slate-400">Abrir conversación</p>
                                 </div>
                             </button>
                         ))
@@ -85,13 +101,13 @@ export default function ConversationList({
                 </TabsContent>
 
                 <TabsContent value="groups" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
-                    {groups.length === 0 ? (
+                    {visibleGroups.length === 0 ? (
                         <div className="p-6 text-center text-slate-400">
                             <Users className="mb-2 size-10" aria-hidden="true" />
-                            <p className="text-sm">No perteneces a ningún grupo.</p>
+                            <p className="text-sm">{normalizedSearch ? 'No encontramos grupos.' : 'Todavía no pertenecés a ningún grupo.'}</p>
                         </div>
                     ) : (
-                        groups.map((group) => (
+                        visibleGroups.map((group) => (
                             <button
                                 type="button"
                                 key={group.id}

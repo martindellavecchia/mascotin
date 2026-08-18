@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -39,16 +39,11 @@ export default function SuggestedProviders() {
         setLoading(false);
     };
 
-    const getColor = (index: number) => {
-        const colors = ['bg-teal-500', 'bg-blue-500', 'bg-orange-500'];
-        return colors[index % colors.length];
-    };
-
     if (loading) {
         return (
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold">Sugeridos para ti</CardTitle>
+                    <CardTitle className="text-base font-semibold">Sugeridos para vos</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {[1, 2].map(i => (
@@ -69,11 +64,11 @@ export default function SuggestedProviders() {
         return (
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold">Sugeridos para ti</CardTitle>
+                    <CardTitle className="text-base font-semibold">Sugeridos para vos</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-slate-500 text-center py-4">
-                        No hay proveedores disponibles aún.
+                        Todavía no hay proveedores disponibles.
                     </p>
                 </CardContent>
             </Card>
@@ -83,20 +78,20 @@ export default function SuggestedProviders() {
     return (
         <Card>
             <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold">Sugeridos para ti</CardTitle>
+                <CardTitle className="text-base font-semibold">Sugeridos para vos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-                {providers.map((provider, index) => (
+                {providers.map((provider) => (
                     <div key={provider.id} className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                            <AvatarFallback className={`${getColor(index)} text-white text-sm`}>
+                            <AvatarFallback className="bg-primary text-sm text-primary-foreground">
                                 {provider.businessName[0]}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm text-slate-800 truncate">{provider.businessName}</p>
                             <p className="text-xs text-slate-500">
-                                {provider.location} • <span className="text-amber-500">★</span> {provider.rating.toFixed(1)}
+                                {provider.location} · <Star className="inline size-3.5 fill-current text-warning" aria-hidden="true" /> {provider.rating.toFixed(1)}
                             </p>
                         </div>
                         <Button variant="ghost" size="icon" className="text-teal-600 hover:bg-teal-50" aria-label="Agregar proveedor">

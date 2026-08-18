@@ -21,7 +21,7 @@ describe('EmergencyQr', () => {
     expect(await screen.findByAltText(/qr de emergencia/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /descargar png/i })).toHaveAttribute(
       'download',
-      'mascotin-qr.png'
+      'huella-qr.png'
     );
     expect(screen.getByRole('button', { name: /copiar enlace/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /compartir/i })).toBeInTheDocument();

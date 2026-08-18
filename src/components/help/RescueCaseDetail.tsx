@@ -304,7 +304,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h1 className="text-2xl font-bold text-slate-950">{SPECIES_LABELS[rescueCase.species]} · {SIZE_LABELS[rescueCase.size]}</h1>
-                  <p className="mt-1 text-sm text-slate-500">{rescueCase.location}{rescueCase.createdBy ? ` · publicado por ${rescueCase.createdBy.name || 'Usuario de MascoTin'}` : ''}</p>
+                  <p className="mt-1 text-sm text-slate-500">{rescueCase.location}{rescueCase.createdBy ? ` · publicado por ${rescueCase.createdBy.name || 'Usuario de Huella'}` : ''}</p>
                 </div>
                 {rescueCase.urgency !== 'NORMAL' && <Badge className={rescueCase.urgency === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}>{rescueCase.urgency === 'CRITICAL' ? 'Situación crítica' : 'Alta urgencia'}</Badge>}
               </div>

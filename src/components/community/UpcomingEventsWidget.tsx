@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, Users } from 'lucide-react';
+import { Check, Clock, Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -154,7 +154,7 @@ export default function UpcomingEventsWidget() {
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-7 text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                                    className="min-h-10 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                                     onClick={() => handleDismiss(event.id)}
                                 >
                                     No me interesa
@@ -162,10 +162,11 @@ export default function UpcomingEventsWidget() {
                                 <Button
                                     size="sm"
                                     variant={event.isAttending ? "default" : "ghost"}
-                                    className={`h-7 text-xs ${event.isAttending ? 'bg-teal-500 hover:bg-teal-600' : 'text-teal-600 hover:bg-teal-50'}`}
+                                    className={`min-h-10 text-xs ${event.isAttending ? 'bg-teal-500 hover:bg-teal-600' : 'text-teal-600 hover:bg-teal-50'}`}
                                     onClick={() => handleAttend(event.id)}
                                 >
-                                    {event.isAttending ? 'Asistiré ✓' : 'Me interesa'}
+                                    {event.isAttending && <Check className="size-4" aria-hidden="true" />}
+                                    {event.isAttending ? 'Asistiré' : 'Me interesa'}
                                 </Button>
                             </div>
                         </div>

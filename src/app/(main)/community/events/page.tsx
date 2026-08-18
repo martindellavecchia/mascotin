@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { es } from 'date-fns/locale';
-import { CalendarX, Clock, MapPin, Users } from 'lucide-react';
+import { CalendarX, Check, Clock, MapPin, Users } from 'lucide-react';
 import CommunityLayout from '@/components/community/CommunityLayout';
-import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,24 +24,42 @@ const EVENT_CATEGORIES = [
     { value: 'otro', label: 'Otros' },
 ];
 
+interface CommunityEvent {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    location: string;
+    attendeesCount: number;
+    isAttending: boolean;
+    group?: {
+        id: string;
+        name: string;
+    };
+}
+
 export default function CommunityEventsPage() {
     const { data: session } = useSession();
-    const [events, setEvents] = useState<any[]>([]);
+    const [events, setEvents] = useState<CommunityEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [category, setCategory] = useState('_all');
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
     const [showCreate, setShowCreate] = useState(false);
     const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: 'otro' });
 
     const fetchEvents = async (nextCategory = category) => {
+        setError(null);
         try {
             const res = await fetch(`/api/events?category=${nextCategory}`);
             const data = await res.json();
             if (data.success) {
                 setEvents(data.events);
+            } else {
+                throw new Error(data.error || 'No se pudieron cargar los eventos');
             }
-        } catch (error) {
-            console.error(error);
+        } catch {
+            setError('No se pudieron cargar los eventos. Intentá de nuevo.');
             toast.error('Error al cargar eventos');
         } finally {
             setLoading(false);
@@ -51,7 +71,7 @@ export default function CommunityEventsPage() {
     }, []);
 
     const handleAttend = async (eventId: string, currentStatus: boolean) => {
-        if (!session) return toast.error('Inicia sesión para participar');
+        if (!session) return toast.error('Iniciá sesión para participar');
 
         // Optimistic update
         setEvents(events.map(ev =>
@@ -75,13 +95,14 @@ export default function CommunityEventsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div>
             <CommunityLayout>
                 <div className="space-y-6">
-                    <div className="flex flex-wrap justify-between items-center gap-3">
-                        <h2 className="text-2xl font-bold text-slate-800">Calendario de eventos</h2>
-                        <Button onClick={() => setShowCreate((value) => !value)}>Crear evento</Button>
-                    </div>
+                    <PageHeader
+                        title="Calendario de eventos"
+                        description="Organizá y encontrá actividades presenciales de la comunidad."
+                        action={<Button variant={showCreate ? 'outline' : 'default'} onClick={() => setShowCreate((value) => !value)}>{showCreate ? 'Cerrar formulario' : 'Crear evento'}</Button>}
+                    />
                     <div className="flex flex-wrap gap-2">
                         {EVENT_CATEGORIES.map((item) => (
                             <Button
@@ -99,7 +120,7 @@ export default function CommunityEventsPage() {
                         ))}
                     </div>
                     {showCreate && (
-                        <Card className="p-4 space-y-3">
+                        <section className="space-y-3 border-y border-border bg-surface px-4 py-5" aria-label="Crear evento">
                             <Input placeholder="Título" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                             <Textarea placeholder="Descripción" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                             <Input type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
@@ -127,7 +148,7 @@ export default function CommunityEventsPage() {
                                     toast.error(data.error || 'No se pudo crear');
                                 }
                             }}>Publicar evento</Button>
-                        </Card>
+                        </section>
                     )}
                     <Calendar
                         mode="single"
@@ -137,21 +158,28 @@ export default function CommunityEventsPage() {
                         className="rounded-xl border border-slate-200 bg-white p-3"
                     />
 
-                    {loading ? (
+                    {error ? (
+                        <EmptyState
+                            title="No pudimos cargar los eventos"
+                            description={error}
+                            action={<Button variant="outline" onClick={() => void fetchEvents(category)}>Intentar de nuevo</Button>}
+                        />
+                    ) : loading ? (
                         <div className="text-center py-12">Cargando calendario...</div>
                     ) : events.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-200">
-                            <CalendarX className="mb-2 size-10 text-slate-300" aria-hidden="true" />
-                            <p className="text-slate-500">No hay eventos programados próximamente.</p>
-                        </div>
+                        <EmptyState
+                            icon={<CalendarX className="size-11" aria-hidden="true" />}
+                            title="No hay eventos programados"
+                            description="Podés crear el primero para convocar a la comunidad."
+                            action={<Button onClick={() => setShowCreate(true)}>Crear evento</Button>}
+                        />
                     ) : (
-                        <div className="grid gap-4">
+                        <div className="divide-y divide-border border-y border-border bg-surface">
                             {events.map(event => {
                                 const date = new Date(event.date);
                                 return (
-                                    <Card key={event.id} className="p-4 flex flex-col md:flex-row gap-4">
-                                        {/* Date Box */}
-                                        <div className="flex-shrink-0 bg-teal-50 text-teal-700 rounded-lg p-4 text-center md:w-24 flex flex-col justify-center">
+                                    <article key={event.id} className="flex flex-col gap-4 px-4 py-5 md:flex-row">
+                                        <div className="flex shrink-0 flex-row items-center justify-center gap-2 rounded-lg bg-primary-soft px-4 py-3 text-primary md:w-24 md:flex-col md:gap-0 md:text-center">
                                             <span className="block text-sm font-bold uppercase">{date.toLocaleDateString('es-AR', { month: 'short' })}</span>
                                             <span className="block text-3xl font-bold">{date.getDate()}</span>
                                             <span className="block text-xs uppercase opacity-75">{date.toLocaleDateString('es-AR', { weekday: 'short' })}</span>
@@ -162,9 +190,7 @@ export default function CommunityEventsPage() {
                                                 <div>
                                                     <h3 className="font-bold text-lg text-slate-800">{event.title}</h3>
                                                     {event.group && (
-                                                        <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full inline-block mb-1">
-                                                            Grupo: {event.group.name}
-                                                        </span>
+                                                        <Badge variant="neutral">Grupo: {event.group.name}</Badge>
                                                     )}
                                                 </div>
                                             </div>
@@ -191,12 +217,13 @@ export default function CommunityEventsPage() {
                                             <Button
                                                 onClick={() => handleAttend(event.id, event.isAttending)}
                                                 variant={event.isAttending ? "outline" : "default"}
-                                                className={event.isAttending ? "border-teal-500 text-teal-600 hover:bg-teal-50" : "bg-teal-500 hover:bg-teal-600"}
+                                                className={event.isAttending ? 'border-primary text-primary' : undefined}
                                             >
-                                                {event.isAttending ? 'Asistiré ✓' : 'Asistir'}
+                                                {event.isAttending && <Check className="size-4" aria-hidden="true" />}
+                                                {event.isAttending ? 'Asistiré' : 'Asistir'}
                                             </Button>
                                         </div>
-                                    </Card>
+                                    </article>
                                 );
                             })}
                         </div>

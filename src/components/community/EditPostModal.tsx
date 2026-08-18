@@ -210,7 +210,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                                         <img src={img} alt="" className="w-full h-full object-cover rounded-lg" />
                                         <button
                                             onClick={() => removeImage(idx)}
-                                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
+                                            className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-md bg-red-500 text-xs text-white"
                                         >
                                             ×
                                         </button>

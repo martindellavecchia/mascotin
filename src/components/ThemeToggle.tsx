@@ -14,7 +14,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button aria-label="Cambiar tema" className="w-10 h-10 rounded-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark flex items-center justify-center text-text-main shadow-sm hover:shadow-md transition-all">
+      <button aria-label="Cambiar tema" className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-surface text-text-main transition-colors hover:bg-muted dark:border-border-dark dark:bg-surface-dark">
         <Sun className="size-5" aria-hidden="true" />
       </button>
     );
@@ -23,7 +23,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="w-10 h-10 rounded-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark flex items-center justify-center text-text-main shadow-sm hover:shadow-md transition-all"
+      className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-surface text-text-main transition-colors hover:bg-muted dark:border-border-dark dark:bg-surface-dark"
       aria-label="Cambiar tema"
     >
       {theme === 'dark' ? <Sun className="size-5" aria-hidden="true" /> : <Moon className="size-5" aria-hidden="true" />}

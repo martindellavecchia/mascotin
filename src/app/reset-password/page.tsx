@@ -3,7 +3,8 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CircleAlert, CircleCheck, Eye, EyeOff, PawPrint } from 'lucide-react';
+import { CircleAlert, CircleCheck, Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import BrandLink from '@/components/brand/BrandLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { passwordSchema } from '@/lib/schemas';
@@ -23,12 +24,12 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center size-16 rounded-full bg-red-100 text-red-600 mx-auto">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-red-100 text-red-600">
           <CircleAlert className="size-8" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-extrabold text-slate-800">Enlace inválido</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Enlace inválido</h1>
         <p className="text-slate-600">
-          Este enlace no es válido o ha expirado.
+          Este enlace no es válido o ya venció.
         </p>
         <Link href="/forgot-password" className="inline-block mt-4 text-teal-600 font-bold hover:text-teal-700 transition-colors">
           Solicitar nuevo enlace
@@ -79,12 +80,12 @@ function ResetPasswordForm() {
   if (success) {
     return (
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center size-16 rounded-full bg-teal-100 text-teal-600 mx-auto">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
           <CircleCheck className="size-8" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-extrabold text-slate-800">Contraseña actualizada</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Contraseña actualizada</h1>
         <p className="text-slate-600">
-          Tu contraseña ha sido actualizada correctamente. Redirigiendo al inicio de sesión...
+          Tu contraseña se actualizó correctamente. Te estamos llevando al inicio de sesión.
         </p>
       </div>
     );
@@ -97,7 +98,7 @@ function ResetPasswordForm() {
           Nueva <span className="text-teal-500">contraseña</span>
         </h1>
         <p className="text-slate-600 text-base font-medium">
-          Ingresa tu nueva contraseña para tu cuenta.
+          Ingresá una nueva contraseña para tu cuenta.
         </p>
       </div>
 
@@ -113,11 +114,11 @@ function ResetPasswordForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
-              className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 pr-14 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
+              className="h-12 w-full pr-14 text-base"
             />
             <button
               type="button"
-              className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
+              className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
@@ -134,24 +135,25 @@ function ResetPasswordForm() {
           <Input
             id="confirmPassword"
             type="password"
-            placeholder="Repite tu contraseña"
+            placeholder="Repetí tu contraseña"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             disabled={loading}
-            className="w-full rounded-2xl bg-white border border-slate-200 h-14 px-4 text-base text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all outline-none"
+            className="h-12 w-full text-base"
           />
         </div>
 
         <div className="pt-2">
           <Button
             type="submit"
-            className="group relative flex w-full h-14 items-center justify-center overflow-hidden rounded-full bg-teal-500 hover:bg-teal-600 text-white font-bold text-lg tracking-wide transition-all shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40"
+            size="lg"
+            className="w-full"
             disabled={loading}
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                <LoaderCircle className="mr-2 size-4 animate-spin" aria-hidden="true" />
                 Guardando...
               </>
             ) : (
@@ -166,14 +168,9 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 px-6">
+    <div className="flex min-h-screen w-full items-center justify-center bg-background px-6">
       <div className="w-full max-w-[440px]">
-        <div className="flex items-center gap-3 text-slate-800 mb-10 justify-center">
-          <div className="flex items-center justify-center size-10 rounded-xl bg-teal-100 text-teal-600">
-            <PawPrint className="size-7" aria-hidden="true" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight">MascoTin</h2>
-        </div>
+        <BrandLink priority className="mb-10 flex w-full justify-center" logoClassName="h-12" />
 
         <Suspense fallback={<div className="text-center text-slate-500">Cargando...</div>}>
           <ResetPasswordForm />

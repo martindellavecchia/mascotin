@@ -5,9 +5,11 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -82,7 +84,7 @@ export default function AdoptionDetailPage() {
     return (
       <div className="mx-auto max-w-3xl space-y-5 px-4 py-8" aria-label="Cargando ficha de adopción">
         <div className="h-10 w-24 animate-pulse rounded-lg bg-slate-200" />
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface">
           <div className="h-64 animate-pulse bg-slate-200" />
           <div className="space-y-3 p-6">
             <div className="h-7 w-1/3 animate-pulse rounded bg-slate-200" />
@@ -96,10 +98,12 @@ export default function AdoptionDetailPage() {
 
   if (loadError || !listing) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-xl font-semibold text-slate-900">No pudimos abrir esta ficha</h1>
-        <p className="mt-2 text-sm text-slate-500">Es posible que ya no esté disponible.</p>
-        <Button asChild variant="outline" className="mt-5"><Link href="/adoptions">Volver a adopciones</Link></Button>
+      <div className="mx-auto max-w-3xl px-4 py-16">
+        <EmptyState
+          title="No pudimos abrir esta ficha"
+          description="Es posible que ya no esté disponible."
+          action={<Button asChild variant="outline"><Link href="/adoptions">Volver a adopciones</Link></Button>}
+        />
       </div>
     );
   }
@@ -117,9 +121,13 @@ export default function AdoptionDetailPage() {
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       <Button asChild variant="ghost"><Link href="/adoptions">Volver</Link></Button>
       <Card className="overflow-hidden">
-        {image && (
+        {image ? (
           <div className="relative h-64 w-full">
             <Image src={image} alt={listing.pet.name} fill sizes="(max-width: 768px) 100vw, 768px" unoptimized={shouldUnoptimizeImage(image)} className="object-cover" priority />
+          </div>
+        ) : (
+          <div className="flex h-48 items-center justify-center bg-primary-soft">
+            <PawPrint className="size-11 text-primary/30" aria-hidden="true" />
           </div>
         )}
         <CardHeader>
@@ -144,9 +152,9 @@ export default function AdoptionDetailPage() {
         <Card className="border-orange-200">
           <CardHeader><CardTitle className="text-lg">Confirmar entrega definitiva</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className={`rounded-xl border p-3 ${listing.handoff.fosterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium">Hogar de tránsito</p><p className="text-sm text-slate-500">{listing.handoff.fosterConfirmedAt ? 'Entrega confirmada' : 'Confirmación pendiente'}</p></div>
-              <div className={`rounded-xl border p-3 ${listing.handoff.adopterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium">Familia adoptante</p><p className="text-sm text-slate-500">{listing.handoff.adopterConfirmedAt ? 'Recepción confirmada' : 'Confirmación pendiente'}</p></div>
+            <div className="grid divide-y divide-border border-y border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+              <div className="p-3"><p className="font-medium">Hogar de tránsito</p><p className={listing.handoff.fosterConfirmedAt ? 'text-sm text-success' : 'text-sm text-slate-500'}>{listing.handoff.fosterConfirmedAt ? 'Entrega confirmada' : 'Confirmación pendiente'}</p></div>
+              <div className="p-3"><p className="font-medium">Familia adoptante</p><p className={listing.handoff.adopterConfirmedAt ? 'text-sm text-success' : 'text-sm text-slate-500'}>{listing.handoff.adopterConfirmedAt ? 'Recepción confirmada' : 'Confirmación pendiente'}</p></div>
             </div>
             {listing.handoff.role === 'ADOPTER' && !listing.handoff.adopterConfirmedAt && (
               <div className="grid gap-3 sm:grid-cols-2">
@@ -224,10 +232,11 @@ export default function AdoptionDetailPage() {
       )}
 
       {isOwner && (listing.applications || []).length > 0 && (
-        <Card className="p-4 space-y-3">
+        <Card className="space-y-3 p-4">
           <h2 className="font-semibold">Postulaciones</h2>
+          <div className="divide-y divide-border border-y border-border">
           {listing.applications?.map((application) => (
-            <div key={application.id} className="space-y-2 rounded-xl border p-3">
+            <div key={application.id} className="space-y-2 py-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">{application.applicant.name}</p>
                 <Badge>{application.compatibilityScore}% compatibilidad</Badge>
@@ -255,6 +264,7 @@ export default function AdoptionDetailPage() {
               )}
             </div>
           ))}
+          </div>
         </Card>
       )}
     </div>

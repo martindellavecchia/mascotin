@@ -46,13 +46,13 @@ export default function ExploreTab({
   };
 
   return (
-    <section aria-labelledby="plaza-social-title">
-      <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+    <section aria-labelledby="discover-title">
+      <div className="mb-7 flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-start">
         <div>
-          <h1 id="plaza-social-title" className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Plaza social
+          <h1 id="discover-title" className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">
+            Descubrir
           </h1>
-          <p className="mt-2 text-slate-500">Conoce mascotas cerca de ti y amplía su mundo.</p>
+          <p className="mt-2 text-muted-foreground">Conocé mascotas compatibles con {activePet?.name || 'tu mascota'}.</p>
         </div>
         <Link
           href="/settings"
@@ -66,19 +66,19 @@ export default function ExploreTab({
       </div>
 
       {loading ? (
-        <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-2xl border border-slate-200 bg-white">
+        <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface">
           <div className="text-center">
             <div className="mx-auto mb-4 size-11 animate-spin rounded-full border-4 border-teal-100 border-t-teal-600" />
             <p className="text-sm font-medium text-slate-600">Buscando mascotas cercanas...</p>
           </div>
         </div>
       ) : currentIndex >= petsToSwipe.length || !currentPet ? (
-        <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface p-8 text-center">
           <div className="max-w-sm">
             <PawPrint className="size-16 text-teal-200" fill="currentColor" aria-hidden="true" />
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Ya conociste a todos por aquí</h2>
-            <p className="mt-2 text-slate-500">Actualiza la plaza para descubrir nuevas mascotas cerca de ti.</p>
-            <Button onClick={onReload} className="mt-6 h-11 rounded-xl bg-teal-600 px-6 hover:bg-teal-700">
+            <p className="mt-2 text-slate-500">Actualizá la búsqueda para descubrir nuevas mascotas cerca tuyo.</p>
+            <Button onClick={onReload} className="mt-6 px-6">
               Buscar de nuevo
             </Button>
           </div>
@@ -95,9 +95,9 @@ export default function ExploreTab({
         </div>
       )}
 
-      <p className="mt-5 flex items-center gap-2 text-xs text-slate-500">
+      <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
         <ShieldCheck className="size-5" aria-hidden="true" />
-        Perfiles verificados para tu tranquilidad. Conecta siempre en espacios seguros.
+        Coordiná el primer encuentro en un espacio público y compartí el plan con alguien de confianza.
       </p>
     </section>
   );

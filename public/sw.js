@@ -11,7 +11,7 @@ self.addEventListener('push', (event) => {
       body: JSON.stringify({ deliveryId, event: 'RECEIVED' }),
     }).catch(() => undefined));
   }
-  event.waitUntil(self.registration.showNotification(payload.title || 'MascoTin', {
+  event.waitUntil(self.registration.showNotification(payload.title || 'Huella', {
     body: [payload.helpType, payload.zone].filter(Boolean).join(' · '),
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',

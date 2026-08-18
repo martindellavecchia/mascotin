@@ -11,7 +11,6 @@ import {
     LockOpen,
     MoreVertical,
     Search,
-    Shield,
     ShieldUser,
     Star,
     Store,
@@ -21,6 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -327,8 +327,8 @@ export default function AdminPage() {
 
     if (loading && users.length === 0) {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8 flex justify-center">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto flex max-w-7xl justify-center px-4 py-8">
                     <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
                 </div>
             </div>
@@ -336,19 +336,11 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto min-w-0 px-4 py-8">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h1 className="flex items-center gap-2 text-xl font-bold text-slate-800 sm:text-2xl">
-                            <Shield className="size-5 text-teal-600" aria-hidden="true" />
-                            Panel de Administración
-                        </h1>
-                        <p className="text-slate-500">Gestiona usuarios, roles y proveedores</p>
-                    </div>
-                </div>
+        <div className="min-h-screen bg-background">
+            <div className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <PageHeader title="Panel de administración" description="Gestioná usuarios, roles, proveedores y solicitudes." />
 
-                <Tabs defaultValue="users" className="w-full">
+                <Tabs defaultValue="users" className="mt-6 w-full">
                     <div className="mb-3 overflow-x-auto pb-1">
                         <TabsList className="h-auto w-max min-w-full justify-start">
                             <TabsTrigger className="min-h-10 shrink-0" value="users">Usuarios</TabsTrigger>
@@ -521,7 +513,7 @@ export default function AdminPage() {
                                             variant={requestFilter === s ? 'default' : 'outline'}
                                             size="sm"
                                             onClick={() => setRequestFilter(s)}
-                                            className={`shrink-0 ${requestFilter === s ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
+                                            className="shrink-0"
                                         >
                                             {s === 'PENDING' ? 'Pendientes' : s === 'APPROVED' ? 'Aprobadas' : 'Rechazadas'}
                                             {' '}({requestCounts[s]})
@@ -586,7 +578,6 @@ export default function AdminPage() {
                                                             {req.status === 'PENDING' ? (
                                                                 <Button
                                                                     size="sm"
-                                                                    className="bg-teal-500 hover:bg-teal-600"
                                                                     onClick={() => {
                                                                         setSelectedRequest(req);
                                                                         setAdminNote('');
@@ -781,7 +772,7 @@ export default function AdminPage() {
                                             {tempPassword}
                                         </code>
                                         <p className="text-xs text-amber-600 mt-2">
-                                            Comparte esta contraseña con el usuario. Deberá cambiarla al iniciar sesión.
+                                            Compartí esta contraseña con la persona usuaria. Deberá cambiarla al iniciar sesión.
                                         </p>
                                     </div>
                                 ) : (
@@ -809,7 +800,7 @@ export default function AdminPage() {
                             <Button
                                 onClick={handleAction}
                                 disabled={processing}
-                                className={actionType === 'delete' ? 'bg-red-500 hover:bg-red-600' : 'bg-teal-500 hover:bg-teal-600'}
+                                variant={actionType === 'delete' ? 'destructive' : 'default'}
                             >
                                 {processing ? 'Procesando...' : 'Confirmar'}
                             </Button>
@@ -865,14 +856,13 @@ export default function AdminPage() {
                             Cancelar
                         </Button>
                         <Button
-                            className="bg-red-500 hover:bg-red-600 text-white"
+                            variant="destructive"
                             onClick={() => handleReviewRequest('REJECTED')}
                             disabled={reviewProcessing}
                         >
                             Rechazar
                         </Button>
                         <Button
-                            className="bg-teal-500 hover:bg-teal-600"
                             onClick={() => handleReviewRequest('APPROVED')}
                             disabled={reviewProcessing}
                         >

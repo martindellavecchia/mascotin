@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import CommunityLayout from '@/components/community/CommunityLayout';
 import GroupHeader from '@/components/groups/GroupHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
 
 import GroupChat from '@/components/groups/GroupChat';
@@ -13,12 +14,21 @@ import GroupMembers from '@/components/groups/GroupMembers';
 import GroupEvents from '@/components/groups/GroupEvents';
 import GroupFeed from '@/components/groups/GroupFeed';
 
+interface GroupDetail {
+    id: string;
+    name: string;
+    description: string;
+    image: string | null;
+    creatorId: string;
+    _count: { members: number };
+}
+
 export default function SingleGroupPage() {
     const params = useParams();
     const id = params?.id as string;
     const { data: session } = useSession();
     const router = useRouter();
-    const [group, setGroup] = useState<any>(null);
+    const [group, setGroup] = useState<GroupDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [isMember, setIsMember] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -43,7 +53,7 @@ export default function SingleGroupPage() {
             const res = await fetch(`/api/groups?userId=${session.user.id}`);
             const data = await res.json();
             if (data.success) {
-                const found = data.groups.find((g: any) => g.id === id);
+                const found = data.groups.find((item: { id: string; isMember?: boolean }) => item.id === id);
                 setIsMember(Boolean(found?.isMember));
             }
         };
@@ -57,7 +67,7 @@ export default function SingleGroupPage() {
     const isCreator = session?.user?.id === group.creatorId;
 
     return (
-        <div className="flex min-w-0 flex-col bg-slate-50">
+        <div className="flex min-w-0 flex-col bg-background">
             <CommunityLayout>
                 <GroupHeader
                     group={group}
@@ -103,9 +113,7 @@ export default function SingleGroupPage() {
                                     className="h-[calc(100dvh-12rem)] min-h-[28rem] max-h-[44rem] overflow-hidden"
                                 />
                             ) : (
-                                <div className="text-center py-12 bg-white rounded-lg">
-                                    <p className="text-slate-500">Debes unirte al grupo para ver el chat.</p>
-                                </div>
+                                <EmptyState compact title="Unite al grupo para ver el chat" />
                             )}
                         </TabsContent>
                         <TabsContent value="events" className="min-w-0">

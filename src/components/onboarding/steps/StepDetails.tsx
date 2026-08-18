@@ -45,7 +45,7 @@ export default function StepDetails({ data, updateData }: StepDetailsProps) {
                 <Label>Tamaño</Label>
                 <Select value={data.size} onValueChange={(val) => updateData({ size: val })}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Selecciona" />
+                        <SelectValue placeholder="Seleccioná" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="small">Pequeño (0-10kg)</SelectItem>

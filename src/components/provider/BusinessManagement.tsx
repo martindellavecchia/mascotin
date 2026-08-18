@@ -128,7 +128,7 @@ export default function BusinessManagement() {
   return (
     <div className="space-y-5">
       {store ? (
-        <Card className="overflow-hidden border-teal-200 bg-gradient-to-r from-teal-50 to-white">
+        <Card className="overflow-hidden border-teal-200 bg-primary-soft">
           <CardContent className="flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-2">

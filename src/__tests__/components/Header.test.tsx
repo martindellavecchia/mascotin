@@ -70,19 +70,21 @@ describe('Header', () => {
     it('renders logo', async () => {
       await renderHeader(mockSession);
 
-      expect(screen.getByText(/mascotin/i)).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: /huella/i })).toBeInTheDocument();
     });
 
     it('renders home link', async () => {
       await renderHeader(mockSession);
 
-      expect(screen.getByRole('link', { name: /inicio/i })).toHaveAttribute('href', '/inicio');
+      expect(
+        screen.getAllByRole('link', { name: /inicio/i }).some((link) => link.getAttribute('href') === '/inicio')
+      ).toBe(true);
     });
 
     it('renders community link', async () => {
       await renderHeader(mockSession);
 
-      expect(screen.getByRole('link', { name: /comunidad/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('link', { name: /comunidad/i })).not.toHaveLength(0);
     });
 
     it('renders events link', async () => {
@@ -94,7 +96,11 @@ describe('Header', () => {
     it('renders foster homes and map links', async () => {
       await renderHeader(mockSession);
 
-      expect(screen.getByRole('link', { name: /hogares de tránsito/i })).toHaveAttribute('href', '/hogares-de-transito');
+      expect(
+        screen
+          .getAllByRole('link', { name: /^hogares$/i })
+          .some((link) => link.getAttribute('href') === '/hogares-de-transito')
+      ).toBe(true);
       expect(screen.getByRole('link', { name: /mapa/i })).toBeInTheDocument();
     });
 
@@ -107,7 +113,7 @@ describe('Header', () => {
     it('renders messages link', async () => {
       await renderHeader(mockSession);
 
-      expect(screen.getByRole('link', { name: /mensajes/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('link', { name: /mensajes/i })).not.toHaveLength(0);
     });
 
     it('renders notifications button', async () => {

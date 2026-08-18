@@ -166,7 +166,7 @@ export default function PetPassportPage() {
         Mis mascotas
       </Link>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <section className="overflow-hidden rounded-xl border border-border bg-surface">
         <div className="relative h-72 bg-slate-100 sm:h-80">
           {image ? (
             <Image
@@ -178,10 +178,10 @@ export default function PetPassportPage() {
             />
           ) : (
             <div className="flex h-full items-center justify-center text-slate-300">
-              <PawPrint className="size-20" aria-hidden="true" />
+              <PawPrint className="size-12" aria-hidden="true" />
             </div>
           )}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent px-6 pb-5 pt-16">
+          <div className="absolute inset-x-0 bottom-0 bg-slate-950/72 px-6 py-5">
             <Badge className="mb-2 bg-white/90 text-teal-800 hover:bg-white/90">
               {TYPE_LABELS[pet.petType] || pet.petType}
             </Badge>
@@ -198,7 +198,7 @@ export default function PetPassportPage() {
             <p className="max-w-2xl text-slate-700">{pet.bio}</p>
             {pet.isOwner && (
               <div className="flex flex-wrap gap-2">
-                <Button asChild className="bg-teal-600 hover:bg-teal-700">
+                <Button asChild>
                   <Link href={`/profile?petId=${pet.id}`}>Editar</Link>
                 </Button>
                 <Button asChild variant="outline">
@@ -220,16 +220,16 @@ export default function PetPassportPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <dl className="grid grid-cols-2 divide-x divide-y divide-border border-y border-border sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
             {facts.map((fact) => (
-              <div key={fact.label} className="rounded-xl bg-slate-50 px-3 py-2.5">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              <div key={fact.label} className="px-3 py-3">
+                <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                   {fact.label}
-                </p>
-                <p className="mt-0.5 text-sm font-semibold text-slate-900">{fact.value}</p>
+                </dt>
+                <dd className="mt-0.5 text-sm font-semibold text-slate-900">{fact.value}</dd>
               </div>
             ))}
-          </div>
+          </dl>
 
           <div className="flex flex-wrap gap-2">
             {pet.vaccinated && (
@@ -242,16 +242,17 @@ export default function PetPassportPage() {
                 {neuteredLabel(pet.gender)}
               </Badge>
             )}
-            {intents.map((intent) => (
+            {intents.slice(0, 3).map((intent) => (
               <Badge key={intent} variant="outline" className="border-teal-200 text-teal-800">
                 {INTENT_LABELS[intent] || intent}
               </Badge>
             ))}
+            {intents.length > 3 && <Badge variant="neutral">+{intents.length - 3}</Badge>}
           </div>
 
           {!pet.isOwner && pet.owner && (
             <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              Dueño: <span className="font-medium text-slate-900">{pet.owner.name}</span>
+              Responsable: <span className="font-medium text-slate-900">{pet.owner.name}</span>
               {pet.owner.location ? ` · ${pet.owner.location}` : ''}
             </div>
           )}
@@ -283,11 +284,12 @@ export default function PetPassportPage() {
             })}
             {temperament.length > 0 && (
               <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
-                {temperament.map((tag) => (
+                {temperament.slice(0, 3).map((tag) => (
                   <Badge key={tag} variant="outline">
                     {TEMPERAMENT_LABELS[tag] || tag}
                   </Badge>
                 ))}
+                {temperament.length > 3 && <Badge variant="neutral">+{temperament.length - 3}</Badge>}
               </div>
             )}
           </CardContent>
@@ -306,9 +308,9 @@ export default function PetPassportPage() {
                     <span className="text-right font-medium text-slate-900">{row.value}</span>
                   </div>
                 ))}
-                <ul className="space-y-2 border-t border-slate-100 pt-3">
+                <ul className="divide-y divide-border border-y border-border">
                   {(pet.healthRecords || []).map((record) => (
-                    <li key={record.id} className="rounded-lg bg-slate-50 px-3 py-2">
+                    <li key={record.id} className="px-3 py-2">
                       <span className="font-medium">{record.name}</span>
                       {record.dueDate && (
                         <span className="ml-2 text-slate-500">

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Pencil, PawPrint, Plus, UserPlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +24,6 @@ import { AboutCard } from '@/components/profile/AboutCard';
 import { StatsCard } from '@/components/profile/StatsCard';
 import { PetCard } from '@/components/profile/PetCard';
 import { EmptyState } from '@/components/profile/EmptyState';
-import QuickActions from '@/components/widgets/QuickActions';
 import type { Owner, Pet } from '@/types';
 import { toast } from 'sonner';
 
@@ -130,7 +130,7 @@ function ProfileContent() {
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
           <p className="text-slate-500">Cargando perfil...</p>
@@ -143,15 +143,15 @@ function ProfileContent() {
 
   if (!owner) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <main className="flex-1 container mx-auto px-4 py-8">
-          <Card className="w-full max-w-2xl mx-auto shadow-sm border-0 bg-white">
+          <Card className="mx-auto w-full max-w-2xl">
             <CardHeader className="text-center pb-2">
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserPlus className="size-8 text-teal-600" aria-hidden="true" />
               </div>
-              <CardTitle className="text-2xl font-bold text-slate-900">Completa tu Perfil</CardTitle>
-              <p className="text-slate-500 mt-2">Cuéntanos sobre ti para comenzar</p>
+              <h1 className="text-2xl font-bold text-slate-900">Completá tu perfil</h1>
+              <p className="mt-2 text-slate-500">Contanos sobre vos para empezar</p>
             </CardHeader>
             <CardContent>
               <OwnerForm
@@ -166,25 +166,21 @@ function ProfileContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <main className="container mx-auto min-w-0 flex-1 px-4 py-8">
+    <div className="flex min-h-screen flex-col bg-background">
+      <main className="mx-auto min-w-0 w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto min-w-0 max-w-6xl">
-          {/* Header & Actions */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div className="min-w-0">
-              <h1 className="text-3xl font-bold text-slate-900">Mi Perfil</h1>
-              <p className="text-slate-500 mt-1">Gestiona tu información y mascotas</p>
-            </div>
-            <Button
+          <PageHeader
+            title="Mi perfil"
+            description="Gestioná tu información y tus mascotas."
+            action={<Button
               onClick={() => setShowOwnerForm(true)}
-              className="min-h-11 shrink-0 rounded-full bg-teal-500 px-6 text-white hover:bg-teal-600"
             >
               <Pencil className="mr-2 size-5" aria-hidden="true" />
-              Editar Perfil
-            </Button>
-          </div>
+              Editar perfil
+            </Button>}
+          />
 
-          <div className="grid min-w-0 gap-6 xl:grid-cols-4">
+          <div className="mt-8 grid min-w-0 gap-6 xl:grid-cols-3">
             {/* Left Column: Owner Info */}
             <div className="min-w-0 space-y-6 xl:col-span-1">
               <ProfileCard owner={owner} email={session.user.email || ''} />
@@ -194,18 +190,18 @@ function ProfileContent() {
 
             {/* Middle Column: Pets */}
             <div className="min-w-0 space-y-6 xl:col-span-2">
-              <div className="space-y-4">
+              <div className="space-y-4 xl:col-span-2">
                 <div className="flex min-w-0 items-center justify-between gap-3">
                   <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-slate-900">
                     <PawPrint className="size-5 text-teal-500" aria-hidden="true" />
-                    Mis Mascotas
+                    Mis mascotas
                   </h2>
                   <Button
                     onClick={() => {
                       setEditingPet(null);
                       setShowPetForm(true);
                     }}
-                    className="min-h-11 shrink-0 rounded-full bg-teal-500 px-4 text-white hover:bg-teal-600"
+                    className="min-h-11 shrink-0 px-4"
                   >
                     <Plus className="mr-1 size-5" aria-hidden="true" />
                     Agregar
@@ -236,12 +232,6 @@ function ProfileContent() {
               </div>
             </div>
 
-            {/* Right Sidebar: Quick Actions */}
-            <div className="hidden min-w-0 xl:col-span-1 xl:block">
-              <div className="sticky top-24">
-                <QuickActions />
-              </div>
-            </div>
           </div>
         </div>
       </main>
@@ -255,14 +245,14 @@ function ProfileContent() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-3 top-3 size-11 rounded-full hover:bg-slate-100 sm:right-4 sm:top-4"
+              className="absolute right-3 top-3 size-11 rounded-md hover:bg-slate-100 sm:right-4 sm:top-4"
               onClick={() => setShowOwnerForm(false)}
               aria-label="Cerrar edición de perfil"
             >
               <X className="size-5 text-slate-500" aria-hidden="true" />
             </Button>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-900">Editar Perfil de Dueño</CardTitle>
+              <CardTitle className="text-2xl font-bold text-slate-900">Editar perfil</CardTitle>
             </CardHeader>
             <CardContent>
               <OwnerForm
@@ -287,7 +277,7 @@ function ProfileContent() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-3 top-3 z-10 size-11 rounded-full hover:bg-slate-100 sm:right-4 sm:top-4"
+              className="absolute right-3 top-3 z-10 size-11 rounded-md hover:bg-slate-100 sm:right-4 sm:top-4"
               onClick={() => {
                 setShowPetForm(false);
                 setEditingPet(null);
@@ -364,7 +354,7 @@ function ProfileContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
           <p className="text-slate-500">Cargando...</p>

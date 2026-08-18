@@ -14,7 +14,7 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
     const initials = owner.name.split(' ').map((n) => n[0]).join('');
 
     return (
-        <Card className="shadow-sm border-0 bg-white overflow-hidden">
+        <Card className="overflow-hidden">
             <div className="h-24 bg-teal-100"></div>
             <CardContent className="pt-0 pb-6 px-6 -mt-12">
                 <Avatar className="w-24 h-24 border-4 border-white mx-auto">
@@ -39,13 +39,13 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
                 </div>
                 <div className="flex flex-wrap justify-center gap-2 mt-4">
                     {owner.hasYard && (
-                        <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 gap-1">
+                        <Badge variant="neutral" className="gap-1">
                             <Trees className="size-4" aria-hidden="true" />
                             Tiene patio
                         </Badge>
                     )}
                     {owner.hasOtherPets && (
-                        <Badge className="bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 gap-1">
+                        <Badge variant="neutral" className="gap-1">
                             <PawPrint className="size-4" aria-hidden="true" />
                             Otras mascotas
                         </Badge>

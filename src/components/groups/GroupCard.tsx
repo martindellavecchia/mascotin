@@ -20,21 +20,21 @@ interface GroupCardProps {
 
 export default function GroupCard({ group, onJoin }: GroupCardProps) {
     return (
-        <Card className="h-full hover:shadow-md transition-shadow">
+        <Card className="h-full overflow-hidden transition-colors hover:border-primary/35">
             <div className="h-32 bg-slate-100 relative">
                 {group.image ? (
                     <img
                         src={group.image}
                         alt={group.name}
-                        className="w-full h-full object-cover rounded-t-lg"
+                        className="h-full w-full object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-teal-50 rounded-t-lg">
+                    <div className="flex h-full w-full items-center justify-center bg-primary-soft">
                         <Users className="size-10 text-teal-200" aria-hidden="true" />
                     </div>
                 )}
                 {group.isMember && (
-                    <Badge className="absolute top-2 right-2 bg-white text-teal-600 hover:bg-white/90">
+                    <Badge variant="verified" className="absolute right-2 top-2">
                         Miembro
                     </Badge>
                 )}
@@ -55,15 +55,15 @@ export default function GroupCard({ group, onJoin }: GroupCardProps) {
                 {onJoin && !group.isMember ? (
                     <Button
                         onClick={() => onJoin(group.id)}
-                        className="w-full bg-teal-50 text-teal-600 hover:bg-teal-100 border-teal-200"
-                        variant="outline"
+                        className="w-full"
+                        variant="tonal"
                     >
                         Unirse
                     </Button>
                 ) : (
-                    <Button asChild className="w-full bg-slate-100 text-slate-600 hover:bg-slate-200" variant="ghost">
+                    <Button asChild className="w-full" variant="outline">
                         <Link href={`/community/groups/${group.id}`}>
-                            Ver Grupo
+                            Ver grupo
                         </Link>
                     </Button>
                 )}

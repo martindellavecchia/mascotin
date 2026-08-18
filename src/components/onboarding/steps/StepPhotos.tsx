@@ -54,12 +54,12 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
 
             <div className="grid grid-cols-2 gap-4">
                 {images.map((img, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden shadow-sm">
+                    <div key={idx} className="relative aspect-square overflow-hidden rounded-xl border border-border">
                         <img src={img} alt="Pet" className="w-full h-full object-cover" />
                         <button
                             type="button"
                             onClick={() => setImages(images.filter((_, i) => i !== idx))}
-                            className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-red-500 text-white shadow-sm"
+                            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-lg bg-destructive text-white"
                             aria-label="Eliminar foto"
                         >
                             <X className="size-4" aria-hidden="true" />

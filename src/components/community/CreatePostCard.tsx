@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { CalendarDays, Camera, CircleHelp, ImagePlus, Pencil, Star } from 'lucide-react';
+import { CalendarDays, Camera, CircleHelp, ImagePlus, Pencil, Star, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -20,16 +20,17 @@ interface CreatePostCardProps {
     userImage?: string;
     userName?: string;
     pets?: Pet[];
+    initialPetId?: string;
     onPostCreated?: () => void;
 }
 
 type PostType = 'post' | 'photo' | 'event' | 'question' | 'recommendation';
 
-export default function CreatePostCard({ userImage, userName, pets, onPostCreated }: CreatePostCardProps) {
+export default function CreatePostCard({ userImage, userName, pets, initialPetId, onPostCreated }: CreatePostCardProps) {
     const [postType, setPostType] = useState<PostType>('post');
     const [content, setContent] = useState('');
     const [images, setImages] = useState<string[]>([]);
-    const [selectedPetId, setSelectedPetId] = useState<string>('');
+    const [selectedPetId, setSelectedPetId] = useState<string>(initialPetId || '');
     const [eventDate, setEventDate] = useState('');
     const [eventLocation, setEventLocation] = useState('');
     const [uploading, setUploading] = useState(false);
@@ -119,16 +120,16 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
 
     const getPlaceholder = () => {
         switch (postType) {
-            case 'photo': return '📷 Describe tu foto...';
-            case 'event': return '📅 ¿De qué se trata el evento?';
-            case 'question': return '❓ Haz una pregunta a la comunidad...';
-            case 'recommendation': return '⭐ Recomendá un lugar, producto o profesional...';
+            case 'photo': return 'Describí la foto...';
+            case 'event': return '¿De qué se trata el evento?';
+            case 'question': return 'Hacé una pregunta a la comunidad...';
+            case 'recommendation': return 'Recomendá un lugar, producto o profesional...';
             default: return '¿Qué está haciendo tu mascota?';
         }
     };
 
     return (
-        <Card className="mb-6 shadow-sm">
+        <Card className="mb-6">
             <CardContent className="p-4">
                 {/* Header */}
                 <div className="flex items-start gap-3">
@@ -145,7 +146,7 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                         {!isExpanded ? (
                             <button
                                 onClick={() => setIsExpanded(true)}
-                                className="w-full text-left px-4 py-3 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors"
+                                className="min-h-11 w-full rounded-md border border-border bg-slate-100 px-4 py-3 text-left text-muted-foreground transition-colors hover:border-slate-300 hover:bg-primary-soft"
                             >
                                 ¿Qué está haciendo tu mascota?
                             </button>
@@ -216,9 +217,10 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                                                 <img src={img} alt="" className="w-full h-full object-cover rounded-lg" />
                                                 <button
                                                     onClick={() => removeImage(idx)}
-                                                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
+                                                    className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-lg bg-destructive text-white"
+                                                    aria-label="Quitar imagen"
                                                 >
-                                                    ×
+                                                    <X className="size-4" aria-hidden="true" />
                                                 </button>
                                             </div>
                                         ))}
@@ -251,7 +253,7 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                                             <select
                                                 value={selectedPetId}
                                                 onChange={(e) => setSelectedPetId(e.target.value)}
-                                                className="text-sm border rounded-lg px-2 py-1 text-slate-600"
+                                                className="min-h-10 rounded-md border border-slate-300 bg-surface px-2 py-1 text-sm text-slate-600"
                                             >
                                                 <option value="">Sin mascota</option>
                                                 {pets.map(pet => (
@@ -275,7 +277,6 @@ export default function CreatePostCard({ userImage, userName, pets, onPostCreate
                                         </Button>
                                         <Button
                                             size="sm"
-                                            className="bg-teal-500 hover:bg-teal-600"
                                             onClick={handleSubmit}
                                             disabled={submitting || !content.trim()}
                                         >

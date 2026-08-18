@@ -17,7 +17,7 @@ interface ServiceCardProps {
 
 export default function ServiceCard({ title, provider, rating, reviews, price, image, category }: ServiceCardProps) {
     return (
-        <Card className="overflow-hidden group hover:shadow-lg transition-all">
+        <Card className="group overflow-hidden transition-colors hover:border-primary/40">
             <div className="relative h-48 overflow-hidden">
                 <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <Badge className="absolute top-3 left-3 bg-white/90 text-emerald-800 hover:bg-white">{category}</Badge>

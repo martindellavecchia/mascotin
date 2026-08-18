@@ -54,7 +54,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
     const isFemale = pet.gender === 'female';
 
     return (
-        <div className="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-md transition-all duration-300">
+        <div className="group overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-primary/35">
             <div className="relative h-48 bg-slate-100">
                 {showImage ? (
                     <Image
@@ -74,7 +74,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="rounded-full bg-white/90 text-red-600 shadow-sm backdrop-blur-sm hover:bg-white"
+                        className="rounded-lg bg-white/90 text-red-600 backdrop-blur-sm hover:bg-white"
                         onClick={() => onDelete(pet)}
                         aria-label="Eliminar mascota"
                     >
@@ -82,12 +82,12 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                     </Button>
                 </div>
                 <div className="absolute bottom-3 left-3 flex gap-2 max-w-[calc(100%-1.5rem)]">
-                    <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm shadow-sm hover:bg-white gap-1 shrink-0">
+                    <Badge className="shrink-0 gap-1 bg-white/90 text-slate-800 backdrop-blur-sm hover:bg-white">
                         <PetTypeIcon petType={pet.petType} className="size-4 text-teal-700" />
                         {pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Otro'}
                     </Badge>
                     {pet.breed && (
-                        <Badge className="bg-white/90 text-slate-800 backdrop-blur-sm shadow-sm hover:bg-white max-w-[9rem] truncate">
+                        <Badge className="max-w-[9rem] truncate bg-white/90 text-slate-800 backdrop-blur-sm hover:bg-white">
                             {pet.breed}
                         </Badge>
                     )}

@@ -35,7 +35,7 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'QR de emergencia MascoTin',
+          title: 'QR de emergencia Huella',
           text: 'Abrí este enlace si encontrás a mi mascota.',
           url: publicUrl,
         });
@@ -64,7 +64,7 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           {src ? (
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={src} download="mascotin-qr.png">
+              <a href={src} download="huella-qr.png">
                 Descargar PNG
               </a>
             </Button>

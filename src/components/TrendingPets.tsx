@@ -89,14 +89,14 @@ export default function TrendingPets() {
                         return (
                             <Card
                                 key={pet.id}
-                                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                                className="group cursor-pointer overflow-hidden transition-colors hover:border-primary/40"
                                 onClick={() => {
                                     toast.info(`¡Explorando ${pet.name}!`, { duration: 2000 });
                                     // Switch to explore tab - the main page will handle showing this pet
                                     router.push('/inicio?tab=explore');
                                 }}
                             >
-                                <div className="relative h-28 bg-gradient-to-br from-orange-100 to-yellow-100">
+                                <div className="relative h-28 bg-orange-50">
                                     {showImage ? (
                                         <Image
                                             src={firstImage}

@@ -219,7 +219,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     return (
-        <Card className={`mb-2 min-w-0 overflow-hidden shadow-sm ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : isFosterCase ? 'border-orange-200 bg-white' : 'border-slate-100 bg-white'}`}>
+        <Card className={`mb-2 min-w-0 overflow-hidden ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : isFosterCase ? 'border-orange-200 bg-surface' : 'border-border bg-surface'}`}>
             {isFosterCase && post.rescueCase && (
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-3 py-2 text-orange-900">
                     <span className="inline-flex items-center gap-1.5 text-sm font-bold">
@@ -269,7 +269,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                     toast.error('Error al actualizar');
                                 }
                             }}
-                            className={`min-h-9 shrink-0 rounded-full px-3 py-1 text-xs font-bold transition-colors ${isResolved
+                            className={`min-h-9 shrink-0 rounded-md px-3 py-1 text-xs font-bold transition-colors ${isResolved
                                 ? 'bg-white/20 hover:bg-white/30 text-white'
                                 : 'bg-white text-green-600 hover:bg-green-50'
                                 }`}
@@ -454,7 +454,8 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         {post.eventId && (
                             <Button
                                 size="sm"
-                                className={`min-h-10 w-full shrink-0 text-white transition-colors sm:w-auto ${isAttending ? 'bg-teal-800 hover:bg-teal-900' : 'bg-teal-700 hover:bg-teal-800'}`}
+                                variant={isAttending ? 'tonal' : 'default'}
+                                className="min-h-10 w-full shrink-0 sm:w-auto"
                                 onClick={handleAttend}
                             >
                                 {isAttending ? (
@@ -509,7 +510,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {/* Footer / Stats */}
             {(likeCount > 0 || (post._count?.comments || 0) > 0) && (
                 <div className="px-3 py-1 flex justify-between text-[10px] text-slate-400">
-                    <span>{likeCount} likes</span>
+                    <span>{likeCount} Me gusta</span>
                     <span>{comments.length || post._count?.comments || 0} comentarios</span>
                 </div>
             )}
@@ -552,8 +553,8 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         <div className="relative min-w-0 flex-1">
                             <input
                                 type="text"
-                                placeholder="Escribe un comentario..."
-                                className="min-h-10 w-full rounded-full border border-slate-200 py-2 pl-3 pr-11 text-xs focus:border-teal-400 focus:outline-none"
+                                placeholder="Escribí un comentario"
+                                className="min-h-10 w-full rounded-lg border border-border bg-surface py-2 pl-3 pr-11 text-xs focus:border-primary focus:outline-none"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => {
@@ -567,7 +568,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 onClick={handleAddComment}
                                 disabled={!newComment.trim()}
                                 aria-label="Enviar comentario"
-                                className="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:text-teal-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 disabled:opacity-50"
+                                className="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50"
                             >
                                 <Send className="size-5" aria-hidden="true" />
                             </button>

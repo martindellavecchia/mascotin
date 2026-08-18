@@ -14,7 +14,7 @@ export default function StepBasicInfo({ data, updateData }: StepBasicInfoProps) 
         <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-slate-900">Sobre tu mascota</h2>
-                <p className="text-sm text-slate-500">Cuéntanos lo básico</p>
+                <p className="text-sm text-slate-500">Contanos lo básico</p>
             </div>
 
             <div className="space-y-4">

@@ -87,7 +87,7 @@ export function ImageUploadSection({
   return (
     <div>
       <Label>Imágenes ({images.length}/6)</Label>
-      <p className="text-xs text-slate-500 mb-2">Haz clic en la estrella para seleccionar la foto de perfil</p>
+      <p className="text-xs text-slate-500 mb-2">Hacé clic en la estrella para elegir la foto de perfil</p>
       <div className="mt-2 grid grid-cols-3 gap-4">
         {images.map((image, index) => (
           <div
@@ -114,7 +114,7 @@ export function ImageUploadSection({
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute top-2 right-2 size-7 gap-0 rounded-full p-0"
+              className="absolute top-2 right-2 size-7 gap-0 rounded-md p-0"
               onClick={() => removeImage(index)}
               aria-label="Eliminar foto"
             >

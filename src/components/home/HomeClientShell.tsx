@@ -1,27 +1,15 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, Compass, Heart, Home, PawPrint } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Compass, Heart, PawPrint } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
-import HomeStats from '@/components/HomeStats';
 import Feed from '@/components/feed/Feed';
-import NextAppointment from '@/components/widgets/NextAppointment';
-import LostPetWidget from '@/components/widgets/LostPetWidget';
-import SuggestedPets from '@/components/widgets/SuggestedPets';
-import DeferredVisibilitySection from '@/components/home/DeferredVisibilitySection';
-import CommunitySidebar from '@/components/home/CommunitySidebar';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import type {
-  HomeAppointmentData,
-  HomeBootstrapSuggestion,
-  HomeLostPetPreview,
-  HomePetHealthSummary,
-  HomeStatsData,
-} from '@/lib/server/home';
 import type { Pet, SwipeResponse } from '@/types';
 import type { Post } from '@/types';
 
@@ -50,14 +38,9 @@ interface HomeClientShellProps {
   } | null;
   initialPets: Pet[];
   initialSelectedPetId?: string;
-  initialStats: HomeStatsData;
-  initialNextAppointment: HomeAppointmentData | null;
   initialFeedPosts: Post[];
   initialFeedNextCursor: string | null;
   initialFeedHasMore: boolean;
-  initialLostPets?: HomeLostPetPreview[];
-  initialSuggestions?: HomeBootstrapSuggestion[];
-  initialHealthRecords?: HomePetHealthSummary[];
 }
 
 function getValidTab(value: string | null): HomeTab {
@@ -87,17 +70,6 @@ function readHomeUrlState(pets: Pet[], fallbackPetId?: string) {
     tab: getValidTab(params.get('tab')),
     petId,
   };
-}
-
-function WidgetSkeleton() {
-  return (
-    <Card className="p-5">
-      <div className="animate-pulse space-y-3">
-        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-        <div className="h-16 bg-slate-200 rounded"></div>
-      </div>
-    </Card>
-  );
 }
 
 function PanelSkeleton({
@@ -138,22 +110,17 @@ function writeShallowHomeUrl(nextTab: HomeTab, nextPetId?: string) {
     '',
     query ? `${pathname}?${query}` : pathname
   );
-  window.dispatchEvent(new Event('mascotin:home-tab'));
+  window.dispatchEvent(new Event('huella:home-tab'));
 }
 
 export default function HomeClientShell({
   session,
   initialPets,
   initialSelectedPetId,
-  initialStats,
-  initialNextAppointment,
   initialFeedPosts,
   initialFeedNextCursor,
   initialFeedHasMore,
-  initialLostPets = [],
-  initialSuggestions = [],
 }: HomeClientShellProps) {
-  const router = useRouter();
   const { fetchWithError } = useFetchWithError();
   const myPets = initialPets;
   const [activeTab, setActiveTab] = useState<HomeTab>('home');
@@ -188,10 +155,10 @@ export default function HomeClientShell({
     };
 
     window.addEventListener('popstate', onPopState);
-    window.addEventListener('mascotin:home-tab', onPopState);
+    window.addEventListener('huella:home-tab', onPopState);
     return () => {
       window.removeEventListener('popstate', onPopState);
-      window.removeEventListener('mascotin:home-tab', onPopState);
+      window.removeEventListener('huella:home-tab', onPopState);
     };
   }, [initialSelectedPetId, myPets]);
 
@@ -301,41 +268,9 @@ export default function HomeClientShell({
     }
   };
 
-  const rightSidebar = useMemo(
-    () => activeTab === 'explore' || activeTab === 'matches' ? (
-      <CommunitySidebar
-        session={session}
-        matches={matches}
-        suggestions={initialSuggestions}
-        onOpenMatches={() => syncHomeState('matches', selectedPetId)}
-      />
-    ) : (
-      <div className="space-y-6 pt-2 lg:pt-4">
-        <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
-          <LostPetWidget initialPets={initialLostPets as never} />
-        </DeferredVisibilitySection>
-        <NextAppointment appointment={initialNextAppointment} />
-        <DeferredVisibilitySection fallback={<WidgetSkeleton />}>
-          <SuggestedPets selectedPetId={selectedPetId} initialSuggestions={initialSuggestions} />
-        </DeferredVisibilitySection>
-      </div>
-    ),
-    [
-      activeTab,
-      initialLostPets,
-      initialNextAppointment,
-      initialSuggestions,
-      matches,
-      selectedPetId,
-      session,
-    ]
-  );
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      <DashboardLayout
-        rightSidebar={rightSidebar}
-      >
+    <div className="min-h-screen bg-background">
+      <DashboardLayout>
         <div className="min-w-0 w-full">
           <Tabs
             value={activeTab}
@@ -344,52 +279,30 @@ export default function HomeClientShell({
             }}
             className="w-full"
           >
-            <div className="mb-6 min-w-0 lg:hidden">
-              <TabsList className="grid h-12 w-full min-w-0 grid-cols-3 rounded-xl border border-slate-200 bg-white p-1">
-                <TabsTrigger
-                  value="home"
-                  className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
-                >
-                  <Home className="size-5" aria-hidden="true" />
-                  Inicio
-                </TabsTrigger>
-                <TabsTrigger
-                  value="explore"
-                  className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
-                >
-                  <Compass className="size-5" aria-hidden="true" />
-                  Descubrir
-                </TabsTrigger>
-                <TabsTrigger
-                  value="matches"
-                  aria-label="Círculo de coincidencias"
-                  className="min-w-0 gap-1 rounded-md px-1.5 text-xs transition-colors data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700 data-[state=active]:shadow-none sm:gap-2 sm:px-3 sm:text-sm"
-                >
-                  <Heart className="size-5" aria-hidden="true" />
-                  Círculo
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
             <TabsContent value="home" className="min-w-0 space-y-6 mt-0">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
                 <div className="min-w-0">
-                  <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Inicio</h1>
-                  <p className="mt-2 text-slate-500">Todo lo que está pasando en la comunidad de {activePet?.name}.</p>
+                  <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">Inicio</h1>
+                  <p className="mt-2 text-muted-foreground">Novedades de tu comunidad y de {activePet?.name}.</p>
                 </div>
-                {activePet && (
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/profile?petId=${activePet.id}`)}
-                    className="inline-flex min-h-11 max-w-full min-w-0 items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:border-teal-200 sm:self-auto"
-                  >
-                    <PawPrint className="size-5 shrink-0 text-teal-700" fill="currentColor" aria-hidden="true" />
-                    <span className="truncate">{activePet.name}</span>
-                    <ChevronDown className="size-5 shrink-0 text-slate-400" aria-hidden="true" />
-                  </button>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="tonal" onClick={() => syncHomeState('matches', selectedPetId)}>
+                    <Heart className="size-4" aria-hidden="true" />
+                    Tu círculo
+                  </Button>
+                  {activePet && (
+                    <Select value={selectedPetId} onValueChange={(petId) => syncHomeState(activeTab, petId)}>
+                      <SelectTrigger aria-label="Mascota activa" className="w-[min(15rem,70vw)]">
+                        <PawPrint className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {myPets.map((pet) => <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
               </div>
-              <HomeStats stats={initialStats} />
               <Feed
                 currentUserId={session?.user?.id}
                 currentUserImage={
@@ -416,9 +329,15 @@ export default function HomeClientShell({
             </TabsContent>
 
             <TabsContent value="matches" className="min-w-0 mt-0">
-              <div className="mb-7">
-                <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl">Tu círculo</h1>
-                <p className="mt-2 text-slate-500">Las conexiones que nacieron en la plaza.</p>
+              <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
+                <div>
+                  <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">Tu círculo</h1>
+                  <p className="mt-2 text-muted-foreground">Mascotas con las que hubo interés mutuo.</p>
+                </div>
+                <Button variant="tonal" onClick={() => syncHomeState('explore', selectedPetId)}>
+                  <Compass className="size-4" aria-hidden="true" />
+                  Seguir descubriendo
+                </Button>
               </div>
               {matchesLoading && !hasLoadedMatches ? (
                 <PanelSkeleton label="Cargando matches..." />

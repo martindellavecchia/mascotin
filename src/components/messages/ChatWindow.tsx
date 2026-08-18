@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, LoaderCircle, Send } from 'lucide-react';
+import { CheckCheck, Hand, LoaderCircle, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -237,7 +237,7 @@ export default function ChatWindow({
           <div className="h-full flex items-center justify-center text-slate-400">
             <div className="text-center">
               <Hand className="mb-2 size-10" aria-hidden="true" />
-              <p className="text-sm">¡Envía el primer mensaje!</p>
+              <p className="text-sm">Enviá el primer mensaje</p>
             </div>
           </div>
         ) : (
@@ -251,10 +251,10 @@ export default function ChatWindow({
               }`}
             >
               <div
-                className={`min-w-0 max-w-[85%] rounded-2xl px-4 py-2 sm:max-w-[70%] ${
+                className={`min-w-0 max-w-[85%] rounded-xl px-4 py-2 sm:max-w-[70%] ${
                   message.senderId === currentUserId
-                    ? 'bg-teal-500 text-white rounded-br-md'
-                    : 'bg-white text-slate-800 rounded-bl-md shadow-sm'
+                    ? 'rounded-br-md bg-primary text-primary-foreground'
+                    : 'rounded-bl-md border border-border bg-surface text-slate-800'
                 }`}
               >
                 <p className="text-sm [overflow-wrap:anywhere]">{message.content}</p>
@@ -280,7 +280,8 @@ export default function ChatWindow({
                           : 'text-teal-100'
                       }`}
                     >
-                      ✓✓
+                      <CheckCheck className="size-3" aria-hidden="true" />
+                      <span className="sr-only">Enviado</span>
                     </span>
                   )}
                 </div>
@@ -300,19 +301,19 @@ export default function ChatWindow({
           className="flex min-w-0 items-center gap-2 sm:gap-3"
         >
           <Input
-            placeholder="Escribe un mensaje..."
+            placeholder="Escribí un mensaje"
             value={newMessage}
             onChange={(event) => setNewMessage(event.target.value)}
             aria-label="Mensaje"
             autoComplete="off"
-            className="h-11 min-w-0 flex-1 rounded-full border-none bg-slate-100 focus-visible:ring-teal-500"
+            className="h-11 min-w-0 flex-1 bg-background"
             disabled={sending}
           />
           <Button
             type="submit"
             size="icon"
             aria-label="Enviar mensaje"
-            className="h-11 w-11 shrink-0 rounded-full bg-teal-500 text-white hover:bg-teal-600"
+            className="h-11 w-11 shrink-0"
             disabled={!newMessage.trim() || sending}
           >
             {sending ? (

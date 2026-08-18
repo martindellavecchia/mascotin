@@ -95,7 +95,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
         // Validate event fields
         if (activeTab === 'event') {
             if (!eventTitle || !eventDate || !eventLocation) {
-                return toast.error('Completa todos los campos del evento');
+                return toast.error('Completá todos los campos del evento');
             }
         }
 
@@ -189,7 +189,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
 
                                 <TabsContent value="question" className="m-0 min-w-0 space-y-4">
                                     <Textarea
-                                        placeholder={`Haz una pregunta al grupo...`}
+                                        placeholder="Hacé una pregunta al grupo..."
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px] text-lg font-medium placeholder:font-normal"
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
@@ -230,7 +230,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                         <button
                                             onClick={() => setImage('')}
                                             aria-label="Quitar imagen"
-                                            className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
+                                            className="absolute right-2 top-2 rounded-md bg-black/50 p-1 text-white hover:bg-black/70"
                                         >
                                             <X className="size-4" aria-hidden="true" />
                                         </button>
@@ -253,7 +253,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Button
                                         onClick={handleCreatePost}
                                         disabled={!content.trim() || creating || uploading}
-                                        className="min-h-11 w-full rounded-full bg-teal-500 px-6 text-white hover:bg-teal-600 sm:w-auto"
+                                        className="min-h-11 w-full rounded-md bg-teal-500 px-6 text-white hover:bg-teal-600 sm:w-auto"
                                     >
                                         {creating ? 'Publicando...' : 'Publicar'}
                                     </Button>

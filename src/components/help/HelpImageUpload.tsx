@@ -62,7 +62,7 @@ export default function HelpImageUpload({ images, onChange }: HelpImageUploadPro
               type="button"
               size="icon"
               variant="destructive"
-              className="absolute right-1.5 top-1.5 size-8 rounded-full"
+              className="absolute right-1.5 top-1.5 size-8 rounded-md"
               onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))}
               aria-label={`Eliminar foto ${index + 1}`}
             >

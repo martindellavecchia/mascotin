@@ -9,7 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getPrimaryImageUrl } from '@/lib/media';
@@ -88,16 +90,14 @@ function AdoptionsContent() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Adopciones responsables</h1>
-          <p className="text-slate-500">Fichas completas y postulaciones con compatibilidad.</p>
-        </div>
-        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
+      <PageHeader
+        title="Adopciones responsables"
+        description="Conocé cada historia y postulá con información clara."
+        action={<div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
           <Button className="w-full sm:w-auto" variant="outline" onClick={() => setShowProfile((value) => !value)}>Perfil adoptante</Button>
           <Button className="w-full sm:w-auto" onClick={() => setShowCreate((value) => !value)}>Publicar ficha</Button>
-        </div>
-      </div>
+        </div>}
+      />
 
       {showProfile && (
         <Card className="space-y-3 p-4">
@@ -197,35 +197,32 @@ function AdoptionsContent() {
             </Card>
           ))
         ) : loadError ? (
-          <Card className="border-dashed md:col-span-2">
-            <CardContent className="flex flex-col items-center px-6 py-12 text-center">
-              <h3 className="text-lg font-semibold text-slate-900">No pudimos cargar las adopciones</h3>
-              <p className="mt-1 text-sm text-slate-500">Revisá tu conexión e intentá nuevamente.</p>
-              <Button className="mt-5" variant="outline" onClick={() => void load()}>Reintentar</Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            className="md:col-span-2"
+            title="No pudimos cargar las adopciones"
+            description="Revisá tu conexión e intentá nuevamente."
+            action={<Button variant="outline" onClick={() => void load()}>Reintentar</Button>}
+          />
         ) : listings.length === 0 ? (
-          <Card className="border-dashed md:col-span-2">
-            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <PawPrint className="size-12 text-slate-300" aria-hidden="true" />
-              <h3 className="mt-3 text-lg font-semibold text-slate-900">Todavía no hay fichas de adopción</h3>
-              <p className="mt-1 max-w-md text-sm text-slate-500">
-                Cuando alguien publique una mascota en adopción, va a aparecer acá. También podés armar tu perfil de adoptante o publicar una ficha.
-              </p>
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
-                <Button variant="outline" onClick={() => setShowProfile(true)}>Perfil adoptante</Button>
-                <Button onClick={() => setShowCreate(true)}>Publicar ficha</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyState
+            className="md:col-span-2"
+            icon={<PawPrint className="size-11" aria-hidden="true" />}
+            title="Todavía no hay fichas de adopción"
+            description="Cuando alguien publique una mascota en adopción, va a aparecer acá."
+            action={<Button onClick={() => setShowCreate(true)}>Publicar ficha</Button>}
+          />
         ) : (
           listings.map((listing) => {
             const image = getPrimaryImageUrl(listing.pet.images, listing.pet.thumbnailIndex);
             return (
               <Card key={listing.id} className="overflow-hidden">
                 <CardContent className="p-4 space-y-3">
-                  {image && (
+                  {image ? (
                     <img src={image} alt={listing.pet.name} className="h-48 w-full rounded-xl object-cover" />
+                  ) : (
+                    <div className="flex h-40 w-full items-center justify-center rounded-xl bg-primary-soft">
+                      <PawPrint className="size-10 text-primary/30" aria-hidden="true" />
+                    </div>
                   )}
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-bold">{listing.pet.name}</h2>

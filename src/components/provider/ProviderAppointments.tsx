@@ -171,7 +171,7 @@ export default function ProviderAppointments() {
             ) : (
                 <div className="min-w-0 space-y-4">
                     {appointments.map(apt => (
-                        <Card key={apt.id} className="min-w-0 transition-shadow hover:shadow-md">
+                        <Card key={apt.id} className="min-w-0 transition-colors hover:border-primary/35">
                             <CardContent className="min-w-0 p-4">
                                 <div className="min-w-0 space-y-4">
                                     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

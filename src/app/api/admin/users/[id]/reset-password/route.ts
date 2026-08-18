@@ -40,7 +40,7 @@ export async function POST(
             const { sendEmail } = await import('@/lib/email');
             await sendEmail({
                 to: user.email,
-                subject: 'mascoTin - Contraseña temporal',
+                subject: 'Huella - Contraseña temporal',
                 html: `<p>Tu contraseña ha sido restablecida por un administrador.</p><p>Tu contraseña temporal es: <strong>${tempPassword}</strong></p><p>Por favor, cámbiala lo antes posible.</p>`,
             });
         }

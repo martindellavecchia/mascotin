@@ -25,8 +25,10 @@ import type {
 } from '@/components/help/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   RESCUE_STATUS_LABELS,
@@ -54,7 +56,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
   const image = rescueCase.images[0];
   const primaryNeed = rescueCase.needs.find((need) => need.isPrimary);
   return (
-    <Card className="overflow-hidden">
+    <div className="overflow-hidden bg-surface">
       <div className="grid min-w-0 grid-cols-[96px_minmax(0,1fr)] sm:grid-cols-[128px_minmax(0,1fr)]">
         <div className="relative flex min-h-40 items-center justify-center bg-slate-100">
           {image ? (
@@ -70,7 +72,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
             <PawPrint className="size-10 text-slate-300" aria-hidden="true" />
           )}
         </div>
-        <CardContent className="min-w-0 space-y-3 p-4">
+        <div className="min-w-0 space-y-3 p-4">
           <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="font-semibold text-slate-900">
@@ -90,9 +92,9 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
           <Button asChild variant="outline" size="sm">
             <Link href={`/hogares-de-transito/casos/${rescueCase.id}`}>Ver seguimiento</Link>
           </Button>
-        </CardContent>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -239,19 +241,11 @@ export default function HelpCenter() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:py-8">
-      <section className="overflow-hidden rounded-2xl border border-teal-100 bg-white">
-        <div className="grid gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Hogares de tránsito</h1>
-            <p className="mt-3 max-w-2xl text-slate-600">
-              Coordiná tránsito, voluntariado y continuidad hacia adopción. Las ubicaciones exactas y los datos personales permanecen privados.
-            </p>
-          </div>
-          <div className="flex size-24 items-center justify-center rounded-full bg-teal-50 text-teal-700">
-            <HandHeart className="size-12" aria-hidden="true" />
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Red solidaria"
+        title="Hogares de tránsito"
+        description="Coordiná tránsito, voluntariado y continuidad hacia adopción. Las ubicaciones exactas y los datos personales se mantienen privados."
+      />
 
       <section aria-label="Opciones de hogares de tránsito" className="grid gap-8 md:grid-cols-2 md:gap-0">
         <div className="space-y-5 md:pr-8">
@@ -259,7 +253,7 @@ export default function HelpCenter() {
             <h2 className="text-2xl font-bold tracking-tight text-teal-700">Ayuda temporal</h2>
             <p className="mt-1 text-sm text-slate-500">Resguardo y tránsito para una mascota</p>
           </div>
-          <div className="space-y-3">
+          <div className="divide-y divide-border border-y border-border bg-surface">
             {([
               { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: PawPrint, action: () => setCaseDialogOpen(true) },
               { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: Home, action: () => setProfileDialogOpen(true) },
@@ -271,16 +265,16 @@ export default function HelpCenter() {
                 key={item.title}
                 type="button"
                 onClick={item.action}
-                className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left transition-colors hover:border-teal-300 hover:bg-teal-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                className="group flex min-h-24 w-full items-center gap-4 px-3 py-4 text-left transition-colors hover:bg-primary-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
               >
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700 sm:size-14" aria-hidden="true">
-                  <Icon className="size-8" aria-hidden="true" />
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary" aria-hidden="true">
+                  <Icon className="size-6" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold text-slate-900">{item.title}</span>
                   <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
                 </span>
-                <ChevronRight className="size-7 shrink-0 text-teal-600 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                <ChevronRight className="size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </button>
               );
             })}
@@ -292,7 +286,7 @@ export default function HelpCenter() {
             <h2 className="text-2xl font-bold tracking-tight text-orange-600">Adopción definitiva</h2>
             <p className="mt-1 text-sm text-slate-500">Un hogar permanente para una mascota</p>
           </div>
-          <div className="space-y-3">
+          <div className="divide-y divide-border border-y border-border bg-surface">
             {([
               {
                 href: '/adoptions',
@@ -316,10 +310,10 @@ export default function HelpCenter() {
               <Link
                 key={item.title}
                 href={item.href}
-                className="group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300 hover:bg-orange-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                className="group flex min-h-24 w-full items-center gap-4 px-3 py-4 transition-colors hover:bg-orange-50/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
               >
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600 sm:size-14" aria-hidden="true">
-                  <Icon className="size-8" aria-hidden="true" />
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600" aria-hidden="true">
+                  <Icon className="size-6" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[0.6875rem] font-bold uppercase tracking-wide text-orange-600">{item.eyebrow}</span>
@@ -328,7 +322,7 @@ export default function HelpCenter() {
                 </span>
                 <span className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 min-[900px]:flex">
                   {item.action}
-                  <ChevronRight className="size-7 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  <ChevronRight className="size-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
               </Link>
               );
@@ -356,14 +350,18 @@ export default function HelpCenter() {
               <h2 className="text-xl font-bold text-slate-900">Casos que estás acompañando</h2>
               <p className="text-sm text-slate-500">Seguimiento desde la búsqueda hasta el cierre.</p>
             </div>
-            <Button className="bg-teal-700 hover:bg-teal-800" onClick={() => setCaseDialogOpen(true)}>Crear caso</Button>
+            <Button onClick={() => setCaseDialogOpen(true)}>Crear caso</Button>
           </div>
           {loading ? (
-            <div className="h-40 animate-pulse rounded-2xl bg-slate-200" />
+            <div className="h-40 animate-pulse rounded-lg bg-slate-200" />
           ) : dashboard.createdCases.length === 0 ? (
-            <Card className="border-dashed"><CardContent className="py-12 text-center"><p className="font-medium text-slate-700">Todavía no creaste solicitudes de ayuda</p><p className="mt-1 text-sm text-slate-500">Cuando encuentres un animal, podés iniciar la búsqueda desde acá.</p></CardContent></Card>
+            <EmptyState
+              title="Todavía no creaste solicitudes de ayuda"
+              description="Cuando encuentres un animal, podés iniciar la búsqueda desde acá."
+              action={<Button onClick={() => setCaseDialogOpen(true)}>Crear caso</Button>}
+            />
           ) : (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="divide-y divide-border border-y border-border">
               {dashboard.createdCases.map((rescueCase) => <RescueCaseCard key={rescueCase.id} rescueCase={rescueCase} />)}
             </div>
           )}
@@ -375,9 +373,9 @@ export default function HelpCenter() {
             <p className="text-sm text-slate-500">Solo aparecen casos compatibles dentro del radio elegido por quien pidió ayuda.</p>
           </div>
           {!profile ? (
-            <Card className="border-dashed"><CardContent className="py-12 text-center"><p className="font-medium text-slate-700">Primero activá tu hogar de tránsito</p><Button className="mt-4" onClick={() => setProfileDialogOpen(true)}>Crear perfil</Button></CardContent></Card>
+            <EmptyState title="Primero activá tu hogar de tránsito" action={<Button onClick={() => setProfileDialogOpen(true)}>Crear perfil</Button>} />
           ) : dashboard.offers.length === 0 ? (
-            <Card className="border-dashed"><CardContent className="py-12 text-center"><p className="font-medium text-slate-700">No hay solicitudes compatibles por ahora</p><p className="mt-1 text-sm text-slate-500">Te avisaremos cuando aparezca un caso cercano.</p></CardContent></Card>
+            <EmptyState title="No hay solicitudes compatibles por ahora" description="Te avisaremos cuando aparezca un caso cercano." />
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {dashboard.offers.map((offer) => (
@@ -393,22 +391,22 @@ export default function HelpCenter() {
         </TabsContent>
 
         <TabsContent value="home" className="space-y-4">
-          <Card>
-            <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <section className="border-y border-border bg-surface py-5">
+            <div className="flex flex-row flex-wrap items-start justify-between gap-3 px-4">
               <div>
-                <CardTitle>Disponibilidad del hogar</CardTitle>
+                <h2 className="font-semibold text-foreground">Disponibilidad del hogar</h2>
                 <p className="mt-1 text-sm text-slate-500">No hay revisión previa; podés pausar nuevas solicitudes cuando lo necesites.</p>
               </div>
               {profile && <Badge className={profile.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}>{profile.status === 'ACTIVE' ? 'Disponible' : profile.status === 'PAUSED' ? 'Pausado' : 'Suspendido'}</Badge>}
-            </CardHeader>
-            <CardContent className="space-y-4">
+            </div>
+            <div className="mt-5 space-y-4 px-4">
               {profile ? (
                 <>
-                  <div className="grid gap-3 text-sm sm:grid-cols-3">
-                    <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Zona y radio</p><p className="mt-1 font-medium text-slate-900">{profile.location} · {profile.radiusKm} km</p></div>
-                    <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Capacidad</p><p className="mt-1 font-medium text-slate-900">{profile.occupiedSlots}/{profile.capacity} lugares ocupados</p></div>
-                    <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Duración máxima</p><p className="mt-1 font-medium text-slate-900">{profile.maxDurationDays} días</p></div>
-                  </div>
+                  <dl className="grid divide-y divide-border border-y border-border text-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                    <div className="py-3 sm:px-4"><dt className="text-slate-500">Zona y radio</dt><dd className="mt-1 font-medium text-slate-900">{profile.location} · {profile.radiusKm} km</dd></div>
+                    <div className="py-3 sm:px-4"><dt className="text-slate-500">Capacidad</dt><dd className="mt-1 font-medium text-slate-900">{profile.occupiedSlots}/{profile.capacity} lugares ocupados</dd></div>
+                    <div className="py-3 sm:px-4"><dt className="text-slate-500">Duración máxima</dt><dd className="mt-1 font-medium text-slate-900">{profile.maxDurationDays} días</dd></div>
+                  </dl>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button onClick={() => setProfileDialogOpen(true)}>Editar perfil</Button>
                     {profile.status !== 'SUSPENDED' && <Button variant="outline" onClick={() => void toggleProfile()}>{profile.status === 'ACTIVE' ? 'Pausar solicitudes' : 'Volver a activar'}</Button>}
@@ -417,8 +415,8 @@ export default function HelpCenter() {
               ) : (
                 <div className="py-8 text-center"><p className="text-slate-600">Todavía no configuraste tu hogar.</p><Button className="mt-4" onClick={() => setProfileDialogOpen(true)}>Ofrecer mi hogar</Button></div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </TabsContent>
 
         <TabsContent value="volunteer"><VolunteerPanel returnTo={returnTo} initialProfileOpen={searchParams.get('create') === 'volunteer'} /></TabsContent>

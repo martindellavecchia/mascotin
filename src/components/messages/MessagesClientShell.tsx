@@ -31,18 +31,6 @@ const GroupChat = dynamic(() => import('@/components/groups/GroupChat'), {
   ),
 });
 
-const QuickActions = dynamic(
-  () => import('@/components/widgets/QuickActions'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-        <div className="h-24 bg-slate-200 rounded animate-pulse" />
-      </div>
-    ),
-  }
-);
-
 interface MessagesClientShellProps {
   session: {
     user?: {
@@ -164,12 +152,12 @@ export default function MessagesClientShell({
   const renderContent = () => {
     if (!selectedId || !selectedType) {
       return (
-        <div className="flex h-full min-h-0 min-w-0 flex-col items-center justify-center bg-slate-50/50 p-6 text-center text-slate-400 sm:p-8">
-          <MessageCircle className="mb-4 size-16 text-slate-300" aria-hidden="true" />
-          <h3 className="mb-2 text-xl font-semibold text-slate-600">
-            Tus Mensajes
+        <div className="flex h-full min-h-0 min-w-0 flex-col items-center justify-center bg-background p-6 text-center text-muted-foreground sm:p-8">
+          <MessageCircle className="mb-4 size-12 text-primary/30" aria-hidden="true" />
+          <h3 className="mb-2 text-lg font-semibold text-foreground">
+            Tus mensajes
           </h3>
-          <p className="max-w-md [overflow-wrap:anywhere]">Selecciona una conversación o grupo para comenzar a chatear.</p>
+          <p className="max-w-md [overflow-wrap:anywhere]">Elegí una conversación o un grupo para empezar a chatear.</p>
         </div>
       );
     }
@@ -179,7 +167,7 @@ export default function MessagesClientShell({
 
       return (
         <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-          <div className="z-10 flex min-w-0 shrink-0 items-center gap-3 border-b border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+          <div className="z-10 flex min-w-0 shrink-0 items-center gap-3 border-b border-border bg-surface p-3 sm:p-4">
             <Button
               type="button"
               variant="ghost"
@@ -207,7 +195,7 @@ export default function MessagesClientShell({
               <p className="text-xs text-slate-500">Grupo de Interés</p>
             </div>
           </div>
-          <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-slate-50 p-2 sm:p-4">
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background p-2 sm:p-4">
             <GroupChat
               groupId={selectedId}
               currentUserId={session?.user?.id || ''}
@@ -222,7 +210,7 @@ export default function MessagesClientShell({
 
     return (
       <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-        <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white p-2 lg:hidden">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border bg-surface p-2 lg:hidden">
           <Button
             type="button"
             variant="ghost"
@@ -249,10 +237,10 @@ export default function MessagesClientShell({
   const showChat = Boolean(selectedId);
 
   return (
-    <div className="h-[calc(100dvh-4rem)] min-h-0 min-w-0 bg-slate-50 lg:h-dvh">
-      <div className="container mx-auto grid h-full min-h-0 min-w-0 grid-cols-1 gap-0 p-0 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)] lg:gap-6 lg:p-8 xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_240px]">
+    <div className="h-[calc(100dvh-8rem)] min-h-0 min-w-0 bg-background lg:h-dvh">
+      <div className="mx-auto grid h-full max-w-6xl min-w-0 grid-cols-1 gap-0 p-0 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:p-8">
         <div
-          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-slate-100 bg-white shadow-sm sm:rounded-2xl sm:border ${
+          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-border bg-surface sm:rounded-xl sm:border ${
             showChat ? 'hidden lg:flex' : 'flex'
           }`}
         >
@@ -266,15 +254,11 @@ export default function MessagesClientShell({
         </div>
 
         <div
-          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-slate-100 bg-white shadow-sm sm:rounded-2xl sm:border ${
+          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-border bg-surface sm:rounded-xl sm:border ${
             showList ? 'hidden lg:flex' : 'flex'
           }`}
         >
           {renderContent()}
-        </div>
-
-        <div className="hidden h-full min-h-0 min-w-0 overflow-y-auto xl:block">
-          <QuickActions />
         </div>
       </div>
     </div>

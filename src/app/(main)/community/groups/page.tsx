@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Plus, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
 import { toast } from 'sonner';
 import GroupCard from '@/components/groups/GroupCard';
 import CreateGroupModal from '@/components/groups/CreateGroupModal';
@@ -25,6 +27,7 @@ export default function GroupsDirectoryPage() {
     const { data: session } = useSession();
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -36,15 +39,18 @@ export default function GroupsDirectoryPage() {
 
     const fetchGroups = async (search = '') => {
         setLoading(true);
+        setError(null);
         try {
             const userId = session?.user?.id;
             const res = await fetch(`/api/groups?search=${search}&userId=${userId || ''}`);
             const data = await res.json();
             if (data.success) {
                 setGroups(data.groups);
+            } else {
+                throw new Error(data.error || 'No se pudieron cargar los grupos');
             }
-        } catch (error) {
-            console.error(error);
+        } catch {
+            setError('No se pudieron cargar los grupos. Intentá de nuevo.');
         } finally {
             setLoading(false);
         }
@@ -71,43 +77,46 @@ export default function GroupsDirectoryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div>
             <CommunityLayout>
                 <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Grupos de Interés</h1>
-                            <p className="text-slate-500">Encuentra tu manada</p>
-                        </div>
-                        <Button
+                    <PageHeader
+                        title="Grupos de interés"
+                        description="Encontrá personas con intereses y experiencias en común."
+                        action={<Button
                             onClick={() => setShowCreateModal(true)}
-                            className="bg-teal-500 hover:bg-teal-600 text-white"
                         >
                             <Plus className="mr-2 size-5" aria-hidden="true" />
-                            Crear Grupo
-                        </Button>
-                    </div>
+                            Crear grupo
+                        </Button>}
+                    />
 
-                    <form onSubmit={handleSearch} className="flex gap-2">
+                    <form onSubmit={handleSearch} className="flex gap-2 border-y border-border bg-surface py-4">
                         <Input
                             placeholder="Buscar grupos..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-white"
                         />
-                        <Button type="submit" variant="secondary">Buscar</Button>
+                        <Button type="submit" variant="outline">Buscar</Button>
                     </form>
 
-                    {loading ? (
+                    {error ? (
+                        <EmptyState
+                            title="No pudimos cargar los grupos"
+                            description={error}
+                            action={<Button variant="outline" onClick={() => void fetchGroups(searchTerm)}>Intentar de nuevo</Button>}
+                        />
+                    ) : loading ? (
                         <div className="flex justify-center py-12">
                             <div className="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full"></div>
                         </div>
                     ) : groups.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                            <Users className="mb-4 size-16 text-slate-200" aria-hidden="true" />
-                            <h3 className="text-lg font-medium text-slate-700">No se encontraron grupos</h3>
-                            <p className="text-slate-500">Sé el primero en crear uno para este tema.</p>
-                        </div>
+                        <EmptyState
+                            icon={<Users className="size-11" aria-hidden="true" />}
+                            title="No encontramos grupos"
+                            description="Creá el primero para reunir a la comunidad alrededor de este tema."
+                            action={<Button onClick={() => setShowCreateModal(true)}>Crear grupo</Button>}
+                        />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {groups.map(group => (

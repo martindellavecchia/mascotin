@@ -42,7 +42,7 @@ export default function HeaderMobileMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="size-11 rounded-xl text-slate-500 hover:bg-teal-50 hover:text-teal-600 lg:hidden"
+          className="size-11 rounded-md text-muted-foreground hover:bg-primary-soft hover:text-primary lg:hidden"
           aria-label="Abrir menú"
         >
           <Menu className="size-5" aria-hidden="true" />
@@ -63,7 +63,7 @@ export default function HeaderMobileMenu({
           </Button>
         </SheetClose>
         <SheetHeader className="pr-16">
-          <SheetTitle>Menú principal</SheetTitle>
+          <SheetTitle>Más opciones</SheetTitle>
         </SheetHeader>
         <div className="space-y-4 px-4 pb-4">
           <nav className="space-y-1">
@@ -75,10 +75,10 @@ export default function HeaderMobileMenu({
                 <SheetClose key={`${link.label}-${link.href}`} asChild>
                   <Link
                     href={link.href}
-                    className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+                    className={`flex min-h-11 items-center gap-3 rounded-md border-l-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                       active
-                        ? 'bg-teal-50 text-teal-700'
-                        : 'text-slate-700 hover:bg-slate-100'
+                        ? 'border-primary bg-primary-soft text-primary'
+                        : 'border-transparent text-slate-700 hover:bg-slate-100'
                     }`}
                     aria-current={active ? 'page' : undefined}
                   >

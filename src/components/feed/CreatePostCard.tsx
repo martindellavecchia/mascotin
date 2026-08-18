@@ -44,7 +44,7 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                         className={`rounded-2xl bg-gray-50 px-3 py-2 transition-all sm:px-4 ${isExpanded ? 'bg-white ring-2 ring-teal-500/20' : ''}`}
                     >
                         <Textarea
-                            placeholder={`Comparte una actualización sobre ${activePet?.name || 'tu mascota'}...`}
+                            placeholder={`Compartí una actualización sobre ${activePet?.name || 'tu mascota'}...`}
                             className="w-full bg-transparent border-none focus-visible:ring-0 p-0 text-sm resize-none min-h-[40px]"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
@@ -56,15 +56,15 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                     {isExpanded && (
                         <div className="mt-3 flex animate-in flex-col gap-3 fade-in slide-in-from-top-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex min-w-0 flex-wrap gap-1 sm:gap-2">
-                                <Button variant="ghost" size="sm" className="min-h-10 rounded-full text-teal-600 hover:bg-teal-50 hover:text-teal-700">
+                                <Button variant="ghost" size="sm" className="min-h-10 rounded-md text-teal-600 hover:bg-teal-50 hover:text-teal-700">
                                     <ImageIcon className="mr-1 size-5" aria-hidden="true" />
                                     Foto
                                 </Button>
-                                <Button variant="ghost" size="sm" className="min-h-10 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                                <Button variant="ghost" size="sm" className="min-h-10 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700">
                                     <MapPin className="mr-1 size-5" aria-hidden="true" />
                                     Ubicación
                                 </Button>
-                                <Button variant="ghost" size="sm" aria-label="Agregar estado de ánimo" className="min-h-10 min-w-10 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                                <Button variant="ghost" size="sm" aria-label="Agregar estado de ánimo" className="min-h-10 min-w-10 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700">
                                     <Smile className="mr-1 size-5" aria-hidden="true" />
                                 </Button>
                             </div>
@@ -74,7 +74,7 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                                 </Button>
                                 <Button
                                     size="sm"
-                                    className="min-h-10 rounded-full bg-teal-500 px-6 text-white hover:bg-teal-600"
+                                    className="min-h-10 rounded-md bg-teal-500 px-6 text-white hover:bg-teal-600"
                                     disabled={!content.trim()}
                                 >
                                     Publicar
@@ -84,7 +84,7 @@ export default function CreatePostCard({ pets, selectedPetId, onPostCreated, use
                     )}
                     {!isExpanded && (
                         <div className="mt-2 flex min-w-0 items-center justify-between gap-2 pl-2">
-                            <p className="min-w-0 text-xs text-gray-400 [overflow-wrap:anywhere]">Publica fotos, consejos o preguntas...</p>
+                            <p className="min-w-0 text-xs text-gray-400 [overflow-wrap:anywhere]">Publicá fotos, consejos o preguntas...</p>
                             <Button variant="ghost" size="icon" aria-label="Expandir publicación" className="h-10 w-10 shrink-0 text-gray-500" onClick={() => setIsExpanded(true)}>
                                 <Send className="size-5" aria-hidden="true" />
                             </Button>

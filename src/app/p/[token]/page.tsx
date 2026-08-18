@@ -1,6 +1,9 @@
 import { db } from '@/lib/db';
 import { getPrimaryImageUrl } from '@/lib/media';
 import { notFound } from 'next/navigation';
+import { PawPrint } from 'lucide-react';
+import BrandLogo from '@/components/brand/BrandLogo';
+import { Button } from '@/components/ui/button';
 
 export default async function EmergencyPassportPage({
   params,
@@ -27,10 +30,15 @@ export default async function EmergencyPassportPage({
     pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Mascota';
 
   return (
-    <main className="mx-auto min-h-screen max-w-lg bg-slate-50 px-4 py-10">
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        {image && (
+    <main className="mx-auto min-h-screen max-w-lg bg-background px-4 py-8 sm:py-10">
+      <BrandLogo priority className="mx-auto mb-8 h-11 w-auto" />
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        {image ? (
           <img src={image} alt={pet.name} className="h-64 w-full object-cover" />
+        ) : (
+          <div className="flex h-48 items-center justify-center bg-primary-soft">
+            <PawPrint className="size-11 text-primary/35" aria-hidden="true" />
+          </div>
         )}
         <div className="space-y-4 p-6">
           <p className="text-sm font-medium text-teal-700">Pasaporte de emergencia</p>
@@ -42,9 +50,7 @@ export default async function EmergencyPassportPage({
             </div>
           )}
           {pet.sharePhoneOnScan && pet.owner.phone && (
-            <a href={`tel:${pet.owner.phone}`} className="block rounded-xl bg-teal-600 px-4 py-3 text-center font-semibold text-white">
-              Llamar a {pet.owner.name}
-            </a>
+            <Button asChild className="w-full"><a href={`tel:${pet.owner.phone}`}>Llamar a {pet.owner.name}</a></Button>
           )}
           {pet.shareVetOnScan && pet.vetClinicName && (
             <p className="text-sm text-slate-600">Veterinaria: {pet.vetClinicName}</p>

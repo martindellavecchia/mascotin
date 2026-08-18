@@ -33,7 +33,7 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona" />
+                    <SelectValue placeholder="Seleccioná" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

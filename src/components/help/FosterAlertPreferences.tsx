@@ -88,7 +88,7 @@ export default function FosterAlertPreferences({ enabled }: { enabled: boolean }
     <Card>
       <CardHeader>
         <CardTitle>Alertas de casos cercanos</CardTitle>
-        <p className="text-sm text-slate-500">Son voluntarias y llegan sólo dentro de MascoTin.</p>
+        <p className="text-sm text-slate-500">Son voluntarias y llegan sólo dentro de Huella.</p>
       </CardHeader>
       <CardContent className="space-y-5">
         {loading ? <div className="h-28 animate-pulse rounded-xl bg-slate-100" /> : (

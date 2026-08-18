@@ -25,7 +25,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
   const interests = profile.interests.split(',').filter((i: string) => i.trim());
 
   return (
-    <Card className="overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow duration-300">
+    <Card className="overflow-hidden border-border">
       <CardContent className="p-0">
         {/* Image Section */}
         <div className="relative w-full aspect-[3/4] overflow-hidden bg-teal-50">
@@ -37,7 +37,7 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
             priority
             unoptimized={shouldUnoptimizeImage(mainImage)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-black/55" />
 
           {/* Name and Age Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">

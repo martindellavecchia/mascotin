@@ -4,7 +4,7 @@ import { providerCreateStoreSchema, storeReviewSchema } from '@/lib/schemas';
 describe('store reputation', () => {
   it('keeps new businesses neutral until enough verified reviews exist', () => {
     expect(getStoreTrustSummary(5, 2).level).toBe('NEW');
-    expect(getStoreTrustSummary(5, 2).label).toBe('Nuevo en MascoTin');
+    expect(getStoreTrustSummary(5, 2).label).toBe('Nuevo en Huella');
   });
 
   it('marks businesses as highly recommended only with volume and quality', () => {

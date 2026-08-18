@@ -35,7 +35,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
             const res = await fetch(`/api/groups/${group.id}/join`, { method });
 
             if (res.ok) {
-                toast.success(isMember ? 'Has salido del grupo' : 'Te has unido al grupo');
+                toast.success(isMember ? 'Saliste del grupo' : 'Te uniste al grupo');
                 onJoinChange();
             } else {
                 const data = await res.json();
@@ -66,7 +66,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
 
     return (
         <>
-            <section className="mb-6 min-w-0 overflow-hidden rounded-xl bg-white shadow-sm">
+            <section className="mb-6 min-w-0 overflow-hidden rounded-xl border border-border bg-surface">
                 <div className="relative h-36 bg-slate-200 sm:h-48">
                     {group.image ? (
                         <img src={group.image} alt={group.name} className="w-full h-full object-cover" />
@@ -89,12 +89,12 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                     {group._count.members} miembros
                                 </span>
                                 {isMember && (
-                                    <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200 border-0">
-                                        Eres miembro
+                                    <Badge variant="verified">
+                                        Sos miembro
                                     </Badge>
                                 )}
                                 {isCreator && (
-                                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">
+                                    <Badge variant="warning">
                                         Creador
                                     </Badge>
                                 )}
@@ -117,10 +117,10 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                 <Button
                                     onClick={handleJoinLeave}
                                     variant={isMember ? "outline" : "default"}
-                                    className={`col-span-2 min-h-11 w-full sm:w-auto ${!isMember ? "bg-teal-500 hover:bg-teal-600" : ""}`}
+                                    className="col-span-2 min-h-11 w-full sm:w-auto"
                                     disabled={loading}
                                 >
-                                    {loading ? 'Procesando...' : isMember ? 'Salir del Grupo' : 'Unirse al Grupo'}
+                                    {loading ? 'Procesando...' : isMember ? 'Salir del grupo' : 'Unirse al grupo'}
                                 </Button>
                             )}
                         </div>

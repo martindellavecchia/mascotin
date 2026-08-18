@@ -235,7 +235,7 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
           El hogar participa de forma voluntaria. Desde que ambas partes confirman la entrega y hasta el cierre del tránsito,
           asume los gastos cotidianos y las decisiones y gastos veterinarios del animal.
         </p>
-        <p>MascoTin facilita el contacto y no realiza verificación adicional de los hogares.</p>
+        <p>Huella facilita el contacto y no realiza verificación adicional de los hogares.</p>
         <label className="flex items-start gap-3">
           <Checkbox
             checked={form.adultDeclared}

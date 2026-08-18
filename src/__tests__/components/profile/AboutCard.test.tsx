@@ -23,14 +23,14 @@ describe('AboutCard', () => {
     const onEdit = jest.fn();
     render(<AboutCard onEdit={onEdit} />);
 
-    expect(screen.getByText(/aún no has escrito tu biografía/i)).toBeInTheDocument();
+    expect(screen.getByText(/todavía no escribiste tu biografía/i)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /editar biografía/i }));
     expect(onEdit).toHaveBeenCalled();
   });
 
   it('does not invent a fake bio for short or garbage text', () => {
     render(<AboutCard bio="aa" />);
-    expect(screen.getByText(/aún no has escrito tu biografía/i)).toBeInTheDocument();
+    expect(screen.getByText(/todavía no escribiste tu biografía/i)).toBeInTheDocument();
     expect(screen.queryByText(/amante de los animales/i)).not.toBeInTheDocument();
   });
 

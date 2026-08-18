@@ -86,7 +86,7 @@ export function DetailsSection({ control }: DetailsSectionProps) {
             <FormLabel>Biografía de la Mascota</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Cuéntanos sobre tu mascota..."
+                placeholder="Contanos sobre tu mascota..."
                 className="resize-none"
                 rows={4}
                 {...field}

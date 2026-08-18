@@ -1,57 +1,207 @@
 @import "tailwindcss";
 
-/* === MASCOTIN DESIGN TOKENS (Tailwind v4 @theme) === */
+/* === HUELLA DESIGN TOKENS (Tailwind v4 @theme) === */
 @theme {
-  --color-primary: #0d9488;
+  --color-primary: #4b244a;
   --color-primary-foreground: #ffffff;
-  --color-primary-hover: #0f766e;
-  --color-primary-soft: #ccfbf1;
-  --color-accent: #f97316;
-  --color-accent-foreground: #ffffff;
-  --color-accent-hover: #ea580c;
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #0f172a;
-  --color-background: #f8fafc;
+  --color-primary-hover: #3d1d3c;
+  --color-primary-soft: #f0eaf3;
+  --color-accent: #b8d35a;
+  --color-accent-foreground: #271e27;
+  --color-accent-hover: #a8c649;
+  --color-secondary: #f0eaf3;
+  --color-secondary-foreground: #4b244a;
+  --color-background: #fff8ef;
   --color-surface: #ffffff;
-  --color-foreground: #0f172a;
-  --color-muted: #64748b;
-  --color-muted-foreground: #64748b;
-  --color-border: #e2e8f0;
+  --color-foreground: #271e27;
+  --color-muted: #f0eaf3;
+  --color-muted-foreground: #6a5d69;
+  --color-border: #dccfd8;
   --color-input: #ffffff;
-  --color-ring: #0d9488;
-  --color-destructive: #dc2626;
+  --color-ring: #6d3a67;
+  --color-destructive: #b5413a;
   --color-destructive-foreground: #ffffff;
-  --color-success: #16a34a;
-  --color-warning: #ca8a04;
-  --color-info: #3b82f6;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
-  --radius: 0.75rem;
+  --color-success: #2f7d61;
+  --color-warning: #8a4d0f;
+  --color-info: #4f5d95;
+  --color-highlight: #d46a4c;
+  --color-highlight-foreground: #ffffff;
+
+  /* Compatibility aliases keep legacy utilities on the Huella palette. */
+  --color-teal-50: #f5f0f5;
+  --color-teal-100: #eee5ee;
+  --color-teal-200: #dccfd8;
+  --color-teal-300: #c6b0c1;
+  --color-teal-400: #9b8192;
+  --color-teal-500: #6d3a67;
+  --color-teal-600: #4b244a;
+  --color-teal-700: #3d1d3c;
+  --color-teal-800: #30172f;
+  --color-teal-900: #271427;
+  --color-teal-950: #180d18;
+
+  --color-orange-50: #fff1ec;
+  --color-orange-100: #fbe2d9;
+  --color-orange-200: #f5c7b7;
+  --color-orange-300: #eba38d;
+  --color-orange-400: #de8064;
+  --color-orange-500: #d46a4c;
+  --color-orange-600: #b9543a;
+  --color-orange-700: #a4432f;
+  --color-orange-800: #7b3124;
+  --color-orange-900: #5e261c;
+
+  /* Semantic legacy aliases prevent one-off rainbow colors across feature states. */
+  --color-red-50: #fff1ec;
+  --color-red-100: #fbe2d9;
+  --color-red-200: #f5c7b7;
+  --color-red-300: #eba38d;
+  --color-red-400: #d46a4c;
+  --color-red-500: #c25343;
+  --color-red-600: #b5413a;
+  --color-red-700: #91332f;
+  --color-red-800: #712a27;
+  --color-red-900: #55211f;
+
+  --color-green-50: #edf6f2;
+  --color-green-100: #d7ebe2;
+  --color-green-200: #afd7c7;
+  --color-green-300: #7fbaa4;
+  --color-green-400: #579b82;
+  --color-green-500: #3d896d;
+  --color-green-600: #2f7d61;
+  --color-green-700: #28654f;
+  --color-green-800: #24513f;
+  --color-green-900: #204337;
+
+  --color-emerald-50: #edf6f2;
+  --color-emerald-100: #d7ebe2;
+  --color-emerald-200: #afd7c7;
+  --color-emerald-300: #7fbaa4;
+  --color-emerald-400: #579b82;
+  --color-emerald-500: #3d896d;
+  --color-emerald-600: #2f7d61;
+  --color-emerald-700: #28654f;
+  --color-emerald-800: #24513f;
+  --color-emerald-900: #204337;
+
+  --color-amber-50: #fff1ec;
+  --color-amber-100: #fbe2d9;
+  --color-amber-200: #f5c7b7;
+  --color-amber-300: #eba38d;
+  --color-amber-400: #de8064;
+  --color-amber-500: #d46a4c;
+  --color-amber-600: #b9543a;
+  --color-amber-700: #8a4d0f;
+  --color-amber-800: #713d0d;
+  --color-amber-900: #5a310c;
+
+  --color-yellow-300: #cde078;
+  --color-yellow-400: #b8d35a;
+  --color-yellow-500: #a8c649;
+
+  --color-blue-50: #f0eaf3;
+  --color-blue-100: #e1d8e8;
+  --color-blue-200: #c9bdd8;
+  --color-blue-300: #a99bc1;
+  --color-blue-400: #7b77a5;
+  --color-blue-500: #4f5d95;
+  --color-blue-600: #454f80;
+  --color-blue-700: #3c446c;
+  --color-blue-800: #333958;
+  --color-blue-900: #2c3049;
+
+  --color-indigo-50: #f0eaf3;
+  --color-indigo-100: #e1d8e8;
+  --color-indigo-500: #4f5d95;
+  --color-indigo-600: #454f80;
+  --color-cyan-500: #4f5d95;
+
+  --color-pink-50: #f5f0f5;
+  --color-pink-100: #eee5ee;
+  --color-pink-500: #6d3a67;
+  --color-pink-600: #4b244a;
+  --color-rose-500: #6d3a67;
+  --color-rose-600: #4b244a;
+  --color-purple-500: #6d3a67;
+  --color-purple-600: #4b244a;
+
+  --color-lime-50: #f7fae9;
+  --color-lime-100: #eef5cf;
+  --color-lime-200: #dfeba8;
+  --color-lime-300: #cde078;
+  --color-lime-400: #b8d35a;
+  --color-lime-500: #a8c649;
+  --color-lime-600: #8fab36;
+  --color-lime-700: #6f872d;
+  --color-lime-800: #596c29;
+  --color-lime-900: #4a5926;
+
+  --color-slate-50: #fff8ef;
+  --color-slate-100: #f7f1f4;
+  --color-slate-200: #dccfd8;
+  --color-slate-300: #c4b5bf;
+  --color-slate-400: #9b8192;
+  --color-slate-500: #6a5d69;
+  --color-slate-600: #574b56;
+  --color-slate-700: #403640;
+  --color-slate-800: #302730;
+  --color-slate-900: #271e27;
+  --color-slate-950: #191219;
+
+  --color-gray-50: #fff8ef;
+  --color-gray-100: #f7f1f4;
+  --color-gray-200: #dccfd8;
+  --color-gray-300: #c4b5bf;
+  --color-gray-400: #9b8192;
+  --color-gray-500: #6a5d69;
+  --color-gray-600: #574b56;
+  --color-gray-700: #403640;
+  --color-gray-800: #302730;
+  --color-gray-900: #271e27;
+  --color-gray-950: #191219;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1rem;
+  --radius: 0.625rem;
+  --shadow-xs: 0 1px 2px rgb(39 30 39 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(39 30 39 / 0.06);
+  --shadow-md: 0 8px 24px rgb(39 30 39 / 0.08);
+  --shadow-lg: 0 14px 36px rgb(39 30 39 / 0.1);
+  --shadow-xl: 0 18px 48px rgb(39 30 39 / 0.12);
+  --shadow-2xl: 0 24px 64px rgb(39 30 39 / 0.14);
   --font-sans: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", system-ui, sans-serif;
   --font-display: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
 :root {
-  --color-primary: #0d9488;
-  --color-primary-hover: #0f766e;
-  --color-primary-soft: #ccfbf1;
-  --color-accent: #f97316;
-  --color-accent-hover: #ea580c;
-  --color-success: #16a34a;
-  --color-warning: #ca8a04;
-  --color-danger: #dc2626;
-  --color-bg: #f8fafc;
+  --color-primary: #4b244a;
+  --color-primary-hover: #3d1d3c;
+  --color-primary-soft: #f0eaf3;
+  --color-accent: #b8d35a;
+  --color-accent-hover: #a8c649;
+  --color-success: #2f7d61;
+  --color-warning: #8a4d0f;
+  --color-danger: #b5413a;
+  --color-info: #4f5d95;
+  --color-highlight: #d46a4c;
+  --color-bg: #fff8ef;
   --color-surface: #ffffff;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-border: #e2e8f0;
+  --color-surface-soft: #f0eaf3;
+  --color-text: #271e27;
+  --color-text-muted: #6a5d69;
+  --color-border: #dccfd8;
+  --color-border-control: #9b8192;
+  --color-focus: #6d3a67;
 
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -60,18 +210,18 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
 
-  --state-focus-ring: 0 0 0 3px rgba(13, 148, 136, 0.25);
-  --state-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --state-focus-ring: 0 0 0 3px rgb(109 58 103 / 0.2);
+  --state-card-shadow: none;
 }
 
 .dark {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: #334155;
-  --color-primary-soft: #134e4a;
-  --state-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --color-bg: #fff8ef;
+  --color-surface: #ffffff;
+  --color-text: #271e27;
+  --color-text-muted: #6a5d69;
+  --color-border: #dccfd8;
+  --color-primary-soft: #f0eaf3;
+  --state-card-shadow: none;
 }
 
 .dark body {
@@ -89,6 +239,12 @@ body {
   font-family: var(--font-plus-jakarta-sans), system-ui, sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text);
+  min-width: 320px;
+}
+
+::selection {
+  background: #e8dce7;
+  color: #30172f;
 }
 
 ::-webkit-scrollbar {
@@ -97,21 +253,21 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f7f1f4;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c4b5bf;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9b8192;
 }
 
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   box-shadow: var(--state-focus-ring);
 }

@@ -18,7 +18,6 @@ import {
     Bell,
     Palette,
     PawPrint,
-    Settings,
     SlidersHorizontal,
     Stethoscope,
     Sun,
@@ -27,7 +26,9 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
@@ -95,6 +96,7 @@ export default function SettingsPage() {
     const [settings, setSettings] = useState<Settings | null>(null);
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     // Password form
     const [currentPassword, setCurrentPassword] = useState('');
@@ -115,6 +117,8 @@ export default function SettingsPage() {
     }, [status, router]);
 
     const fetchData = async () => {
+        setLoading(true);
+        setLoadError(null);
         try {
             const [settingsRes, petsRes] = await Promise.all([
                 fetch('/api/settings'),
@@ -128,12 +132,15 @@ export default function SettingsPage() {
             if (settingsData.success) {
                 setSettings({ ...settingsData.settings, theme: 'light' });
                 setTheme('light');
+            } else {
+                setLoadError('No pudimos cargar tu configuración. Intentá de nuevo.');
             }
             if (petsData.success) {
                 setPets(petsData.pets);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
+            setLoadError('No pudimos cargar tu configuración. Intentá de nuevo.');
         } finally {
             setLoading(false);
         }
@@ -244,30 +251,38 @@ export default function SettingsPage() {
 
     if (loading || status === 'loading') {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="container mx-auto px-4 py-8 flex justify-center">
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto flex max-w-3xl justify-center px-4 py-8">
                     <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
                 </div>
             </div>
         );
     }
 
-    if (!settings) return null;
+    if (!settings) {
+        return (
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+                    <PageHeader title="Configuración" description="Personalizá tu experiencia en Huella." />
+                    <EmptyState
+                        className="mt-6"
+                        title="La configuración no está disponible"
+                        description={loadError || 'Volvé a intentarlo en unos instantes.'}
+                        action={<Button variant="outline" onClick={() => void fetchData()}>Volver a intentar</Button>}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     const getPetImage = (pet: Pet) => getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto min-w-0 max-w-3xl px-4 py-8">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <Settings className="size-5 text-slate-500" aria-hidden="true" />
-                        Configuración
-                    </h1>
-                    <p className="text-slate-500">Personaliza tu experiencia en MascoTin</p>
-                </div>
+        <div className="min-h-screen bg-background">
+            <div className="mx-auto min-w-0 max-w-3xl px-4 py-8 sm:px-6">
+                <PageHeader title="Configuración" description="Personalizá tu experiencia en Huella." />
 
-                <Tabs defaultValue="cuenta" className="min-w-0 w-full">
+                <Tabs defaultValue="cuenta" className="mt-6 min-w-0 w-full">
                     <div className="-mx-4 mb-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
                         <TabsList className="h-auto min-h-11 w-max min-w-full flex-nowrap justify-start">
                             <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="cuenta">Cuenta</TabsTrigger>
@@ -332,7 +347,7 @@ export default function SettingsPage() {
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                 />
                                 <Button
-                                    className="min-h-11 bg-teal-500 hover:bg-teal-600"
+                                    className="min-h-11"
                                     onClick={handleChangePassword}
                                     disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
                                 >
@@ -360,7 +375,7 @@ export default function SettingsPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                Ingresa tu contraseña para confirmar la eliminación de tu cuenta.
+                                                Ingresá tu contraseña para confirmar la eliminación de tu cuenta.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <Input
@@ -396,7 +411,7 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent>
                                 {pets.length === 0 ? (
-                                    <p className="text-sm text-slate-400">No tienes mascotas registradas</p>
+                                    <p className="text-sm text-slate-400">Todavía no tenés mascotas registradas</p>
                                 ) : (
                                     <div className="space-y-3">
                                         {pets.map(pet => {
@@ -512,11 +527,11 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">
-                                    Configura qué notificaciones quieres recibir. Los cambios se aplican de inmediato.
+                                    Configurá qué notificaciones querés recibir. Los cambios se aplican de inmediato.
                                 </p>
                                 {([
-                                    { key: 'notifyMatches' as const, label: 'Nuevos matches', desc: 'Cuando una mascota hace match con la tuya', icon: Heart },
-                                    { key: 'notifyMessages' as const, label: 'Mensajes nuevos', desc: 'Cuando recibes un mensaje directo', icon: MessageCircle },
+                                    { key: 'notifyMatches' as const, label: 'Nuevos encuentros', desc: 'Cuando otra mascota quiere conocer a la tuya', icon: Heart },
+                                    { key: 'notifyMessages' as const, label: 'Mensajes nuevos', desc: 'Cuando recibís un mensaje directo', icon: MessageCircle },
                                     { key: 'notifyComments' as const, label: 'Comentarios', desc: 'Cuando alguien comenta en tus publicaciones', icon: MessageSquare },
                                     { key: 'notifyEvents' as const, label: 'Eventos y actividades', desc: 'Nuevos eventos cerca de tu ubicación', icon: CalendarDays },
                                     { key: 'notifyHealth' as const, label: 'Recordatorios de salud', desc: 'Vacunas, controles y turnos próximos', icon: Stethoscope },
@@ -601,7 +616,7 @@ export default function SettingsPage() {
                                     ))}
                                 </div>
                                 <p className="text-sm text-slate-500">
-                                    El modo claro queda activo hasta completar la nueva paleta visual.
+                                    Huella usa el modo claro para mantener una experiencia visual consistente.
                                 </p>
                             </CardContent>
                         </Card>

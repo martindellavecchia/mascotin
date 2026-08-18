@@ -232,7 +232,7 @@ export default function GroupChat({
         {messages.length === 0 && (
           <div className="text-center text-slate-400 py-10">
             <p>No hay mensajes aún.</p>
-            <p className="text-xs">¡Inicia la conversación!</p>
+            <p className="text-xs">Iniciá la conversación.</p>
           </div>
         )}
         {messages.map((message) => {

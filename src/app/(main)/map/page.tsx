@@ -6,6 +6,8 @@ import { MapPinned } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
 import { STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
 import 'leaflet/dist/leaflet.css';
 
@@ -39,22 +41,44 @@ export default function MapPage() {
   const [categories, setCategories] = useState<StoreCategory[]>([]);
   const [categoryId, setCategoryId] = useState<string>('_all');
   const [selected, setSelected] = useState<MapStore | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetch('/api/store-categories')
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) setCategories(data.categories);
-      })
-      .catch(() => undefined);
+    let cancelled = false;
 
-    fetch('/api/stores/map')
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) setStores(data.stores);
-      })
-      .catch(() => undefined);
-  }, []);
+    async function loadMapData() {
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const [categoriesResponse, storesResponse] = await Promise.all([
+          fetch('/api/store-categories'),
+          fetch('/api/stores/map'),
+        ]);
+        const [categoriesData, storesData] = await Promise.all([
+          categoriesResponse.json(),
+          storesResponse.json(),
+        ]);
+        if (!categoriesResponse.ok || !categoriesData.success || !storesResponse.ok || !storesData.success) {
+          throw new Error('No se pudo cargar el mapa');
+        }
+        if (!cancelled) {
+          setCategories(categoriesData.categories);
+          setStores(storesData.stores);
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadMapData();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   const filteredStores = useMemo(() => {
     if (categoryId === '_all') return stores;
@@ -96,7 +120,7 @@ export default function MapPage() {
       withCoords.forEach((store) => {
         const marker = L.circleMarker([store.latitude as number, store.longitude as number], {
           radius: store.featured ? 10 : 7,
-          color: store.featured ? '#d97706' : '#0d9488',
+          color: store.featured ? '#d46a4c' : '#4b244a',
           fillOpacity: 0.85,
         }).addTo(map as never);
         marker.bindPopup(
@@ -115,12 +139,7 @@ export default function MapPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-6xl space-y-4 px-4 py-5 sm:py-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Mapa pet-friendly</h1>
-        <p className="mt-1 text-sm text-slate-500 sm:text-base">
-          Veterinarias, plazas y restaurantes con etiquetas claras.
-        </p>
-      </div>
+      <PageHeader title="Mapa pet-friendly" description="Veterinarias, plazas y restaurantes con información de la comunidad." />
 
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
         <button
@@ -152,31 +171,29 @@ export default function MapPage() {
         ))}
       </div>
 
-      {stores.length === 0 ? (
-        <Card className="flex flex-col items-center gap-4 border-dashed p-6 text-center sm:p-10">
-          <MapPinned className="size-12 text-slate-300" aria-hidden="true" />
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">Todavía no hay lugares en el mapa</h2>
-            <p className="mt-1 max-w-md text-sm text-slate-500">
-              Cuando haya negocios publicados con ubicación, van a aparecer acá. Mientras tanto podés explorar la tienda o sumar tu negocio.
-            </p>
-          </div>
-          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
-            <Button asChild className="min-h-11 bg-teal-600 hover:bg-teal-700">
-              <Link href="/shop">Ver negocios</Link>
-            </Button>
-            <Button asChild variant="outline" className="min-h-11">
-              <Link href="/provider">Publicar mi negocio</Link>
-            </Button>
-          </div>
-        </Card>
+      {loadError ? (
+        <EmptyState
+          icon={<MapPinned className="size-11" aria-hidden="true" />}
+          title="No pudimos cargar el mapa"
+          description="Revisá tu conexión e intentá nuevamente."
+          action={<Button variant="outline" onClick={() => setRefreshKey((current) => current + 1)}>Intentar de nuevo</Button>}
+        />
+      ) : loading ? (
+        <div className="h-[clamp(20rem,60svh,30rem)] animate-pulse rounded-xl border border-border bg-slate-100" aria-label="Cargando mapa" />
+      ) : stores.length === 0 ? (
+        <EmptyState
+          icon={<MapPinned className="size-11" aria-hidden="true" />}
+          title="Todavía no hay lugares en el mapa"
+          description="Cuando haya negocios publicados con ubicación, van a aparecer acá."
+          action={<Button asChild><Link href="/shop">Ver negocios</Link></Button>}
+        />
       ) : (
         <>
           <div
             id="pet-friendly-map"
             role="region"
             aria-label="Mapa de lugares pet-friendly"
-            className="h-[clamp(20rem,60svh,30rem)] overflow-hidden rounded-2xl border border-slate-200 sm:h-[clamp(24rem,65svh,36rem)] lg:h-[clamp(28rem,70svh,42rem)]"
+            className="h-[clamp(20rem,60svh,30rem)] overflow-hidden rounded-xl border border-border sm:h-[clamp(24rem,65svh,36rem)] lg:h-[clamp(28rem,70svh,42rem)]"
           />
           {withCoords.length === 0 && (
             <p className="text-sm text-slate-500">
@@ -200,9 +217,10 @@ export default function MapPage() {
                   <p className="mt-1 text-xs font-medium text-amber-700">Sin ubicación en el mapa</p>
                 )}
                 <div className="mt-3 flex flex-wrap gap-1">
-                  {store.tags.map((tag) => (
+                  {store.tags.slice(0, 3).map((tag) => (
                     <Badge key={tag} variant="outline">{tagLabel(tag)}</Badge>
                   ))}
+                  {store.tags.length > 3 && <Badge variant="neutral">+{store.tags.length - 3}</Badge>}
                 </div>
                 {store.promotions[0] && (
                   <p className="mt-2 text-sm text-teal-700">{store.promotions[0].title}</p>
@@ -210,9 +228,7 @@ export default function MapPage() {
               </Card>
             ))}
             {filteredStores.length === 0 && (
-              <Card className="p-8 text-center text-slate-500 md:col-span-2 lg:col-span-3">
-                No hay negocios en esta categoría.
-              </Card>
+              <EmptyState compact className="md:col-span-2 lg:col-span-3" title="No hay negocios en esta categoría" />
             )}
           </div>
           {withoutCoords.length > 0 && withCoords.length > 0 && (

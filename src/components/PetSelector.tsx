@@ -15,7 +15,7 @@ interface PetSelectorProps {
 export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew }: PetSelectorProps) {
   if (pets.length === 0) {
     return (
-      <div className="bg-gradient-to-r from-secondary to-white border border-border rounded-xl p-4 text-center shadow-sm">
+      <div className="rounded-lg border border-border bg-secondary p-4 text-center">
         <p className="text-primary mb-2 font-medium">Aún no tienes mascotas registradas</p>
         {onCreateNew && (
           <button
@@ -30,7 +30,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+    <div className="rounded-xl border border-border bg-white/80 p-4 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-sm font-semibold text-gray-700">Swipe como:</span>
         {pets.length > 0 && (
@@ -52,7 +52,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
                 }`}
             >
               <div className={`relative p-1 rounded-full transition-all duration-300 ${isSelected
-                ? 'bg-gradient-to-tr from-primary to-green-600 shadow-md'
+                ? 'bg-primary'
                 : 'bg-gray-100 group-hover:bg-gray-200'
                 }`}>
                 <div className="w-16 h-16 rounded-full overflow-hidden bg-white border-2 border-white flex items-center justify-center relative">
