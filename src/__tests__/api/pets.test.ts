@@ -65,21 +65,14 @@ describe('Pets API', () => {
       expect(invalidPetData.age).toBeLessThan(0);
     });
 
-    it('rejects pet without images', () => {
-      const invalidPetData = {
+    it('accepts the initial pet profile without images', () => {
+      const initialPetData = {
         name: 'Max',
         petType: 'dog',
-        age: 3,
-        size: 'large',
-        gender: 'male',
-        energy: 'high',
-        bio: 'Friendly dog',
-        activities: ['walking'],
-        location: 'Madrid',
-        images: [],
       };
 
-      expect(invalidPetData.images.length).toBe(0);
+      expect(initialPetData).toEqual({ name: 'Max', petType: 'dog' });
+      expect('images' in initialPetData).toBe(false);
     });
   });
 

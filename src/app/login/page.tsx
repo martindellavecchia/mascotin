@@ -34,7 +34,7 @@ export default function LoginPage() {
 
       if (!result || result.error || result.ok === false) {
         if (result?.error === 'Configuration') {
-          setError('El servidor de autenticación no está configurado. Intenta de nuevo más tarde.');
+          setError('El servidor de autenticación no está configurado. Intentá de nuevo más tarde.');
         } else {
           try {
             const res = await fetch('/api/auth/login-status', {
@@ -45,8 +45,8 @@ export default function LoginPage() {
             const data = await res.json();
 
             const messages: Record<string, string> = {
-              blocked: 'Tu cuenta ha sido suspendida. Contacta a soporte para más información.',
-              email_not_verified: 'Debes verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
+              blocked: 'Tu cuenta fue suspendida. Contactá a soporte para más información.',
+              email_not_verified: 'Tenés que verificar tu email antes de iniciar sesión. Revisá tu bandeja de entrada.',
               invalid_credentials: 'El email o la contraseña son incorrectos.',
             };
             setError(messages[data.reason] || messages.invalid_credentials);
@@ -61,7 +61,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch {
-      setError('Ocurrió un error al iniciar sesión. Intenta de nuevo.');
+      setError('Ocurrió un error al iniciar sesión. Intentá de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export default function LoginPage() {
               Iniciá sesión
             </h1>
             <p className="text-slate-600 text-base leading-relaxed">
-              Accede para conectar a tu mascota con amigos, comunidad y servicios.
+              Accedé para conectar a tu mascota con amigos, comunidad y servicios.
             </p>
           </div>
 
@@ -153,12 +153,12 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-8 text-center text-sm text-slate-600">
-            ¿No tienes una cuenta?{' '}
+            ¿No tenés una cuenta?{' '}
             <Link
               className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
               href="/register"
             >
-              Regístrate
+              Registrate
             </Link>
           </p>
         </div>

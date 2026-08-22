@@ -49,7 +49,7 @@ export default function StepPhotos({ images, setImages }: StepPhotosProps) {
         <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-slate-900">Fotos</h2>
-                <p className="text-sm text-slate-500">¡Muestra lo adorable que es! ({images.length}/{MAX_PHOTOS})</p>
+                <p className="text-sm text-slate-500">Mostrá lo adorable que es ({images.length}/{MAX_PHOTOS})</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

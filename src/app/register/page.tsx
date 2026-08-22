@@ -89,7 +89,7 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Cuenta creada. Ahora inicia sesión.');
+        toast.success('Cuenta creada. Ahora iniciá sesión.');
         router.push('/login');
       } else {
         toast.error(data.error || 'Error al crear cuenta');
@@ -124,7 +124,7 @@ export default function RegisterPage() {
               Creá tu cuenta
             </h1>
             <p className="text-slate-600 text-base leading-relaxed">
-              Regístrate para emparejar mascotas, unirte a la comunidad y descubrir servicios.
+              Registrate para encontrar compañía para tu mascota, sumarte a la comunidad y descubrir servicios.
             </p>
           </div>
 
@@ -280,7 +280,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="mt-8 text-center text-sm text-slate-600">
-            ¿Ya tienes una cuenta?{' '}
+            ¿Ya tenés una cuenta?{' '}
             <Link
               className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
               href="/login"
@@ -303,7 +303,7 @@ export default function RegisterPage() {
         <div className="relative z-10 flex flex-col justify-end p-12 xl:p-16 w-full">
           <p className="text-white text-4xl font-bold tracking-tight mb-2">Huella</p>
           <p className="text-white/85 text-lg max-w-md leading-relaxed">
-            Empieza hoy: matches, comunidad y servicios pensados para tu mascota.
+            Empezá hoy: encuentros, comunidad y servicios pensados para tu mascota.
           </p>
         </div>
       </div>

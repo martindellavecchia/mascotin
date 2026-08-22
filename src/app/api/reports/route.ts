@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     if (reportedId === session.user.id) {
       return NextResponse.json(
-        { success: false, error: 'No puedes reportarte a ti mismo' },
+        { success: false, error: 'No podés reportarte a vos mismo' },
         { status: 400 }
       );
     }
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     if (existingReport) {
       return NextResponse.json(
-        { success: false, error: 'Ya tienes un reporte pendiente para este usuario' },
+        { success: false, error: 'Ya tenés un reporte pendiente para esta persona' },
         { status: 409 }
       );
     }

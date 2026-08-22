@@ -21,47 +21,60 @@ function HomeError() {
   );
 }
 
-function NoPetsHome() {
+function NoPetsHome({ requestedTab }: { requestedTab: string | undefined }) {
+  const isDiscover = requestedTab === 'explore';
+
   return (
     <>
       <main className="mx-auto flex min-h-[60vh] max-w-3xl flex-1 flex-col justify-center px-4 py-6">
         <EmptyState
           headingLevel="h1"
           icon={<PawPrint className="size-11" aria-hidden="true" />}
-          title="Registrá tu primera mascota"
-          description="Necesitás crear su perfil antes de descubrir mascotas y participar con ella en la comunidad."
-          action={<Button asChild><Link href="/create-pet"><Plus className="mr-2 size-5" aria-hidden="true" />Registrar mascota</Link></Button>}
+          title={isDiscover ? 'Creá una mascota para empezar a descubrir' : 'Tu primer plan empieza con una mascota'}
+          description={isDiscover
+            ? 'Solo te vamos a pedir el nombre y el tipo. No necesitás foto y después volvés directo a Descubrir.'
+            : 'Registrá el nombre y el tipo en menos de un minuto. Después vas a poder conocer mascotas, eventos y hogares.'}
+          action={<Button asChild><Link href="/create-pet"><Plus className="mr-2 size-5" aria-hidden="true" />Crear perfil básico</Link></Button>}
         />
       </main>
     </>
   );
 }
 
-export default async function InicioPage() {
+export default async function InicioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const session = await getCachedSession();
+  const { tab } = await searchParams;
 
   if (!session?.user?.id) {
     return <HomeError />;
   }
 
   try {
-    const [homeData, feedPage] = await Promise.all([
-      getHomeBootstrapData(session.user.id),
-      getFeedPage({
-        userId: session.user.id,
-        limit: 10,
-      }),
-    ]);
+    const homeData = await getHomeBootstrapData(session.user.id);
 
     if (homeData.pets.length === 0) {
-      return <NoPetsHome />;
+      return <NoPetsHome requestedTab={tab} />;
     }
+
+    const showCommunityFeed = homeData.stats.totalMatches > 0 || homeData.hasOwnPosts;
+    const feedPage = showCommunityFeed
+      ? await getFeedPage({
+        userId: session.user.id,
+        limit: 10,
+      })
+      : { posts: [], nextCursor: null, hasMore: false };
 
     return (
       <HomeClientShell
         session={session}
         initialPets={homeData.pets}
         initialSelectedPetId={homeData.selectedPetId}
+        initialSuggestions={homeData.suggestions}
+        showCommunityFeed={showCommunityFeed}
         initialFeedPosts={feedPage.posts as unknown as Post[]}
         initialFeedNextCursor={feedPage.nextCursor}
         initialFeedHasMore={feedPage.hasMore}

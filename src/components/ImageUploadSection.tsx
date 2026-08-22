@@ -65,7 +65,7 @@ export function ImageUploadSection({
           toast.error(data.error);
         }
       } catch (error) {
-        toast.error('Error al subir imagen. Inténtalo de nuevo.');
+        toast.error('Error al subir la imagen. Intentá de nuevo.');
       }
     }
 

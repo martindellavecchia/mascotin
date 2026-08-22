@@ -181,6 +181,7 @@ function buildProps() {
     initialLostPets: [],
     initialSuggestions: [],
     initialHealthRecords: [],
+    showCommunityFeed: true,
   };
 }
 
@@ -201,14 +202,23 @@ describe('HomeClientShell', () => {
     });
   });
 
-  function renderShell() {
-    return render(<HomeClientShell {...buildProps()} />);
+  function renderShell(overrides: Partial<React.ComponentProps<typeof HomeClientShell>> = {}) {
+    return render(<HomeClientShell {...buildProps()} {...overrides} />);
   }
 
   it('does not fetch matches or explore data on the initial home tab', () => {
     renderShell();
 
     expect(mockFetchWithError).not.toHaveBeenCalled();
+  });
+
+  it('shows today actions without the feed for a pet without community', () => {
+    renderShell({ showCommunityFeed: false });
+
+    expect(screen.getByRole('heading', { name: /elegí una acción con max/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /conocé una mascota/i })).toHaveAttribute('href', '/inicio?tab=explore');
+    expect(screen.queryByText('Feed')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /círculo/i })).not.toBeInTheDocument();
   });
 
   it('fetches explore data only after opening the explore tab', async () => {

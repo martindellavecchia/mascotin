@@ -268,7 +268,7 @@ export default function GroupChat({
           <Input
             value={newMessage}
             onChange={(event) => setNewMessage(event.target.value)}
-            placeholder="Escribe un mensaje..."
+            placeholder="Escribí un mensaje..."
             aria-label="Mensaje para el grupo"
             autoComplete="off"
             className="h-11 min-w-0 flex-1"

@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         });
         if (existingProfile) {
             return NextResponse.json(
-                { success: false, error: 'Ya eres proveedor' },
+                { success: false, error: 'Ya sos proveedor' },
                 { status: 400 }
             );
         }
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         });
         if (existingRequest) {
             return NextResponse.json(
-                { success: false, error: 'Ya tienes una solicitud pendiente' },
+                { success: false, error: 'Ya tenés una solicitud pendiente' },
                 { status: 400 }
             );
         }

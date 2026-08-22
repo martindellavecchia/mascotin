@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, BellOff, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -12,8 +12,11 @@ interface NotificationBellProps {
   enabled?: boolean;
 }
 
+const DESKTOP_SIDEBAR_POPOVER_OFFSET = 200;
+
 export default function NotificationBell({ enabled = true }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
+  const [hasDesktopSidebar, setHasDesktopSidebar] = useState(false);
   const { data: unreadCount = 0, refetch: refetchUnreadCount } = useUnreadCount(enabled);
   const {
     data: notifications = [],
@@ -21,6 +24,14 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
     refetch: refetchNotifications,
   } = useNotifications(enabled && open);
   const markAsRead = useMarkAsRead();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const syncViewport = () => setHasDesktopSidebar(mediaQuery.matches);
+    syncViewport();
+    mediaQuery.addEventListener('change', syncViewport);
+    return () => mediaQuery.removeEventListener('change', syncViewport);
+  }, []);
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -62,7 +73,13 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[min(360px,calc(100vw-2rem))] p-0" sideOffset={8}>
+      <PopoverContent
+        align="end"
+        side={hasDesktopSidebar ? 'right' : 'bottom'}
+        collisionPadding={16}
+        className="w-[min(360px,calc(100vw-2rem))] p-0"
+        sideOffset={hasDesktopSidebar ? DESKTOP_SIDEBAR_POPOVER_OFFSET : 12}
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-800">Notificaciones</h3>
           {unreadCount > 0 && (
@@ -83,7 +100,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-slate-400">
               <BellOff className="mb-2 size-8" aria-hidden="true" />
-              <p className="text-sm">No tienes notificaciones</p>
+              <p className="text-sm">Todavía no tenés notificaciones</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">

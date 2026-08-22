@@ -16,7 +16,7 @@ export default function PetSelector({ pets, selectedPetId, onSelect, onCreateNew
   if (pets.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-secondary p-4 text-center">
-        <p className="text-primary mb-2 font-medium">Aún no tienes mascotas registradas</p>
+        <p className="text-primary mb-2 font-medium">Todavía no tenés mascotas registradas</p>
         {onCreateNew && (
           <button
             onClick={onCreateNew}

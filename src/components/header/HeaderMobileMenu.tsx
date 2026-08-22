@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -64,6 +65,9 @@ export default function HeaderMobileMenu({
         </SheetClose>
         <SheetHeader className="pr-16">
           <SheetTitle>Más opciones</SheetTitle>
+          <SheetDescription className="sr-only">
+            Accesos secundarios a eventos, mapa, servicios, perfil y configuración.
+          </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-4 pb-4">
           <nav className="space-y-1">

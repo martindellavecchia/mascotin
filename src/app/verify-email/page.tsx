@@ -28,7 +28,7 @@ function VerifyEmailContent() {
 
         if (data.success) {
           setStatus('success');
-          setMessage('Tu email ha sido verificado correctamente');
+          setMessage('Tu email quedó verificado correctamente');
         } else {
           setStatus('error');
           setMessage(data.error || 'Error al verificar email');

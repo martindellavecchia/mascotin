@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getImageUrlsWithPrimaryFirst, shouldUnoptimizeImage } from '@/lib/media';
+import { getPetTypeLabel } from '@/lib/petTypeIcon';
 import { safeParseActivities } from '@/lib/utils';
 
 interface PetCardProps {
@@ -131,12 +132,12 @@ export default function PetCard({
         <div className="flex min-w-0 flex-col px-6 py-7 sm:px-8 sm:py-9 2xl:px-10">
           <div>
             <h2 className="break-words text-3xl font-bold leading-tight tracking-[-0.04em] text-slate-950 sm:text-[38px]">
-              {pet.name}, {pet.age} años
+              {pet.name}{pet.age > 0 ? `, ${pet.age} años` : ''}
             </h2>
-            <p className="mt-2 text-lg text-slate-700">{pet.breed || 'Mestizo'}</p>
+            <p className="mt-2 text-lg text-slate-700">{pet.breed || getPetTypeLabel(pet.petType)}</p>
             <p className="mt-4 flex min-w-0 items-start gap-2 break-words text-sm text-slate-500">
               <MapPin className="size-5 shrink-0" aria-hidden="true" />
-              {pet.location || pet.owner?.location || 'Cerca de ti'}
+              {pet.location || pet.owner?.location || 'Cerca tuyo'}
             </p>
           </div>
 
@@ -160,7 +161,7 @@ export default function PetCard({
           <div className="mt-7 flex gap-3 text-slate-700">
             <Heart className="mt-0.5 size-7 text-slate-400" aria-hidden="true" />
             <p className="min-w-0 break-words text-[15px] leading-7">
-              {pet.bio || `${pet.name} disfruta los paseos y conocer nuevos amigos.`}
+              {pet.bio || `Todavía no completaron la historia de ${pet.name}.`}
             </p>
           </div>
 
@@ -186,8 +187,8 @@ export default function PetCard({
           </div>
 
           <div className="sr-only">
-            <span>{getSizeLabel(pet.size)}</span>
-            <span>{getEnergyLabel(pet.energy)}</span>
+            {pet.size && <span>{getSizeLabel(pet.size)}</span>}
+            {pet.energy && <span>{getEnergyLabel(pet.energy)}</span>}
             <span>Nivel {pet.level}</span>
             {activities.map((activity) => <span key={activity}>{activity}</span>)}
             {pet.vaccinated && <span>Vacunado</span>}
@@ -216,7 +217,7 @@ export default function PetCard({
                 className="h-12 text-sm"
               >
                 <Heart className="mr-2 size-5" aria-hidden="true" />
-                Quiero conocer{pet.gender === 'female' ? 'la' : 'lo'}
+                Quiero conocer
               </Button>
             </div>
           </div>

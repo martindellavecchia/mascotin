@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         });
 
         if (!membership) {
-            return NextResponse.json({ success: false, error: 'No eres miembro de este grupo' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No sos miembro de este grupo' }, { status: 403 });
         }
 
         const members = await prisma.groupMember.findMany({

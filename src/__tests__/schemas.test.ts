@@ -1,4 +1,4 @@
-import { petSchema, ownerSchema } from '../lib/schemas';
+import { initialPetSchema, ownerSchema, petSchema } from '../lib/schemas';
 
 describe('schemas', () => {
   describe('petSchema', () => {
@@ -75,6 +75,31 @@ describe('schemas', () => {
 
       const result = petSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe('initialPetSchema', () => {
+    it('accepts only a name and pet type', () => {
+      const result = initialPetSchema.safeParse({
+        name: '  Mora  ',
+        petType: 'dog',
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toEqual({ name: 'Mora', petType: 'dog' });
+      }
+    });
+
+    it('keeps initial validation on the two visible fields', () => {
+      const result = initialPetSchema.safeParse({ name: '   ', petType: '' });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((issue) => issue.path[0])).toEqual(
+          expect.arrayContaining(['name', 'petType'])
+        );
+      }
     });
   });
 

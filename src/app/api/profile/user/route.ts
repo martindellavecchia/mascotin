@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     });
 
     if (existingProfile) {
-      return NextResponse.json({ success: false, error: 'Ya tienes un perfil' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Ya tenés un perfil' }, { status: 400 });
     }
 
     const profile = await db.profile.create({

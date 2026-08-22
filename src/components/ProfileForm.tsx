@@ -15,7 +15,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 const profileSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   bio: z.string().min(10, 'La bio debe tener al menos 10 caracteres').max(500, 'Máximo 500 caracteres'),
-  age: z.number().min(18, 'Debes tener al menos 18 años').max(100, 'Edad no válida'),
+  age: z.number().min(18, 'Tenés que ser mayor de 18 años').max(100, 'Edad no válida'),
   gender: z.enum(['male', 'female'], 'Seleccioná tu género'),
   location: z.string().min(2, 'La ubicación es requerida'),
   interests: z.string().min(1, 'Agregá al menos un interés'),
@@ -97,7 +97,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
           alert(data.error);
         }
       } catch (error) {
-        alert('Error al subir imagen. Inténtalo de nuevo.');
+        alert('Error al subir la imagen. Intentá de nuevo.');
       }
     }
 
@@ -111,7 +111,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
 
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     if (images.length === 0) {
-      alert('Debes subir al menos una imagen');
+      alert('Agregá al menos una imagen');
       return;
     }
 
@@ -241,7 +241,7 @@ export default function ProfileForm({ userId, initialData, onSuccess }: ProfileF
                 />
               </FormControl>
               <p className="text-xs text-slate-500">
-                Escribe tus intereses separados por comas
+                Escribí tus intereses separados por comas
               </p>
               <FormMessage />
             </FormItem>

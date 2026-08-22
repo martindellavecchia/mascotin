@@ -77,7 +77,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
         e.preventDefault();
 
         if (!description || !lastSeenLocation || !contactPhone) {
-            toast.error('Por favor completa todos los campos requeridos');
+            toast.error('Completá todos los campos requeridos');
             return;
         }
 
@@ -221,7 +221,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                             ) : (
                                 <>
                                     <ImagePlus className="size-8 text-slate-400" aria-hidden="true" />
-                                    <p className="text-sm text-slate-500 mt-1">Arrastra una imagen o haz clic para seleccionar</p>
+                                    <p className="text-sm text-slate-500 mt-1">Arrastrá una imagen o hacé clic para seleccionar</p>
                                 </>
                             )}
                         </div>

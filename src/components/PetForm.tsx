@@ -238,7 +238,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
         await persistThumbnailSelection(updatedImages, nextThumbnailIndex, thumbnailIndex);
       }
     } catch {
-        toast.error('Error al subir imagen. Inténtalo de nuevo.');
+        toast.error('Error al subir la imagen. Intentá de nuevo.');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -254,7 +254,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
     }
 
     if (!finalImages || (Array.isArray(finalImages) && finalImages.length === 0)) {
-      toast.error('Debes subir al menos una imagen de tu mascota');
+      toast.error('Agregá al menos una imagen de tu mascota');
       return;
     }
 
@@ -308,7 +308,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
     if (errorMessages.length > 0) {
       toast.error('Errores en el formulario: ' + errorMessages.join(', '));
     } else {
-      toast.error('Hay errores en el formulario. Revisa los campos.');
+      toast.error('Hay errores en el formulario. Revisá los campos.');
     }
   };
 

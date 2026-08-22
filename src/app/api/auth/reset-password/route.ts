@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const limit = await rateLimit(`reset-password:${ip}`, RATE_LIMITS.auth);
     if (!limit.allowed) {
       return NextResponse.json(
-        { success: false, error: 'Demasiados intentos. Intenta de nuevo más tarde.' },
+        { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },
         { status: 429 }
       );
     }

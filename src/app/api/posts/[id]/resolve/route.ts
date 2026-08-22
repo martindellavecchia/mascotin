@@ -65,7 +65,7 @@ export async function PATCH(
             success: true,
             post: updatedPost,
             message: updatedPost.isResolved
-                ? '¡Excelente! Tu mascota ha sido marcada como encontrada'
+                ? '¡Excelente! Marcamos a tu mascota como encontrada'
                 : 'El post ha sido marcado como activo nuevamente',
         });
     } catch (error) {

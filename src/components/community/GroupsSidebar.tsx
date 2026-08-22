@@ -48,7 +48,7 @@ export default function GroupsSidebar() {
 
             <div className="space-y-3">
                 {myGroups.length === 0 ? (
-                    <p className="text-sm text-slate-500">No te has unido a ningún grupo aún.</p>
+                    <p className="text-sm text-slate-500">Todavía no te sumaste a ningún grupo.</p>
                 ) : (
                     myGroups.map(group => (
                         <Link key={group.id} href={`/community/groups/${group.id}`} className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-lg transition-colors">

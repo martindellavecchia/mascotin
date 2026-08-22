@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const limit = await rateLimit(`register:${ip}`, RATE_LIMITS.register);
     if (!limit.allowed) {
       return NextResponse.json(
-        { success: false, error: 'Demasiados intentos. Intenta de nuevo más tarde.' },
+        { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },
         { status: 429 }
       );
     }
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
         email: user.email,
       },
       message: hasEmailProvider
-        ? 'Cuenta creada. Revisa tu email para verificar tu cuenta.'
+        ? 'Cuenta creada. Revisá tu email para verificar tu cuenta.'
         : 'Cuenta creada exitosamente.',
     });
   } catch (error) {

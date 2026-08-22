@@ -132,7 +132,7 @@ export default function SuggestedPets({
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-slate-500 text-center py-4">
-                        No hay sugerencias por ahora. ¡Vuelve pronto!
+                        No hay sugerencias por ahora. Volvé pronto.
                     </p>
                 </CardContent>
             </Card>

@@ -74,7 +74,7 @@ export async function PATCH(
                 actorId: session?.user?.id || providerRequest.userId,
                 type: 'PROVIDER_REQUEST',
                 title: 'Solicitud aprobada',
-                body: '¡Tu solicitud de proveedor fue aprobada! Ya puedes gestionar tu tienda.',
+                body: '¡Tu solicitud de proveedor fue aprobada! Ya podés gestionar tu tienda.',
                 link: '/provider',
                 entityId: id,
             }).catch(console.error);

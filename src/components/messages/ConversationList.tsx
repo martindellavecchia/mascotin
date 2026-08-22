@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { shouldUnoptimizeImage } from '@/lib/media';
@@ -74,6 +76,11 @@ export default function ConversationList({
                         <div className="p-6 text-center text-slate-400">
                             <PawPrint className="mb-2 size-10" aria-hidden="true" />
                             <p className="text-sm">{normalizedSearch ? 'No encontramos conversaciones.' : 'Todavía no tenés encuentros.'}</p>
+                            {!normalizedSearch && (
+                                <Button asChild size="sm" className="mt-4">
+                                    <Link href="/inicio?tab=explore">Ir a Descubrir</Link>
+                                </Button>
+                            )}
                         </div>
                     ) : (
                         visibleMatches.map((match) => (
@@ -105,6 +112,11 @@ export default function ConversationList({
                         <div className="p-6 text-center text-slate-400">
                             <Users className="mb-2 size-10" aria-hidden="true" />
                             <p className="text-sm">{normalizedSearch ? 'No encontramos grupos.' : 'Todavía no pertenecés a ningún grupo.'}</p>
+                            {!normalizedSearch && (
+                                <Button asChild size="sm" className="mt-4">
+                                    <Link href="/community/groups">Explorar grupos</Link>
+                                </Button>
+                            )}
                         </div>
                     ) : (
                         visibleGroups.map((group) => (

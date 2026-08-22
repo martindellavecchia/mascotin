@@ -75,7 +75,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
 
     const handleSubmit = async () => {
         if (!content.trim()) {
-            toast.error('Escribe algo para publicar');
+            toast.error('Escribí algo para publicar');
             return;
         }
 

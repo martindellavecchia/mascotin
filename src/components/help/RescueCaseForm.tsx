@@ -208,7 +208,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-slate-500">Empieza en 5 km y después podés ampliarlo o reducirlo.</p>
+          <p className="text-xs text-slate-500">Empezá en 5 km y después podés ampliarlo o reducirlo.</p>
         </div>}
         <div className="space-y-2">
           <Label htmlFor="requested-days">Tiempo estimado</Label>

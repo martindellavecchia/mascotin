@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { containsPrivatePublicRescueData } from '@/lib/rescue';
 
 export const petSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido").max(50),
+  name: z.string().trim().min(1, "El nombre es requerido").max(50),
   petType: z.enum(['dog', 'cat', 'bird', 'other'], {
     message: "El tipo de mascota es requerido",
   }),
@@ -38,6 +38,16 @@ export const petSchema = z.object({
   matchIntent: z.array(z.enum(['walk', 'play', 'social', 'sit'])).optional(),
   sharePhoneOnScan: z.boolean().optional(),
   shareVetOnScan: z.boolean().optional(),
+});
+
+export const initialPetSchema = petSchema.pick({
+  name: true,
+  petType: true,
+});
+
+export const createPetSchema = petSchema.partial().extend({
+  name: petSchema.shape.name,
+  petType: petSchema.shape.petType,
 });
 
 export const ownerSchema = z.object({
@@ -102,6 +112,7 @@ export const updateReportSchema = z.object({
 });
 
 export type PetFormData = z.infer<typeof petSchema>;
+export type InitialPetFormData = z.infer<typeof initialPetSchema>;
 export type OwnerFormData = z.infer<typeof ownerSchema>;
 export type CreateGroupData = z.infer<typeof createGroupSchema>;
 export type CreateEventData = z.infer<typeof createEventSchema>;
@@ -220,7 +231,7 @@ export const createProviderRequestSchema = z.object({
   businessName: z.string().min(2, 'El nombre del negocio es requerido').max(150),
   location: z.string().min(2, 'La ubicación es requerida').max(200),
   description: z.string().max(1000).optional(),
-  reason: z.string().min(10, 'Explica por qué quieres ser proveedor (mín. 10 caracteres)').max(1000),
+  reason: z.string().min(10, 'Explicá por qué querés ser proveedor (mín. 10 caracteres)').max(1000),
 });
 
 export const reviewProviderRequestSchema = z.object({

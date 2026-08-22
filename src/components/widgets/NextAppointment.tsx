@@ -85,7 +85,7 @@ export default function NextAppointment({ appointment }: NextAppointmentProps) {
         <CardContent>
           <div className="text-center py-4 text-slate-400">
             <CalendarCheck2 className="mx-auto mb-2 size-8" aria-hidden="true" />
-            <p className="text-sm">No tienes citas programadas</p>
+            <p className="text-sm">No tenés citas programadas</p>
             <Button
               asChild
               variant="link"

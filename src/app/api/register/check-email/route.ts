@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const limit = await rateLimit(`email-check:${ip}`, RATE_LIMITS.emailCheck);
     if (!limit.allowed) {
       return NextResponse.json(
-        { success: false, error: 'Demasiados intentos. Intenta de nuevo más tarde.' },
+        { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },
         { status: 429 }
       );
     }

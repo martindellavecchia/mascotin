@@ -23,11 +23,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string, u
         });
 
         if (requesterMembership?.role !== 'ADMIN') {
-            return NextResponse.json({ success: false, error: 'No tienes permisos para eliminar miembros' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No tenés permisos para eliminar miembros' }, { status: 403 });
         }
 
         if (targetUserId === session.user.id) {
-            return NextResponse.json({ success: false, error: 'No puedes eliminarte a ti mismo por esta vía' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'No podés eliminarte a vos mismo por esta vía' }, { status: 400 });
         }
 
         // Prevent removing other admins
@@ -35,7 +35,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string, u
             where: { groupId_userId: { groupId, userId: targetUserId } },
         });
         if (targetMembership?.role === 'ADMIN') {
-            return NextResponse.json({ success: false, error: 'No puedes eliminar a otro administrador' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No podés eliminar a otro administrador' }, { status: 403 });
         }
 
         // Delete the membership

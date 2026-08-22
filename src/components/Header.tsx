@@ -13,7 +13,9 @@ import {
   Menu,
   MessageCircle,
   Search,
+  Settings,
   Store,
+  UserRound,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -41,6 +43,8 @@ const SECONDARY_NAV_LINKS: NavigationLink[] = [
   { href: '/community/events', label: 'Eventos', icon: CalendarDays },
   { href: '/map', label: 'Mapa', icon: Map },
   { href: '/shop', label: 'Servicios', icon: Store },
+  { href: '/profile', label: 'Perfil', icon: UserRound },
+  { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
 const NotificationBell = dynamic(

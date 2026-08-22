@@ -65,7 +65,7 @@ export function buildVerificationEmail(name: string, token: string): EmailOption
         <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0;">
           Verificar Email
         </a>
-        <p style="color: #666; font-size: 14px;">Si no creaste esta cuenta, puedes ignorar este mensaje.</p>
+        <p style="color: #666; font-size: 14px;">Si no creaste esta cuenta, podés ignorar este mensaje.</p>
         <p style="color: #666; font-size: 12px;">Este enlace expira en 24 horas.</p>
       </div>
     `,
@@ -84,7 +84,7 @@ export function buildPasswordResetEmail(name: string, token: string): EmailOptio
         <a href="${url}" style="display: inline-block; padding: 12px 24px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0;">
           Restablecer Contraseña
         </a>
-        <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
+        <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, podés ignorar este mensaje.</p>
         <p style="color: #666; font-size: 12px;">Este enlace expira en 1 hora.</p>
       </div>
     `,

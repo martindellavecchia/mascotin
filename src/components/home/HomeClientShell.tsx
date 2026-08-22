@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Compass, Heart, PawPrint } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Feed from '@/components/feed/Feed';
+import TodayActions from '@/components/home/TodayActions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import type { Pet, SwipeResponse } from '@/types';
 import type { Post } from '@/types';
+import type { HomeBootstrapSuggestion } from '@/lib/server/home';
 
 const MatchesPanel = dynamic(() => import('@/components/MatchesPanel'), {
   ssr: false,
@@ -38,6 +40,8 @@ interface HomeClientShellProps {
   } | null;
   initialPets: Pet[];
   initialSelectedPetId?: string;
+  initialSuggestions: HomeBootstrapSuggestion[];
+  showCommunityFeed: boolean;
   initialFeedPosts: Post[];
   initialFeedNextCursor: string | null;
   initialFeedHasMore: boolean;
@@ -117,6 +121,8 @@ export default function HomeClientShell({
   session,
   initialPets,
   initialSelectedPetId,
+  initialSuggestions,
+  showCommunityFeed,
   initialFeedPosts,
   initialFeedNextCursor,
   initialFeedHasMore,
@@ -283,37 +289,54 @@ export default function HomeClientShell({
               <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
                 <div className="min-w-0">
                   <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">Inicio</h1>
-                  <p className="mt-2 text-muted-foreground">Novedades de tu comunidad y de {activePet?.name}.</p>
+                  <p className="mt-2 text-muted-foreground">Un plan claro para hoy con {activePet?.name}.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="tonal" onClick={() => syncHomeState('matches', selectedPetId)}>
-                    <Heart className="size-4" aria-hidden="true" />
-                    Tu círculo
-                  </Button>
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   {activePet && (
-                    <Select value={selectedPetId} onValueChange={(petId) => syncHomeState(activeTab, petId)}>
-                      <SelectTrigger aria-label="Mascota activa" className="w-[min(15rem,70vw)]">
-                        <PawPrint className="size-5 shrink-0 text-primary" aria-hidden="true" />
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {myPets.map((pet) => <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">Hoy con</span>
+                      <Select value={selectedPetId} onValueChange={(petId) => syncHomeState(activeTab, petId)}>
+                        <SelectTrigger aria-label="Mascota activa" className="w-[min(13rem,55vw)]">
+                          <PawPrint className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {myPets.map((pet) => <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
                 </div>
               </div>
-              <Feed
-                currentUserId={session?.user?.id}
-                currentUserImage={
-                  session?.user?.headerImage || session?.user?.image || null
-                }
-                pets={myPets}
-                selectedPetId={selectedPetId}
-                initialPosts={initialFeedPosts}
-                initialNextCursor={initialFeedNextCursor}
-                initialHasMore={initialFeedHasMore}
+              <TodayActions
+                activePet={activePet}
+                suggestion={selectedPetId === initialSelectedPetId ? initialSuggestions[0] : undefined}
               />
+              {showCommunityFeed && (
+                <section aria-labelledby="circle-feed-title" className="space-y-4 border-t border-border pt-6">
+                  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                    <div>
+                      <h2 id="circle-feed-title" className="text-2xl font-bold tracking-[-0.03em] text-foreground">En tu círculo</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">Publicaciones de personas y mascotas con las que ya conectaste.</p>
+                    </div>
+                    <Button variant="tonal" onClick={() => syncHomeState('matches', selectedPetId)}>
+                      <Heart className="size-4" aria-hidden="true" />
+                      Ver tu círculo
+                    </Button>
+                  </div>
+                  <Feed
+                    currentUserId={session?.user?.id}
+                    currentUserImage={
+                      session?.user?.headerImage || session?.user?.image || null
+                    }
+                    pets={myPets}
+                    selectedPetId={selectedPetId}
+                    initialPosts={initialFeedPosts}
+                    initialNextCursor={initialFeedNextCursor}
+                    initialHasMore={initialFeedHasMore}
+                  />
+                </section>
+              )}
             </TabsContent>
 
             <TabsContent value="explore" className="min-w-0 mt-0">

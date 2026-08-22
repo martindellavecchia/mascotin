@@ -65,7 +65,7 @@ export default function GroupsDirectoryPage() {
         try {
             const res = await fetch(`/api/groups/${groupId}/join`, { method: 'POST' });
             if (res.ok) {
-                toast.success('¡Te has unido al grupo!');
+                toast.success('Te sumaste al grupo.');
                 // Update local state
                 setGroups(groups.map(g => g.id === groupId ? { ...g, isMember: true, _count: { members: g._count.members + 1 } } : g));
             } else {

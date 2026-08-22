@@ -107,19 +107,9 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
     }
   };
 
-  const onInvalid = (errors: any) => {
-    console.error('Form validation errors:', errors);
-    const errorMessages = Object.entries(errors).map(([key, err]: [string, any]) =>
-      `${key}: ${err?.message || 'Error'}`
-    );
-    if (errorMessages.length > 0) {
-      toast.error('Errores: ' + errorMessages.join(', '));
-    }
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Profile Photo */}
         <div className="flex flex-col items-center gap-4">
           <div className="relative">

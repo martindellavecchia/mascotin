@@ -41,7 +41,7 @@ export async function POST(
             await sendEmail({
                 to: user.email,
                 subject: 'Huella - Contraseña temporal',
-                html: `<p>Tu contraseña ha sido restablecida por un administrador.</p><p>Tu contraseña temporal es: <strong>${tempPassword}</strong></p><p>Por favor, cámbiala lo antes posible.</p>`,
+                html: `<p>Un administrador restableció tu contraseña.</p><p>Tu contraseña temporal es: <strong>${tempPassword}</strong></p><p>Cambiala cuanto antes.</p>`,
             });
         }
 

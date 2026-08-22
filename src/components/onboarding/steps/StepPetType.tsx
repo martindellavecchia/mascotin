@@ -22,7 +22,7 @@ export default function StepPetType({ value, onChange }: StepPetTypeProps) {
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">Empecemos</h2>
-                <p className="text-slate-600">¿Qué tipo de mascota tienes?</p>
+                <p className="text-slate-600">¿Qué tipo de mascota tenés?</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -70,6 +70,7 @@ export interface HomePetHealthSummary {
 export interface HomeBootstrapData {
   pets: Pet[];
   selectedPetId?: string;
+  hasOwnPosts: boolean;
   stats: HomeStatsData;
   nextAppointment: HomeAppointmentData | null;
   lostPets: HomeLostPetPreview[];
@@ -167,6 +168,7 @@ export async function getHomeBootstrapData(
   if (!owner) {
     return {
       pets: [],
+      hasOwnPosts: false,
       stats: EMPTY_STATS,
       nextAppointment: null,
       lostPets: [],
@@ -190,6 +192,7 @@ export async function getHomeBootstrapData(
     lostPetsRaw,
     healthRecordsRaw,
     suggestions,
+    ownPostsCount,
   ] = await Promise.all([
     petIds.length === 0
       ? Promise.resolve(0)
@@ -300,6 +303,12 @@ export async function getHomeBootstrapData(
           { latitude: owner.latitude, longitude: owner.longitude }
         )
       : Promise.resolve([]),
+    db.post.count({
+      where: {
+        authorId: userId,
+        isVisible: true,
+      },
+    }),
   ]);
 
   const lostPets = serializeForClient(
@@ -322,6 +331,7 @@ export async function getHomeBootstrapData(
   return {
     pets,
     selectedPetId,
+    hasOwnPosts: ownPostsCount > 0,
     stats: {
       totalPets: pets.length,
       totalMatches: matchesCount,

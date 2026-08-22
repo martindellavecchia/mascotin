@@ -164,7 +164,7 @@ export default function ProviderAppointments() {
                     <CardContent className="p-8 text-center">
                         <CalendarCheck className="mx-auto mb-2 size-12 text-slate-300" aria-hidden="true" />
                         <p className="text-slate-500">
-                            {filter ? 'No hay citas con este estado' : 'No tienes citas próximas'}
+                            {filter ? 'No hay citas con este estado' : 'No tenés citas próximas'}
                         </p>
                     </CardContent>
                 </Card>

@@ -60,7 +60,7 @@ export async function requireAdminWrite(request: Request): Promise<NextResponse 
     const limit = await rateLimit(`admin-write:${session!.user.id}`, RATE_LIMITS.adminWrite);
     if (!limit.allowed) {
         return NextResponse.json(
-            { success: false, error: 'Demasiados intentos. Intenta más tarde.' },
+            { success: false, error: 'Demasiados intentos. Intentá más tarde.' },
             { status: 429 }
         );
     }

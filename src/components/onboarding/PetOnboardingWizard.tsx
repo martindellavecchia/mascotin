@@ -1,201 +1,206 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Clock3, LoaderCircle } from 'lucide-react';
+import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { toast } from 'sonner';
-import StepPetType from './steps/StepPetType';
-import StepBasicInfo from './steps/StepBasicInfo';
-import StepDetails from './steps/StepDetails';
-import StepPersonality from './steps/StepPersonality';
-import StepPhotos from './steps/StepPhotos';
-import StepCompatibility from './steps/StepCompatibility';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { initialPetSchema } from '@/lib/schemas';
+import { cn } from '@/lib/utils';
+import type { Pet } from '@/types';
 
 interface PetOnboardingWizardProps {
-    ownerId: string;
-    onSuccess: (pet: any) => void;
-    onCancel: () => void;
+  onSuccess: (pet: Pet) => void;
+  onCancel: () => void;
 }
 
-const VALID_ACTIVITIES = ['walk', 'play', 'fetch', 'swim', 'socialize', 'groom', 'training'] as const;
+interface FieldErrors {
+  name?: string;
+  petType?: string;
+  form?: string;
+}
 
-export default function PetOnboardingWizard({ ownerId, onSuccess, onCancel }: PetOnboardingWizardProps) {
-    const [currentStep, setCurrentStep] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const totalSteps = 6;
+interface ApiValidationIssue {
+  path?: PropertyKey[];
+  message?: string;
+}
 
-    const [formData, setFormData] = useState({
-        petType: '',
-        name: '',
-        breed: '',
-        gender: '',
-        age: 1,
-        size: 'medium',
-        weight: 0,
-        vaccinated: true,
-        neutered: false,
-        bio: '',
-        energy: 'medium',
-        activities: [] as string[],
-        location: '',
-        images: [] as string[],
-        goodWithKids: 'unknown',
-        goodWithDogs: 'unknown',
-        goodWithCats: 'unknown',
-        goodWithStrangers: 'unknown',
-        temperament: [] as string[],
-        matchIntent: [] as string[],
-    });
+interface CreatePetResponse {
+  pet?: Pet;
+  error?: string;
+  details?: ApiValidationIssue[];
+}
 
-    useEffect(() => {
-        let cancelled = false;
+const PET_TYPES = [
+  { id: 'dog', label: 'Perro' },
+  { id: 'cat', label: 'Gato' },
+  { id: 'bird', label: 'Ave' },
+  { id: 'other', label: 'Otra' },
+] as const;
 
-        async function prefillLocation() {
-            try {
-                const res = await fetch('/api/owner/profile');
-                if (!res.ok) return;
-                const data = await res.json();
-                const ownerLocation = data?.owner?.location;
-                if (!cancelled && typeof ownerLocation === 'string' && ownerLocation.trim()) {
-                    setFormData(prev => prev.location ? prev : { ...prev, location: ownerLocation.trim() });
-                }
-            } catch {
-                // Location will be validated at submit
-            }
-        }
+const ENGLISH_ERROR_PATTERN = /\b(invalid|failed|missing|required|must|not authenticated|not found)\b/i;
 
-        prefillLocation();
-        return () => { cancelled = true; };
-    }, []);
+function mapApiIssues(issues: ApiValidationIssue[] | undefined) {
+  const nextErrors: FieldErrors = {};
 
-    const updateData = (data: Partial<typeof formData>) => {
-        setFormData(prev => ({ ...prev, ...data }));
-    };
+  for (const issue of issues || []) {
+    const field = issue.path?.[0];
+    if ((field === 'name' || field === 'petType') && issue.message) {
+      nextErrors[field] = issue.message;
+    }
+  }
 
-    const nextStep = () => {
-        if (currentStep === 1 && !formData.petType) return toast.error('Seleccioná un tipo de mascota');
-        if (currentStep === 2 && (!formData.name || !formData.gender)) return toast.error('Completá los campos requeridos');
+  return nextErrors;
+}
 
-        setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-    };
+export default function PetOnboardingWizard({ onSuccess, onCancel }: PetOnboardingWizardProps) {
+  const [name, setName] = useState('');
+  const [petType, setPetType] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [loading, setLoading] = useState(false);
 
-    const prevStep = () => {
-        setCurrentStep(prev => Math.max(prev - 1, 1));
-    };
+  const clearError = (field: keyof FieldErrors) => {
+    setErrors((current) => ({ ...current, [field]: undefined, form: undefined }));
+  };
 
-    const handleSubmit = async () => {
-        if (formData.images.length === 0) return toast.error('Sube al menos una foto');
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsed = initialPetSchema.safeParse({ name: name.trim(), petType });
 
-        const bio = (formData.bio || '').trim();
-        if (bio.length < 10) {
-            return toast.error('La biografía debe tener al menos 10 caracteres');
-        }
+    if (!parsed.success) {
+      setErrors(mapApiIssues(parsed.error.issues));
+      return;
+    }
 
-        let location = (formData.location || '').trim();
-        if (!location) {
-            try {
-                const res = await fetch('/api/owner/profile');
-                if (res.ok) {
-                    const data = await res.json();
-                    const ownerLocation = data?.owner?.location;
-                    if (typeof ownerLocation === 'string' && ownerLocation.trim()) {
-                        location = ownerLocation.trim();
-                        updateData({ location });
-                    }
-                }
-            } catch {
-                // fall through to error toast
-            }
-        }
+    setLoading(true);
+    setErrors({});
 
-        if (!location) {
-            return toast.error('La ubicación es obligatoria. Completá tu perfil primero.');
-        }
+    try {
+      const response = await fetch('/api/pet/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(parsed.data),
+      });
+      const data = await response.json() as CreatePetResponse;
 
-        const activities = formData.activities.filter((a) =>
-            (VALID_ACTIVITIES as readonly string[]).includes(a)
-        );
+      if (response.ok && data.pet) {
+        onSuccess(data.pet);
+        return;
+      }
 
-        setLoading(true);
-        try {
-            const payload = {
-                ...formData,
-                bio,
-                location,
-                ownerId,
-                images: JSON.stringify(formData.images),
-                thumbnailIndex: 0,
-                activities,
-                weight: Number(formData.weight),
-                age: Number(formData.age)
-            };
+      const fieldErrors = mapApiIssues(data.details);
+      if (fieldErrors.name || fieldErrors.petType) {
+        setErrors(fieldErrors);
+        return;
+      }
 
-            const response = await fetch('/api/pet/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+      const apiMessage = data.error && !ENGLISH_ERROR_PATTERN.test(data.error)
+        ? data.error
+        : 'No pudimos crear la mascota. Intentá de nuevo.';
+      setErrors({ form: apiMessage });
+    } catch {
+      setErrors({ form: 'No pudimos crear la mascota. Revisá tu conexión e intentá de nuevo.' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const data = await response.json();
-
-            if (response.ok) {
-                toast.success('¡Mascota creada con éxito!');
-                onSuccess(data.pet);
-            } else {
-                toast.error(data.error || 'Error al crear mascota');
-            }
-        } catch (error) {
-            toast.error('Ocurrió un error inesperado');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="w-full max-w-lg mx-auto">
-            <div className="mb-8">
-                <div className="flex justify-between text-xs text-teal-600 font-medium mb-2">
-                    <span>Paso {currentStep} de {totalSteps}</span>
-                    <span>{Math.round((currentStep / totalSteps) * 100)}%</span>
-                </div>
-                <Progress value={(currentStep / totalSteps) * 100} className="h-2 bg-teal-100" />
-            </div>
-
-            <Card className="flex min-h-[400px] flex-col justify-between p-6">
-                <div className="flex-1">
-                    {currentStep === 1 && <StepPetType value={formData.petType} onChange={(val) => updateData({ petType: val })} />}
-                    {currentStep === 2 && <StepBasicInfo data={formData} updateData={updateData} />}
-                    {currentStep === 3 && <StepDetails data={formData} updateData={updateData} />}
-                    {currentStep === 4 && <StepPersonality data={formData} updateData={updateData} />}
-                    {currentStep === 5 && <StepCompatibility data={formData} updateData={updateData} />}
-                    {currentStep === 6 && <StepPhotos images={formData.images} setImages={(imgs: string[]) => updateData({ images: imgs })} />}
-                </div>
-
-                <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
-                    <Button
-                        variant="ghost"
-                        onClick={currentStep === 1 ? onCancel : prevStep}
-                        className="text-gray-500 hover:text-gray-800"
-                    >
-                        {currentStep === 1 ? 'Cancelar' : 'Atrás'}
-                    </Button>
-
-                    {currentStep < totalSteps ? (
-                        <Button onClick={nextStep} className="px-8">
-                            Siguiente
-                        </Button>
-                    ) : (
-                        <Button
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="px-8"
-                        >
-                            {loading ? 'Creando...' : 'Finalizar'}
-                        </Button>
-                    )}
-                </div>
-            </Card>
+  return (
+    <Card className="my-auto w-full max-w-xl overflow-hidden">
+      <CardHeader className="space-y-3 border-b border-border bg-surface px-5 py-5 text-center sm:space-y-4 sm:px-8 sm:py-8">
+        <div className="mx-auto flex w-fit items-center gap-2 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary">
+          <Clock3 className="size-4" aria-hidden="true" />
+          Menos de un minuto
         </div>
-    );
+        <div>
+          <h1 className="text-2xl font-bold tracking-[-0.03em] text-foreground sm:text-3xl">
+            Creá el perfil básico de tu mascota
+          </h1>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground sm:text-base">
+            Con el nombre y el tipo alcanza para empezar. La foto y el resto los podés sumar después.
+          </p>
+        </div>
+      </CardHeader>
+
+      <CardContent className="px-5 py-5 sm:px-8 sm:py-8">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5 sm:space-y-7">
+          {errors.form && (
+            <div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              {errors.form}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="pet-name">Nombre</Label>
+            <Input
+              id="pet-name"
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                clearError('name');
+              }}
+              placeholder="Por ejemplo, Mora"
+              autoComplete="off"
+              autoFocus
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? 'pet-name-error' : undefined}
+              className={cn(errors.name && 'border-destructive focus-visible:ring-destructive/25')}
+            />
+            {errors.name && <p id="pet-name-error" className="text-sm text-destructive">{errors.name}</p>}
+          </div>
+
+          <fieldset className="space-y-3" aria-describedby={errors.petType ? 'pet-type-error' : undefined}>
+            <legend className="text-sm font-medium text-foreground">Tipo de mascota</legend>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {PET_TYPES.map((type) => {
+                const selected = petType === type.id;
+
+                return (
+                  <button
+                    key={type.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => {
+                      setPetType(type.id);
+                      clearError('petType');
+                    }}
+                    className={cn(
+                      'flex min-h-20 flex-col items-center justify-center gap-2 rounded-lg border px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-24 sm:py-4',
+                      selected
+                        ? 'border-primary bg-primary-soft text-primary'
+                        : 'border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                      errors.petType && !selected && 'border-destructive/40',
+                    )}
+                  >
+                    <PetTypeIcon petType={type.id} className="size-8" />
+                    {type.label}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.petType && <p id="pet-type-error" className="text-sm text-destructive">{errors.petType}</p>}
+          </fieldset>
+
+          <div className="flex items-center justify-between gap-3 border-t border-border pt-5 sm:pt-6">
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={loading}>
+              Ahora no
+            </Button>
+            <Button type="submit" disabled={loading} className="min-w-44 sm:min-w-48">
+              {loading ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                  Creando perfil...
+                </>
+              ) : (
+                'Crear y descubrir'
+              )}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
 }

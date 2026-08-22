@@ -16,7 +16,7 @@ export async function POST(
 
     if (blockedId === session.user.id) {
       return NextResponse.json(
-        { success: false, error: 'No puedes bloquearte a ti mismo' },
+        { success: false, error: 'No podés bloquearte a vos mismo' },
         { status: 400 }
       );
     }

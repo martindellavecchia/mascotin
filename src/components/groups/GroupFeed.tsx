@@ -90,7 +90,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
 
     const handleCreatePost = async () => {
         if (!content.trim()) return;
-        if (!currentUser) return toast.error('Debes iniciar sesión');
+        if (!currentUser) return toast.error('Tenés que iniciar sesión');
 
         // Validate event fields
         if (activeTab === 'event') {
@@ -180,7 +180,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                             <div className="min-w-0 flex-1 space-y-4">
                                 <TabsContent value="post" className="m-0 min-w-0 space-y-4">
                                     <Textarea
-                                        placeholder={`¿Qué quieres compartir con el grupo?`}
+                                        placeholder="¿Qué querés compartir con el grupo?"
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px]"
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
