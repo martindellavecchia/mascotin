@@ -77,7 +77,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         align="end"
         side={hasDesktopSidebar ? 'right' : 'bottom'}
         collisionPadding={16}
-        className="w-[min(360px,calc(100vw-2rem))] p-0"
+        className="w-[min(360px,calc(100vw-2rem))] border-border shadow-xl p-0"
         sideOffset={hasDesktopSidebar ? DESKTOP_SIDEBAR_POPOVER_OFFSET : 12}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
@@ -98,7 +98,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
               <LoaderCircle className="size-5 animate-spin text-slate-400" aria-hidden="true" />
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-8 text-slate-600">
               <BellOff className="mb-2 size-8" aria-hidden="true" />
               <p className="text-sm">Todavía no tenés notificaciones</p>
             </div>

@@ -14,6 +14,8 @@
   --color-background: #fff8ef;
   --color-surface: #ffffff;
   --color-foreground: #271e27;
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-muted: #f0eaf3;
   --color-muted-foreground: #6a5d69;
   --color-border: #dccfd8;
@@ -194,6 +196,8 @@
   --color-surface-soft: #f0eaf3;
   --color-text: #271e27;
   --color-text-muted: #6a5d69;
+  --popover: #ffffff;
+  --popover-foreground: #271e27;
   --color-border: #dccfd8;
   --color-border-control: #9b8192;
   --color-focus: #6d3a67;
@@ -219,6 +223,8 @@
   --color-surface: #ffffff;
   --color-text: #271e27;
   --color-text-muted: #6a5d69;
+  --popover: #ffffff;
+  --popover-foreground: #271e27;
   --color-border: #dccfd8;
   --color-primary-soft: #f0eaf3;
   --state-card-shadow: none;
