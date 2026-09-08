@@ -6,19 +6,21 @@ import { cn } from '@/lib/utils';
 
 interface CommunityLayoutProps {
   children: React.ReactNode;
+  header?: React.ReactNode;
 }
 
-export default function CommunityLayout({ children }: CommunityLayoutProps) {
+export default function CommunityLayout({ children, header }: CommunityLayoutProps) {
   const pathname = usePathname();
   const links = [
     { href: '/community', label: 'Actividad' },
     { href: '/community/groups', label: 'Grupos' },
-    { href: '/community/events', label: 'Eventos' },
+    { href: '/community/events', label: 'Agenda' },
   ];
 
   return (
-    <div className="mx-auto min-w-0 max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-      <nav aria-label="Secciones de comunidad" className="mb-7 overflow-x-auto border-b border-border">
+    <div className="mx-auto min-w-0 max-w-6xl px-4 py-4 sm:px-6 sm:py-8">
+      {header}
+      <nav aria-label="Secciones de comunidad" className="mb-4 overflow-x-auto border-b border-border">
         <div className="flex min-w-max gap-6">
           {links.map((link) => {
             const active = link.href === '/community'

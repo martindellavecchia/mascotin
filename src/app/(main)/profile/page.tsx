@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Pencil, PawPrint, Plus, UserPlus, X } from 'lucide-react';
+import { Pencil, PawPrint, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
@@ -144,18 +144,16 @@ function ProfileContent() {
   if (!owner) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="container mx-auto flex-1 px-4 py-4 sm:py-8">
           <Card className="mx-auto w-full max-w-2xl">
-            <CardHeader className="text-center pb-2">
-              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="size-8 text-teal-600" aria-hidden="true" />
-              </div>
+            <CardHeader className="pb-0">
               <h1 className="text-2xl font-bold text-slate-900">Completá tu perfil</h1>
-              <p className="mt-2 text-slate-500">Contanos sobre vos para empezar</p>
+              <p className="text-sm leading-6 text-muted-foreground">Tu nombre y zona para presentarte. El resto es opcional.</p>
             </CardHeader>
             <CardContent>
               <OwnerForm
                 userId={session.user.id}
+                defaultName={session.user.name || undefined}
                 onSuccess={(newOwner) => setOwner(newOwner)}
               />
             </CardContent>

@@ -28,22 +28,20 @@ export default function CommunityPage() {
 
     return (
         <div>
-            <CommunityLayout>
-                <PageHeader
+            <CommunityLayout header={<PageHeader
                     title="Comunidad"
-                    description="Publicaciones, grupos y encuentros cerca tuyo."
+                    className="flex-row flex-wrap items-center justify-between gap-2 border-0 pb-3 sm:items-center"
                     action={<Button
                         variant="outline"
-                        className="border-destructive/35 text-destructive hover:bg-destructive/5"
+                        className="gap-2 border-destructive/35 px-3 text-destructive hover:bg-destructive/5"
+                        aria-label="Reportar mascota perdida"
                         onClick={() => setLostPetFormOpen(true)}
                     >
-                        <CircleAlert className="mr-2 size-5" aria-hidden="true" />
-                        Reportar mascota perdida
+                        <CircleAlert className="size-4" aria-hidden="true" />
+                        Reportar pérdida
                     </Button>}
-                />
-                <div className="mt-6">
-                    <EventsFeed refreshKey={feedRefreshKey} />
-                </div>
+                />}>
+                <EventsFeed refreshKey={feedRefreshKey} />
             </CommunityLayout>
 
             <LostPetForm

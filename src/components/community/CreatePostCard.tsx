@@ -129,8 +129,8 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
     };
 
     return (
-        <Card className="mb-6">
-            <CardContent className="p-4">
+        <Card className="gap-0 py-0">
+            <CardContent className="p-3 sm:p-4">
                 {/* Header */}
                 <div className="flex items-start gap-3">
                     <Avatar className="h-10 w-10">
@@ -142,13 +142,13 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                             </AvatarFallback>
                         )}
                     </Avatar>
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
                         {!isExpanded ? (
                             <button
                                 onClick={() => setIsExpanded(true)}
-                                className="min-h-11 w-full rounded-md border border-border bg-slate-100 px-4 py-3 text-left text-muted-foreground transition-colors hover:border-slate-300 hover:bg-primary-soft"
+                                className="min-h-11 w-full rounded-md border border-border bg-muted px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
                             >
-                                ¿Qué está haciendo tu mascota?
+                                Compartí con la comunidad
                             </button>
                         ) : (
                             <div className="space-y-4">

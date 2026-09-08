@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
@@ -249,26 +250,17 @@ export default function SettingsPage() {
         return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
     };
 
-    if (loading || status === 'loading') {
-        return (
-            <div className="min-h-screen bg-background">
-                <div className="mx-auto flex max-w-3xl justify-center px-4 py-8">
-                    <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
-                </div>
-            </div>
-        );
-    }
-
-    if (!settings) {
+    if (loading || status === 'loading' || !settings) {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
                     <PageHeader title="Configuración" description="Personalizá tu experiencia en Huella." />
-                    <EmptyState
+                    <StateFeedback
                         className="mt-6"
-                        title="La configuración no está disponible"
-                        description={loadError || 'Volvé a intentarlo en unos instantes.'}
-                        action={<Button variant="outline" onClick={() => void fetchData()}>Volver a intentar</Button>}
+                        status={loading || status === 'loading' ? 'loading' : 'error'}
+                        title={loading || status === 'loading' ? 'Cargando configuración' : 'La configuración no está disponible'}
+                        description={loading || status === 'loading' ? 'Estamos buscando tus preferencias.' : loadError || 'Volvé a intentarlo en unos instantes.'}
+                        action={!loading && status !== 'loading' && <Button variant="outline" onClick={() => void fetchData()}>Volver a intentar</Button>}
                     />
                 </div>
             </div>

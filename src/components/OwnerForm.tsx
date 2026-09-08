@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Camera, Hourglass, PawPrint, Trees } from 'lucide-react';
+import { Camera, ChevronDown, Hourglass, PawPrint, Trees } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -10,26 +10,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ownerSchema } from '@/lib/schemas';
+import { ownerSchema, type OwnerFormData } from '@/lib/schemas';
+import type { Owner } from '@/types';
 import { toast } from 'sonner';
 
 interface OwnerFormProps {
   userId: string;
-  initialData?: any;
-  onSuccess?: (owner: any) => void;
+  initialData?: Partial<Owner>;
+  defaultName?: string;
+  onSuccess?: (owner: Owner) => void;
   onCancel?: () => void;
 }
 
-export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: OwnerFormProps) {
+export default function OwnerForm({ userId, initialData, defaultName, onSuccess, onCancel }: OwnerFormProps) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [profileImage, setProfileImage] = useState<string>(initialData?.image || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm({
     resolver: zodResolver(ownerSchema),
     defaultValues: {
-      name: initialData?.name || '',
+      name: initialData?.name || defaultName || '',
       phone: initialData?.phone || '',
       location: initialData?.location || '',
       bio: initialData?.bio || '',
@@ -78,7 +81,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
     }
   };
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: OwnerFormData) => {
     setLoading(true);
 
     try {
@@ -109,24 +112,30 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Profile Photo */}
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <Avatar className="w-24 h-24 border-4 border-teal-100">
+      <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+        if (errors.phone || errors.bio) {
+          setDetailsOpen(true);
+          const firstInvalidField = errors.name ? 'name' : errors.location ? 'location' : errors.phone ? 'phone' : 'bio';
+          requestAnimationFrame(() => form.setFocus(firstInvalidField));
+        }
+      })} className="space-y-5">
+        <div className="flex items-center gap-3">
+            <Avatar className="size-14 shrink-0 border border-border">
               {profileImage ? (
-                <AvatarImage src={profileImage} className="object-cover" />
+                <AvatarImage src={profileImage} alt="Tu foto de perfil" className="object-cover" />
               ) : (
-                <AvatarFallback className="bg-teal-100 text-teal-700 text-2xl">
+                <AvatarFallback className="bg-primary-soft text-xl text-primary">
                   {form.watch('name')?.[0] || 'U'}
                 </AvatarFallback>
               )}
             </Avatar>
-            <button
+          <div className="min-w-0">
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="absolute bottom-0 right-0 rounded-lg bg-primary p-2 text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50"
+              className="gap-2 px-2"
               aria-label="Cambiar foto de perfil"
             >
               {uploading ? (
@@ -134,7 +143,9 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
               ) : (
                 <Camera className="size-4" aria-hidden="true" />
               )}
-            </button>
+              {uploading ? 'Subiendo foto…' : 'Cambiar foto'}
+            </Button>
+            <p className="px-2 text-xs text-muted-foreground">Opcional · hasta 5 MB</p>
           </div>
           <input
             ref={fileInputRef}
@@ -143,7 +154,6 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
             onChange={handleImageUpload}
             className="hidden"
           />
-          <p className="text-sm text-slate-500">Foto de perfil (opcional)</p>
         </div>
 
         <FormField
@@ -153,21 +163,7 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
             <FormItem>
               <FormLabel>Nombre completo</FormLabel>
               <FormControl>
-                <Input placeholder="Tu nombre" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Teléfono (opcional)</FormLabel>
-              <FormControl>
-                <Input type="tel" placeholder="+54 9 11 1234 5678" {...field} value={field.value || ''} />
+                <Input autoComplete="name" placeholder="Tu nombre" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -181,89 +177,118 @@ export default function OwnerForm({ userId, initialData, onSuccess, onCancel }: 
             <FormItem>
               <FormLabel>Ubicación</FormLabel>
               <FormControl>
-                <Input placeholder="Ciudad, País" {...field} value={field.value || ''} />
+                <Input autoComplete="address-level2" placeholder="Ciudad, País" {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Biografía (opcional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Contanos sobre vos y tus mascotas..."
-                  className="resize-none"
-                  rows={3}
-                  {...field}
-                  value={field.value || ''}
+        <details open={detailsOpen} onToggle={(event) => setDetailsOpen(event.currentTarget.open)} className="group rounded-lg border border-border">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus [&::-webkit-details-marker]:hidden">
+            <span>
+              <span className="block text-sm font-semibold text-foreground">Más sobre vos</span>
+              <span className="block text-xs text-muted-foreground">Teléfono, biografía y tu hogar · opcional</span>
+            </span>
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="space-y-5 border-t border-border p-4">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono (opcional)</FormLabel>
+                  <FormControl>
+                    <Input type="tel" autoComplete="tel" placeholder="+54 9 11 1234 5678" {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Biografía (opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Contanos sobre vos y tus mascotas..."
+                      className="resize-none"
+                      rows={3}
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">Máximo 500 caracteres</p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-3">
+              <Label className="text-gray-700 font-medium">Información adicional</Label>
+              <div className="flex flex-wrap gap-4">
+                <FormField
+                  control={form.control}
+                  name="hasYard"
+                  render={({ field }) => (
+                    <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
+                      ? 'bg-teal-50 border-emerald-300'
+                      : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                      />
+                      <Trees className="size-5 text-teal-700" aria-hidden="true" />
+                      <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo patio/jardín</span>
+                    </label>
+                  )}
                 />
-              </FormControl>
-              <p className="text-xs text-gray-500">Máximo 500 caracteres</p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <div className="space-y-3">
-          <Label className="text-gray-700 font-medium">Información adicional</Label>
-          <div className="flex flex-wrap gap-4">
-            <FormField
-              control={form.control}
-              name="hasYard"
-              render={({ field }) => (
-                <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
-                  ? 'bg-teal-50 border-emerald-300'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}>
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
-                  />
-                  <Trees className="size-5 text-teal-700" aria-hidden="true" />
-                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo patio/jardín</span>
-                </label>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="hasOtherPets"
+                  render={({ field }) => (
+                    <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
+                      ? 'bg-teal-50 border-emerald-300'
+                      : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                      />
+                      <PawPrint className="size-5 text-teal-700" aria-hidden="true" />
+                      <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo otras mascotas</span>
+                    </label>
+                  )}
+                />
+              </div>
+            </div>
 
-            <FormField
-              control={form.control}
-              name="hasOtherPets"
-              render={({ field }) => (
-                <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
-                  ? 'bg-teal-50 border-emerald-300'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}>
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-teal-500"
-                  />
-                  <PawPrint className="size-5 text-teal-700" aria-hidden="true" />
-                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo otras mascotas</span>
-                </label>
-              )}
-            />
           </div>
-        </div>
+        </details>
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Guardando...
-            </>
-          ) : (
-            'Guardar perfil'
-          )}
-        </Button>
+        <div className="flex gap-3">
+          {onCancel && <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>}
+          <Button type="submit" className="flex-1" disabled={loading || uploading}>
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Guardando...
+              </>
+            ) : (
+              'Guardar perfil'
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

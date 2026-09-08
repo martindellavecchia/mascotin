@@ -54,7 +54,7 @@ export const ownerSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
   phone: z.string().optional(),
   location: z.string().min(2, "La ubicación es requerida").max(100),
-  bio: z.string().max(500).optional(),
+  bio: z.string().max(500, 'La biografía no puede superar los 500 caracteres').optional(),
   image: z.string().optional(),
   hasYard: z.boolean().optional(),
   hasOtherPets: z.boolean().optional(),

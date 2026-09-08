@@ -219,7 +219,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     return (
-        <Card className={`mb-2 min-w-0 overflow-hidden ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : isFosterCase ? 'border-orange-200 bg-surface' : 'border-border bg-surface'}`}>
+        <Card className={`mb-2 min-w-0 gap-0 overflow-hidden py-0 ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : isFosterCase ? 'border-orange-200 bg-surface' : 'border-border bg-surface'}`}>
             {isFosterCase && post.rescueCase && (
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-3 py-2 text-orange-900">
                     <span className="inline-flex items-center gap-1.5 text-sm font-bold">
@@ -373,7 +373,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {/* Post Type Badge */}
             {post.postType && post.postType !== 'post' && (
                 <div className="px-3 pb-1">
-                    <Badge className={`text-[10px] py-0.5 ${post.postType === 'foster_case' ? 'bg-orange-50 text-orange-800' : post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
+                    <Badge className={`text-xs py-0.5 ${post.postType === 'foster_case' ? 'bg-orange-50 text-orange-800' : post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
                         post.postType === 'question' ? 'bg-orange-50 text-orange-700' :
                             post.postType === 'recommendation' ? 'bg-amber-50 text-amber-700' :
                             post.postType === 'photo' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
@@ -387,13 +387,6 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 </div>
             )}
 
-            {/* Content */}
-            <div className="px-3 pb-2">
-                <p className={`whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere] ${post.postType === 'question' ? 'font-medium text-slate-900' : 'text-slate-700'}`}>
-                    {post.content}
-                </p>
-            </div>
-
             {isFosterCase && post.rescueCase && (
                 <div className="mx-3 mb-3 rounded-xl border border-orange-100 bg-orange-50/70 p-3">
                     <div className="flex flex-wrap gap-2 text-xs text-orange-900">
@@ -401,7 +394,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         <span className="rounded-full bg-white px-2.5 py-1 font-medium">{SIZE_LABELS[post.rescueCase.size] || post.rescueCase.size}</span>
                         {post.rescueCase.urgency !== 'NORMAL' && <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-800">{post.rescueCase.urgency === 'CRITICAL' ? 'Crítico' : 'Urgente'}</span>}
                     </div>
-                    <p className="mt-2 text-xs font-semibold text-orange-950">
+                    <p className="mt-2 text-base font-semibold text-orange-950">
                         Necesidad principal: {RESCUE_NEED_LABELS[post.rescueCase.primaryNeed]}
                     </p>
                     {post.rescueCase.additionalNeeds.length > 0 && (
@@ -409,6 +402,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             También necesita {post.rescueCase.additionalNeeds.map((need) => RESCUE_NEED_LABELS[need.type].toLowerCase()).join(', ')}
                         </p>
                     )}
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground [overflow-wrap:anywhere]">{post.content}</p>
                     <Button asChild className="mt-3 w-full" variant={post.rescueCase.adoptionListingId ? 'default' : 'outline'}>
                         <Link href={post.rescueCase.adoptionListingId
                             ? `/adoptions/${post.rescueCase.adoptionListingId}`
@@ -430,9 +424,9 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {/* Event Info */}
             {post.postType === 'event' && post.eventDate && (
                 <div className="mx-3 mb-2 rounded-lg border border-teal-100 bg-teal-50 p-2.5">
-                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                        <div className="flex shrink-0 flex-col items-center rounded-md bg-white px-2 py-1.5">
-                            <span className="text-[10px] text-teal-700 font-bold uppercase">
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+                        <div className="flex min-w-12 flex-col items-center rounded-md bg-white px-2 py-1.5">
+                            <span className="text-xs text-teal-700 font-bold uppercase">
                                 {format(new Date(post.eventDate), 'MMM', { locale: es })}
                             </span>
                             <span className="text-xl font-bold text-teal-800">
@@ -455,7 +449,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             <Button
                                 size="sm"
                                 variant={isAttending ? 'tonal' : 'default'}
-                                className="min-h-10 w-full shrink-0 sm:w-auto"
+                                className="col-span-2 min-h-11 w-full sm:col-span-1 sm:w-auto"
                                 onClick={handleAttend}
                             >
                                 {isAttending ? (
@@ -469,6 +463,12 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     </div>
                 </div>
             )}
+
+            {!isFosterCase && <div className="px-3 pb-3 pt-1">
+                <p className={`whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere] ${post.postType === 'question' ? 'text-base font-semibold text-foreground' : 'text-sm text-foreground'}`}>
+                    {post.content}
+                </p>
+            </div>}
 
             {/* Lost Pet Contact Info */}
             {post.postType === 'lost_pet' && (post.contactPhone || post.lastSeenLocation) && (
@@ -509,7 +509,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
             {/* Footer / Stats */}
             {(likeCount > 0 || (post._count?.comments || 0) > 0) && (
-                <div className="px-3 py-1 flex justify-between text-[10px] text-slate-400">
+                <div className="flex justify-between px-3 py-2 text-xs text-muted-foreground">
                     <span>{likeCount} Me gusta</span>
                     <span>{comments.length || post._count?.comments || 0} comentarios</span>
                 </div>
@@ -594,11 +594,11 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     variant="ghost"
                     className={`min-w-0 flex-1 gap-1 px-2 sm:gap-2 ${showComments ? 'text-teal-500 bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
                     onClick={() => setShowComments(!showComments)}
-                    aria-label={showComments ? 'Ocultar comentarios' : 'Mostrar comentarios'}
+                    aria-label={showComments ? 'Ocultar comentarios' : post.postType === 'question' ? 'Responder pregunta' : 'Mostrar comentarios'}
                     aria-expanded={showComments}
                 >
                     <MessageCircle className="size-4" aria-hidden="true" />
-                    <span className="text-xs">Comentar</span>
+                    <span className="text-xs">{post.postType === 'question' ? 'Responder' : 'Comentar'}</span>
                 </Button>
 
                 <Button variant="ghost" size="sm" className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600" aria-label="Compartir">

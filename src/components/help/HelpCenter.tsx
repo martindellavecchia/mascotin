@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronRight,
+  ChevronDown,
+  CircleAlert,
   HandHeart,
   Home,
   PawPrint,
@@ -29,6 +31,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
+import { StateFeedback } from '@/components/ui/state-feedback';
+import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   RESCUE_STATUS_LABELS,
@@ -82,8 +86,8 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
             </div>
             <Badge className={statusClass(rescueCase.status)}>{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
           </div>
+          {primaryNeed && <p className="text-sm font-semibold text-primary">Necesita {RESCUE_NEED_LABELS[primaryNeed.type].toLowerCase()}</p>}
           <p className="line-clamp-2 text-sm text-slate-600">{rescueCase.description}</p>
-          {primaryNeed && <p className="text-xs font-semibold text-teal-800">Principal: {RESCUE_NEED_LABELS[primaryNeed.type]}</p>}
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
             <span>{rescueCase.searchRadiusKm} km de radio</span>
             <span>{rescueCase.offerCount} hogares contactados</span>
@@ -110,7 +114,7 @@ function OfferCard({
   const image = offer.rescueCase.images[0];
   const pending = offer.status === 'PENDING';
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-0 overflow-hidden py-0">
       {image && (
         <div className="relative aspect-[16/8] bg-slate-100">
           <Image
@@ -172,6 +176,7 @@ export default function HelpCenter() {
   const [profile, setProfile] = useState<FosterProfileView | null>(null);
   const [dashboard, setDashboard] = useState<HelpDashboardData>(EMPTY_DASHBOARD);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [caseDialogOpen, setCaseDialogOpen] = useState(searchParams.get('create') === 'case');
   const [profileDialogOpen, setProfileDialogOpen] = useState(searchParams.get('create') === 'profile');
   const requestedReturnTo = searchParams.get('returnTo');
@@ -179,15 +184,20 @@ export default function HelpCenter() {
   const requestedTab = searchParams.get('view');
   const initialTab = ['offers', 'home', 'volunteer', 'alerts'].includes(requestedTab || '') ? requestedTab! : 'cases';
   const [activeTab, setActiveTab] = useState(initialTab);
+  const chooseInitialTab = useRef(!requestedTab);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const [profileResponse, casesResponse] = await Promise.all([
         fetch('/api/foster/profile'),
         fetch('/api/rescue-cases'),
       ]);
       const [profileData, casesData] = await Promise.all([profileResponse.json(), casesResponse.json()]);
+      if (!profileResponse.ok || !casesResponse.ok || !profileData.success || !casesData.success) {
+        throw new Error('No se pudo cargar la actividad');
+      }
       if (profileData.success) setProfile(profileData.profile);
       if (casesData.success) {
         setDashboard({
@@ -195,9 +205,16 @@ export default function HelpCenter() {
           offers: casesData.offers || [],
           fosterPlacements: casesData.fosterPlacements || [],
         });
+        if (chooseInitialTab.current) {
+          if (!casesData.createdCases?.length) {
+            if (casesData.offers?.length) setActiveTab('offers');
+            else if (profileData.profile || casesData.fosterPlacements?.length) setActiveTab('home');
+          }
+          chooseInitialTab.current = false;
+        }
       }
     } catch {
-      toast.error('No pudimos cargar Hogares de tránsito');
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -239,36 +256,36 @@ export default function HelpCenter() {
     toast.success(status === 'ACTIVE' ? 'Tu hogar está disponible' : 'Tu hogar quedó pausado');
   };
 
-  return (
-    <main className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:py-8">
-      <PageHeader
-        eyebrow="Red solidaria"
-        title="Hogares de tránsito"
-        description="Coordiná tránsito, voluntariado y continuidad hacia adopción. Las ubicaciones exactas y los datos personales se mantienen privados."
-      />
-
-      <section aria-label="Opciones de hogares de tránsito" className="grid gap-8 md:grid-cols-2 md:gap-0">
-        <div className="space-y-5 md:pr-8">
+  const entryActions = (
+      <section aria-label="Opciones de hogares de tránsito" className="grid gap-5 md:grid-cols-2 md:gap-6">
+        <div className="space-y-3">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-teal-700">Ayuda temporal</h2>
+            <h2 className="text-lg font-bold tracking-tight text-primary">Ayuda temporal</h2>
             <p className="mt-1 text-sm text-slate-500">Resguardo y tránsito para una mascota</p>
           </div>
           <div className="divide-y divide-border border-y border-border bg-surface">
             {([
-              { title: 'Encontré una mascota', description: 'Crear una solicitud urgente', icon: PawPrint, action: () => setCaseDialogOpen(true) },
+              { title: 'Encontré una mascota', description: 'Necesita ayuda ahora', icon: CircleAlert, urgent: true, action: () => setCaseDialogOpen(true) },
               { title: 'Ofrecer mi hogar', description: profile ? 'Editar disponibilidad' : 'Activar hogar de tránsito', icon: Home, action: () => setProfileDialogOpen(true) },
-              { title: 'Ayudar como voluntario', description: 'Traslados, rescate y logística', icon: HandHeart, action: () => setActiveTab('volunteer') },
-            ] as { title: string; description: string; icon: LucideIcon; action: () => void }[]).map((item) => {
+              { title: 'Ayudar como voluntario', description: 'Traslados, rescate y logística', icon: HandHeart, action: () => {
+                setActiveTab('volunteer');
+                requestAnimationFrame(() => {
+                  const activity = document.getElementById('help-activity');
+                  activity?.scrollIntoView({ block: 'start' });
+                  activity?.querySelector<HTMLButtonElement>('[role="tab"][data-state="active"]')?.focus({ preventScroll: true });
+                });
+              } },
+            ] as { title: string; description: string; icon: LucideIcon; urgent?: boolean; action: () => void }[]).map((item) => {
               const Icon = item.icon;
               return (
               <button
                 key={item.title}
                 type="button"
                 onClick={item.action}
-                className="group flex min-h-24 w-full items-center gap-4 px-3 py-4 text-left transition-colors hover:bg-primary-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
+                className={cn('group flex min-h-20 w-full items-center gap-3 px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset', item.urgent ? 'bg-destructive/5 hover:bg-destructive/10' : 'hover:bg-primary-soft/45')}
               >
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary" aria-hidden="true">
-                  <Icon className="size-6" aria-hidden="true" />
+                <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-lg', item.urgent ? 'bg-destructive/10 text-destructive' : 'bg-primary-soft text-primary')} aria-hidden="true">
+                  <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold text-slate-900">{item.title}</span>
@@ -281,16 +298,15 @@ export default function HelpCenter() {
           </div>
         </div>
 
-        <div className="space-y-5 border-t border-slate-200 pt-8 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+        <div className="space-y-3">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-orange-600">Adopción definitiva</h2>
+            <h2 className="text-lg font-bold tracking-tight text-orange-700">Adopción definitiva</h2>
             <p className="mt-1 text-sm text-slate-500">Un hogar permanente para una mascota</p>
           </div>
           <div className="divide-y divide-border border-y border-border bg-surface">
             {([
               {
                 href: '/adoptions',
-                eyebrow: 'Quiero adoptar',
                 title: 'Buscar una mascota',
                 description: 'Ver mascotas disponibles',
                 action: 'Explorar',
@@ -298,26 +314,24 @@ export default function HelpCenter() {
               },
               {
                 href: '/adoptions?create=listing',
-                eyebrow: 'Quiero dar en adopción',
                 title: 'Publicar una mascota',
                 description: 'Crear su ficha responsable',
                 action: 'Publicar',
                 icon: Upload,
               },
-            ] as { href: string; eyebrow: string; title: string; description: string; action: string; icon: LucideIcon }[]).map((item) => {
+            ] as { href: string; title: string; description: string; action: string; icon: LucideIcon }[]).map((item) => {
               const Icon = item.icon;
               return (
               <Link
                 key={item.title}
                 href={item.href}
-                className="group flex min-h-24 w-full items-center gap-4 px-3 py-4 transition-colors hover:bg-orange-50/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
+                className="group flex min-h-20 w-full items-center gap-3 px-3 py-3 transition-colors hover:bg-orange-50/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
               >
                 <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600" aria-hidden="true">
                   <Icon className="size-6" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[0.6875rem] font-bold uppercase tracking-wide text-orange-600">{item.eyebrow}</span>
-                  <span className="mt-1 block font-semibold text-slate-900">{item.title}</span>
+                  <span className="block font-semibold text-slate-900">{item.title}</span>
                   <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
                 </span>
                 <span className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 min-[900px]:flex">
@@ -330,31 +344,46 @@ export default function HelpCenter() {
           </div>
         </div>
       </section>
+  );
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
+  const hasParticipation = Boolean(profile || dashboard.createdCases.length || dashboard.offers.length || dashboard.fosterPlacements.length || initialTab !== 'cases');
+
+  return (
+    <main className="mx-auto max-w-6xl space-y-5 px-4 py-4 sm:space-y-6 sm:py-8">
+      <PageHeader
+        eyebrow="Red solidaria"
+        title="Hogares de tránsito"
+        description="Acompañá rescates, ofrecé tránsito o encontrá un hogar definitivo."
+        className="pb-4"
+        action={hasParticipation && <Button variant="outline" className="gap-2 border-destructive/35 text-destructive hover:bg-destructive/5" onClick={() => setCaseDialogOpen(true)}><CircleAlert className="size-4" aria-hidden="true" />Encontré una mascota</Button>}
+      />
+
+      {loading ? <StateFeedback status="loading" title="Cargando tu actividad" /> : loadError ? (
+        <StateFeedback status="error" title="No pudimos cargar tu actividad" description="Intentá de nuevo para ver tus casos y solicitudes." action={<Button variant="outline" onClick={() => void load()}>Reintentar</Button>} />
+      ) : <>
+      {!hasParticipation && entryActions}
+
+      <Tabs id="help-activity" value={activeTab} onValueChange={setActiveTab} className="scroll-mt-24 gap-4">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-auto min-h-11 w-max min-w-full justify-start">
-            <TabsTrigger value="cases" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mis casos</TabsTrigger>
-            <TabsTrigger value="offers" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">
-              Solicitudes {dashboard.offers.length > 0 && `(${dashboard.offers.length})`}
+            <TabsTrigger value="cases" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mis casos</TabsTrigger>
+            <TabsTrigger value="offers" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">
+              Solicitudes recibidas {dashboard.offers.length > 0 && `(${dashboard.offers.length})`}
             </TabsTrigger>
-            <TabsTrigger value="home" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mi hogar</TabsTrigger>
-            <TabsTrigger value="volunteer" className="min-h-10 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Voluntariado</TabsTrigger>
-            <TabsTrigger value="alerts" className="min-h-10 min-w-40 text-slate-700 data-[state=active]:text-teal-800">Alertas solidarias</TabsTrigger>
+            <TabsTrigger value="home" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mi hogar</TabsTrigger>
+            <TabsTrigger value="volunteer" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Voluntariado</TabsTrigger>
+            <TabsTrigger value="alerts" className="min-h-11 min-w-40 text-slate-700 data-[state=active]:text-teal-800">Alertas solidarias</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="cases" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Casos que estás acompañando</h2>
+              <h2 className="text-xl font-bold text-slate-900">Tus casos</h2>
               <p className="text-sm text-slate-500">Seguimiento desde la búsqueda hasta el cierre.</p>
             </div>
-            <Button onClick={() => setCaseDialogOpen(true)}>Crear caso</Button>
           </div>
-          {loading ? (
-            <div className="h-40 animate-pulse rounded-lg bg-slate-200" />
-          ) : dashboard.createdCases.length === 0 ? (
+          {dashboard.createdCases.length === 0 ? (
             <EmptyState
               title="Todavía no creaste solicitudes de ayuda"
               description="Cuando encuentres un animal, podés iniciar la búsqueda desde acá."
@@ -369,7 +398,7 @@ export default function HelpCenter() {
 
         <TabsContent value="offers" className="space-y-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Solicitudes cercanas</h2>
+            <h2 className="text-xl font-bold text-slate-900">Solicitudes recibidas</h2>
             <p className="text-sm text-slate-500">Solo aparecen casos compatibles dentro del radio elegido por quien pidió ayuda.</p>
           </div>
           {!profile ? (
@@ -423,6 +452,17 @@ export default function HelpCenter() {
 
         <TabsContent value="alerts"><SolidarityAlerts /></TabsContent>
       </Tabs>
+
+      {hasParticipation && <details className="group rounded-xl border border-border bg-surface">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus [&::-webkit-details-marker]:hidden">
+          Ayudar de otra manera
+          <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <div className="border-t border-border p-4">{entryActions}</div>
+      </details>}
+      </>}
+
+      <p className="text-xs leading-5 text-muted-foreground">Las ubicaciones exactas y los datos personales se mantienen privados.</p>
 
       <Dialog open={caseDialogOpen} onOpenChange={setCaseDialogOpen}>
         <DialogContent className="max-h-[92svh] max-w-3xl overflow-y-auto">
