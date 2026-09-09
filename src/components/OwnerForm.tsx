@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ownerSchema, type OwnerFormData } from '@/lib/schemas';
+import { useInvalidateViewerData } from '@/hooks/useViewerData';
 import type { Owner } from '@/types';
 import { toast } from 'sonner';
 
@@ -23,6 +24,7 @@ interface OwnerFormProps {
 }
 
 export default function OwnerForm({ userId, initialData, defaultName, onSuccess, onCancel }: OwnerFormProps) {
+  const invalidateViewerData = useInvalidateViewerData();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -100,6 +102,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
       if (response.ok) {
         toast.success('Perfil guardado correctamente');
         if (onSuccess) onSuccess(data.owner);
+        invalidateViewerData();
       } else {
         toast.error(data.error || 'Error al guardar perfil de dueño');
       }

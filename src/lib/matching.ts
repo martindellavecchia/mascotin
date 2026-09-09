@@ -32,7 +32,7 @@ export interface MatchableCandidatePet {
   latitude?: number | null;
   longitude?: number | null;
   matchIntent?: string | null;
-  images: string;
+  images?: string;
   thumbnailIndex?: number | null;
   owner: {
     location: string | null;

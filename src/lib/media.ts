@@ -123,8 +123,12 @@ export function withImageFields<
   }
 >(
   entity: T
-): T & { imageUrls: string[]; primaryImageUrl: string | null } {
+): T & { imageUrls?: string[]; primaryImageUrl?: string | null } {
   const imageUrls = getRenderableImageUrls(entity.images);
+
+  if (imageUrls.some((image) => image.startsWith('data:'))) {
+    return { ...entity, imageUrls: undefined, primaryImageUrl: undefined };
+  }
 
   return {
     ...entity,

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     CalendarDays,
     Eye,
@@ -48,6 +49,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { getPrimaryImageUrl } from '@/lib/media';
+import { useInvalidateViewerData, useMyPets, viewerQueryKeys } from '@/hooks/useViewerData';
+import type { Pet } from '@/types';
 
 interface Settings {
     theme: string;
@@ -63,16 +66,6 @@ interface Settings {
     notifyFoster: boolean;
     profileVisible: boolean;
     hideResolvedLostPets: boolean;
-}
-
-interface Pet {
-    id: string;
-    name: string;
-    petType: string;
-    breed: string | null;
-    images: string;
-    thumbnailIndex: number;
-    isActive: boolean;
 }
 
 const PET_TYPES = [
@@ -93,9 +86,14 @@ export default function SettingsPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const { setTheme } = useTheme();
+    const userId = session?.user?.id;
+    const queryClient = useQueryClient();
+    const petsQuery = useMyPets(userId);
+    const invalidateViewerData = useInvalidateViewerData();
+    const pets = petsQuery.data ?? [];
+    const setPets = (nextPets: Pet[]) => queryClient.setQueryData(viewerQueryKeys.pets(userId), nextPets);
 
     const [settings, setSettings] = useState<Settings | null>(null);
-    const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -121,23 +119,14 @@ export default function SettingsPage() {
         setLoading(true);
         setLoadError(null);
         try {
-            const [settingsRes, petsRes] = await Promise.all([
-                fetch('/api/settings'),
-                fetch('/api/owner/pets'),
-            ]);
-            const [settingsData, petsData] = await Promise.all([
-                settingsRes.json(),
-                petsRes.json(),
-            ]);
+            const settingsRes = await fetch('/api/settings');
+            const settingsData = await settingsRes.json();
 
-            if (settingsData.success) {
+            if (settingsRes.ok && settingsData.success) {
                 setSettings({ ...settingsData.settings, theme: 'light' });
                 setTheme('light');
             } else {
                 setLoadError('No pudimos cargar tu configuración. Intentá de nuevo.');
-            }
-            if (petsData.success) {
-                setPets(petsData.pets);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -183,6 +172,8 @@ export default function SettingsPage() {
             if (!data.success) {
                 setPets(prev);
                 toast.error('Error al actualizar mascota');
+            } else {
+                invalidateViewerData();
             }
         } catch {
             setPets(prev);
@@ -402,7 +393,11 @@ export default function SettingsPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {pets.length === 0 ? (
+                                {petsQuery.isPending ? (
+                                    <StateFeedback status="loading" title="Cargando tus mascotas" />
+                                ) : petsQuery.isError && !petsQuery.data ? (
+                                    <StateFeedback status="error" title="No pudimos cargar tus mascotas" action={<Button variant="outline" onClick={() => void petsQuery.refetch()}>Reintentar</Button>} />
+                                ) : pets.length === 0 ? (
                                     <p className="text-sm text-slate-400">Todavía no tenés mascotas registradas</p>
                                 ) : (
                                     <div className="space-y-3">

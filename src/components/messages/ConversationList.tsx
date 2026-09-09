@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { shouldUnoptimizeImage } from '@/lib/media';
+import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PawPrint, Search, Users } from 'lucide-react';
@@ -94,7 +94,7 @@ export default function ConversationList({
                                 )}
                             >
                                 <Avatar className="h-12 w-12 shrink-0">
-                                    <AvatarImage src={match.primaryImageUrl || undefined} />
+                                    <AvatarImage src={match.primaryImageUrl || getPrimaryImageUrl(match.images, match.thumbnailIndex ?? 0) || undefined} />
                                     <AvatarFallback className="bg-teal-100 text-teal-700">{match.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { useInvalidateViewerData } from '@/hooks/useViewerData';
 import type { Pet, SwipeResponse } from '@/types';
 import type { Post } from '@/types';
 import type { HomeBootstrapSuggestion } from '@/lib/server/home';
@@ -128,6 +129,7 @@ export default function HomeClientShell({
   initialFeedHasMore,
 }: HomeClientShellProps) {
   const { fetchWithError } = useFetchWithError();
+  const invalidateViewerData = useInvalidateViewerData();
   const myPets = initialPets;
   const [activeTab, setActiveTab] = useState<HomeTab>('home');
   const [selectedPetId, setSelectedPetId] = useState<string | undefined>(
@@ -260,6 +262,7 @@ export default function HomeClientShell({
       });
 
       if (result.success && result.data?.matched) {
+        invalidateViewerData();
         setMatchNotification(currentPet.name);
         setTimeout(() => setMatchNotification(null), 3000);
 

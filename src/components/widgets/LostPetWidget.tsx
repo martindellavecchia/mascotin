@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { getPrimaryImageUrl } from '@/lib/media';
 
 interface LostPet {
     id: string;
@@ -21,6 +22,7 @@ interface LostPet {
         name: string;
         images: string;
         primaryImageUrl?: string | null;
+        thumbnailIndex?: number;
         petType: string;
     };
     author: {
@@ -118,7 +120,10 @@ export default function LostPetWidget({ initialPets }: LostPetWidgetProps) {
             </CardHeader>
             <CardContent className="space-y-3">
                 {lostPets.slice(0, 2).map((pet) => {
-                    const image = pet.pet?.primaryImageUrl || pet.primaryImageUrl || null;
+                    const image = pet.pet?.primaryImageUrl
+                        || getPrimaryImageUrl(pet.pet?.images, pet.pet?.thumbnailIndex ?? 0)
+                        || pet.primaryImageUrl
+                        || getPrimaryImageUrl(pet.images);
                     return (
                         <button
                             type="button"

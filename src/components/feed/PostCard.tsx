@@ -43,7 +43,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { shouldUnoptimizeImage } from '@/lib/media';
+import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { RESCUE_STATUS_LABELS, SIZE_LABELS, SPECIES_LABELS } from '@/lib/foster';
@@ -97,6 +97,7 @@ interface PostCardProps {
 }
 
 function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onEdit }: PostCardProps) {
+    const primaryImageUrl = post.primaryImageUrl || getPrimaryImageUrl(post.images);
     const isFosterCase = post.postType === 'foster_case' && Boolean(post.rescueCase);
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
@@ -494,13 +495,13 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             )}
 
             {/* Images */}
-            {post.primaryImageUrl && (
+            {primaryImageUrl && (
                 <div className="relative h-[220px] w-full bg-slate-100 sm:h-[280px]">
                     <Image
-                        src={post.primaryImageUrl}
+                        src={primaryImageUrl}
                         alt="Contenido de la publicación"
                         fill
-                        unoptimized={shouldUnoptimizeImage(post.primaryImageUrl)}
+                        unoptimized={shouldUnoptimizeImage(primaryImageUrl)}
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 600px"
                     />

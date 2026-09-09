@@ -1,6 +1,6 @@
 interface StatsCardProps {
     petsCount: number;
-    matchesCount: number;
+    matchesCount?: number;
 }
 
 export function StatsCard({ petsCount, matchesCount }: StatsCardProps) {
@@ -11,7 +11,7 @@ export function StatsCard({ petsCount, matchesCount }: StatsCardProps) {
                 <dt className="text-xs text-slate-500">Mascotas</dt>
             </div>
             <div className="p-4">
-                <dd className="text-2xl font-bold text-primary">{matchesCount}</dd>
+                <dd className="text-2xl font-bold text-primary" aria-label={matchesCount === undefined ? 'Encuentros no disponibles' : undefined}>{matchesCount ?? '—'}</dd>
                 <dt className="text-xs text-slate-500">Encuentros</dt>
             </div>
         </dl>

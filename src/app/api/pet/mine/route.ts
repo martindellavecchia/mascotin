@@ -14,20 +14,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get owner's pets
-    const owner = await db.owner.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!owner) {
-      return NextResponse.json({
-        success: true,
-        pets: [],
-      });
-    }
-
     const pets = await db.pet.findMany({
-      where: { ownerId: owner.id },
+      where: { owner: { userId: session.user.id } },
       orderBy: { createdAt: 'desc' },
     });
 

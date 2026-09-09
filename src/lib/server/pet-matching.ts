@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { db } from '@/lib/db';
+import { getPrimaryImageUrl } from '@/lib/media';
 import {
   parseMatchPreferences,
   rankCandidates,
@@ -20,8 +21,6 @@ const CANDIDATE_SELECT = {
   latitude: true,
   longitude: true,
   matchIntent: true,
-  images: true,
-  thumbnailIndex: true,
   owner: {
     select: {
       location: true,
@@ -48,13 +47,9 @@ export async function getRankedPetMatches(options: {
   myPetIds: string[];
   limit?: number;
 }): Promise<ScoredMatch[]> {
-  const [settings, viewer] = await Promise.all([
+  const [settings, viewer, swipedPets, blockedRelations] = await Promise.all([
     db.userSettings.findUnique({ where: { userId: options.userId } }),
     db.user.findUnique({ where: { id: options.userId }, select: { syntheticRunId: true } }),
-  ]);
-  const preferences = parseMatchPreferences(settings);
-
-  const [swipedPets, blockedRelations] = await Promise.all([
     db.swipe.findMany({
       where: { fromPetId: options.currentPet.id },
       select: { toPetId: true },
@@ -67,6 +62,7 @@ export async function getRankedPetMatches(options: {
       select: { blockerId: true, blockedId: true },
     }),
   ]);
+  const preferences = parseMatchPreferences(settings);
 
   const swipedPetIds = swipedPets
     .map((swipe) => swipe.toPetId)
@@ -88,7 +84,7 @@ export async function getRankedPetMatches(options: {
     take: 80,
   })) as MatchableCandidatePet[];
 
-  return rankCandidates(
+  const ranked = rankCandidates(
     options.currentPet,
     candidates,
     preferences,
@@ -97,4 +93,21 @@ export async function getRankedPetMatches(options: {
     options.ownerCoords,
     options.limit ?? 6
   );
+
+  if (ranked.length === 0) return [];
+
+  const photos = await db.pet.findMany({
+    where: {
+      id: { in: ranked.map((pet) => pet.id) },
+      isActive: true,
+      owner: {
+        userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
+        user: { syntheticRunId: viewer?.syntheticRunId || null },
+      },
+    },
+    select: { id: true, images: true, thumbnailIndex: true },
+  });
+  const imagesByPet = new Map(photos.map((pet) => [pet.id, getPrimaryImageUrl(pet.images, pet.thumbnailIndex ?? 0)]));
+
+  return ranked.map((pet) => ({ ...pet, image: imagesByPet.get(pet.id) ?? null }));
 }

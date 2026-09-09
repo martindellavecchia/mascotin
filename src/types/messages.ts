@@ -29,6 +29,7 @@ export interface MatchWithPet {
     name: string;
     breed?: string;
     images: string;
+    thumbnailIndex?: number;
     imageUrls?: string[];
     primaryImageUrl?: string | null;
     petType?: string;

@@ -6,6 +6,7 @@ const sessionProvider = jest.fn(({ children }: { children: React.ReactNode }) =>
 ));
 
 jest.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { user: { id: 'user-1' } } }),
   SessionProvider: (props: { children: React.ReactNode; refetchOnWindowFocus?: boolean; refetchInterval?: number }) =>
     sessionProvider(props),
 }));

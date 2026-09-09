@@ -3,7 +3,6 @@ import { CircleAlert, PawPrint, Plus } from 'lucide-react';
 import HomeClientShell from '@/components/home/HomeClientShell';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { getFeedPage } from '@/lib/server/feed';
 import { getHomeBootstrapData } from '@/lib/server/home';
 import { getCachedSession } from '@/lib/session';
 import type { Post } from '@/types';
@@ -60,13 +59,8 @@ export default async function InicioPage({
       return <NoPetsHome requestedTab={tab} />;
     }
 
-    const showCommunityFeed = homeData.stats.totalMatches > 0 || homeData.hasOwnPosts;
-    const feedPage = showCommunityFeed
-      ? await getFeedPage({
-        userId: session.user.id,
-        limit: 10,
-      })
-      : { posts: [], nextCursor: null, hasMore: false };
+    const showCommunityFeed = homeData.hasMatches || homeData.hasOwnPosts;
+    const feedPage = homeData.feedPage;
 
     return (
       <HomeClientShell

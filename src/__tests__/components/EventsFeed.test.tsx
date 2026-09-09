@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import EventsFeed from '@/components/community/EventsFeed';
 
 jest.mock('next-auth/react', () => {
@@ -16,6 +17,10 @@ const post = {
   _count: { likes: 0, comments: 0 }, isLiked: false,
 };
 const response = (data: unknown) => ({ ok: true, json: async () => data });
+function renderFeed() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 60_000 } } });
+  return render(<QueryClientProvider client={client}><EventsFeed /></QueryClientProvider>);
+}
 
 describe('EventsFeed', () => {
   beforeEach(() => {
@@ -29,8 +34,18 @@ describe('EventsFeed', () => {
   it('shows an error with retry instead of treating a failed request as an empty feed', async () => {
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
     try {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network failure'));
-      render(<EventsFeed />);
+      let failPosts = true;
+      (global.fetch as jest.Mock).mockImplementation((url: string) => {
+        if (url.startsWith('/api/posts?')) {
+          if (failPosts) {
+            failPosts = false;
+            return Promise.reject(new Error('Network failure'));
+          }
+          return Promise.resolve(response({ posts: [post] }));
+        }
+        return Promise.resolve(response({ success: true, owner: null, pets: [] }));
+      });
+      renderFeed();
       expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar las publicaciones');
       expect(screen.queryByText('No hay publicaciones aún')).not.toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Filtrar publicaciones' })).toBeVisible();
@@ -43,7 +58,7 @@ describe('EventsFeed', () => {
   });
 
   it('sends a single like request and keeps the card visible while refreshing', async () => {
-    render(<EventsFeed />);
+    renderFeed();
     await screen.findByText(post.content);
     await userEvent.click(screen.getByRole('button', { name: 'Me gusta' }));
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/posts/post-1/like', { method: 'POST' }));
@@ -61,7 +76,7 @@ describe('EventsFeed', () => {
       if (url.startsWith('/api/posts?')) return Promise.resolve(response({ posts: [post] }));
       return Promise.resolve(response({ success: true, owner: null, pets: [] }));
     });
-    render(<EventsFeed />);
+    renderFeed();
     await screen.findByText(post.content);
     await userEvent.click(screen.getByRole('button', { name: 'Preguntas' }));
     await userEvent.click(screen.getByRole('button', { name: 'Eventos' }));

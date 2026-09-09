@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { mergeMessagesById } from '@/lib/messages';
+import { getPrimaryImageUrl } from '@/lib/media';
 import { LoadingSpinner } from '@/components/ui/loading';
 import type { MatchWithPet, Message } from '@/types/messages';
 
@@ -217,7 +218,7 @@ export default function ChatWindow({
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <div className="flex min-w-0 shrink-0 items-center gap-3 border-b border-slate-100 p-3 sm:p-4">
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarImage src={otherPet?.primaryImageUrl || undefined} />
+          <AvatarImage src={otherPet?.primaryImageUrl || getPrimaryImageUrl(otherPet?.images, otherPet?.thumbnailIndex ?? 0) || undefined} />
           <AvatarFallback className="bg-teal-100 text-teal-700">
             {otherPet?.name?.[0] || '?'}
           </AvatarFallback>

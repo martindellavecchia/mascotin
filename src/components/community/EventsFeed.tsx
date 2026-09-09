@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MapPin, MessagesSquare } from 'lucide-react';
 import CreatePostCard from '@/components/community/CreatePostCard';
 import EditPostModal from '@/components/community/EditPostModal';
@@ -10,6 +11,7 @@ import PostCard from '@/components/feed/PostCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StateFeedback } from '@/components/ui/state-feedback';
+import { useMyPets, useOwnerProfile, viewerQueryKeys } from '@/hooks/useViewerData';
 
 interface Post {
     id: string;
@@ -41,87 +43,53 @@ interface Post {
     isLiked?: boolean;
 }
 
-interface Pet {
-    id: string;
-    name: string;
-    images: string;
-}
-
 interface EventsFeedProps {
     refreshKey?: number;
 }
 
 export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
     const { data: session } = useSession();
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [pets, setPets] = useState<Pet[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [ownerImage, setOwnerImage] = useState<string | undefined>();
-    const [ownerLocation, setOwnerLocation] = useState<string | null>(null);
-    const [ownerLoaded, setOwnerLoaded] = useState(false);
-    const [loadError, setLoadError] = useState(false);
-    const latestRequest = useRef(0);
+    const userId = session?.user?.id;
+    const queryClient = useQueryClient();
+    const petsQuery = useMyPets(userId);
+    const ownerQuery = useOwnerProfile(userId);
+    const pets = petsQuery.data ?? [];
+    const ownerImage = ownerQuery.data?.owner?.image || undefined;
+    const ownerLocation = ownerQuery.data?.owner?.location || null;
+    const ownerLoaded = ownerQuery.isSuccess;
+    const previousRefreshKey = useRef(refreshKey);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
-    const [activeFilter, setActiveFilter] = useState('');
+    const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!session?.user?.id) return;
-        fetchPosts();
-    }, [session?.user?.id, refreshKey]);
+        setActiveFilter(new URLSearchParams(window.location.search).get('filter') || '');
+    }, []);
 
     useEffect(() => {
-        if (!session?.user?.id) return;
-        fetchPets();
-        fetchOwnerImage();
-    }, [session?.user?.id]);
+        if (previousRefreshKey.current === refreshKey) return;
+        previousRefreshKey.current = refreshKey;
+        void queryClient.invalidateQueries({ queryKey: ['viewer', userId, 'posts'] });
+    }, [refreshKey, queryClient, userId]);
 
-    const fetchPosts = async (showLoading = false) => {
-        const requestId = ++latestRequest.current;
-        if (showLoading) setLoading(true);
-        setLoadError(false);
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const postType = params.get('filter');
-            setActiveFilter(postType || '');
-            const url = postType ? `/api/posts?limit=20&postType=${postType}` : '/api/posts?limit=20';
-            const response = await fetch(url);
-            const data = await response.json();
+    const postsQuery = useQuery({
+        queryKey: viewerQueryKeys.posts(userId, activeFilter || ''),
+        enabled: Boolean(userId) && activeFilter !== null,
+        staleTime: 30_000,
+        retry: false,
+        queryFn: async ({ signal }) => {
+            const params = new URLSearchParams({ limit: '20' });
+            if (activeFilter) params.set('postType', activeFilter);
+            const response = await fetch(`/api/posts?${params}`, { signal });
+            const data = await response.json() as { posts?: Post[] };
             if (!response.ok || !Array.isArray(data.posts)) throw new Error('No se pudieron cargar las publicaciones');
-            if (requestId === latestRequest.current) {
-                setPosts(data.posts);
-            }
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-            if (requestId === latestRequest.current) setLoadError(true);
-        } finally {
-            if (requestId === latestRequest.current) setLoading(false);
-        }
-    };
-
-    const fetchPets = async () => {
-        try {
-            const response = await fetch('/api/pet/mine');
-            const data = await response.json();
-            if (data.pets) {
-                setPets(data.pets);
-            }
-        } catch (error) {
-            console.error('Error fetching pets:', error);
-        }
-    };
-
-    const fetchOwnerImage = async () => {
-        try {
-            const response = await fetch('/api/owner/profile');
-            const data = await response.json();
-            if (data.success) {
-                setOwnerImage(data.owner?.image || undefined);
-                setOwnerLocation(data.owner?.location || null);
-                setOwnerLoaded(true);
-            }
-        } catch (error) {
-            console.error('Error fetching owner:', error);
-        }
+            return data.posts;
+        },
+    });
+    const posts = postsQuery.data ?? [];
+    const loading = postsQuery.isPending;
+    const loadError = postsQuery.isError && !postsQuery.data;
+    const fetchPosts = () => {
+        void queryClient.invalidateQueries({ queryKey: ['viewer', userId, 'posts'] });
     };
 
     return (
@@ -149,7 +117,6 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                             const url = filter.value ? `/community?filter=${filter.value}` : '/community';
                             window.history.replaceState(null, '', url);
                             setActiveFilter(filter.value);
-                            void fetchPosts(true);
                         }}
                         aria-pressed={activeFilter === filter.value}
                         className={`min-h-11 shrink-0 rounded-full border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus ${
@@ -176,7 +143,7 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                     status="error"
                     title="No pudimos cargar las publicaciones"
                     description="Intentá de nuevo para ver la actividad de la comunidad."
-                    action={<Button variant="outline" onClick={() => void fetchPosts(true)}>Reintentar</Button>}
+                    action={<Button variant="outline" onClick={() => void postsQuery.refetch()}>Reintentar</Button>}
                 />
             ) : posts.length === 0 ? (
                 <Card className="gap-0 py-0">
@@ -194,7 +161,9 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                         currentUserId={session?.user?.id}
                         onLike={() => void fetchPosts()}
                         onDelete={() => {
-                            setPosts(prev => prev.filter(p => p.id !== post.id));
+                            queryClient.setQueryData<Post[]>(viewerQueryKeys.posts(userId, activeFilter || ''),
+                                current => current?.filter(item => item.id !== post.id));
+                            fetchPosts();
                         }}
                         onEdit={(p) => setEditingPost(p as Post)}
                     />

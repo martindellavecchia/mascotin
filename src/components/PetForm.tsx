@@ -36,6 +36,7 @@ import { DetailsSection } from './DetailsSection';
 import { ActivitiesSection } from './ActivitiesSection';
 import CompatibilityFields from '@/components/pets/CompatibilityFields';
 import { parseJsonStringArray } from '@/lib/json-array';
+import { useInvalidateViewerData } from '@/hooks/useViewerData';
 import type { Pet } from '@/types';
 import {
   isRenderableImage,
@@ -95,6 +96,7 @@ function parseActivities(activitiesData: unknown): ActivityOption[] {
 }
 
 export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailChange, onCancel }: PetFormProps) {
+  const invalidateViewerData = useInvalidateViewerData();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>(parseImageUrls(initialData?.images));
   const [uploading, setUploading] = useState(false);
@@ -163,6 +165,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
       }
 
       onThumbnailChange?.(data.pet);
+      invalidateViewerData();
       toast.success('Foto de perfil actualizada');
       return true;
     } catch (error) {
@@ -291,6 +294,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onThumbnailCh
       if (response.ok) {
         toast.success(isEditing ? '¡Mascota actualizada exitosamente!' : '¡Mascota registrada exitosamente!');
         if (onSuccess) onSuccess(data.pet);
+        invalidateViewerData();
       } else {
         toast.error(data.error || 'Error al guardar mascota');
       }

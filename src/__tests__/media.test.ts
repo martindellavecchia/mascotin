@@ -33,9 +33,26 @@ describe('media helpers', () => {
       'data:image/webp;base64,abc',
       '/images/first.jpg',
     ]);
-    expect(withImageFields({ images, thumbnailIndex: 1 }).primaryImageUrl).toBe(
-      'data:image/webp;base64,abc'
-    );
+    const payload = withImageFields({ images, thumbnailIndex: 1 });
+    expect(getPrimaryImageUrl(payload.images, payload.thumbnailIndex)).toBe('data:image/webp;base64,abc');
+    expect(JSON.stringify(payload).match(/data:image\/webp;base64,abc/g)).toHaveLength(1);
+    expect(payload.imageUrls).toBeUndefined();
+    expect(payload.primaryImageUrl).toBeUndefined();
+  });
+
+  it('keeps derived fields for lightweight URLs and preserves the original thumbnail index', () => {
+    expect(withImageFields({ images: ['/images/first.jpg', '/images/second.jpg'], thumbnailIndex: 1 })).toEqual({
+      images: ['/images/first.jpg', '/images/second.jpg'], thumbnailIndex: 1,
+      imageUrls: ['/images/first.jpg', '/images/second.jpg'], primaryImageUrl: '/images/second.jpg',
+    });
+  });
+
+  it('removes inline copies even when the input already contains derived fields', () => {
+    const source = `data:image/webp;base64,${'a'.repeat(100_000)}`;
+    const original = { images: JSON.stringify([source]), thumbnailIndex: 0, imageUrls: [source], primaryImageUrl: source };
+    const compact = JSON.stringify(withImageFields(original));
+    expect(compact.length).toBeLessThan(JSON.stringify(original).length * 0.34);
+    expect(JSON.parse(compact)).toEqual({ images: original.images, thumbnailIndex: 0 });
   });
 
   it('normalizes a valid pet image selection and rejects unsafe sources', () => {

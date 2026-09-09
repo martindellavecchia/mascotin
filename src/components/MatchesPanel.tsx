@@ -12,15 +12,17 @@ import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from '@/
 function MatchAvatar({
   images,
   primaryImageUrl,
+  thumbnailIndex,
   name,
 }: {
   images: string | string[] | null | undefined;
   primaryImageUrl?: string | null;
+  thumbnailIndex?: number;
   name: string;
 }) {
   const primary = isRenderableImage(primaryImageUrl)
     ? primaryImageUrl
-    : getPrimaryImageUrl(images);
+    : getPrimaryImageUrl(images, thumbnailIndex ?? 0);
   const src = isRenderableImage(primary) ? primary : null;
 
   return (
@@ -90,6 +92,7 @@ export default function MatchesPanel({ matches }: MatchesPanelProps) {
                     <MatchAvatar
                       images={match.images}
                       primaryImageUrl={match.primaryImageUrl}
+                      thumbnailIndex={match.thumbnailIndex}
                       name={match.name}
                     />
                     <div className="min-w-0 flex-1">

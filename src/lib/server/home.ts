@@ -1,11 +1,10 @@
 import 'server-only';
 
 import type { Pet } from '@/types';
-import { UPCOMING_APPOINTMENT_STATUSES } from '@/lib/appointments';
 import { db } from '@/lib/db';
-import { withImageFields } from '@/lib/media';
 import { serializeForClient } from '@/lib/server/serialize';
 import { getRankedPetMatches } from '@/lib/server/pet-matching';
+import { getFeedPage } from '@/lib/server/feed';
 
 export interface HomeStatsData {
   totalPets: number;
@@ -20,34 +19,9 @@ export interface HomeAppointmentData {
   status: string;
   service: {
     name: string;
-    provider: {
-      businessName: string;
-    };
+    provider: { businessName: string };
   };
-  pet: {
-    id: string;
-    name: string;
-    images: string;
-  };
-}
-
-export interface HomeLostPetPreview {
-  id: string;
-  content: string;
-  images: string;
-  primaryImageUrl?: string | null;
-  contactPhone: string | null;
-  lastSeenLocation: string | null;
-  createdAt: string;
-  pet?: {
-    name: string;
-    images: string;
-    primaryImageUrl?: string | null;
-    petType: string;
-  } | null;
-  author: {
-    name: string | null;
-  };
+  pet: { id: string; name: string; images: string };
 }
 
 export interface HomeBootstrapSuggestion {
@@ -60,30 +34,14 @@ export interface HomeBootstrapSuggestion {
   matchReason: string;
 }
 
-export interface HomePetHealthSummary {
-  id: string;
-  type: string;
-  name: string;
-  dueDate: string | null;
-}
-
 export interface HomeBootstrapData {
   pets: Pet[];
   selectedPetId?: string;
+  hasMatches: boolean;
   hasOwnPosts: boolean;
-  stats: HomeStatsData;
-  nextAppointment: HomeAppointmentData | null;
-  lostPets: HomeLostPetPreview[];
   suggestions: HomeBootstrapSuggestion[];
-  healthRecords: HomePetHealthSummary[];
+  feedPage: Awaited<ReturnType<typeof getFeedPage>>;
 }
-
-const EMPTY_STATS: HomeStatsData = {
-  totalPets: 0,
-  totalMatches: 0,
-  totalSwipes: 0,
-  likesReceived: 0,
-};
 
 const PET_SELECT = {
   id: true,
@@ -116,7 +74,7 @@ const PET_SELECT = {
   updatedAt: true,
 } as const;
 
-async function getSuggestionsForPet(
+export async function getSuggestionsForPet(
   userId: string,
   currentPet: {
     id: string;
@@ -136,13 +94,7 @@ async function getSuggestionsForPet(
   ownerCoords?: { latitude?: number | null; longitude?: number | null } | null
 ) {
   return getRankedPetMatches({
-    userId,
-    currentPet,
-    ownerLocation,
-    ownerBio,
-    ownerCoords,
-    myPetIds,
-    limit,
+    userId, currentPet, ownerLocation, ownerBio, ownerCoords, myPetIds, limit,
   });
 }
 
@@ -165,189 +117,40 @@ export async function getHomeBootstrapData(
     },
   });
 
-  if (!owner) {
+  const emptyFeed = { posts: [], nextCursor: null, hasMore: false };
+  if (!owner || owner.pets.length === 0) {
     return {
-      pets: [],
-      hasOwnPosts: false,
-      stats: EMPTY_STATS,
-      nextAppointment: null,
-      lostPets: [],
-      suggestions: [],
-      healthRecords: [],
+      pets: [], hasMatches: false, hasOwnPosts: false,
+      suggestions: [], feedPage: emptyFeed,
     };
   }
 
   const pets = serializeForClient(owner.pets) as unknown as Pet[];
   const petIds = owner.pets.map((pet) => pet.id);
-  const selectedPetId = petIds.includes(requestedPetId || '')
-    ? requestedPetId || undefined
-    : owner.pets[0]?.id;
-  const selectedPet = owner.pets.find((pet) => pet.id === selectedPetId);
+  const selectedPet = owner.pets.find((pet) => pet.id === requestedPetId) || owner.pets[0];
 
-  const [
-    matchesCount,
-    swipesSent,
-    likesReceived,
-    nextAppointment,
-    lostPetsRaw,
-    healthRecordsRaw,
-    suggestions,
-    ownPostsCount,
-  ] = await Promise.all([
-    petIds.length === 0
-      ? Promise.resolve(0)
-      : db.match.count({
-          where: {
-            OR: [{ pet1Id: { in: petIds } }, { pet2Id: { in: petIds } }],
-          },
-        }),
-    petIds.length === 0
-      ? Promise.resolve(0)
-      : db.swipe.count({
-          where: { fromPetId: { in: petIds } },
-        }),
-    petIds.length === 0
-      ? Promise.resolve(0)
-      : db.swipe.count({
-          where: {
-            toPetId: { in: petIds },
-            isLike: true,
-          },
-        }),
-    db.appointment.findFirst({
-      where: {
-        userId,
-        status: {
-          in: [...UPCOMING_APPOINTMENT_STATUSES],
-        },
-        date: {
-          gte: new Date(),
-        },
-      },
-      orderBy: {
-        date: 'asc',
-      },
-      select: {
-        id: true,
-        date: true,
-        status: true,
-        service: {
-          select: {
-            name: true,
-            provider: {
-              select: {
-                businessName: true,
-              },
-            },
-          },
-        },
-        pet: {
-          select: {
-            id: true,
-            name: true,
-            images: true,
-          },
-        },
-      },
+  const feedPromise = Promise.all([
+    db.match.findFirst({
+      where: { OR: [{ pet1Id: { in: petIds } }, { pet2Id: { in: petIds } }] },
+      select: { id: true },
     }),
-    db.post.findMany({
-      where: {
-        postType: 'lost_pet',
-        isResolved: false,
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 3,
-      select: {
-        id: true,
-        content: true,
-        images: true,
-        contactPhone: true,
-        lastSeenLocation: true,
-        createdAt: true,
-        author: {
-          select: {
-            name: true,
-          },
-        },
-        pet: {
-          select: {
-            name: true,
-            images: true,
-            thumbnailIndex: true,
-            petType: true,
-          },
-        },
-      },
+    db.post.findFirst({
+      where: { authorId: userId, isVisible: true },
+      select: { id: true },
     }),
-    selectedPetId
-      ? db.petHealthRecord.findMany({
-          where: { petId: selectedPetId },
-          orderBy: { dueDate: 'asc' },
-          take: 5,
-          select: {
-            id: true,
-            type: true,
-            name: true,
-            dueDate: true,
-          },
-        })
-      : Promise.resolve([]),
-    selectedPet
-      ? getSuggestionsForPet(
-          userId,
-          selectedPet,
-          owner.location,
-          owner.bio,
-          petIds,
-          6,
-          { latitude: owner.latitude, longitude: owner.longitude }
-        )
-      : Promise.resolve([]),
-    db.post.count({
-      where: {
-        authorId: userId,
-        isVisible: true,
-      },
-    }),
+  ]).then(async ([match, ownPost]) => ({
+    hasMatches: Boolean(match),
+    hasOwnPosts: Boolean(ownPost),
+    feedPage: match || ownPost ? await getFeedPage({ userId, limit: 10 }) : emptyFeed,
+  }));
+
+  const [suggestions, feed] = await Promise.all([
+    getSuggestionsForPet(
+      userId, selectedPet, owner.location, owner.bio, petIds, 1,
+      { latitude: owner.latitude, longitude: owner.longitude }
+    ),
+    feedPromise,
   ]);
 
-  const lostPets = serializeForClient(
-    lostPetsRaw.map((lostPet) => ({
-      ...withImageFields(lostPet),
-      createdAt: lostPet.createdAt.toISOString(),
-      pet: lostPet.pet ? withImageFields(lostPet.pet) : null,
-    }))
-  ) as HomeLostPetPreview[];
-
-  const healthRecords = serializeForClient(
-    healthRecordsRaw.map((record) => ({
-      id: record.id,
-      type: record.type,
-      name: record.name,
-      dueDate: record.dueDate ? record.dueDate.toISOString() : null,
-    }))
-  ) as HomePetHealthSummary[];
-
-  return {
-    pets,
-    selectedPetId,
-    hasOwnPosts: ownPostsCount > 0,
-    stats: {
-      totalPets: pets.length,
-      totalMatches: matchesCount,
-      totalSwipes: swipesSent,
-      likesReceived,
-    },
-    nextAppointment: nextAppointment
-      ? serializeForClient({
-          ...nextAppointment,
-          date: nextAppointment.date.toISOString(),
-        })
-      : null,
-    lostPets,
-    suggestions,
-    healthRecords,
-  };
+  return { pets, selectedPetId: selectedPet.id, suggestions, ...feed };
 }
-
-export { getSuggestionsForPet };

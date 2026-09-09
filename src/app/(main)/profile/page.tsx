@@ -3,10 +3,13 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, PawPrint, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
+import { StateFeedback } from '@/components/ui/state-feedback';
+import { useInvalidateViewerData, useMatchCount, useMyPets, useOwnerProfile, viewerQueryKeys } from '@/hooks/useViewerData';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,10 +36,23 @@ function ProfileContent() {
   const searchParams = useSearchParams();
   const editMode = searchParams.get('edit');
 
-  const [owner, setOwner] = useState<Owner | null>(null);
-  const [pets, setPets] = useState<Pet[]>([]);
-  const [matches, setMatches] = useState<Pet[]>([]); // To count matches
-  const [loading, setLoading] = useState(true);
+  const userId = session?.user?.id;
+  const queryClient = useQueryClient();
+  const ownerQuery = useOwnerProfile(userId);
+  const petsQuery = useMyPets(userId);
+  const matchCountQuery = useMatchCount(userId);
+  const invalidateViewerData = useInvalidateViewerData();
+  const owner = ownerQuery.data?.owner ?? null;
+  const pets = petsQuery.data ?? [];
+  const loading = ownerQuery.isPending || petsQuery.isPending;
+  const setOwner = (nextOwner: Owner) => {
+    queryClient.setQueryData(viewerQueryKeys.owner(userId), { ...ownerQuery.data, owner: nextOwner });
+  };
+  const setPets = (nextPets: Pet[] | ((current: Pet[]) => Pet[])) => {
+    queryClient.setQueryData<Pet[]>(viewerQueryKeys.pets(userId), (current = []) =>
+      typeof nextPets === 'function' ? nextPets(current) : nextPets
+    );
+  };
 
   const [showOwnerForm, setShowOwnerForm] = useState(false);
   const [showPetForm, setShowPetForm] = useState(false);
@@ -51,12 +67,6 @@ function ProfileContent() {
       router.push('/login');
     }
   }, [status, router]);
-
-  useEffect(() => {
-    if (session) {
-      fetchData();
-    }
-  }, [session]);
 
   const petIdParam = searchParams.get('petId');
 
@@ -78,33 +88,6 @@ function ProfileContent() {
     }
   }, [petIdParam, pets]);
 
-  const fetchData = async () => {
-    try {
-      const [ownerRes, petsRes] = await Promise.all([
-        fetch('/api/owner/profile'),
-        fetch('/api/pet/mine')
-      ]);
-
-      const ownerData = await ownerRes.json();
-      const petsData = await petsRes.json();
-
-      setOwner(ownerData.owner);
-      setPets(petsData.pets || []);
-
-      if (ownerData.owner?.id) {
-        try {
-          const matchesRes = await fetch(`/api/matches?ownerId=${ownerData.owner.id}`);
-          const matchesData = await matchesRes.json();
-          setMatches(matchesData.matches || []);
-        } catch (error) { }
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeletePet = async () => {
     if (!deletingPet) return;
 
@@ -116,6 +99,7 @@ function ProfileContent() {
 
       if (response.ok) {
         setPets(pets.filter(p => p.id !== deletingPet.id));
+        invalidateViewerData();
         toast.success(`${deletingPet.name} ha sido eliminado`);
       } else {
         toast.error('Error al eliminar mascota');
@@ -140,6 +124,14 @@ function ProfileContent() {
   }
 
   if (status === 'unauthenticated' || !session) return null;
+
+  if ((ownerQuery.isError && !ownerQuery.data) || (petsQuery.isError && !petsQuery.data)) {
+    return <main className="mx-auto w-full max-w-3xl px-4 py-8">
+      <StateFeedback status="error" title="No pudimos cargar tu perfil" action={
+        <Button variant="outline" onClick={() => { void ownerQuery.refetch(); void petsQuery.refetch(); }}>Reintentar</Button>
+      } />
+    </main>;
+  }
 
   if (!owner) {
     return (
@@ -183,7 +175,7 @@ function ProfileContent() {
             <div className="min-w-0 space-y-6 xl:col-span-1">
               <ProfileCard owner={owner} email={session.user.email || ''} />
               <AboutCard bio={owner.bio} onEdit={() => setShowOwnerForm(true)} />
-              <StatsCard petsCount={pets.length} matchesCount={matches.length} />
+              <StatsCard petsCount={pets.length} matchesCount={matchCountQuery.data} />
             </div>
 
             {/* Middle Column: Pets */}

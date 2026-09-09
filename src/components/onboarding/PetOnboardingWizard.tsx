@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useInvalidateViewerData } from '@/hooks/useViewerData';
 import { initialPetSchema } from '@/lib/schemas';
 import { cn } from '@/lib/utils';
 import type { Pet } from '@/types';
@@ -56,6 +57,7 @@ function mapApiIssues(issues: ApiValidationIssue[] | undefined) {
 }
 
 export default function PetOnboardingWizard({ onSuccess, onCancel }: PetOnboardingWizardProps) {
+  const invalidateViewerData = useInvalidateViewerData();
   const [name, setName] = useState('');
   const [petType, setPetType] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -86,6 +88,7 @@ export default function PetOnboardingWizard({ onSuccess, onCancel }: PetOnboardi
       const data = await response.json() as CreatePetResponse;
 
       if (response.ok && data.pet) {
+        invalidateViewerData();
         onSuccess(data.pet);
         return;
       }
