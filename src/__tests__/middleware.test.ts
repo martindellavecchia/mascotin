@@ -17,6 +17,12 @@ jest.mock('next/server', () => ({
         get: (name: string) => (String(name).toLowerCase() === 'location' ? String(url) : null),
       },
     }),
+    rewrite: (url: URL | string) => ({
+      status: 200,
+      headers: {
+        get: (name: string) => (String(name).toLowerCase() === 'x-middleware-rewrite' ? String(url) : null),
+      },
+    }),
   },
 }));
 
@@ -66,6 +72,8 @@ describe('auth middleware', () => {
       ['/adoptions', '/login?callbackUrl=%2Fadoptions'],
       ['/community', '/login?callbackUrl=%2Fcommunity'],
       ['/hogares-de-transito', '/login?callbackUrl=%2Fhogares-de-transito'],
+      ['/account/shop', '/login?callbackUrl=%2Faccount%2Fshop'],
+      ['/account/shop/paw-spa', '/login?callbackUrl=%2Faccount%2Fshop%2Fpaw-spa'],
     ] as const;
 
     for (const [path, expected] of cases) {
@@ -85,13 +93,34 @@ describe('auth middleware', () => {
     );
   });
 
-  it('redirects authenticated users away from login and register', async () => {
+  it('redirects authenticated users from the landing and auth pages to their home', async () => {
     mockedGetToken.mockResolvedValue({ sub: 'user-1' } as never);
 
-    for (const path of ['/login', '/register']) {
+    for (const path of ['/', '/login', '/register']) {
       const response = await middleware(request(path));
       expect(response.status).toBe(307);
       expect(locationOf(response)).toBe('http://localhost:3000/inicio');
+    }
+  });
+
+  it('renders the account layout for signed-in shop visits while keeping the public URL and query', async () => {
+    mockedGetToken.mockResolvedValue({ sub: 'user-1' } as never);
+
+    for (const path of ['/shop', '/shop/paw-spa?from=map']) {
+      const response = await middleware(request(path));
+      expect(response.status).toBe(200);
+      expect(locationOf(response)).toBeNull();
+      expect(response.headers.get('x-middleware-rewrite')).toBe(`http://localhost:3000/account${path}`);
+    }
+  });
+
+  it('does not rewrite unrelated paths or repeat a shop rewrite', async () => {
+    mockedGetToken.mockResolvedValue({ sub: 'user-1' } as never);
+
+    for (const path of ['/shopper', '/account/shop', '/account/shop/paw-spa', '/provider']) {
+      const response = await middleware(request(path));
+      expect(response.headers.get('x-middleware-rewrite')).toBeNull();
+      expect(locationOf(response)).toBeNull();
     }
   });
 

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import BrandLogo from '@/components/brand/BrandLogo';
 import { Button } from '@/components/ui/button';
+import { getAccountShopPath, getPublicShopPath } from '@/lib/shop-routing';
 
 type HomeTab = 'home' | 'explore';
 
@@ -112,7 +113,7 @@ interface HeaderProps {
 }
 
 export default function Header({ session }: HeaderProps) {
-  const pathname = usePathname();
+  const pathname = getPublicShopPath(usePathname());
   const [homeTab, setHomeTab] = useState<'home' | 'explore' | 'matches'>('home');
 
   useEffect(() => {
@@ -167,7 +168,8 @@ export default function Header({ session }: HeaderProps) {
     return (
       <Link
         key={link.label}
-        href={link.href}
+        href={getAccountShopPath(link.href) || link.href}
+        as={link.href}
         onClick={(event) => handleHomeNavigation(event, link.tab)}
         className={`group flex min-h-11 items-center gap-3 rounded-md border-l-2 px-3 py-2.5 text-[15px] font-medium transition-colors ${
           active
@@ -199,7 +201,7 @@ export default function Header({ session }: HeaderProps) {
           </nav>
 
           <div className="flex shrink-0 items-center gap-0.5 sm:gap-1 lg:flex-col lg:items-stretch lg:border-t lg:border-border lg:pt-4">
-            <HeaderMobileMenu navLinks={SECONDARY_NAV_LINKS} />
+            <HeaderMobileMenu navLinks={SECONDARY_NAV_LINKS} authenticated={Boolean(session?.user?.id)} />
             <div className="flex items-center gap-0.5 sm:gap-1 lg:justify-between">
               <div className="flex shrink-0 [&>button]:size-11">
                 <NotificationBell enabled={Boolean(session?.user?.id)} />

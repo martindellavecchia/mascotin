@@ -155,10 +155,10 @@ describe('public store APIs', () => {
     });
   });
 
-  it('disables prefetch for authenticated app entrypoints', () => {
+  it('keeps private entrypoints out of the public header and disables their directory prefetch', () => {
     const header = readSource('src/components/PublicHeader.tsx');
     const directory = readSource('src/components/shop/ShopDirectory.tsx');
-    expect(header).toContain('href="/inicio" prefetch={false}');
+    expect(header).not.toContain('href="/inicio"');
     expect(directory).toContain('href="/map" prefetch={false}');
     expect(directory).toContain('href="/provider" prefetch={false}');
     expect(header).toContain('href="/shop"');

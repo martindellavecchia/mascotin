@@ -13,15 +13,25 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
+import { getAccountShopPath, getPublicShopPath } from '@/lib/shop-routing';
+import { cn } from '@/lib/utils';
 
 interface HeaderMobileMenuProps {
   navLinks: Array<{ href: string; label: string; icon?: LucideIcon; tab?: 'home' | 'explore' }>;
+  authenticated?: boolean;
+  title?: string;
+  description?: string;
+  triggerClassName?: string;
 }
 
 export default function HeaderMobileMenu({
   navLinks,
+  authenticated = false,
+  title = 'Más opciones',
+  description = 'Accesos secundarios a eventos, mapa, servicios, perfil y configuración.',
+  triggerClassName,
 }: HeaderMobileMenuProps) {
-  const pathname = usePathname();
+  const pathname = getPublicShopPath(usePathname());
   const searchParams = useSearchParams();
   const homeTab = searchParams.get('tab');
 
@@ -43,7 +53,7 @@ export default function HeaderMobileMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="size-11 rounded-md text-muted-foreground hover:bg-primary-soft hover:text-primary lg:hidden"
+          className={cn('size-11 rounded-md text-muted-foreground hover:bg-primary-soft hover:text-primary lg:hidden', triggerClassName)}
           aria-label="Abrir menú"
         >
           <Menu className="size-5" aria-hidden="true" />
@@ -64,13 +74,13 @@ export default function HeaderMobileMenu({
           </Button>
         </SheetClose>
         <SheetHeader className="pr-16">
-          <SheetTitle>Más opciones</SheetTitle>
+          <SheetTitle>{title}</SheetTitle>
           <SheetDescription className="sr-only">
-            Accesos secundarios a eventos, mapa, servicios, perfil y configuración.
+            {description}
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-4 pb-4">
-          <nav className="space-y-1">
+          <nav className="space-y-1" aria-label={title}>
             {navLinks.map((link) => {
               const active = isActive(link.href, link.tab);
               const Icon = link.icon;
@@ -78,7 +88,8 @@ export default function HeaderMobileMenu({
               return (
                 <SheetClose key={`${link.label}-${link.href}`} asChild>
                   <Link
-                    href={link.href}
+                    href={(authenticated && getAccountShopPath(link.href)) || link.href}
+                    as={link.href}
                     className={`flex min-h-11 items-center gap-3 rounded-md border-l-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                       active
                         ? 'border-primary bg-primary-soft text-primary'

@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { isAuthPage, isPublicPath } from '@/lib/route-access';
 import { getSessionTokenCookieName } from '@/lib/auth-cookies';
+import { getAccountShopPath } from '@/lib/shop-routing';
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({
@@ -13,7 +14,7 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const isLoggedIn = Boolean(token);
 
-  if (isLoggedIn && isAuthPage(pathname)) {
+  if (isLoggedIn && (pathname === '/' || isAuthPage(pathname))) {
     return NextResponse.redirect(new URL('/inicio', req.url));
   }
 
@@ -21,6 +22,13 @@ export async function middleware(req: NextRequest) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const accountShopPath = isLoggedIn ? getAccountShopPath(pathname) : null;
+  if (accountShopPath) {
+    const shopUrl = new URL(req.url);
+    shopUrl.pathname = accountShopPath;
+    return NextResponse.rewrite(shopUrl);
   }
 
   return NextResponse.next();

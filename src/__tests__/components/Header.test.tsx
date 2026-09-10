@@ -1,12 +1,13 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
+import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
   }),
-  usePathname: () => '/inicio',
+  usePathname: jest.fn(() => '/inicio'),
 }));
 
 jest.mock('next-auth/react', () => ({
@@ -52,6 +53,7 @@ describe('Header', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (usePathname as jest.Mock).mockReturnValue('/inicio');
   });
 
   async function renderHeader(session: typeof mockSession | null) {
@@ -109,6 +111,18 @@ describe('Header', () => {
 
       expect(screen.getByRole('link', { name: /servicios/i })).toBeInTheDocument();
     });
+
+    it.each(['/shop', '/shop/paw-spa', '/account/shop/paw-spa'])(
+      'marks Servicios as the current section at %s and keeps the public link',
+      async (pathname) => {
+        (usePathname as jest.Mock).mockReturnValue(pathname);
+        await renderHeader(mockSession);
+
+        const services = screen.getByRole('link', { name: 'Servicios' });
+        expect(services).toHaveAttribute('aria-current', 'page');
+        expect(services).toHaveAttribute('href', '/shop');
+      }
+    );
 
     it('renders messages link', async () => {
       await renderHeader(mockSession);
