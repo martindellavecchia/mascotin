@@ -20,8 +20,12 @@ export const metadata: Metadata = {
   authors: [{ name: "Huella" }],
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/brand/huella-logo.png", sizes: "any", type: "image/png" }],
-    apple: "/brand/huella-logo.png",
+    icon: [
+      { url: "/favicon.ico?v=huella-1", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+      { url: "/icons/favicon-32.png?v=huella-1", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico?v=huella-1",
+    apple: [{ url: "/icons/apple-touch-icon.png?v=huella-1", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Huella",

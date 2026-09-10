@@ -13,8 +13,8 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(self.registration.showNotification(payload.title || 'Huella', {
     body: [payload.helpType, payload.zone].filter(Boolean).join(' · '),
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    icon: '/icons/icon-192.png?v=huella-1',
+    badge: '/icons/icon-192.png?v=huella-1',
     tag: deliveryId || link,
     renotify: false,
     data: { link, deliveryId },
