@@ -108,6 +108,7 @@ export default function SlotPicker({
           .map((s) => (
             <option key={s} value={s}>
               {new Date(s).toLocaleTimeString('es-AR', {
+                hourCycle: 'h23',
                 timeZone: zone,
                 hour: '2-digit',
                 minute: '2-digit',

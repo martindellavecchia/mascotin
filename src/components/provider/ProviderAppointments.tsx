@@ -248,6 +248,7 @@ export default function ProviderAppointments() {
                             timeZone,
                             hour: '2-digit',
                             minute: '2-digit',
+                            hourCycle: 'h23',
                           })}
                         </p>
                         <p className="text-xs text-slate-500">

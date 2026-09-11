@@ -5,11 +5,18 @@ import { authOptions } from '@/lib/auth';
 import { updateSettingsSchema } from '@/lib/schemas';
 import { recordProductEvent } from '@/lib/server/product-events';
 
+async function getSettingsSession() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return null;
+    const user = await db.user.findUnique({ where: { id: session.user.id }, select: { id: true } });
+    return user ? session : null;
+}
+
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getSettingsSession();
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'Iniciá sesión nuevamente' }, { status: 401 });
         }
 
         let settings = await db.userSettings.findUnique({
@@ -17,8 +24,10 @@ export async function GET() {
         });
 
         if (!settings) {
-            settings = await db.userSettings.create({
-                data: { userId: session.user.id },
+            settings = await db.userSettings.upsert({
+                where: { userId: session.user.id },
+                create: { userId: session.user.id },
+                update: {},
             });
         }
 
@@ -38,9 +47,9 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getSettingsSession();
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'Iniciá sesión nuevamente' }, { status: 401 });
         }
 
         const body = await request.json();

@@ -152,9 +152,15 @@ export default function MeetupPanel({ matchId, userId }: { matchId: string; user
           <div key={row.id} className="space-y-2 rounded-lg border p-3">
             <p className="font-medium">{row.place}</p>
             <p className="text-sm">
-              {new Date(row.date).toLocaleString('es-AR')} · {row.durationMinutes} min ·{' '}
+              {new Date(row.date).toLocaleString('es-AR', {
+                dateStyle: 'short',
+                timeStyle: 'short',
+                hourCycle: 'h23',
+              })}{' '}
+              · {row.durationMinutes} min ·{' '}
               {LABELS[row.status]}
             </p>
+            <p className="text-xs text-muted-foreground">Hora de tu dispositivo</p>
             <div className="flex flex-wrap gap-2">
               {row.status === 'PROPOSED' &&
                 row.proposedById !== userId &&

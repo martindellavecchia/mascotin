@@ -25,6 +25,14 @@ type Appointment = {
   pet: { name: string };
   history: Array<{ id: string; date: string; status: string; createdAt: string }>;
 };
+function formatAppointmentDate(value: string, row: Appointment) {
+  return new Date(value).toLocaleString('es-AR', {
+    timeZone: row.service.provider.schedule?.timeZone || 'America/Argentina/Buenos_Aires',
+    dateStyle: 'short',
+    timeStyle: 'short',
+    hourCycle: 'h23',
+  });
+}
 export default function AppointmentsPage() {
   const [rows, setRows] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,10 +116,7 @@ export default function AppointmentsPage() {
             </h2>
             <p>{row.service.provider.businessName}</p>
             <p>
-              {new Date(row.date).toLocaleString('es-AR', {
-                timeZone:
-                  row.service.provider.schedule?.timeZone || 'America/Argentina/Buenos_Aires',
-              })}{' '}
+              {formatAppointmentDate(row.date, row)}{' '}
               · {row.durationMinutes ?? row.service.duration} min
             </p>
             <p className="text-xs text-muted-foreground">
@@ -169,8 +174,8 @@ export default function AppointmentsPage() {
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {row.history.map((h) => (
                     <li key={h.id}>
-                      {new Date(h.createdAt).toLocaleString('es-AR')} · {LABELS[h.status]} · turno{' '}
-                      {new Date(h.date).toLocaleString('es-AR')}
+                      {formatAppointmentDate(h.createdAt, row)} · {LABELS[h.status]} · turno{' '}
+                      {formatAppointmentDate(h.date, row)}
                     </li>
                   ))}
                 </ul>
