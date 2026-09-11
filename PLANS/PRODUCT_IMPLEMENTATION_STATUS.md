@@ -33,8 +33,8 @@ La verificación utiliza exclusivamente PostgreSQL local en `127.0.0.1:55439`. D
 
 ## Pendiente para cerrar la entrega
 
-La revisión automática de aprobación rechazó dos intentos de iniciar el servidor, incluido uno limitado a `127.0.0.1:3000`, con el mensaje «bloqueado por política» y sin un motivo adicional. Se solicitó autorización explícita al usuario para ese arranque local. No se sustituyó esta comprobación por un despliegue en producción.
+El usuario autorizó explícitamente el arranque local mediante «Mándale». El nuevo intento, limitado a `127.0.0.1:3000` y PostgreSQL local en `55439`, volvió a ser rechazado por la revisión automática de aprobación con «bloqueado por política», sin un motivo adicional. El proceso no llegó a iniciarse. Las reglas locales disponibles no aportaron una explicación adicional. La autorización del usuario ya está otorgada; el bloqueo restante corresponde al entorno de ejecución. No se sustituyó esta comprobación por un despliegue en producción.
 
-Una vez autorizado: iniciar con base local y las tres funciones activas; recorrer guardar/editar/pausar búsquedas, solicitar/confirmar/reprogramar/cancelar turnos, abrir chat de tránsito sin mascota, deshacer pase y proponer/aceptar/editar encuentro; comprobar datos, errores de consola y adaptación a los tamaños indicados. Corregir hallazgos y publicar únicamente después de esas comprobaciones.
+Cuando el entorno permita el arranque: iniciar con base local y las tres funciones activas; recorrer guardar/editar/pausar búsquedas, solicitar/confirmar/reprogramar/cancelar turnos, abrir chat de tránsito sin mascota, deshacer pase y proponer/aceptar/editar encuentro; comprobar datos, errores de consola y adaptación a los tamaños indicados. Corregir hallazgos y publicar únicamente después de esas comprobaciones. La implementación quedó en el commit local `3f85a2d`.
 
 El resumen diario se programa a partir de las 09:00 de Argentina; Vercel Hobby permite variación dentro de esa hora. Un atraso que devuelva `hasMore` se reanuda invocando nuevamente el endpoint autorizado. La ampliación de volumen requiere dimensionar esa reanudación y observar el cursor más antiguo.
