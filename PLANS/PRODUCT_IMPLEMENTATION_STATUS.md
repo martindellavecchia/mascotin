@@ -46,6 +46,7 @@ Recorridos ejercitados en producción:
 - Encuentros: crear desde el chat, aceptar como contraparte por API, obtener calendario con recordatorio de 30 minutos y editar desde la interfaz; el cambio de lugar y hora vuelve a exigir aceptación. Verificación móvil y tablet.
 - Descubrir: pasar una mascota y deshacer desde la interfaz; la mascota reaparece y la acción queda marcada como deshecha.
 - Ayuda sin mascota: seleccionar la intención, acceder a Hogares y abrir el contacto correcto desde la bandeja unificada. Diálogo privado revisado en móvil.
+- Prestador: cambiar horario semanal y cerrar una fecha desde la interfaz; ambos persisten al recargar y la API excluye el día cerrado. Revisión de navegación en 1023 y 1024 píxeles; la distribución en tres columnas se posterga a 1280 para evitar solapamiento de estadísticas.
 
 La QA detectó horarios ambiguos de 12 horas y un error 500 al leer configuración con una sesión de una cuenta eliminada. El ajuste usa 24 horas, conserva la zona del prestador en el historial y devuelve 401 para la sesión inválida. Se verificó con TypeScript, ESLint y cuatro pruebas de regresión. Los recursos de prueba pertenecen a una única ejecución sintética con borrado en cascada al finalizar la validación.
 

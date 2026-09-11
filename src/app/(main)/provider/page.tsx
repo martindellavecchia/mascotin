@@ -195,8 +195,8 @@ export default function ProviderPage() {
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
                     <PageHeader title="Panel de proveedor" description="Gestioná tu negocio, servicios y citas desde un solo lugar." />
-                    <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-                        <div className="lg:col-span-1">
+                    <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-3">
+                        <div className="xl:col-span-1">
                             <Card>
                                 <CardContent className="p-6">
                                     <div className="text-center mb-4">
@@ -229,7 +229,7 @@ export default function ProviderPage() {
                                 </CardContent>
                             </Card>
                         </div>
-                        <div className="lg:col-span-2">
+                        <div className="xl:col-span-2">
                             <Tabs defaultValue="appointments" className="w-full">
                                 <TabsList className="mb-4">
                                     <TabsTrigger value="appointments">Citas</TabsTrigger>
