@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { recordProductEvent } from '@/lib/server/product-events';
+import { adoptionSearchWhere, filtersFromParams } from '@/lib/product-search';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createAdoptionListingSchema } from '@/lib/schemas';
@@ -13,6 +15,8 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || 'OPEN';
+  let filters;
+  try { filters = filtersFromParams(searchParams); } catch { return NextResponse.json({ error: 'Filtros inválidos' }, { status: 400 }); }
   const viewer = await db.user.findUnique({
     where: { id: auth.session.user.id },
     select: { syntheticRunId: true },
@@ -20,8 +24,12 @@ export async function GET(request: Request) {
 
   const listings = await db.adoptionListing.findMany({
     where: {
-      ...(status === '_all' ? {} : { status }),
-      listedBy: { syntheticRunId: viewer?.syntheticRunId || null },
+      ...adoptionSearchWhere(filters),
+      status: status === '_all' ? undefined : status,
+      listedBy: { syntheticRunId: viewer?.syntheticRunId || null, isBlocked: false,
+        blockedUsers: { none: { blockedId: auth.session.user.id } },
+        blockedByUsers: { none: { blockerId: auth.session.user.id } },
+      },
     },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -47,6 +55,7 @@ export async function GET(request: Request) {
     take: 50,
   });
 
+  if (!listings.length) await recordProductEvent(auth.session.user.id, 'empty_adoption_search', new Date().toISOString().slice(0, 10));
   return NextResponse.json({
     success: true,
     listings: listings.map((listing) => ({

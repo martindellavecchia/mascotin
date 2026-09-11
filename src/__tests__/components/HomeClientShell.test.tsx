@@ -5,6 +5,9 @@ import HomeClientShell from '@/components/home/HomeClientShell';
 
 const mockPush = jest.fn();
 const mockFetchWithError = jest.fn();
+jest.mock('@/components/home/UndoPassButton', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/components/home/PendingActions', () => ({ __esModule: true, default: () => null }));
+jest.mock('@/components/home/IntentEntry', () => ({ __esModule: true, default: () => null }));
 
 jest.mock('next/dynamic', () => ({
   __esModule: true,

@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { recordProductEvent } from '@/lib/server/product-events';
 import { directoryCacheControl, logStoreQuery, noStoreCacheControl } from '@/lib/server/store-cache';
 import {
   getCachedPublicStoreDirectory,
@@ -12,6 +15,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const minRatingRaw = Number(searchParams.get('minRating') || 0);
     const filters = {
+      zone: searchParams.get('zone')?.trim() || undefined,
       search: searchParams.get('search')?.trim() || undefined,
       categoryId: searchParams.get('categoryId') || undefined,
       minRating: minRatingRaw > 0 ? minRatingRaw : undefined,
@@ -24,6 +28,10 @@ export async function GET(request: Request) {
     const stores = highCardinality
       ? await getPublicStoreDirectory(filters)
       : await getCachedPublicStoreDirectory();
+    if (!stores.length && highCardinality) {
+      const session = await getServerSession(authOptions);
+      if (session?.user?.id) await recordProductEvent(session.user.id, 'empty_service_search', new Date().toISOString().slice(0, 10));
+    }
 
     logStoreQuery({
       route: '/api/stores',

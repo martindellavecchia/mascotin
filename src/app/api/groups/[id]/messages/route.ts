@@ -61,6 +61,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             limit,
             incremental: Boolean(after),
         });
+        if (page.latestCursor) {
+            await prisma.groupMember.updateMany({ where: { groupId: params.id, userId: session.user.id, lastReadAt: { lt: new Date(page.latestCursor) } }, data: { lastReadAt: new Date(page.latestCursor) } });
+        }
 
         return NextResponse.json({ success: true, ...page });
     } catch (error) {

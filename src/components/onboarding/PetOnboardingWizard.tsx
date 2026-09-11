@@ -73,6 +73,8 @@ export default function PetOnboardingWizard({ onSuccess, onCancel }: PetOnboardi
 
     if (!parsed.success) {
       setErrors(mapApiIssues(parsed.error.issues));
+      const firstField = parsed.error.issues[0]?.path[0];
+      event.currentTarget.querySelector<HTMLElement>(firstField === 'name' ? '#pet-name' : '[role="radio"]')?.focus();
       return;
     }
 
@@ -129,6 +131,7 @@ export default function PetOnboardingWizard({ onSuccess, onCancel }: PetOnboardi
 
       <CardContent className="px-5 py-5 sm:px-8 sm:py-8">
         <form onSubmit={handleSubmit} noValidate className="space-y-5 sm:space-y-7">
+          {(errors.name || errors.petType) && <p role="alert" className="text-sm text-destructive">Revisá los campos indicados para continuar.</p>}
           {errors.form && (
             <div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm text-destructive">
               {errors.form}

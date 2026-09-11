@@ -6,6 +6,9 @@ import { Compass, Heart, PawPrint } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Feed from '@/components/feed/Feed';
 import TodayActions from '@/components/home/TodayActions';
+import IntentEntry from '@/components/home/IntentEntry';
+import UndoPassButton from '@/components/home/UndoPassButton';
+import PendingActions from '@/components/home/PendingActions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -271,7 +274,7 @@ export default function HomeClientShell({
         }
       }
 
-      setCurrentIndex((previous) => previous + 1);
+      if (result.success) setCurrentIndex((previous) => previous + 1);
     } finally {
       swipingRef.current = false;
     }
@@ -289,6 +292,8 @@ export default function HomeClientShell({
             className="w-full"
           >
             <TabsContent value="home" className="min-w-0 space-y-6 mt-0">
+              <IntentEntry />
+              <PendingActions />
               <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
                 <div className="min-w-0">
                   <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">Inicio</h1>
@@ -349,9 +354,10 @@ export default function HomeClientShell({
                 loading={exploreLoading}
                 activePet={activePet}
                 onReload={() => void fetchPetsForSwipe(true)}
-                onLike={() => void handleSwipe(true)}
-                onPass={() => void handleSwipe(false)}
+                onLike={() => handleSwipe(true)}
+                onPass={() => handleSwipe(false)}
               />
+              {selectedPetId && <UndoPassButton petId={selectedPetId} revision={currentIndex} onUndo={() => void fetchPetsForSwipe(true)} />}
             </TabsContent>
 
             <TabsContent value="matches" className="min-w-0 mt-0">

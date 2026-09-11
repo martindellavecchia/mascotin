@@ -48,6 +48,7 @@ jest.mock('@/lib/db', () => ({
       findMany: (...args: unknown[]) => mockMessageFindMany(...args),
     },
     groupMember: {
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       findUnique: (...args: unknown[]) => mockGroupMemberFindUnique(...args),
     },
   },

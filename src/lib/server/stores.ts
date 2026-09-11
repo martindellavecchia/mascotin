@@ -1,14 +1,20 @@
 import { unstable_cache } from 'next/cache';
 import type { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
+import { storeSearchWhere } from '@/lib/product-search';
 import { parseJsonStringArray } from '@/lib/json-array';
 import { haversineKm, toGeoPoint } from '@/lib/geo';
 import { isFeaturedStore } from '@/lib/places';
-import { getStoreTrustSummary, getWeightedStoreScore, withStoreTrustPresentation } from '@/lib/store-reputation';
+import {
+  getStoreTrustSummary,
+  getWeightedStoreScore,
+  withStoreTrustPresentation,
+} from '@/lib/store-reputation';
 import { parseStoreImages } from '@/lib/stores';
 import { invalidateStoreDirectoryCache, STORE_CACHE_TAGS } from '@/lib/server/store-cache';
 
 export interface StoreDirectoryFilters {
+  zone?: string;
   search?: string;
   categoryId?: string;
   minRating?: number;
@@ -122,11 +128,12 @@ type DirectorySortRow = PublicStoreCard & {
 
 export function hasHighCardinalityStoreFilters(filters: StoreDirectoryFilters) {
   return Boolean(
-    filters.search?.trim()
-    || (filters.categoryId && filters.categoryId !== '_all')
-    || (filters.minRating && filters.minRating > 0)
-    || (filters.sortBy && filters.sortBy !== 'recommended')
-    || filters.near
+    filters.search?.trim() ||
+      (filters.categoryId && filters.categoryId !== '_all') ||
+      (filters.minRating && filters.minRating > 0) ||
+      (filters.sortBy && filters.sortBy !== 'recommended') ||
+      filters.near ||
+      filters.zone
   );
 }
 
@@ -165,29 +172,14 @@ export function toPublicStoreCard(card: PublicStoreCard): PublicStoreCard {
   };
 }
 
-export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {}): Promise<PublicStoreCard[]> {
-  const search = filters.search?.trim();
-  const categoryId = filters.categoryId;
-  const minRating = Number(filters.minRating || 0);
+export async function getPublicStoreDirectory(
+  filters: StoreDirectoryFilters = {}
+): Promise<PublicStoreCard[]> {
   const sortBy = filters.sortBy || 'recommended';
   const near = filters.near;
   const radius = Number(filters.radius || 25);
 
-  const where: Prisma.StoreWhereInput = {
-    isActive: true,
-    ...(categoryId && categoryId !== '_all' ? { categoryId } : {}),
-    ...(search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
-            { address: { contains: search, mode: 'insensitive' } },
-            { category: { name: { contains: search, mode: 'insensitive' } } },
-          ],
-        }
-      : {}),
-    ...(minRating > 0 ? { ratingAverage: { gte: minRating } } : {}),
-  };
+  const where = storeSearchWhere(filters);
 
   const stores = await db.store.findMany({
     where,
@@ -214,39 +206,44 @@ export async function getPublicStoreDirectory(filters: StoreDirectoryFilters = {
     take: 100,
   });
 
-  const origin = near
-    ? toGeoPoint(Number(near.split(',')[0]), Number(near.split(',')[1]))
-    : null;
+  const origin = near ? toGeoPoint(Number(near.split(',')[0]), Number(near.split(',')[1])) : null;
 
-  const ranked: DirectorySortRow[] = stores.map((store) => {
-    const point = toGeoPoint(store.latitude, store.longitude);
-    const trust = withStoreTrustPresentation(getStoreTrustSummary(store.ratingAverage, store.reviewCount));
-    return {
-      id: store.id,
-      name: store.name,
-      slug: store.slug,
-      description: store.description,
-      address: store.address,
-      image: store.image,
-      category: store.category,
-      ratingAverage: store.ratingAverage,
-      reviewCount: store.reviewCount,
-      trust,
-      services: store.bookingServices,
-      featured: isFeaturedStore(store.plan, store.featuredUntil),
-      distanceKm: origin && point ? Math.round(haversineKm(origin, point) * 10) / 10 : null,
-      weightedScore: getWeightedStoreScore(store.ratingAverage, store.reviewCount),
-    };
-  }).filter((store) => {
-    if (!origin || store.distanceKm === null) return true;
-    return store.distanceKm <= radius;
-  });
+  const ranked: DirectorySortRow[] = stores
+    .map((store) => {
+      const point = toGeoPoint(store.latitude, store.longitude);
+      const trust = withStoreTrustPresentation(
+        getStoreTrustSummary(store.ratingAverage, store.reviewCount)
+      );
+      return {
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        description: store.description,
+        address: store.address,
+        image: store.image,
+        category: store.category,
+        ratingAverage: store.ratingAverage,
+        reviewCount: store.reviewCount,
+        trust,
+        services: store.bookingServices,
+        featured: isFeaturedStore(store.plan, store.featuredUntil),
+        distanceKm: origin && point ? Math.round(haversineKm(origin, point) * 10) / 10 : null,
+        weightedScore: getWeightedStoreScore(store.ratingAverage, store.reviewCount),
+      };
+    })
+    .filter((store) => {
+      if (!origin || store.distanceKm === null) return true;
+      return store.distanceKm <= radius;
+    });
 
   ranked.sort((a, b) => {
     if (a.featured !== b.featured) return a.featured ? -1 : 1;
-    if (sortBy === 'rating') return b.ratingAverage - a.ratingAverage || b.reviewCount - a.reviewCount;
-    if (sortBy === 'reviews') return b.reviewCount - a.reviewCount || b.ratingAverage - a.ratingAverage;
-    if (sortBy === 'distance' && a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
+    if (sortBy === 'rating')
+      return b.ratingAverage - a.ratingAverage || b.reviewCount - a.reviewCount;
+    if (sortBy === 'reviews')
+      return b.reviewCount - a.reviewCount || b.ratingAverage - a.ratingAverage;
+    if (sortBy === 'distance' && a.distanceKm !== null && b.distanceKm !== null)
+      return a.distanceKm - b.distanceKm;
     return b.weightedScore - a.weightedScore || b.reviewCount - a.reviewCount;
   });
 
@@ -302,11 +299,10 @@ export async function getPublicMapStores(): Promise<PublicMapStore[]> {
   }));
 }
 
-export const getCachedPublicMapStores = unstable_cache(
-  getPublicMapStores,
-  ['store-map'],
-  { revalidate: 300, tags: [STORE_CACHE_TAGS.directory] }
-);
+export const getCachedPublicMapStores = unstable_cache(getPublicMapStores, ['store-map'], {
+  revalidate: 300,
+  tags: [STORE_CACHE_TAGS.directory],
+});
 
 export const storeDetailSelect = {
   id: true,
@@ -396,11 +392,10 @@ export async function getPublicStoreBySlug(slug: string): Promise<PublicStoreDet
 }
 
 export function getCachedPublicStoreBySlug(slug: string) {
-  return unstable_cache(
-    () => getPublicStoreBySlug(slug),
-    ['public-store', slug],
-    { revalidate: 300, tags: [STORE_CACHE_TAGS.directory, STORE_CACHE_TAGS.store(slug)] }
-  )();
+  return unstable_cache(() => getPublicStoreBySlug(slug), ['public-store', slug], {
+    revalidate: 300,
+    tags: [STORE_CACHE_TAGS.directory, STORE_CACHE_TAGS.store(slug)],
+  })();
 }
 
 export function anonymousStoreViewer(): StoreViewerState {
@@ -414,7 +409,10 @@ export function anonymousStoreViewer(): StoreViewerState {
   };
 }
 
-export async function invalidatePublicStoreCache(store: { id?: string | null; slug?: string | null }) {
+export async function invalidatePublicStoreCache(store: {
+  id?: string | null;
+  slug?: string | null;
+}) {
   let slug = store.slug || undefined;
   if (!slug && store.id) {
     const found = await db.store.findUnique({
@@ -426,7 +424,10 @@ export async function invalidatePublicStoreCache(store: { id?: string | null; sl
   invalidateStoreDirectoryCache(slug);
 }
 
-export async function getStoreViewerState(slug: string, userId?: string | null): Promise<StoreViewerState | null> {
+export async function getStoreViewerState(
+  slug: string,
+  userId?: string | null
+): Promise<StoreViewerState | null> {
   const store = await db.store.findFirst({
     where: { slug, isActive: true },
     select: {

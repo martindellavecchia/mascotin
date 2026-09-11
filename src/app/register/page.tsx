@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import ReturnLink from '@/components/auth/ReturnLink';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 import BrandLink from '@/components/brand/BrandLink';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { passwordSchema } from '@/lib/schemas';
+import { sanitizeCallbackUrl } from '@/lib/callback-url';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -90,7 +91,8 @@ export default function RegisterPage() {
 
       if (response.ok) {
         toast.success('Cuenta creada. Ahora iniciá sesión.');
-        router.push('/login');
+        const callbackUrl = sanitizeCallbackUrl(new URLSearchParams(window.location.search).get('callbackUrl'));
+        router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       } else {
         toast.error(data.error || 'Error al crear cuenta');
       }
@@ -281,12 +283,12 @@ export default function RegisterPage() {
 
           <p className="mt-8 text-center text-sm text-slate-600">
             ¿Ya tenés una cuenta?{' '}
-            <Link
+            <ReturnLink
               className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
               href="/login"
             >
               Iniciá sesión
-            </Link>
+            </ReturnLink>
           </p>
         </div>
       </div>

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { PublicStoreCard } from '@/lib/server/stores';
+import SaveSearchButton from '@/components/searches/SaveSearchButton';
 
 interface Category {
   id: string;
@@ -34,6 +35,7 @@ export default function ShopDirectory({
   const [stores, setStores] = useState(initialStores);
   const [categories] = useState(initialCategories);
   const [search, setSearch] = useState('');
+  const [zone, setZone] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoryId, setCategoryId] = useState('_all');
   const [minRating, setMinRating] = useState('_all');
@@ -42,6 +44,11 @@ export default function ShopDirectory({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const skipInitialFetch = useRef(true);
+  const hasFilters = Boolean(search.trim() || zone.trim() || categoryId !== '_all' || minRating !== '_all');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSearch(params.get('search') || ''); setCategoryId(params.get('categoryId') || '_all'); setMinRating(params.get('minRating') || '_all'); setZone(params.get('zone') || '');
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250);
@@ -51,6 +58,7 @@ export default function ShopDirectory({
   useEffect(() => {
     const isDefault =
       !debouncedSearch
+      && !zone
       && categoryId === '_all'
       && minRating === '_all'
       && sortBy === 'recommended';
@@ -66,6 +74,7 @@ export default function ShopDirectory({
     setError(null);
 
     const params = new URLSearchParams({ sortBy });
+    if (zone.trim()) params.set('zone', zone.trim());
     if (debouncedSearch) params.set('search', debouncedSearch);
     if (categoryId !== '_all') params.set('categoryId', categoryId);
     if (minRating !== '_all') params.set('minRating', minRating);
@@ -85,7 +94,7 @@ export default function ShopDirectory({
       });
 
     return () => controller.abort();
-  }, [debouncedSearch, categoryId, minRating, refreshKey, sortBy]);
+  }, [debouncedSearch, categoryId, minRating, refreshKey, sortBy, zone]);
 
   return (
     <main className="min-h-screen bg-background">
@@ -99,6 +108,8 @@ export default function ShopDirectory({
           />
 
           <div className="mt-7 rounded-lg border border-border bg-background p-4">
+            <div className="mb-3 flex flex-wrap gap-3"><Button asChild variant="outline"><Link href="/appointments">Mis turnos</Link></Button><SaveSearchButton kind="SERVICES" filters={{ search, zone: zone.trim(), categoryId: categoryId === '_all' ? '' : categoryId, minRating: minRating === '_all' ? 0 : Number(minRating) }} /></div>
+            <label className="mb-3 block text-sm font-medium">Zona elegida<Input value={zone} onChange={e => setZone(e.target.value)} placeholder="Barrio o ciudad (opcional)" /></label>
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar negocio, servicio o zona" className="h-12 pl-11" />
@@ -156,9 +167,9 @@ export default function ShopDirectory({
         ) : stores.length === 0 ? (
           <EmptyState
             icon={<Store className="size-11" aria-hidden="true" />}
-            title="No encontramos negocios con esos filtros"
-            description="Ajustá la búsqueda o administrá tu negocio desde el panel de proveedor."
-            action={<Button asChild><Link href="/provider" prefetch={false}>Ir al panel</Link></Button>}
+            title={hasFilters ? 'No encontramos negocios con esos filtros' : 'Todavía no hay negocios publicados'}
+            description={hasFilters ? 'Probá quitar los filtros para ver otras opciones.' : 'Mientras se suman servicios, podés conocer la comunidad.'}
+            action={hasFilters ? <Button onClick={() => { setSearch(''); setZone(''); setCategoryId('_all'); setMinRating('_all'); }}>Limpiar filtros</Button> : <Button asChild><Link href="/community" prefetch={false}>Explorar la comunidad</Link></Button>}
           />
         ) : (
           <div className="divide-y divide-border border-y border-border bg-surface">

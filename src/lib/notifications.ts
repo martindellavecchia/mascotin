@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { NotificationType, Prisma } from '@prisma/client';
 import { enqueueNotificationPush, type PushContext } from '@/lib/server/push';
+import { productEnabled } from '@/lib/product-flags';
 
 export interface CreateNotificationParams {
   userId: string;
@@ -16,6 +17,8 @@ export interface CreateNotificationParams {
 
 // Map notification type to UserSettings preference field
 const PREF_MAP: Record<NotificationType, string | null> = {
+  SEARCH_DIGEST: null,
+  MEETUP: 'notifyMatches',
   MATCH: 'notifyMatches',
   MESSAGE: 'notifyMessages',
   GROUP_MESSAGE: 'notifyMessages',
@@ -100,6 +103,16 @@ export async function createNotificationBulk(
   }
 
   if (allowedIds.length === 0) return;
+
+  if (type === 'SOLIDARITY_ADOPTION_ALERT' && entityId && productEnabled('SAVED_SEARCHES')) {
+    const notifications = await db.$transaction(async tx => {
+      const delivered = await tx.searchDelivery.createManyAndReturn({ data: allowedIds.map(userId => ({ userId, kind: 'ADOPTION', entityId })), skipDuplicates: true });
+      if (!delivered.length) return [];
+      return tx.notification.createManyAndReturn({ data: delivered.map(({ userId }) => ({ userId, actorId, type, title, body, link, entityId, dedupeKey: dedupeKeyPrefix ? `${dedupeKeyPrefix}:${userId}` : undefined })), skipDuplicates: true });
+    });
+    await Promise.allSettled(notifications.map(n => enqueueNotificationPush(n.id, pushContext)));
+    return;
+  }
 
   const notifications = await db.notification.createManyAndReturn({
     data: allowedIds.map(uid => ({

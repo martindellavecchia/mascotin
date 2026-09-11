@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import BrandLink from '@/components/brand/BrandLink';
+import ReturnLink from '@/components/auth/ReturnLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { sanitizeCallbackUrl } from '@/lib/callback-url';
@@ -154,12 +155,12 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-slate-600">
             ¿No tenés una cuenta?{' '}
-            <Link
+            <ReturnLink
               className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
               href="/register"
             >
               Registrate
-            </Link>
+            </ReturnLink>
           </p>
         </div>
       </div>

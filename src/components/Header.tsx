@@ -46,6 +46,7 @@ const SECONDARY_NAV_LINKS: NavigationLink[] = [
   { href: '/shop', label: 'Servicios', icon: Store },
   { href: '/profile', label: 'Perfil', icon: UserRound },
   { href: '/settings', label: 'Configuración', icon: Settings },
+  { href: '/appointments', label: 'Mis turnos', icon: Store },
 ];
 
 const NotificationBell = dynamic(
@@ -158,6 +159,7 @@ export default function Header({ session }: HeaderProps) {
     if (path === '/shop') return pathname.startsWith('/shop');
     if (path === '/community/events') return pathname.startsWith('/community/events');
     if (path === '/community') return pathname === '/community';
+    if (path === '/hogares-de-transito' && pathname.startsWith('/adoptions')) return true;
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 

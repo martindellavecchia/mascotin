@@ -10,6 +10,7 @@ import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { mergeMessagesById } from '@/lib/messages';
 import { getPrimaryImageUrl } from '@/lib/media';
 import { LoadingSpinner } from '@/components/ui/loading';
+import MeetupPanel from '@/components/messages/MeetupPanel';
 import type { MatchWithPet, Message } from '@/types/messages';
 
 interface MessagePageResponse {
@@ -216,6 +217,7 @@ export default function ChatWindow({
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+      <MeetupPanel key={matchId} matchId={matchId} userId={currentUserId} />
       <div className="flex min-w-0 shrink-0 items-center gap-3 border-b border-slate-100 p-3 sm:p-4">
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={otherPet?.primaryImageUrl || getPrimaryImageUrl(otherPet?.images, otherPet?.thumbnailIndex ?? 0) || undefined} />

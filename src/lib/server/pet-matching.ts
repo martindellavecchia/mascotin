@@ -51,7 +51,7 @@ export async function getRankedPetMatches(options: {
     db.userSettings.findUnique({ where: { userId: options.userId } }),
     db.user.findUnique({ where: { id: options.userId }, select: { syntheticRunId: true } }),
     db.swipe.findMany({
-      where: { fromPetId: options.currentPet.id },
+      where: { fromPetId: options.currentPet.id, undoneAt: null },
       select: { toPetId: true },
       take: 500,
     }),

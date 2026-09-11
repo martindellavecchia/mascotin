@@ -10,6 +10,7 @@ module.exports = {
     '^server-only$': '<rootDir>/src/mocks/serverOnlyMock.js',
   },
   testPathIgnorePatterns: [
+    '<rootDir>/src/__tests__/integration/',
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/temp-plugin-analysis/',

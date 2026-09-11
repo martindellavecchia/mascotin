@@ -78,7 +78,7 @@ export async function GET(request: Request) {
     }
 
     const swipedPetIds = await db.swipe.findMany({
-      where: { fromPetId: currentPetId },
+      where: { fromPetId: currentPetId, undoneAt: null },
       select: { toPetId: true },
     });
 

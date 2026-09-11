@@ -1,6 +1,9 @@
 import type { NotificationType } from '@prisma/client';
 
 export const PUSH_ELIGIBLE_TYPES = new Set<NotificationType>([
+  'SEARCH_DIGEST',
+  'APPOINTMENT',
+  'MEETUP',
   'MESSAGE',
   'ADOPTION_APPLICATION',
   'ADOPTION_MATCH',

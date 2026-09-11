@@ -185,7 +185,7 @@ export default function MapPage() {
           icon={<MapPinned className="size-11" aria-hidden="true" />}
           title="Todavía no hay lugares en el mapa"
           description="Cuando haya negocios publicados con ubicación, van a aparecer acá."
-          action={<Button asChild><Link href="/shop">Ver negocios</Link></Button>}
+          action={<Button asChild><Link href="/community">Explorar la comunidad</Link></Button>}
         />
       ) : (
         <>

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import IntentEntry from '@/components/home/IntentEntry';
+import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
     CalendarDays,
@@ -278,6 +280,8 @@ export default function SettingsPage() {
 
                     {/* CUENTA */}
                     <TabsContent value="cuenta" className="space-y-4">
+                        <IntentEntry navigate={false} />
+                        <Button asChild variant="outline"><Link href="/saved-searches">Administrar búsquedas guardadas</Link></Button>
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">

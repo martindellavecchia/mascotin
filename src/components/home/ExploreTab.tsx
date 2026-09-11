@@ -13,8 +13,8 @@ interface ExploreTabProps {
   loading: boolean;
   activePet?: Pet;
   onReload: () => void;
-  onLike: () => void;
-  onPass: () => void;
+  onLike: () => void | Promise<void>;
+  onPass: () => void | Promise<void>;
 }
 
 export default function ExploreTab({
@@ -36,13 +36,17 @@ export default function ExploreTab({
   const handlePass = () => {
     if (exitDirection) return;
     setExitDirection('left');
-    window.setTimeout(() => onPass(), 260);
+    window.setTimeout(async () => {
+      try { await onPass(); } finally { setExitDirection(null); }
+    }, 260);
   };
 
   const handleLike = () => {
     if (exitDirection) return;
     setExitDirection('right');
-    window.setTimeout(() => onLike(), 260);
+    window.setTimeout(async () => {
+      try { await onLike(); } finally { setExitDirection(null); }
+    }, 260);
   };
 
   return (

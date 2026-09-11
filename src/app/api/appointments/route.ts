@@ -1,163 +1,64 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-helpers';
 import { createAppointmentSchema } from '@/lib/schemas';
-import { createNotification } from '@/lib/notifications';
-import {
-    getAppointmentConflictWindow,
-    UPCOMING_APPOINTMENT_STATUSES,
-} from '@/lib/appointments';
-
-// GET - Get user's upcoming appointments
+import { productEnabled } from '@/lib/product-flags';
+import { BookingError, requestAppointment } from '@/lib/server/bookings';
 export async function GET(request: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
-                { status: 401 }
-            );
-        }
-
-        const appointments = await db.appointment.findMany({
-            where: {
-                userId: session.user.id,
-                status: {
-                    in: [...UPCOMING_APPOINTMENT_STATUSES],
-                },
-                date: {
-                    gte: new Date(),
-                },
-            },
-            orderBy: {
-                date: 'asc',
-            },
-            take: 5,
-            include: {
-                service: {
-                    include: {
-                        provider: true,
-                    },
-                },
-                pet: {
-                    select: {
-                        id: true,
-                        name: true,
-                        images: true,
-                        thumbnailIndex: true,
-                    },
-                },
-            },
-        });
-
-        return NextResponse.json({
-            success: true,
-            appointments,
-        });
-    } catch (error) {
-        console.error('Error fetching appointments:', error);
-        return NextResponse.json(
-            { success: false, error: 'Failed to fetch appointments' },
-            { status: 500 }
-        );
-    }
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  const params = new URL(request.url).searchParams;
+  const all = params.get('all') === 'true';
+  const page = Number(params.get('page') || 1);
+  if (!Number.isSafeInteger(page) || page < 1)
+    return NextResponse.json({ success: false, error: 'Página inválida' }, { status: 400 });
+  const size = all ? 50 : 5;
+  const appointments = await db.appointment.findMany({
+    where: {
+      userId: auth.session.user.id,
+      ...(!all ? { status: { in: ['PENDING', 'CONFIRMED'] }, date: { gte: new Date() } } : {}),
+    },
+    orderBy: [{ date: all ? 'desc' : 'asc' }, { id: 'asc' }],
+    take: size + 1,
+    skip: all ? (page - 1) * size : 0,
+    include: {
+      service: { include: { provider: true } },
+      pet: { select: { id: true, name: true, images: true, thumbnailIndex: true } },
+      history: { orderBy: { createdAt: 'asc' } },
+    },
+  });
+  return NextResponse.json({
+    success: true,
+    appointments: appointments.slice(0, size),
+    hasMore: appointments.length > size,
+  });
 }
-
-// POST - Create a new appointment
 export async function POST(request: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
-                { status: 401 }
-            );
-        }
-
-        const body = await request.json();
-        const parsed = createAppointmentSchema.safeParse(body);
-        if (!parsed.success) {
-            return NextResponse.json(
-                { success: false, error: 'Datos inválidos', details: parsed.error.issues },
-                { status: 400 }
-            );
-        }
-        const { serviceId, petId, date } = parsed.data;
-
-        // Verify pet belongs to user
-        const owner = await db.owner.findUnique({
-            where: { userId: session.user.id },
-            include: { pets: { select: { id: true } } },
-        });
-
-        if (!owner || !owner.pets.some(p => p.id === petId)) {
-            return NextResponse.json(
-                { success: false, error: 'Pet not found or not owned by user' },
-                { status: 403 }
-            );
-        }
-
-        // Check for conflicting appointment in same time slot (±duration)
-        const service = await db.service.findUnique({ where: { id: serviceId } });
-        if (!service) {
-            return NextResponse.json({ success: false, error: 'Servicio no encontrado' }, { status: 404 });
-        }
-        const appointmentDate = new Date(date);
-        const { windowStart, windowEnd } = getAppointmentConflictWindow(
-            appointmentDate,
-            service.duration
-        );
-        const conflict = await db.appointment.findFirst({
-            where: {
-                serviceId,
-                status: { in: [...UPCOMING_APPOINTMENT_STATUSES] },
-                // Ventana exclusiva para permitir turnos consecutivos sin solaparlos.
-                date: { gt: windowStart, lt: windowEnd },
-            },
-        });
-        if (conflict) {
-            return NextResponse.json({ success: false, error: 'Ya existe una cita en ese horario' }, { status: 409 });
-        }
-
-        const appointment = await db.appointment.create({
-            data: {
-                userId: session.user.id,
-                serviceId,
-                petId,
-                date: appointmentDate,
-                status: 'PENDING',
-            },
-            include: {
-                service: {
-                    include: { provider: true },
-                },
-                pet: true,
-            },
-        });
-
-        // Notify the service provider
-        if (appointment.service.provider) {
-            createNotification({
-                userId: appointment.service.provider.userId,
-                actorId: session.user.id,
-                type: 'APPOINTMENT',
-                title: 'Nueva cita agendada',
-                body: `${session.user.name || 'Un usuario'} agendó una cita para ${appointment.pet.name}`,
-                link: '/provider',
-                entityId: appointment.id,
-            }).catch(console.error);
-        }
-
-        return NextResponse.json({
-            success: true,
-            appointment,
-        });
-    } catch (error) {
-        console.error('Error creating appointment:', error);
-        return NextResponse.json(
-            { success: false, error: 'Failed to create appointment' },
-            { status: 500 }
-        );
-    }
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  if (!productEnabled('BOOKINGS'))
+    return NextResponse.json(
+      { success: false, error: 'Las reservas todavía no están habilitadas' },
+      { status: 503 }
+    );
+  const parsed = createAppointmentSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success)
+    return NextResponse.json(
+      { success: false, error: 'Revisá mascota, servicio y fecha' },
+      { status: 400 }
+    );
+  try {
+    return NextResponse.json(
+      { success: true, appointment: await requestAppointment(auth.session.user.id, parsed.data) },
+      { status: 201 }
+    );
+  } catch (err) {
+    if (err instanceof BookingError)
+      return NextResponse.json({ success: false, error: err.message }, { status: err.status });
+    console.error('appointment_create', err);
+    return NextResponse.json(
+      { success: false, error: 'No pudimos solicitar el turno' },
+      { status: 500 }
+    );
+  }
 }

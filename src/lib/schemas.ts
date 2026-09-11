@@ -244,6 +244,7 @@ export type ReviewProviderRequestData = z.infer<typeof reviewProviderRequestSche
 
 // User settings
 export const updateSettingsSchema = z.object({
+  entryIntent: z.enum(['MEET', 'ADOPT', 'HELP', 'SERVICES']).nullable().optional(),
   theme: z.enum(['light', 'dark', 'system']).optional(),
   matchingPaused: z.boolean().optional(),
   matchDistance: z.number().int().min(1).max(500).optional(),

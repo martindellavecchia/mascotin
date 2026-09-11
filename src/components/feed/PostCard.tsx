@@ -105,6 +105,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
 
     // Event Attendance
     const [isAttending, setIsAttending] = useState(post.isAttending || false);
+    const eventEnded = Boolean(post.eventDate && new Date(post.eventDate).getTime() <= Date.now());
     const [isResolved, setIsResolved] = useState(post.isResolved || false);
 
     // Comments state
@@ -425,6 +426,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             {/* Event Info */}
             {post.postType === 'event' && post.eventDate && (
                 <div className="mx-3 mb-2 rounded-lg border border-teal-100 bg-teal-50 p-2.5">
+                    <p className="mb-2 text-xs font-semibold text-primary">{eventEnded ? 'Finalizado' : 'Próximo'} · {format(new Date(post.eventDate), 'd MMM yyyy', { locale: es })}</p>
                     <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
                         <div className="flex min-w-12 flex-col items-center rounded-md bg-white px-2 py-1.5">
                             <span className="text-xs text-teal-700 font-bold uppercase">
@@ -452,13 +454,14 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 variant={isAttending ? 'tonal' : 'default'}
                                 className="col-span-2 min-h-11 w-full sm:col-span-1 sm:w-auto"
                                 onClick={handleAttend}
+                                disabled={eventEnded && !isAttending}
                             >
                                 {isAttending ? (
                                     <>
                                         <Check className="mr-1 size-4" aria-hidden="true" />
-                                        Asistiré
+                                        {eventEnded ? 'Retirar asistencia' : 'Asistiré'}
                                     </>
-                                ) : 'Asistir'}
+                                ) : eventEnded ? 'Evento finalizado' : 'Asistir'}
                             </Button>
                         )}
                     </div>

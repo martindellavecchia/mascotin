@@ -40,6 +40,11 @@ export async function POST(
                 attending: false,
             });
         } else {
+            const availableEvent = await db.event.findUnique({ where: { id: eventId }, select: { date: true } });
+            if (!availableEvent) return NextResponse.json({ success: false, error: 'Evento no encontrado' }, { status: 404 });
+            if (availableEvent.date.getTime() <= Date.now()) {
+                return NextResponse.json({ success: false, error: 'Este evento ya finalizó' }, { status: 409 });
+            }
             // Add attendance
             await db.eventAttendee.create({
                 data: {

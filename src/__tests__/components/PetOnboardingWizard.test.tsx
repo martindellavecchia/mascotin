@@ -24,6 +24,8 @@ describe('PetOnboardingWizard', () => {
 
     expect(screen.getByText('El nombre es requerido')).toBeInTheDocument();
     expect(screen.getByText('El tipo de mascota es requerido')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /nombre/i })).toHaveFocus();
+    expect(screen.getByRole('alert')).toHaveTextContent('Revisá los campos');
     expect(global.fetch).not.toHaveBeenCalled();
   });
 

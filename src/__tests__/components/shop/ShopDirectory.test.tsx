@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import ShopDirectory from '@/components/shop/ShopDirectory';
 import type { PublicStoreCard } from '@/lib/server/stores';
+jest.mock('@/components/searches/SaveSearchButton', () => ({ __esModule: true, default: () => null }));
 
 const store: PublicStoreCard = {
   id: 'store-1',

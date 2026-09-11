@@ -14,7 +14,7 @@ export default function CommunityLayout({ children, header }: CommunityLayoutPro
   const links = [
     { href: '/community', label: 'Actividad' },
     { href: '/community/groups', label: 'Grupos' },
-    { href: '/community/events', label: 'Agenda' },
+    { href: '/community/events', label: 'Eventos' },
   ];
 
   return (

@@ -18,11 +18,11 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     profile: profile || {
-      housingType: 'apartment',
+      housingType: '',
       hasYard: owner?.hasYard || false,
       hasKids: false,
       hasOtherPets: owner?.hasOtherPets || false,
-      experience: 'some',
+      experience: '',
       hoursAvailable: '',
       notes: '',
     },

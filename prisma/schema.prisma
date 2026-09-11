@@ -21,6 +21,8 @@ enum UserRole {
 }
 
 enum NotificationType {
+  SEARCH_DIGEST
+  MEETUP
   MATCH
   MESSAGE
   GROUP_MESSAGE
@@ -194,6 +196,10 @@ model User {
   comments               Comment[]
   likes                  Like[]
   appointments           Appointment[] // Citas como cliente
+  savedSearches          SavedSearch[]
+  searchDeliveries        SearchDelivery[]
+  searchDigests           SearchDigest[]
+  productEvents          ProductEvent[]
   events                 Event[]
   eventAttendees         EventAttendee[]
   eventDismissals        EventDismissal[]
@@ -229,7 +235,82 @@ model User {
   @@index([syntheticRunId])
 }
 
+model SavedSearch {
+  id String @id @default(cuid())
+  userId String
+  name String
+  kind String
+  filters Json
+  enabled Boolean @default(true)
+  pushEnabled Boolean @default(false)
+  lastCheckedAt DateTime @default(now())
+  lastCheckedId String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, enabled])
+}
+
+model SearchDelivery {
+  id String @id @default(cuid())
+  userId String
+  kind String
+  entityId String
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, kind, entityId])
+}
+
+model SearchDigest {
+  id String @id @default(cuid())
+  userId String
+  day String
+  count Int @default(0)
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, day])
+}
+
+model ProductEvent {
+  id String @id @default(cuid())
+  userId String
+  name String
+  entityKey String
+  syntheticRunId String?
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, name, entityKey])
+  @@index([name, syntheticRunId, createdAt])
+}
+
+model AppointmentEvent {
+  id String @id @default(cuid())
+  appointmentId String
+  actorId String
+  status String
+  date DateTime
+  createdAt DateTime @default(now())
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  @@index([appointmentId, createdAt])
+}
+
+model Meetup {
+  id String @id @default(cuid())
+  matchId String
+  proposedById String
+  place String
+  date DateTime
+  durationMinutes Int @default(60)
+  status String @default("PROPOSED")
+  version Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  @@index([matchId, createdAt])
+}
+
 model UserSettings {
+  entryIntent          String?
   id                   String   @id @default(cuid())
   userId               String   @unique
   theme                String   @default("system")
@@ -292,6 +373,7 @@ model ProviderRequest {
 }
 
 model ProviderProfile {
+  schedule     Json?
   id           String    @id @default(cuid())
   userId       String    @unique
   businessName String
@@ -325,6 +407,8 @@ model Service {
 }
 
 model Appointment {
+  durationMinutes Int?
+  history   AppointmentEvent[]
   id        String   @id @default(cuid())
   serviceId String
   userId    String // Cliente (Dueño)
@@ -473,6 +557,7 @@ model PetHealthRecord {
 }
 
 model Pet {
+  swipeSequence Int @default(0)
   id                String      @id @default(cuid())
   ownerId           String
   name              String
@@ -536,6 +621,9 @@ model Pet {
 }
 
 model Swipe {
+  actionSequence Int @default(0)
+  actedAt   DateTime @default(now())
+  undoneAt  DateTime?
   id        String   @id @default(cuid())
   fromId    String   @default("") // Legacy — kept for data compat
   toId      String   @default("") // Legacy — kept for data compat
@@ -553,6 +641,7 @@ model Swipe {
 }
 
 model Match {
+  meetups   Meetup[]
   id        String   @id @default(cuid())
   user1Id   String   @default("") // Legacy — kept for data compat
   user2Id   String   @default("") // Legacy — kept for data compat
@@ -704,6 +793,7 @@ model Group {
 }
 
 model GroupMember {
+  lastReadAt DateTime @default(now())
   id       String   @id @default(cuid())
   groupId  String
   userId   String

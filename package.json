@@ -8,6 +8,8 @@
     "start": "next start -p 3000",
     "lint": "eslint src next.config.ts tailwind.config.ts",
     "test": "jest",
+    "test:product": "jest --config jest.product.config.cjs --runInBand",
+    "test:product:upgrade": "node scripts/verify-product-upgrade.mjs",
     "test:watch": "jest --watch",
     "canary:production": "node scripts/production-canary.mjs",
     "perf:audit": "node scripts/performance-audit.mjs",

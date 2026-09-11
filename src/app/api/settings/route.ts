@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { updateSettingsSchema } from '@/lib/schemas';
+import { recordProductEvent } from '@/lib/server/product-events';
 
 export async function GET() {
     try {
@@ -50,6 +51,7 @@ export async function PATCH(request: Request) {
 
         const data: Record<string, unknown> = {};
         const d = parsed.data;
+        if (d.entryIntent !== undefined) data.entryIntent = d.entryIntent;
         if (d.theme !== undefined) data.theme = d.theme;
         if (d.matchingPaused !== undefined) data.matchingPaused = d.matchingPaused;
         if (d.matchDistance !== undefined) data.matchDistance = d.matchDistance;
@@ -69,6 +71,7 @@ export async function PATCH(request: Request) {
             create: { userId: session.user.id, ...data },
             update: data,
         });
+        if (d.entryIntent) await recordProductEvent(session.user.id, 'intent_selected', d.entryIntent);
 
         return NextResponse.json({
             success: true,

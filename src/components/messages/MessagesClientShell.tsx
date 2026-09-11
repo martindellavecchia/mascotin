@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import ConversationList from '@/components/messages/ConversationList';
+import UnifiedInbox from '@/components/messages/UnifiedInbox';
+import type { InboxRow } from '@/lib/server/inbox';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
@@ -44,6 +46,7 @@ interface MessagesClientShellProps {
   } | null;
   initialMatches: MatchWithPet[];
   initialGroups: MessageGroupListItem[];
+  initialInbox?: InboxRow[];
 }
 
 interface GroupListItem extends MessageGroupListItem {
@@ -74,8 +77,10 @@ export default function MessagesClientShell({
   session,
   initialMatches,
   initialGroups,
+  initialInbox,
 }: MessagesClientShellProps) {
   const [matches, setMatches] = useState<MatchWithPet[]>(initialMatches);
+  const [inbox, setInbox] = useState(initialInbox);
   const [groups, setGroups] = useState<MessageGroupListItem[]>(initialGroups);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<'match' | 'group' | null>(null);
@@ -102,6 +107,8 @@ export default function MessagesClientShell({
   }, []);
 
   const fetchDirectory = async () => {
+    const inboxResult = await fetchWithError<{ conversations: InboxRow[] }>('/api/inbox', { showError: false });
+    if (inboxResult.success && inboxResult.data) setInbox(inboxResult.data.conversations);
     const [matchesResult, groupsResult] = await Promise.all([
       fetchWithError<{ matches: MatchWithPet[] }>('/api/matches', {
         showError: false,
@@ -244,13 +251,13 @@ export default function MessagesClientShell({
             showChat ? 'hidden lg:flex' : 'flex'
           }`}
         >
-          <ConversationList
+          {inbox ? <UnifiedInbox rows={inbox} onSelect={handleSelect} /> : <ConversationList
             matches={matches}
             groups={groups}
             selectedId={selectedId}
             selectedType={selectedType}
             onSelect={handleSelect}
-          />
+          />}
         </div>
 
         <div
