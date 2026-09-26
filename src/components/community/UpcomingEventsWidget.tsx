@@ -46,28 +46,30 @@ export default function UpcomingEventsWidget() {
             const response = await fetch(`/api/events/${eventId}/attend`, {
                 method: 'POST',
             });
-            const data = await response.json();
-            if (data.success) {
+            const data = await response.json().catch(() => null);
+            if (response.ok && data?.success) {
                 toast.success(data.attending ? '¡Te anotaste!' : 'Ya no asistirás');
                 fetchEvents();
+            } else {
+                toast.error(data?.error || 'No se pudo actualizar tu asistencia');
             }
-        } catch (error) {
-            toast.error('Error al actualizar asistencia');
+        } catch {
+            toast.error('Error de conexión. Intentá de nuevo.');
         }
     };
 
     const handleDismiss = async (eventId: string) => {
-        // Optimistic remove
         setEvents(prev => prev.filter(e => e.id !== eventId));
 
         try {
-            await fetch(`/api/events/${eventId}/dismiss`, {
+            const response = await fetch(`/api/events/${eventId}/dismiss`, {
                 method: 'POST',
             });
+            if (!response.ok) throw new Error('dismiss failed');
             toast.success('Evento ocultado');
-        } catch (error) {
-            toast.error('Error al ocultar evento');
-            fetchEvents(); // Revert on error
+        } catch {
+            toast.error('No se pudo ocultar el evento');
+            fetchEvents();
         }
     };
 

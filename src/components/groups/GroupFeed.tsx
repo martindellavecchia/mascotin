@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import PostCard from '@/components/feed/PostCard';
@@ -23,6 +24,7 @@ interface GroupFeedProps {
 export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     // Form States
     const [activeTab, setActiveTab] = useState('post');
@@ -40,15 +42,25 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
     const fetchPosts = async () => {
         try {
             const res = await fetch(`/api/groups/${groupId}/posts`);
-            const data = await res.json();
-            if (data.success) {
+            const data = await res.json().catch(() => null);
+            if (res.ok && data?.success) {
                 setPosts(data.posts);
+                setLoadError(null);
+            } else {
+                setLoadError(data?.error || 'Revisá tu conexión e intentá de nuevo.');
             }
         } catch (error) {
             console.error('Error fetching posts:', error);
+            setLoadError('Revisá tu conexión e intentá de nuevo.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const retryFetch = () => {
+        setLoading(true);
+        setLoadError(null);
+        void fetchPosts();
     };
 
     useEffect(() => {
@@ -226,7 +238,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                 {/* Image Preview */}
                                 {image && (
                                     <div className="relative w-full h-48 bg-slate-100 rounded-lg overflow-hidden">
-                                        <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                                        <img src={image} alt="Vista previa de la imagen" className="w-full h-full object-cover" />
                                         <button
                                             onClick={() => setImage('')}
                                             aria-label="Quitar imagen"
@@ -267,10 +279,17 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
             {/* Post List */}
             {loading ? (
                 <div className="text-center py-8 text-slate-500 animate-pulse">Cargando publicaciones...</div>
+            ) : loadError ? (
+                <StateFeedback
+                    status="error"
+                    title="No pudimos cargar las publicaciones del grupo"
+                    description={loadError}
+                    action={<Button variant="outline" onClick={retryFetch}>Reintentar</Button>}
+                />
             ) : posts.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-12 text-center">
-                    <MessageCircle className="mb-2 size-10 text-slate-300" aria-hidden="true" />
-                    <p className="text-slate-500 [overflow-wrap:anywhere]">Aún no hay publicaciones. ¡Comienza la conversación!</p>
+                    <MessageCircle className="mx-auto mb-2 size-10 text-slate-300" aria-hidden="true" />
+                    <p className="text-slate-500 [overflow-wrap:anywhere]">Aún no hay publicaciones. ¡Empezá la conversación!</p>
                 </div>
             ) : (
                 <div className="min-w-0 space-y-4">

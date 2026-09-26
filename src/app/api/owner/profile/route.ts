@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: 'Iniciá sesión para continuar' },
         { status: 401 }
       );
     }
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     if (!owner) {
       return NextResponse.json({
         success: false,
-        error: 'Owner profile not found',
+        error: 'Todavía no completaste tu perfil',
         role: user?.role || 'OWNER',
       });
     }
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch owner profile' },
+      { success: false, error: 'No pudimos cargar tu perfil. Intentá de nuevo.' },
       { status: 500 }
     );
   }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: 'Iniciá sesión para continuar' },
         { status: 401 }
       );
     }
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
 
     if (!name || !location) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: name, location' },
+        { success: false, error: 'Completá tu nombre y tu ubicación' },
         { status: 400 }
       );
     }
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
 
     if (existingOwner) {
       return NextResponse.json(
-        { success: false, error: 'Owner profile already exists' },
+        { success: false, error: 'Ya tenés un perfil creado' },
         { status: 400 }
       );
     }
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: 'Failed to create owner profile' },
+      { success: false, error: 'No pudimos crear tu perfil. Intentá de nuevo.' },
       { status: 500 }
     );
   }
@@ -110,7 +110,7 @@ export async function PUT(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: 'Iniciá sesión para continuar' },
         { status: 401 }
       );
     }
@@ -125,7 +125,7 @@ export async function PUT(request: Request) {
 
     if (!existingOwner) {
       return NextResponse.json(
-        { success: false, error: 'Owner profile not found' },
+        { success: false, error: 'Todavía no completaste tu perfil' },
         { status: 404 }
       );
     }
@@ -149,7 +149,7 @@ export async function PUT(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: 'Failed to update owner profile' },
+      { success: false, error: 'No pudimos guardar tu perfil. Intentá de nuevo.' },
       { status: 500 }
     );
   }

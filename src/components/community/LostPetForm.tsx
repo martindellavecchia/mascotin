@@ -60,7 +60,9 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
     }, [open, session?.user?.id]);
 
     useEffect(() => {
-        if (open && mode === 'lost' && initialPetId) {
+        if (open && mode === 'found') {
+            setSelectedPetId('');
+        } else if (open && mode === 'lost' && initialPetId) {
             setSelectedPetId(initialPetId);
         }
     }, [initialPetId, mode, open]);
@@ -110,7 +112,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
             const data = await res.json();
             if (data.success || data.post) {
-                toast.success(mode === 'found' ? 'Avistamiento publicado' : 'Alerta de mascota perdida publicada');
+                toast.success(mode === 'found' ? 'Alerta de mascota encontrada publicada' : 'Alerta de mascota perdida publicada');
                 onOpenChange(false);
                 onSuccess?.();
                 // Reset form
@@ -133,33 +135,36 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-red-600">
+                    <DialogTitle className={`flex items-center gap-2 ${mode === 'found' ? 'text-teal-700' : 'text-red-600'}`}>
                         <CircleAlert className="size-5" aria-hidden="true" />
                         {mode === 'found' ? 'Reportar mascota encontrada' : 'Reportar mascota perdida'}
                     </DialogTitle>
                     <DialogDescription>
-                        Compartí datos precisos para que la comunidad pueda ayudar a ubicarla.
+                        {mode === 'found'
+                            ? 'Compartí datos precisos para que su familia pueda reconocerla y contactarte.'
+                            : 'Compartí datos precisos para que la comunidad pueda ayudar a ubicarla.'}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                    {/* Pet Selection */}
-                    <div className="space-y-2">
-                        <Label>¿Es tu mascota?</Label>
-                        <Select value={selectedPetId || '_none'} onValueChange={(val) => setSelectedPetId(val === '_none' ? '' : val)} disabled={loadingPets}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={loadingPets ? 'Cargando mascotas...' : 'Seleccioná una opción'} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {pets.map(pet => (
-                                    <SelectItem key={pet.id} value={pet.id}>
-                                        {pet.name}
-                                    </SelectItem>
-                                ))}
-                                <SelectItem value="_none">No es mi mascota / Otra</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {mode === 'lost' && (
+                        <div className="space-y-2">
+                            <Label>¿Es tu mascota?</Label>
+                            <Select value={selectedPetId || '_none'} onValueChange={(val) => setSelectedPetId(val === '_none' ? '' : val)} disabled={loadingPets}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder={loadingPets ? 'Cargando mascotas...' : 'Seleccioná una opción'} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {pets.map(pet => (
+                                        <SelectItem key={pet.id} value={pet.id}>
+                                            {pet.name}
+                                        </SelectItem>
+                                    ))}
+                                    <SelectItem value="_none">No es mi mascota / Otra</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
 
                     {/* Image Upload - Always show */}
                     <div className="space-y-2">
@@ -231,7 +236,9 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     <div className="space-y-2">
                         <Label>Descripción *</Label>
                         <Textarea
-                            placeholder="Describe a la mascota, características distintivas, circunstancias de la pérdida..."
+                            placeholder={mode === 'found'
+                                ? 'Describí a la mascota, si tiene collar o chapita y cómo está ahora...'
+                                : 'Describí a la mascota, características distintivas, circunstancias de la pérdida...'}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={3}
@@ -243,7 +250,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     <div className="space-y-2">
                         <Label className="flex items-center gap-1">
                             <MapPin className="size-4" aria-hidden="true" />
-                            Última ubicación vista *
+                            {mode === 'found' ? 'Dónde la encontraste *' : 'Última ubicación vista *'}
                         </Label>
                         <Input
                             placeholder="Ej: Plaza San Martín, Palermo CABA"

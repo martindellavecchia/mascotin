@@ -12,7 +12,7 @@ export async function PATCH(
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'No autenticado' },
                 { status: 401 }
             );
         }
@@ -27,21 +27,21 @@ export async function PATCH(
 
         if (!post) {
             return NextResponse.json(
-                { success: false, error: 'Post not found' },
+                { success: false, error: 'Alerta no encontrada' },
                 { status: 404 }
             );
         }
 
         if (post.authorId !== session.user.id) {
             return NextResponse.json(
-                { success: false, error: 'Only the author can mark this as resolved' },
+                { success: false, error: 'Solo quien publicó la alerta puede cambiar su estado' },
                 { status: 403 }
             );
         }
 
         if (!['lost_pet', 'found_pet'].includes(post.postType)) {
             return NextResponse.json(
-                { success: false, error: 'This action is only for lost or found pet posts' },
+                { success: false, error: 'Esta acción solo aplica a alertas de mascotas perdidas o encontradas' },
                 { status: 400 }
             );
         }
@@ -66,12 +66,12 @@ export async function PATCH(
             post: updatedPost,
             message: updatedPost.isResolved
                 ? '¡Excelente! Marcamos a tu mascota como encontrada'
-                : 'El post ha sido marcado como activo nuevamente',
+                : 'La alerta volvió a estar activa',
         });
     } catch (error) {
         console.error('Error resolving lost pet post:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to update post' },
+            { success: false, error: 'No se pudo actualizar la alerta' },
             { status: 500 }
         );
     }

@@ -262,7 +262,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
     return <div className="mx-auto max-w-6xl space-y-4 px-4 py-8"><div className="h-10 w-40 animate-pulse rounded bg-slate-200" /><div className="h-80 animate-pulse rounded-2xl bg-slate-200" /></div>;
   }
   if (!data) {
-    return <div className="mx-auto max-w-xl px-4 py-20 text-center"><h1 className="text-xl font-semibold">No pudimos abrir el caso</h1><Button asChild variant="outline" className="mt-4"><Link href="/hogares-de-transito">Volver a Hogares de tránsito</Link></Button></div>;
+    return <div className="mx-auto max-w-xl px-4 py-20 text-center"><h1 className="text-xl font-semibold">No pudimos abrir el caso</h1><p className="mt-2 text-sm text-muted-foreground">Es posible que se haya cerrado o que el enlace no sea correcto.</p><Button asChild variant="outline" className="mt-4"><Link href="/hogares-de-transito">Volver a Hogares de tránsito</Link></Button></div>;
   }
 
   const rescueCase = data.case;

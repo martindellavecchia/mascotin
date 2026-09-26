@@ -7,9 +7,11 @@ import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { getPrimaryImageUrl } from '@/lib/media';
+import { DEFAULT_TIME_ZONE, getTimeZoneLabel } from '@/lib/timezone-label';
 
 interface Appointment {
   id: string;
@@ -58,7 +60,7 @@ export default function ProviderAppointments() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [timeZone, setTimeZone] = useState('America/Argentina/Buenos_Aires');
+  const [timeZone, setTimeZone] = useState(DEFAULT_TIME_ZONE);
   const [updating, setUpdating] = useState<string | null>(null);
   const { fetchWithError } = useFetchWithError();
 
@@ -78,7 +80,7 @@ export default function ProviderAppointments() {
       setAppointments(result.data.appointments || []);
       setCounts(result.data.counts || { PENDING: 0, CONFIRMED: 0, CANCELLED: 0, COMPLETED: 0 });
       setHasMore(result.data.hasMore);
-      setTimeZone(result.data.timeZone || 'America/Argentina/Buenos_Aires');
+      setTimeZone(result.data.timeZone || DEFAULT_TIME_ZONE);
       setLoadError(false);
     } else {
       setLoadError(true);
@@ -117,15 +119,32 @@ export default function ProviderAppointments() {
                 : 'Estado actualizado'
         );
         fetchAppointments();
-      } else {
-        toast.error(data.error || 'Error al actualizar');
+        return true;
       }
+      toast.error(data.error || 'Error al actualizar');
+      return false;
     } catch (error) {
+      console.error('Error updating appointment status:', error);
       toast.error('Error al actualizar');
+      return false;
     } finally {
       setUpdating(null);
     }
   };
+
+  const formatAppointmentDate = (value: string) =>
+    new Date(value).toLocaleString('es-AR', {
+      timeZone,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    });
+
+  const describeAppointment = (apt: Appointment) =>
+    `${apt.service.name} para ${apt.pet.name} (${apt.user.name || 'cliente'}) el ${formatAppointmentDate(apt.date)}, ${getTimeZoneLabel(timeZone)}. Le vamos a avisar al cliente.`;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -155,7 +174,7 @@ export default function ProviderAppointments() {
 
   return (
     <div className="min-w-0 space-y-6">
-      <p className="text-sm text-muted-foreground">Horarios de {timeZone.replaceAll('_', ' ')}</p>
+      <p className="text-sm text-muted-foreground">Horarios en {getTimeZoneLabel(timeZone)}</p>
       {/* Status Tabs */}
       <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         <div className="flex min-w-max gap-2">
@@ -221,7 +240,10 @@ export default function ProviderAppointments() {
         </Card>
       ) : (
         <div className="min-w-0 space-y-4">
-          {appointments.map((apt) => (
+          {appointments.map((apt) => {
+            const isPast = new Date(apt.date) <= new Date();
+            const pastHintId = `past-slot-${apt.id}`;
+            return (
             <Card key={apt.id} className="min-w-0 transition-colors hover:border-primary/35">
               <CardContent className="min-w-0 p-4">
                 <div className="min-w-0 space-y-4">
@@ -301,37 +323,58 @@ export default function ProviderAppointments() {
 
                   {/* Action Buttons */}
                   {apt.status === 'PENDING' && (
-                    <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:flex sm:justify-end">
-                      <Button
-                        size="sm"
-                        className="min-h-10 w-full bg-teal-500 hover:bg-teal-600 sm:w-auto"
-                        disabled={updating === apt.id || new Date(apt.date) <= new Date()}
-                        onClick={() => updateStatus(apt.id, 'CONFIRMED')}
-                      >
-                        {updating === apt.id ? '...' : 'Confirmar'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="min-h-10 w-full border-red-200 text-red-600 hover:bg-red-50 sm:w-auto"
-                        disabled={updating === apt.id}
-                        onClick={() => updateStatus(apt.id, 'CANCELLED')}
-                      >
-                        Rechazar
-                      </Button>
-                    </div>
+                      <div className="space-y-2 border-t border-slate-100 pt-3">
+                        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+                          <Button
+                            size="sm"
+                            className="min-h-10 w-full bg-teal-500 hover:bg-teal-600 sm:w-auto"
+                            disabled={updating === apt.id || isPast}
+                            aria-describedby={isPast ? pastHintId : undefined}
+                            onClick={() => void updateStatus(apt.id, 'CONFIRMED')}
+                          >
+                            {updating === apt.id ? '...' : 'Confirmar'}
+                          </Button>
+                          <ConfirmDialog
+                            title="¿Rechazar esta solicitud?"
+                            description={describeAppointment(apt)}
+                            confirmLabel="Rechazar solicitud"
+                            destructive
+                            onConfirm={() => updateStatus(apt.id, 'CANCELLED')}
+                            trigger={
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="min-h-10 w-full border-red-200 text-red-600 hover:bg-red-50 sm:w-auto"
+                                disabled={updating === apt.id}
+                              >
+                                Rechazar
+                              </Button>
+                            }
+                          />
+                        </div>
+                        {isPast && (
+                          <p id={pastHintId} className="text-xs text-muted-foreground sm:text-right">
+                            No se puede confirmar un horario que ya pasó. Podés rechazarlo para que el
+                            cliente solicite otro horario.
+                          </p>
+                        )}
+                      </div>
                   )}
 
                   {apt.status === 'CONFIRMED' && (
                     <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3 sm:justify-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={updating === apt.id}
-                        onClick={() => updateStatus(apt.id, 'CANCELLED')}
-                      >
-                        Cancelar turno
-                      </Button>
+                      <ConfirmDialog
+                        title="¿Cancelar este turno confirmado?"
+                        description={describeAppointment(apt)}
+                        confirmLabel="Cancelar turno"
+                        destructive
+                        onConfirm={() => updateStatus(apt.id, 'CANCELLED')}
+                        trigger={
+                          <Button size="sm" variant="ghost" disabled={updating === apt.id}>
+                            Cancelar turno
+                          </Button>
+                        }
+                      />
                       <Button
                         size="sm"
                         variant="outline"
@@ -342,7 +385,7 @@ export default function ProviderAppointments() {
                             (apt.durationMinutes ?? apt.service.duration) * 60000 >
                             Date.now()
                         }
-                        onClick={() => updateStatus(apt.id, 'COMPLETED')}
+                        onClick={() => void updateStatus(apt.id, 'COMPLETED')}
                       >
                         Marcar completada
                       </Button>
@@ -351,7 +394,8 @@ export default function ProviderAppointments() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
       {(page > 1 || hasMore) && (

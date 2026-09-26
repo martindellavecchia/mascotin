@@ -4,6 +4,8 @@ import { getMessagesBootstrapData } from '@/lib/server/messages';
 import { getCachedSession } from '@/lib/session';
 import { getInbox } from '@/lib/server/inbox';
 
+export const metadata = { title: 'Mensajes' };
+
 export default async function MessagesPage() {
   const session = await getCachedSession();
 

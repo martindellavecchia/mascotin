@@ -37,7 +37,19 @@ export async function POST(
 
     const parsed = storePromotionSchema.safeParse(await request.json());
     if (!parsed.success) {
-      return NextResponse.json({ success: false, error: 'Datos inválidos', details: parsed.error.issues }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Revisá el título (mín. 2 caracteres), el detalle (mín. 10) y las fechas', details: parsed.error.issues }, { status: 400 });
+    }
+
+    const startsAt = new Date(parsed.data.startsAt);
+    const endsAt = new Date(parsed.data.endsAt);
+    if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
+      return NextResponse.json({ success: false, error: 'Revisá las fechas de la promoción' }, { status: 400 });
+    }
+    if (endsAt <= startsAt) {
+      return NextResponse.json({ success: false, error: 'La fecha de fin tiene que ser posterior al inicio' }, { status: 400 });
+    }
+    if (endsAt <= new Date()) {
+      return NextResponse.json({ success: false, error: 'La promoción ya terminó. Elegí una fecha de fin futura.' }, { status: 400 });
     }
 
     const promotion = await db.storePromotion.create({
@@ -45,14 +57,14 @@ export async function POST(
         storeId: store.id,
         title: parsed.data.title,
         body: parsed.data.body,
-        startsAt: new Date(parsed.data.startsAt),
-        endsAt: new Date(parsed.data.endsAt),
+        startsAt,
+        endsAt,
       },
     });
 
     await db.store.update({
       where: { id: store.id },
-      data: { plan: 'FEATURED', featuredUntil: new Date(parsed.data.endsAt) },
+      data: { plan: 'FEATURED', featuredUntil: endsAt },
     });
     await invalidatePublicStoreCache(store);
 

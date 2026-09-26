@@ -9,6 +9,7 @@ import { PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,6 +51,13 @@ interface ListingDetail {
   } | null;
 }
 
+const APPLICATION_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pendiente',
+  ACCEPTED: 'Aceptada',
+  REJECTED: 'Rechazada',
+  CANCELLED: 'Cancelada',
+};
+
 export default function AdoptionDetailPage() {
   const params = useParams<{ id: string }>();
   const { data: session, status: sessionStatus } = useSession();
@@ -60,6 +68,52 @@ export default function AdoptionDetailPage() {
   const [ownerName, setOwnerName] = useState('');
   const [ownerLocation, setOwnerLocation] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+
+  const reviewApplication = async (applicationId: string, status: 'ACCEPTED' | 'REJECTED') => {
+    setReviewingId(applicationId);
+    try {
+      const response = await fetch(`/api/adoptions/applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success) {
+        toast.error(data?.error || 'No se pudo actualizar la postulación');
+        return false;
+      }
+      toast.success(status === 'ACCEPTED' ? 'Postulación aceptada' : 'Postulación rechazada');
+      void load();
+      return true;
+    } catch {
+      toast.error('Error de conexión. Intentá de nuevo.');
+      return false;
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const cancelHandoff = async (listingId: string) => {
+    setConfirming(true);
+    try {
+      const response = await fetch(`/api/adoptions/${listingId}/handoff/cancel`, { method: 'POST' });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success) {
+        toast.error(data?.error || 'No se pudo cancelar la coordinación');
+        return false;
+      }
+      toast.success('La ficha volvió a recibir postulaciones');
+      void load();
+      return true;
+    } catch {
+      toast.error('Error de conexión. Intentá de nuevo.');
+      return false;
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   const load = async () => {
     setLoadError(false);
@@ -111,11 +165,7 @@ export default function AdoptionDetailPage() {
   const image = getPrimaryImageUrl(listing.pet.images, listing.pet.thumbnailIndex);
   const isOwner = listing.listedByUserId === session?.user?.id;
   const currentApplication = !isOwner ? listing.applications?.[0] : undefined;
-  const applicationStatus = currentApplication?.status === 'ACCEPTED'
-    ? 'Aceptada'
-    : currentApplication?.status === 'REJECTED'
-      ? 'Rechazada'
-      : 'Pendiente';
+  const applicationStatus = APPLICATION_STATUS_LABELS[currentApplication?.status || 'PENDING'] || 'Pendiente';
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
@@ -180,12 +230,14 @@ export default function AdoptionDetailPage() {
                 }}>Confirmar {listing.handoff.role === 'FOSTER' ? 'entrega' : 'recepción'}</Button>
               )}
               {listing.handoff.role === 'FOSTER' && (
-                <Button variant="outline" disabled={confirming} onClick={async () => {
-                  const response = await fetch(`/api/adoptions/${listing.id}/handoff/cancel`, { method: 'POST' });
-                  const data = await response.json();
-                  toast[data.success ? 'success' : 'error'](data.success ? 'La ficha volvió a recibir postulaciones' : data.error || 'No se pudo cancelar');
-                  if (data.success) void load();
-                }}>Cancelar coordinación</Button>
+                <ConfirmDialog
+                  title="¿Cancelar la coordinación de la entrega?"
+                  description="La familia seleccionada dejará de estar confirmada y la ficha volverá a recibir postulaciones."
+                  confirmLabel="Cancelar coordinación"
+                  destructive
+                  onConfirm={() => cancelHandoff(listing.id)}
+                  trigger={<Button variant="outline" disabled={confirming}>Cancelar coordinación</Button>}
+                />
               )}
             </div>
           </CardContent>
@@ -207,25 +259,35 @@ export default function AdoptionDetailPage() {
           ) : (
             <>
               <h2 className="font-semibold">Postularse</h2>
+              <Label htmlFor="adoption-application-message">Tu mensaje</Label>
               <Textarea
+                id="adoption-application-message"
                 placeholder="Contá por qué podés darle un hogar responsable"
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
+                disabled={applying}
               />
-              <Button className="w-full sm:w-auto" onClick={async () => {
-                const response = await fetch(`/api/adoptions/${listing.id}`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ message }),
-                });
-                const data = await response.json();
-                if (data.success) {
-                  toast.success(`Postulación enviada. Compatibilidad: ${data.application.compatibilityScore}%`);
-                  void load();
-                } else {
-                  toast.error(data.error || 'No se pudo postular');
+              <Button className="w-full sm:w-auto" disabled={applying} onClick={async () => {
+                setApplying(true);
+                try {
+                  const response = await fetch(`/api/adoptions/${listing.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message }),
+                  });
+                  const data = await response.json().catch(() => null);
+                  if (response.ok && data?.success) {
+                    toast.success(`Postulación enviada. Compatibilidad: ${data.application.compatibilityScore}%`);
+                    void load();
+                  } else {
+                    toast.error(data?.error || 'No se pudo enviar la postulación');
+                  }
+                } catch {
+                  toast.error('Error de conexión. Intentá de nuevo.');
+                } finally {
+                  setApplying(false);
                 }
-              }}>Enviar postulación</Button>
+              }}>{applying ? 'Enviando…' : 'Enviar postulación'}</Button>
             </>
           )}
         </Card>
@@ -239,27 +301,31 @@ export default function AdoptionDetailPage() {
             <div key={application.id} className="space-y-2 py-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">{application.applicant.name}</p>
-                <Badge>{application.compatibilityScore}% compatibilidad</Badge>
+                <div className="flex flex-wrap gap-2">
+                  {application.status !== 'PENDING' && (
+                    <Badge variant="outline">{APPLICATION_STATUS_LABELS[application.status] || application.status}</Badge>
+                  )}
+                  <Badge>{application.compatibilityScore}% compatibilidad</Badge>
+                </div>
               </div>
               <p className="break-words text-sm text-slate-600 [overflow-wrap:anywhere]">{application.message}</p>
               {application.status === 'PENDING' && (
                 <div className="grid grid-cols-2 gap-2 sm:flex">
-                  <Button size="sm" onClick={async () => {
-                    await fetch(`/api/adoptions/applications/${application.id}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ status: 'ACCEPTED' }),
-                    });
-                    void load();
-                  }}>Aceptar</Button>
-                  <Button size="sm" variant="outline" onClick={async () => {
-                    await fetch(`/api/adoptions/applications/${application.id}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ status: 'REJECTED' }),
-                    });
-                    void load();
-                  }}>Rechazar</Button>
+                  <ConfirmDialog
+                    title={`¿Aceptar la postulación de ${application.applicant.name || 'esta persona'}?`}
+                    description="Le vamos a avisar para avanzar con la adopción y la ficha pasará a estar en proceso."
+                    confirmLabel="Aceptar postulación"
+                    onConfirm={() => reviewApplication(application.id, 'ACCEPTED')}
+                    trigger={<Button size="sm" disabled={reviewingId !== null}>Aceptar</Button>}
+                  />
+                  <ConfirmDialog
+                    title={`¿Rechazar la postulación de ${application.applicant.name || 'esta persona'}?`}
+                    description="Le vamos a avisar que su postulación fue revisada. Esta acción no se puede deshacer."
+                    confirmLabel="Rechazar postulación"
+                    destructive
+                    onConfirm={() => reviewApplication(application.id, 'REJECTED')}
+                    trigger={<Button size="sm" variant="outline" disabled={reviewingId !== null}>Rechazar</Button>}
+                  />
                 </div>
               )}
             </div>

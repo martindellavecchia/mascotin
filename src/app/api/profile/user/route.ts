@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       hasProfile: true 
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Error fetching profile' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'No pudimos cargar el perfil. Intentá de nuevo.' }, { status: 500 });
   }
 }
 
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, profile });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Error creating profile' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'No pudimos crear el perfil. Intentá de nuevo.' }, { status: 500 });
   }
 }
 
@@ -106,6 +106,6 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ success: true, profile });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Error updating profile' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'No pudimos guardar el perfil. Intentá de nuevo.' }, { status: 500 });
   }
 }

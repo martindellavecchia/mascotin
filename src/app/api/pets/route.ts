@@ -5,13 +5,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { parseMatchPreferences, passesMatchFilters, scorePetMatch } from '@/lib/matching';
 import { currentOrigin } from '@/lib/matching';
+import { VISIBLE_PROFILE_USER_FILTER } from '@/lib/server/profile-visibility';
 
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: 'Iniciá sesión para continuar' },
         { status: 401 }
       );
     }
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
 
     if (!currentPetId) {
       return NextResponse.json(
-        { success: false, error: 'currentPetId is required' },
+        { success: false, error: 'Elegí una de tus mascotas para buscar' },
         { status: 400 }
       );
     }
@@ -34,14 +35,14 @@ export async function GET(request: Request) {
 
     if (!currentPet) {
       return NextResponse.json(
-        { success: false, error: 'Current pet not found' },
+        { success: false, error: 'No encontramos tu mascota' },
         { status: 404 }
       );
     }
 
     if (currentPet.owner.userId !== session.user.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authorized to fetch matches for this pet' },
+        { success: false, error: 'No podés buscar compañeros para esta mascota' },
         { status: 403 }
       );
     }
@@ -58,7 +59,6 @@ export async function GET(request: Request) {
     const where: Prisma.PetWhereInput = {
       isActive: true,
       ownerId: { not: currentPet.ownerId },
-      owner: { user: { syntheticRunId: viewer?.syntheticRunId || null } },
     };
 
     if (petType) {
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
 
     where.owner = {
       userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
-      user: { syntheticRunId: viewer?.syntheticRunId || null },
+      user: { syntheticRunId: viewer?.syntheticRunId || null, ...VISIBLE_PROFILE_USER_FILTER },
     };
 
     const pets = await db.pet.findMany({
@@ -177,7 +177,7 @@ export async function GET(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch pets' },
+      { success: false, error: 'No pudimos cargar las mascotas. Intentá de nuevo.' },
       { status: 500 }
     );
   }

@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { MapPinned } from 'lucide-react';
+import { LoaderCircle, LocateFixed, MapPinned } from 'lucide-react';
+import { toast } from 'sonner';
+import type { CircleMarker, Map as LeafletMap } from 'leaflet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -31,6 +33,7 @@ interface StoreCategory {
 }
 
 const BA_CENTER: [number, number] = [-34.6037, -58.3816];
+const USER_ZOOM = 14;
 
 function tagLabel(tag: string): string {
   return STORE_PLACE_TAG_LABELS[tag as StorePlaceTag] || tag;
@@ -44,6 +47,47 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [userCoords, setUserCoords] = useState<[number, number] | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [mapInstanceKey, setMapInstanceKey] = useState(0);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const userMarkerRef = useRef<CircleMarker | null>(null);
+
+  const locateUser = useCallback((explicit: boolean) => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      if (explicit) toast.error('Tu navegador no permite compartir la ubicación');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserCoords([position.coords.latitude, position.coords.longitude]);
+        setLocating(false);
+      },
+      (error) => {
+        setLocating(false);
+        if (!explicit) return;
+        toast.error(error.code === error.PERMISSION_DENIED
+          ? 'No diste permiso para usar tu ubicación. Podés habilitarlo desde tu navegador.'
+          : 'No pudimos obtener tu ubicación. Intentá de nuevo.');
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
+    );
+  }, []);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
+    let cancelled = false;
+    navigator.permissions
+      .query({ name: 'geolocation' as PermissionName })
+      .then((status) => {
+        if (!cancelled && status.state === 'granted') locateUser(false);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [locateUser]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +142,7 @@ export default function MapPage() {
   useEffect(() => {
     if (stores.length === 0) return;
 
-    let map: { remove: () => void } | null = null;
+    let map: LeafletMap | null = null;
     let cancelled = false;
 
     async function renderMap() {
@@ -113,6 +157,9 @@ export default function MapPage() {
         : BA_CENTER;
 
       map = L.map('pet-friendly-map').setView(center, withCoords.length > 0 ? 12 : 11);
+      mapRef.current = map;
+      userMarkerRef.current = null;
+      setMapInstanceKey((key) => key + 1);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap',
       }).addTo(map as never);
@@ -133,9 +180,36 @@ export default function MapPage() {
     void renderMap();
     return () => {
       cancelled = true;
+      if (mapRef.current === map) mapRef.current = null;
       map?.remove();
     };
   }, [stores.length, withCoords]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !userCoords) return;
+    let cancelled = false;
+
+    void import('leaflet').then((leaflet) => {
+      if (cancelled || mapRef.current !== map) return;
+      const L = leaflet.default;
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = L.circleMarker(userCoords, {
+        radius: 8,
+        color: '#0f766e',
+        fillColor: '#14b8a6',
+        fillOpacity: 0.9,
+        weight: 3,
+      })
+        .addTo(map)
+        .bindPopup('Estás acá');
+      map.setView(userCoords, USER_ZOOM);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userCoords, mapInstanceKey]);
 
   return (
     <div className="mx-auto min-w-0 max-w-6xl space-y-4 px-4 py-5 sm:py-8">
@@ -189,6 +263,14 @@ export default function MapPage() {
         />
       ) : (
         <>
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => locateUser(true)} disabled={locating}>
+              {locating
+                ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                : <LocateFixed className="size-4" aria-hidden="true" />}
+              {locating ? 'Buscando tu ubicación…' : 'Usar mi ubicación'}
+            </Button>
+          </div>
           <div
             id="pet-friendly-map"
             role="region"

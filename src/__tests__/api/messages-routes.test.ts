@@ -3,6 +3,9 @@ const mockCreateNotification = jest.fn();
 const mockCreateNotificationBulk = jest.fn();
 const mockMatchFindUnique = jest.fn();
 const mockMessageFindMany = jest.fn();
+const mockMessageFindFirst = jest.fn();
+const mockMessageUpdateMany = jest.fn();
+const mockNotificationUpdateMany = jest.fn();
 const mockGroupMemberFindUnique = jest.fn();
 
 if (typeof Response !== 'undefined' && typeof Response.json !== 'function') {
@@ -46,6 +49,11 @@ jest.mock('@/lib/db', () => ({
     },
     message: {
       findMany: (...args: unknown[]) => mockMessageFindMany(...args),
+      findFirst: (...args: unknown[]) => mockMessageFindFirst(...args),
+      updateMany: (...args: unknown[]) => mockMessageUpdateMany(...args),
+    },
+    notification: {
+      updateMany: (...args: unknown[]) => mockNotificationUpdateMany(...args),
     },
     groupMember: {
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -69,7 +77,18 @@ describe('message routes', () => {
     mockMatchFindUnique.mockReset();
     mockMessageFindMany.mockReset();
     mockGroupMemberFindUnique.mockReset();
+    mockMessageFindFirst.mockReset().mockResolvedValue(null);
+    mockMessageUpdateMany.mockReset().mockResolvedValue({ count: 0 });
+    mockNotificationUpdateMany.mockReset().mockResolvedValue({ count: 0 });
   });
+
+  const participantMatch = {
+    id: 'match-1',
+    pet1: { owner: { userId: 'user-1' } },
+    pet2: { owner: { userId: 'user-2' } },
+    user1Id: 'user-1',
+    user2Id: 'user-2',
+  };
 
   describe('GET /api/messages', () => {
     it('returns the latest match page in ascending order with hasMoreBefore', async () => {
@@ -110,9 +129,85 @@ describe('message routes', () => {
       const body = await response.json();
 
       expect(response.status).toBe(400);
-      expect(body.error).toBe('after must be a valid ISO date');
+      expect(body.error).toBe('El cursor de mensajes no es válido');
       expect(mockMatchFindUnique).not.toHaveBeenCalled();
       expect(mockMessageFindMany).not.toHaveBeenCalled();
+    });
+
+    it('marks received messages and their notifications as read when opening the chat', async () => {
+      mockMatchFindUnique.mockResolvedValue(participantMatch);
+      mockMessageFindMany.mockResolvedValue([
+        { id: 'm1', content: 'hola', senderId: 'user-2', read: false, createdAt: new Date('2026-04-22T10:01:00.000Z') },
+      ]);
+      mockMessageUpdateMany.mockResolvedValue({ count: 1 });
+      mockMessageFindFirst.mockResolvedValue({ createdAt: new Date('2026-04-22T09:00:00.000Z') });
+
+      const response = await getMatchMessages(
+        new Request('http://localhost/api/messages?matchId=match-1')
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(mockMessageUpdateMany).toHaveBeenCalledWith({
+        where: { matchId: 'match-1', receiverId: 'user-1', read: false },
+        data: { read: true },
+      });
+      expect(mockNotificationUpdateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', read: false, link: '/messages?matchId=match-1' },
+        data: { read: true },
+      });
+      expect(body.markedRead).toBe(1);
+      expect(body.lastSeenAt).toBe('2026-04-22T09:00:00.000Z');
+    });
+
+    it('does not mark messages as read when polling returns nothing new', async () => {
+      mockMatchFindUnique.mockResolvedValue(participantMatch);
+      mockMessageFindMany.mockResolvedValue([]);
+
+      const response = await getMatchMessages(
+        new Request(`http://localhost/api/messages?matchId=match-1&after=${encodeURIComponent('2026-04-22T10:00:00.000Z')}`)
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockMessageUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('loads older messages with a before cursor without marking them as read', async () => {
+      const before = '2026-04-22T10:00:00.000Z';
+      mockMatchFindUnique.mockResolvedValue(participantMatch);
+      mockMessageFindMany.mockResolvedValue([
+        { id: 'm0', content: 'antes', createdAt: new Date('2026-04-22T09:59:00.000Z') },
+      ]);
+
+      const response = await getMatchMessages(
+        new Request(`http://localhost/api/messages?matchId=match-1&before=${encodeURIComponent(before)}&limit=10`)
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.hasMoreBefore).toBe(false);
+      expect(mockMessageFindMany).toHaveBeenCalledWith({
+        where: { matchId: 'match-1', createdAt: { lt: new Date(before) } },
+        orderBy: { createdAt: 'desc' },
+        take: 11,
+      });
+      expect(mockMessageUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('rejects non-participants with a Spanish error', async () => {
+      mockMatchFindUnique.mockResolvedValue({
+        ...participantMatch,
+        pet1: { owner: { userId: 'user-3' } },
+        user1Id: 'user-3',
+      });
+
+      const response = await getMatchMessages(
+        new Request('http://localhost/api/messages?matchId=match-1')
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(body.error).toBe('No tenés acceso a esta conversación');
     });
   });
 

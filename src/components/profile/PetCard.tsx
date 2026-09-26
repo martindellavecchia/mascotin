@@ -12,12 +12,20 @@ import {
     Syringe,
     Trash2,
     Venus,
+    type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PetTypeIcon } from "@/components/PetTypeIcon";
 import type { Pet } from "@/types";
 import { getPrimaryImageUrl, isRenderableImage, shouldUnoptimizeImage } from "@/lib/media";
+import {
+    PET_GENDER_LABELS,
+    PET_SIZE_LABELS,
+    PET_TYPE_LABELS,
+    getOptionLabel,
+    getPetAgeLabel,
+} from "@/lib/pet-display";
 
 interface PetCardProps {
     pet: Pet;
@@ -37,21 +45,16 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
         }
     }
 
-    const sizeLabels: Record<string, string> = {
-        small: 'Pequeño',
-        medium: 'Mediano',
-        large: 'Grande',
-        xlarge: 'Extra Grande',
-        'Medium': 'Mediano',
-    };
-
-    const genderLabels: Record<string, string> = {
-        male: 'Macho',
-        female: 'Hembra'
-    };
-
+    const ageLabel = getPetAgeLabel(pet);
+    const genderLabel = getOptionLabel(PET_GENDER_LABELS, pet.gender);
+    const sizeLabel = getOptionLabel(PET_SIZE_LABELS, displaySize);
     const GenderIcon = pet.gender === 'male' ? Mars : Venus;
     const isFemale = pet.gender === 'female';
+    const facts = [
+        ageLabel && { key: 'age', icon: Cake, label: ageLabel },
+        genderLabel && { key: 'gender', icon: GenderIcon, label: genderLabel },
+        sizeLabel && { key: 'size', icon: Ruler, label: sizeLabel },
+    ].filter((fact): fact is { key: string; icon: LucideIcon; label: string } => Boolean(fact));
 
     return (
         <div className="group overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-primary/35">
@@ -84,7 +87,7 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                 <div className="absolute bottom-3 left-3 flex gap-2 max-w-[calc(100%-1.5rem)]">
                     <Badge className="shrink-0 gap-1 bg-white/90 text-slate-800 backdrop-blur-sm hover:bg-white">
                         <PetTypeIcon petType={pet.petType} className="size-4 text-teal-700" />
-                        {pet.petType === 'dog' ? 'Perro' : pet.petType === 'cat' ? 'Gato' : pet.petType === 'bird' ? 'Ave' : 'Otro'}
+                        {getOptionLabel(PET_TYPE_LABELS, pet.petType) ?? 'Otro'}
                     </Badge>
                     {pet.breed && (
                         <Badge className="max-w-[9rem] truncate bg-white/90 text-slate-800 backdrop-blur-sm hover:bg-white">
@@ -97,22 +100,19 @@ export function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
                 <div className="flex justify-between items-start mb-3">
                     <div>
                         <h3 className="text-xl font-bold text-slate-900 mb-1">{pet.name}</h3>
-                        <div className="flex flex-wrap gap-2 text-sm text-slate-500">
-                            <span className="flex items-center gap-1">
-                                <Cake className="size-4" aria-hidden="true" />
-                                {pet.age} años
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                                <GenderIcon className="size-4" aria-hidden="true" />
-                                {genderLabels[pet.gender] || pet.gender}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                                <Ruler className="size-4" aria-hidden="true" />
-                                {sizeLabels[displaySize.toLowerCase()] || displaySize}
-                            </span>
-                        </div>
+                        {facts.length > 0 && (
+                            <div className="flex flex-wrap gap-2 text-sm text-slate-500">
+                                {facts.map((fact, index) => (
+                                    <span key={fact.key} className="flex items-center gap-2">
+                                        {index > 0 && <span aria-hidden="true">•</span>}
+                                        <span className="flex items-center gap-1">
+                                            <fact.icon className="size-4" aria-hidden="true" />
+                                            {fact.label}
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

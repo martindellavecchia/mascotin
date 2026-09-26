@@ -33,11 +33,11 @@ describe('home bootstrap', () => {
     expect(getFeedPage).not.toHaveBeenCalled();
   });
 
-  it('does not load a hidden feed and requests only the one displayed suggestion', async () => {
+  it('does not load a hidden feed and requests only the displayed suggestion plus a hidden-profile buffer', async () => {
     const home = await getHomeBootstrapData('user-1', 'someone-elses-pet');
     expect(home).toMatchObject({ selectedPetId: 'pet-1', hasMatches: false, hasOwnPosts: false, feedPage: emptyFeed });
     expect(getRankedPetMatches).toHaveBeenCalledWith(expect.objectContaining({
-      userId: 'user-1', currentPet: owner.pets[0], myPetIds: ['pet-1'], limit: 1,
+      userId: 'user-1', currentPet: owner.pets[0], myPetIds: ['pet-1'], limit: 3,
     }));
     expect(getFeedPage).not.toHaveBeenCalled();
   });

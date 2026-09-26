@@ -1,15 +1,21 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { scheduleSchema, type BookingSchedule } from '@/lib/booking-schedule';
+import { COMMON_TIME_ZONES, DEFAULT_TIME_ZONE } from '@/lib/timezone-label';
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 export default function ProviderSchedule() {
+  const timeZoneId = useId();
   const [schedule, setSchedule] = useState<BookingSchedule>({
-    timeZone: 'America/Argentina/Buenos_Aires',
+    timeZone: DEFAULT_TIME_ZONE,
     weekly: [],
     exceptions: [],
   });
+  const timeZoneOptions = COMMON_TIME_ZONES.some((zone) => zone.value === schedule.timeZone)
+    ? COMMON_TIME_ZONES
+    : [{ value: schedule.timeZone, label: schedule.timeZone.replaceAll('_', ' ') }, ...COMMON_TIME_ZONES];
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -63,14 +69,26 @@ export default function ProviderSchedule() {
           }
         }}
       >
-        <label className="block text-sm font-medium">
-          Zona horaria
-          <Input
-            required
+        <div className="space-y-1.5">
+          <label htmlFor={timeZoneId} className="block text-sm font-medium">
+            Zona horaria
+          </label>
+          <Select
             value={schedule.timeZone}
-            onChange={(e) => setSchedule({ ...schedule, timeZone: e.target.value })}
-          />
-        </label>
+            onValueChange={(value) => setSchedule({ ...schedule, timeZone: value })}
+          >
+            <SelectTrigger id={timeZoneId} className="w-full sm:w-80">
+              <SelectValue placeholder="Elegí una zona horaria" />
+            </SelectTrigger>
+            <SelectContent>
+              {timeZoneOptions.map((zone) => (
+                <SelectItem key={zone.value} value={zone.value}>
+                  {zone.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {schedule.weekly.map((row, index) => (
           <div key={index} className="grid grid-cols-2 items-end gap-2 sm:grid-cols-4">
             <label className="text-sm">

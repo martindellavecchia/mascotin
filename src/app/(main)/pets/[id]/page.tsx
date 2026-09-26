@@ -20,8 +20,23 @@ import {
   TEMPERAMENT_LABELS,
 } from '@/components/pets/CompatibilityFields';
 import EmergencyQr from '@/components/pets/EmergencyQr';
+import HealthRecordsCard, { sortHealthRecords, type HealthRecord } from '@/components/pets/HealthRecordsCard';
+import { PetCompletionPrompt } from '@/components/pets/PetCompletionPrompt';
 import { parseJsonStringArray } from '@/lib/json-array';
 import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
+import {
+  PET_ACTIVITY_LABELS,
+  PET_ENERGY_LABELS,
+  PET_GENDER_LABELS,
+  PET_SIZE_LABELS,
+  PET_TYPE_LABELS,
+  UNSET_LABEL,
+  formatPetWeight,
+  getMissingPetProfileFields,
+  getOptionLabel,
+  getPetAgeLabel,
+  parsePetActivities,
+} from '@/lib/pet-display';
 
 interface PassportPet {
   id: string;
@@ -29,15 +44,17 @@ interface PassportPet {
   petType: string;
   breed: string | null;
   age: number;
+  weight?: number | null;
   size: string;
   gender: string;
   energy: string;
   bio: string;
+  activities?: string | string[] | null;
   location: string;
   images: string;
   thumbnailIndex: number;
-  vaccinated: boolean;
-  neutered: boolean;
+  vaccinated: boolean | null;
+  neutered: boolean | null;
   goodWithKids?: string | null;
   goodWithDogs?: string | null;
   goodWithCats?: string | null;
@@ -51,37 +68,7 @@ interface PassportPet {
   emergencyToken?: string | null;
   isOwner?: boolean;
   owner?: { name: string; location: string };
-  healthRecords?: Array<{
-    id: string;
-    type: string;
-    name: string;
-    dueDate: string | null;
-    completedAt: string | null;
-  }>;
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  dog: 'Perro',
-  cat: 'Gato',
-  bird: 'Ave',
-  other: 'Otro',
-};
-
-const SIZE_LABELS: Record<string, string> = {
-  small: 'Pequeño',
-  medium: 'Mediano',
-  large: 'Grande',
-  xlarge: 'Extra grande',
-};
-
-const ENERGY_LABELS: Record<string, string> = {
-  low: 'Baja',
-  medium: 'Media',
-  high: 'Alta',
-};
-
-function genderLabel(gender: string) {
-  return gender === 'female' ? 'Hembra' : 'Macho';
+  healthRecords?: HealthRecord[];
 }
 
 function vaccinatedLabel(gender: string) {
@@ -145,16 +132,18 @@ export default function PetPassportPage() {
     pet.allergies ? { label: 'Alergias', value: pet.allergies } : null,
     pet.specialNeeds ? { label: 'Necesidades', value: pet.specialNeeds } : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
-  const hasHealth =
-    healthRows.length > 0 || (pet.healthRecords && pet.healthRecords.length > 0);
-
+  const ageLabel = getPetAgeLabel(pet);
+  const activities = parsePetActivities(pet.activities);
+  const missingFields = pet.isOwner ? getMissingPetProfileFields(pet) : [];
   const facts = [
-    { label: 'Tamaño', value: SIZE_LABELS[pet.size] || pet.size },
-    { label: 'Sexo', value: genderLabel(pet.gender) },
-    { label: 'Energía', value: ENERGY_LABELS[pet.energy] || pet.energy },
-    { label: 'Edad', value: `${pet.age} años` },
-    { label: 'Ubicación', value: pet.location },
-  ];
+    { label: 'Tamaño', value: getOptionLabel(PET_SIZE_LABELS, pet.size) },
+    { label: 'Sexo', value: getOptionLabel(PET_GENDER_LABELS, pet.gender) },
+    { label: 'Energía', value: getOptionLabel(PET_ENERGY_LABELS, pet.energy) },
+    { label: 'Edad', value: ageLabel },
+    { label: 'Peso', value: formatPetWeight(pet.weight) },
+    { label: 'Ubicación', value: pet.location?.trim() || null },
+  ].filter((fact) => pet.isOwner || fact.value);
+  const summary = [pet.breed || 'Mestizo', ageLabel, pet.location?.trim()].filter(Boolean).join(' · ');
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
@@ -183,19 +172,24 @@ export default function PetPassportPage() {
           )}
           <div className="absolute inset-x-0 bottom-0 bg-slate-950/72 px-6 py-5">
             <Badge className="mb-2 bg-white/90 text-teal-800 hover:bg-white/90">
-              {TYPE_LABELS[pet.petType] || pet.petType}
+              {getOptionLabel(PET_TYPE_LABELS, pet.petType) ?? 'Mascota'}
             </Badge>
             <p className="text-sm font-medium text-teal-100">Pasaporte digital</p>
             <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">{pet.name}</h1>
-            <p className="mt-1 text-sm text-slate-200">
-              {pet.breed || 'Mestizo'} · {pet.age} años · {pet.location}
-            </p>
+            <p className="mt-1 text-sm text-slate-200">{summary}</p>
           </div>
         </div>
 
         <div className="space-y-5 p-6">
+          {pet.isOwner && (
+            <PetCompletionPrompt
+              petName={pet.name}
+              missingFields={missingFields}
+              href={`/profile?petId=${pet.id}`}
+            />
+          )}
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <p className="max-w-2xl text-slate-700">{pet.bio}</p>
+            {pet.bio?.trim() && <p className="max-w-2xl text-slate-700">{pet.bio}</p>}
             {pet.isOwner && (
               <div className="flex flex-wrap gap-2">
                 <Button asChild>
@@ -220,16 +214,20 @@ export default function PetPassportPage() {
             )}
           </div>
 
-          <dl className="grid grid-cols-2 divide-x divide-y divide-border border-y border-border sm:grid-cols-3 lg:grid-cols-5 lg:divide-y-0">
-            {facts.map((fact) => (
-              <div key={fact.label} className="px-3 py-3">
-                <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-                  {fact.label}
-                </dt>
-                <dd className="mt-0.5 text-sm font-semibold text-slate-900">{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
+          {facts.length > 0 && (
+            <dl className="grid grid-cols-2 gap-y-1 border-y border-border py-2 sm:grid-cols-3">
+              {facts.map((fact) => (
+                <div key={fact.label} className="px-3 py-2">
+                  <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                    {fact.label}
+                  </dt>
+                  <dd className={fact.value ? 'mt-0.5 text-sm font-semibold text-slate-900' : 'mt-0.5 text-sm text-slate-400'}>
+                    {fact.value ?? UNSET_LABEL}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
 
           <div className="flex flex-wrap gap-2">
             {pet.vaccinated && (
@@ -249,6 +247,21 @@ export default function PetPassportPage() {
             ))}
             {intents.length > 3 && <Badge variant="neutral">+{intents.length - 3}</Badge>}
           </div>
+
+          {activities.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Actividades favoritas</h2>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {activities.map((activity) => (
+                  <li key={activity}>
+                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                      {PET_ACTIVITY_LABELS[activity]}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {!pet.isOwner && pet.owner && (
             <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -299,38 +312,34 @@ export default function PetPassportPage() {
           <CardHeader>
             <CardTitle>Salud</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {hasHealth ? (
-              <>
+          <CardContent className="space-y-4 text-sm">
+            {healthRows.length > 0 ? (
+              <div className="space-y-3">
                 {healthRows.map((row) => (
                   <div key={row.label} className="flex items-start justify-between gap-3">
                     <span className="text-slate-600">{row.label}</span>
                     <span className="text-right font-medium text-slate-900">{row.value}</span>
                   </div>
                 ))}
-                <ul className="divide-y divide-border border-y border-border">
-                  {(pet.healthRecords || []).map((record) => (
-                    <li key={record.id} className="px-3 py-2">
-                      <span className="font-medium">{record.name}</span>
-                      {record.dueDate && (
-                        <span className="ml-2 text-slate-500">
-                          {new Date(record.dueDate).toLocaleDateString('es-AR')}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
-                <p className="font-medium text-slate-800">Sin datos de salud aún</p>
-                <p className="mt-1 text-slate-500">Completá microchip, veterinaria o alergias.</p>
-                {pet.isOwner && (
-                  <Button asChild variant="outline" size="sm" className="mt-4">
-                    <Link href={`/profile?petId=${pet.id}`}>Completar</Link>
-                  </Button>
-                )}
               </div>
+            ) : pet.isOwner ? (
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
+                <p className="text-slate-500">Sumá microchip, veterinaria o alergias.</p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/profile?petId=${pet.id}`}>Completar</Link>
+                </Button>
+              </div>
+            ) : (
+              <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-slate-500">
+                Sin datos de salud compartidos.
+              </p>
+            )}
+            {pet.isOwner && (
+              <HealthRecordsCard
+                petId={pet.id}
+                records={sortHealthRecords(pet.healthRecords ?? [])}
+                onChange={(healthRecords) => setPet((current) => (current ? { ...current, healthRecords } : current))}
+              />
             )}
           </CardContent>
         </Card>

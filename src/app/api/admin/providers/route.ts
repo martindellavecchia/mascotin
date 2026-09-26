@@ -71,7 +71,7 @@ export async function GET(request: Request) {
     } catch (error) {
         console.error('Error fetching providers:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch providers' },
+            { success: false, error: 'No pudimos cargar los proveedores' },
             { status: 500 }
         );
     }

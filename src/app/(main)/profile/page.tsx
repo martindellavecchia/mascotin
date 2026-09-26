@@ -1,12 +1,13 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, PawPrint, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { StateFeedback } from '@/components/ui/state-feedback';
 import { useInvalidateViewerData, useMatchCount, useMyPets, useOwnerProfile, viewerQueryKeys } from '@/hooks/useViewerData';
@@ -27,8 +28,12 @@ import { AboutCard } from '@/components/profile/AboutCard';
 import { StatsCard } from '@/components/profile/StatsCard';
 import { PetCard } from '@/components/profile/PetCard';
 import { EmptyState } from '@/components/profile/EmptyState';
+import { PetCompletionPrompt } from '@/components/pets/PetCompletionPrompt';
+import { getMissingPetProfileFields } from '@/lib/pet-display';
 import type { Owner, Pet } from '@/types';
 import { toast } from 'sonner';
+
+type ClosableModal = 'owner' | 'pet';
 
 function ProfileContent() {
   const { data: session, status } = useSession();
@@ -57,6 +62,9 @@ function ProfileContent() {
   const [showOwnerForm, setShowOwnerForm] = useState(false);
   const [showPetForm, setShowPetForm] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
+  const [ownerFormDirty, setOwnerFormDirty] = useState(false);
+  const [petFormDirty, setPetFormDirty] = useState(false);
+  const [pendingDiscard, setPendingDiscard] = useState<ClosableModal | null>(null);
 
   // Delete Logic
   const [deletingPet, setDeletingPet] = useState<Pet | null>(null);
@@ -69,6 +77,7 @@ function ProfileContent() {
   }, [status, router]);
 
   const petIdParam = searchParams.get('petId');
+  const handledPetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (editMode === 'true') {
@@ -77,16 +86,51 @@ function ProfileContent() {
   }, [editMode]);
 
   useEffect(() => {
-    if (petIdParam && pets.length > 0 && !showPetForm) {
-      const petToEdit = pets.find(p => p.id === petIdParam);
-      if (petToEdit) {
-        setEditingPet(petToEdit);
-        setShowPetForm(true);
-        // Optional: clear param to avoid reopening on refresh? 
-        // For now keep it simple.
-      }
+    if (!petIdParam) {
+      handledPetIdRef.current = null;
+      return;
+    }
+    if (handledPetIdRef.current === petIdParam) return;
+    const petToEdit = pets.find(p => p.id === petIdParam);
+    if (petToEdit) {
+      handledPetIdRef.current = petIdParam;
+      setEditingPet(petToEdit);
+      setShowPetForm(true);
     }
   }, [petIdParam, pets]);
+
+  const clearEditParams = () => {
+    if (petIdParam || editMode) router.replace('/profile', { scroll: false });
+  };
+
+  const closeOwnerForm = () => {
+    setShowOwnerForm(false);
+    setOwnerFormDirty(false);
+    clearEditParams();
+  };
+
+  const closePetForm = () => {
+    setShowPetForm(false);
+    setEditingPet(null);
+    setPetFormDirty(false);
+    clearEditParams();
+  };
+
+  const requestClose = (modal: ClosableModal) => {
+    const dirty = modal === 'owner' ? ownerFormDirty : petFormDirty;
+    if (dirty) {
+      setPendingDiscard(modal);
+      return;
+    }
+    if (modal === 'owner') closeOwnerForm();
+    else closePetForm();
+  };
+
+  const openPetForm = (pet: Pet | null) => {
+    setEditingPet(pet);
+    setPetFormDirty(false);
+    setShowPetForm(true);
+  };
 
   const handleDeletePet = async () => {
     if (!deletingPet) return;
@@ -133,7 +177,7 @@ function ProfileContent() {
     </main>;
   }
 
-  if (!owner) {
+  if (!owner || !owner.location?.trim()) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <main className="container mx-auto flex-1 px-4 py-4 sm:py-8">
@@ -145,6 +189,7 @@ function ProfileContent() {
             <CardContent>
               <OwnerForm
                 userId={session.user.id}
+                initialData={owner ?? undefined}
                 defaultName={session.user.name || undefined}
                 onSuccess={(newOwner) => setOwner(newOwner)}
               />
@@ -154,6 +199,10 @@ function ProfileContent() {
       </div>
     );
   }
+
+  const incompletePets = pets
+    .map((pet) => ({ pet, missing: getMissingPetProfileFields(pet) }))
+    .filter(({ missing }) => missing.length > 0);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -187,33 +236,30 @@ function ProfileContent() {
                     Mis mascotas
                   </h2>
                   <Button
-                    onClick={() => {
-                      setEditingPet(null);
-                      setShowPetForm(true);
-                    }}
+                    onClick={() => openPetForm(null)}
                     className="min-h-11 shrink-0 px-4"
                   >
                     <Plus className="mr-1 size-5" aria-hidden="true" />
                     Agregar
                   </Button>
                 </div>
-                {pets.length === 0 ? (
-                  <EmptyState
-                    onAddPet={() => {
-                      setEditingPet(null);
-                      setShowPetForm(true);
-                    }}
+                {incompletePets.map(({ pet, missing }) => (
+                  <PetCompletionPrompt
+                    key={pet.id}
+                    petName={pet.name}
+                    missingFields={missing}
+                    onComplete={() => openPetForm(pet)}
                   />
+                ))}
+                {pets.length === 0 ? (
+                  <EmptyState onAddPet={() => openPetForm(null)} />
                 ) : (
                   <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     {pets.map((pet) => (
                       <PetCard
                         key={pet.id}
                         pet={pet}
-                        onEdit={(p) => {
-                          setEditingPet(p);
-                          setShowPetForm(true);
-                        }}
+                        onEdit={(p) => openPetForm(p)}
                         onDelete={(p) => setDeletingPet(p)}
                       />
                     ))}
@@ -236,7 +282,7 @@ function ProfileContent() {
               variant="ghost"
               size="icon"
               className="absolute right-3 top-3 size-11 rounded-md hover:bg-slate-100 sm:right-4 sm:top-4"
-              onClick={() => setShowOwnerForm(false)}
+              onClick={() => requestClose('owner')}
               aria-label="Cerrar edición de perfil"
             >
               <X className="size-5 text-slate-500" aria-hidden="true" />
@@ -248,11 +294,11 @@ function ProfileContent() {
               <OwnerForm
                 userId={session.user.id}
                 initialData={owner}
+                onDirtyChange={setOwnerFormDirty}
+                onCancel={() => requestClose('owner')}
                 onSuccess={(updatedOwner) => {
                   setOwner(updatedOwner);
-                  setShowOwnerForm(false);
-                  toast.success('Perfil actualizado correctamente');
-                  if (editMode === 'true') router.replace('/profile');
+                  closeOwnerForm();
                 }}
               />
             </CardContent>
@@ -268,10 +314,7 @@ function ProfileContent() {
               variant="ghost"
               size="icon"
               className="absolute right-3 top-3 z-10 size-11 rounded-md hover:bg-slate-100 sm:right-4 sm:top-4"
-              onClick={() => {
-                setShowPetForm(false);
-                setEditingPet(null);
-              }}
+              onClick={() => requestClose('pet')}
               aria-label="Cerrar formulario de mascota"
             >
               <X className="size-5 text-slate-500" aria-hidden="true" />
@@ -283,16 +326,10 @@ function ProfileContent() {
             </CardHeader>
             <CardContent>
               <PetForm
+                key={editingPet?.id ?? 'new'}
                 ownerId={owner.id}
                 initialData={editingPet}
-                onThumbnailChange={(updatedPet) => {
-                  setPets((currentPets) => currentPets.map((pet) =>
-                    pet.id === updatedPet.id ? updatedPet : pet
-                  ));
-                  setEditingPet((currentPet) =>
-                    currentPet?.id === updatedPet.id ? updatedPet : currentPet
-                  );
-                }}
+                onDirtyChange={setPetFormDirty}
                 onSuccess={(newPet) => {
                   if (editingPet) {
                     setPets((currentPets) => currentPets.map((pet) =>
@@ -301,18 +338,29 @@ function ProfileContent() {
                   } else {
                     setPets((currentPets) => [newPet, ...currentPets]);
                   }
-                  setShowPetForm(false);
-                  setEditingPet(null);
+                  closePetForm();
                 }}
-                onCancel={() => {
-                  setShowPetForm(false);
-                  setEditingPet(null);
-                }}
+                onCancel={() => requestClose('pet')}
               />
             </CardContent>
           </Card>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDiscard !== null}
+        onOpenChange={(open) => !open && setPendingDiscard(null)}
+        title="¿Descartar cambios?"
+        description="Tenés cambios sin guardar. Si cerrás ahora, se van a perder."
+        confirmLabel="Descartar"
+        cancelLabel="Seguir editando"
+        destructive
+        onConfirm={() => {
+          if (pendingDiscard === 'owner') closeOwnerForm();
+          if (pendingDiscard === 'pet') closePetForm();
+          setPendingDiscard(null);
+        }}
+      />
 
       {/* Delete Confirmation Alert */}
       <AlertDialog open={!!deletingPet} onOpenChange={(open) => !open && setDeletingPet(null)}>

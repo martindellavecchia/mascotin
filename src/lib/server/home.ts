@@ -5,6 +5,9 @@ import { db } from '@/lib/db';
 import { serializeForClient } from '@/lib/server/serialize';
 import { getRankedPetMatches } from '@/lib/server/pet-matching';
 import { getFeedPage } from '@/lib/server/feed';
+import { excludeHiddenProfilePets } from '@/lib/server/profile-visibility';
+
+const HIDDEN_PROFILE_OVERFETCH = 2;
 
 export interface HomeStatsData {
   totalPets: number;
@@ -93,9 +96,12 @@ export async function getSuggestionsForPet(
   limit = 6,
   ownerCoords?: { latitude?: number | null; longitude?: number | null } | null
 ) {
-  return getRankedPetMatches({
-    userId, currentPet, ownerLocation, ownerBio, ownerCoords, myPetIds, limit,
+  const ranked = await getRankedPetMatches({
+    userId, currentPet, ownerLocation, ownerBio, ownerCoords, myPetIds,
+    limit: limit + HIDDEN_PROFILE_OVERFETCH,
   });
+  const visible = await excludeHiddenProfilePets(ranked);
+  return visible.slice(0, limit);
 }
 
 export async function getHomeBootstrapData(

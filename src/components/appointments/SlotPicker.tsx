@@ -1,20 +1,23 @@
 'use client';
 import { useEffect, useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { DEFAULT_TIME_ZONE, getTimeZoneLabel } from '@/lib/timezone-label';
 export default function SlotPicker({
   serviceId,
   appointmentId,
   value,
   onChange,
+  onTimeZoneChange,
 }: {
   serviceId: string;
   appointmentId?: string;
   value: string;
   onChange: (value: string) => void;
+  onTimeZoneChange?: (timeZone: string) => void;
 }) {
   const id = useId();
   const [slots, setSlots] = useState<string[]>([]);
-  const [zone, setZone] = useState('America/Argentina/Buenos_Aires');
+  const [zone, setZone] = useState(DEFAULT_TIME_ZONE);
   const [day, setDay] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,7 +38,7 @@ export default function SlotPicker({
       })
       .then((d) => {
         setSlots(d.slots);
-        setZone(d.timeZone || 'America/Argentina/Buenos_Aires');
+        setZone(d.timeZone || DEFAULT_TIME_ZONE);
         setConfigured(d.configured);
       })
       .catch((e) => {
@@ -46,6 +49,9 @@ export default function SlotPicker({
       });
     return () => controller.abort();
   }, [serviceId, appointmentId, retry]);
+  useEffect(() => {
+    onTimeZoneChange?.(zone);
+  }, [zone, onTimeZoneChange]);
   const dateLabel = (slot: string) =>
     new Date(slot).toLocaleDateString('es-AR', {
       timeZone: zone,
@@ -75,7 +81,7 @@ export default function SlotPicker({
     );
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">Horarios de {zone.replaceAll('_', ' ')}</p>
+      <p className="text-sm text-muted-foreground">Horarios en {getTimeZoneLabel(zone)}</p>
       <label htmlFor={`${id}-day`} className="block text-sm font-medium">
         Día
       </label>

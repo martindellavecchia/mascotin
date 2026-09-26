@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CalendarDays, CalendarX, Download, MapPin, Pencil, Trash2 } from 'lucide-react';
+import { CalendarDays, CalendarX, Check, Download, Loader2, MapPin, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -28,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface GroupEventsProps {
     groupId: string;
     isCreator: boolean;
+    isMember?: boolean;
     currentUserId: string;
 }
 
@@ -44,6 +47,8 @@ interface Event {
     };
     authorId: string;
     description: string;
+    isAttending?: boolean;
+    attendeesCount?: number;
 }
 
 interface Attendee {
@@ -54,9 +59,12 @@ interface Attendee {
     confirmedAt: string;
 }
 
-export default function GroupEvents({ groupId, isCreator, currentUserId }: GroupEventsProps) {
+export default function GroupEvents({ groupId, isCreator, isMember = false, currentUserId }: GroupEventsProps) {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
+    const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+    const [pendingAttendId, setPendingAttendId] = useState<string | null>(null);
 
     // Edit State
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -76,14 +84,44 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
     const fetchEvents = async () => {
         try {
             const res = await fetch(`/api/events?groupId=${groupId}&action=all`);
-            const data = await res.json();
-            if (data.success) {
+            const data = await res.json().catch(() => null);
+            if (res.ok && data?.success) {
                 setEvents(data.events);
+                setLoadError(false);
+            } else {
+                setLoadError(true);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching group events:', error);
+            setLoadError(true);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAttend = async (event: Event) => {
+        if (pendingAttendId) return;
+        setPendingAttendId(event.id);
+        try {
+            const res = await fetch(`/api/events/${event.id}/attend`, { method: 'POST' });
+            const data = await res.json().catch(() => null);
+            if (!res.ok || !data?.success) {
+                toast.error(data?.error || 'No se pudo actualizar tu asistencia');
+                return;
+            }
+            const attending = Boolean(data.attending);
+            setEvents((current) => current.map((item) => item.id === event.id
+                ? {
+                    ...item,
+                    isAttending: attending,
+                    attendeesCount: Math.max(0, (item.attendeesCount ?? 0) + (attending === Boolean(item.isAttending) ? 0 : attending ? 1 : -1)),
+                }
+                : item));
+            toast.success(attending ? '¡Te anotaste!' : 'Cancelaste tu asistencia');
+        } catch {
+            toast.error('Error de conexión. Intentá de nuevo.');
+        } finally {
+            setPendingAttendId(null);
         }
     };
 
@@ -133,8 +171,6 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
     }, [editingEvent]);
 
     const handleDelete = async (eventId: string) => {
-        if (!confirm('¿Estás seguro de eliminar este evento?')) return;
-
         try {
             const res = await fetch(`/api/events/${eventId}`, {
                 method: 'DELETE',
@@ -143,11 +179,14 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
             if (res.ok) {
                 toast.success('Evento eliminado');
                 fetchEvents();
-            } else {
-                toast.error('Error al eliminar evento');
+                return true;
             }
-        } catch (error) {
-            toast.error('Error al eliminar evento');
+            const data = await res.json().catch(() => null);
+            toast.error(data?.error || 'No se pudo eliminar el evento');
+            return false;
+        } catch {
+            toast.error('Error de conexión. Intentá de nuevo.');
+            return false;
         }
     };
 
@@ -182,7 +221,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
         const rows = attendees.map(a => [
             a.name,
             a.email,
-            new Date(a.confirmedAt).toLocaleString()
+            new Date(a.confirmedAt).toLocaleString('es-AR')
         ].join(","));
 
         const csvContent = [headers.join(","), ...rows].join("\n");
@@ -198,22 +237,36 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
 
     if (loading) return <div className="p-8 text-center text-slate-500">Cargando eventos...</div>;
 
+    if (loadError) {
+        return (
+            <StateFeedback
+                status="error"
+                title="No pudimos cargar los eventos del grupo"
+                description="Revisá tu conexión e intentá de nuevo."
+                action={<Button variant="outline" onClick={() => { setLoading(true); void fetchEvents(); }}>Reintentar</Button>}
+            />
+        );
+    }
+
     return (
         <div className="min-w-0 space-y-4">
-            <h3 className="text-lg font-semibold text-slate-800 [overflow-wrap:anywhere]">Eventos del Grupo ({events.length})</h3>
+            <h3 className="text-lg font-semibold text-slate-800 [overflow-wrap:anywhere]">Eventos del grupo ({events.length})</h3>
 
             {events.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
-                    <CalendarX className="mb-2 size-10 text-slate-300" aria-hidden="true" />
+                    <CalendarX className="mx-auto mb-2 size-10 text-slate-300" aria-hidden="true" />
                     <p className="text-slate-500">No hay eventos programados.</p>
                 </div>
             ) : (
                 <div className="grid gap-4">
-                    {events.map((event) => (
+                    {events.map((event) => {
+                        const canManage = isCreator || event.authorId === currentUserId;
+                        const ended = new Date(event.date).getTime() <= Date.now();
+                        return (
                         <Card
                             key={event.id}
-                            className="group-card flex min-w-0 cursor-pointer flex-col gap-4 p-4 transition-colors hover:border-primary/35 sm:flex-row"
-                            onClick={() => (isCreator || event.authorId === currentUserId) && setViewingEvent(event)}
+                            className={`group-card flex min-w-0 flex-col gap-4 p-4 transition-colors sm:flex-row ${canManage ? 'cursor-pointer hover:border-primary/35' : ''}`}
+                            onClick={() => canManage && setViewingEvent(event)}
                         >
                             <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-24 sm:w-24">
                                 {event.image ? (
@@ -231,7 +284,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                         <div className="mb-2 mt-1 space-y-1 text-sm text-slate-500">
                                             <p className="flex items-start gap-1">
                                                 <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
-                                                <span>{new Date(event.date).toLocaleDateString()}</span>
+                                                <span>{new Date(event.date).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
                                             </p>
                                             <p className="flex min-w-0 items-start gap-1 [overflow-wrap:anywhere]">
                                                 <MapPin className="size-3 shrink-0" aria-hidden="true" />
@@ -241,7 +294,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                         <p className="line-clamp-2 text-sm text-slate-600 [overflow-wrap:anywhere]">{event.description}</p>
                                     </div>
                                     <div className="flex shrink-0 gap-1" onClick={(e) => e.stopPropagation()}>
-                                        {(isCreator || event.authorId === currentUserId) && (
+                                        {canManage && (
                                             <>
                                                 <Button
                                                     variant="ghost"
@@ -257,7 +310,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                                     size="icon"
                                                     aria-label={`Eliminar ${event.title}`}
                                                     className="text-slate-400 hover:text-red-500 hover:bg-red-50"
-                                                    onClick={() => handleDelete(event.id)}
+                                                    onClick={() => setDeletingEvent(event)}
                                                 >
                                                     <Trash2 className="size-5" aria-hidden="true" />
                                                 </Button>
@@ -267,50 +320,87 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                 </div>
                                 <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-xs text-slate-400">
                                     <span className="min-w-0 [overflow-wrap:anywhere]">Organizado por {event.author.name}</span>
-                                    {(isCreator || event.authorId === currentUserId) && (
+                                    {typeof event.attendeesCount === 'number' && (
+                                        <span>{event.attendeesCount} asistentes</span>
+                                    )}
+                                    {canManage && (
                                         <span className="rounded-full bg-teal-50 px-2 py-0.5 font-medium text-teal-600">
-                                            Ver Asistentes
+                                            Ver asistentes
                                         </span>
                                     )}
                                 </div>
+                                {(isMember || isCreator) && (
+                                    <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                                        <Button
+                                            size="sm"
+                                            variant={event.isAttending ? 'outline' : 'default'}
+                                            className="min-h-10"
+                                            disabled={pendingAttendId === event.id || (ended && !event.isAttending)}
+                                            onClick={() => void handleAttend(event)}
+                                            aria-pressed={Boolean(event.isAttending)}
+                                        >
+                                            {pendingAttendId === event.id
+                                                ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                                : event.isAttending && <Check className="size-4" aria-hidden="true" />}
+                                            {event.isAttending
+                                                ? 'Cancelar asistencia'
+                                                : ended ? 'Evento finalizado' : 'Asistir'}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         </Card>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
+
+            <ConfirmDialog
+                open={Boolean(deletingEvent)}
+                onOpenChange={(open) => !open && setDeletingEvent(null)}
+                title={`¿Eliminar "${deletingEvent?.title ?? 'este evento'}"?`}
+                description="Las personas anotadas dejarán de verlo. Esta acción no se puede deshacer."
+                confirmLabel="Eliminar evento"
+                destructive
+                onConfirm={() => (deletingEvent ? handleDelete(deletingEvent.id) : true)}
+            />
 
             {/* Edit DIALOG */}
             <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
                 <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>Editar Evento</DialogTitle>
+                        <DialogTitle>Editar evento</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label>Título</Label>
+                            <Label htmlFor="group-event-title">Título</Label>
                             <Input
+                                id="group-event-title"
                                 value={editForm.title}
                                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Fecha y Hora</Label>
+                            <Label htmlFor="group-event-date">Fecha y hora</Label>
                             <Input
+                                id="group-event-date"
                                 type="datetime-local"
                                 value={editForm.date}
                                 onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Ubicación</Label>
+                            <Label htmlFor="group-event-location">Ubicación</Label>
                             <Input
+                                id="group-event-location"
                                 value={editForm.location}
                                 onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Descripción</Label>
+                            <Label htmlFor="group-event-description">Descripción</Label>
                             <Textarea
+                                id="group-event-description"
                                 value={editForm.description}
                                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                             />
@@ -319,7 +409,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                     <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
                         <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setEditingEvent(null)}>Cancelar</Button>
                         <Button className="min-h-11 w-full sm:w-auto" onClick={handleUpdate} disabled={updating}>
-                            {updating ? 'Guardando...' : 'Guardar Cambios'}
+                            {updating ? 'Guardando...' : 'Guardar cambios'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -361,7 +451,7 @@ export default function GroupEvents({ groupId, isCreator, currentUserId }: Group
                                                 </TableCell>
                                                 <TableCell className="[overflow-wrap:anywhere]">{attendee.email}</TableCell>
                                                 <TableCell className="text-slate-500 text-xs">
-                                                    {new Date(attendee.confirmedAt).toLocaleDateString()}
+                                                    {new Date(attendee.confirmedAt).toLocaleDateString('es-AR')}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

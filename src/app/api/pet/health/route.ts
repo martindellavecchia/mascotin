@@ -3,13 +3,15 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+const HEALTH_RECORD_TYPES = ['VACCINE', 'CHECKUP', 'MEDICATION'];
+
 // GET - Get health records for a pet (upcoming due dates)
 export async function GET(request: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Iniciá sesión para continuar' },
                 { status: 401 }
             );
         }
@@ -19,7 +21,7 @@ export async function GET(request: Request) {
 
         if (!petId) {
             return NextResponse.json(
-                { success: false, error: 'petId is required' },
+                { success: false, error: 'Indicá la mascota' },
                 { status: 400 }
             );
         }
@@ -32,7 +34,7 @@ export async function GET(request: Request) {
 
         if (!owner || !owner.pets.some(p => p.id === petId)) {
             return NextResponse.json(
-                { success: false, error: 'Pet not found or not owned by user' },
+                { success: false, error: 'No encontramos esa mascota entre las tuyas' },
                 { status: 403 }
             );
         }
@@ -58,7 +60,7 @@ export async function GET(request: Request) {
     } catch (error) {
         console.error('Error fetching health records:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch health records' },
+            { success: false, error: 'No pudimos cargar los registros de salud. Intentá de nuevo.' },
             { status: 500 }
         );
     }
@@ -70,19 +72,33 @@ export async function POST(request: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Iniciá sesión para continuar' },
                 { status: 401 }
             );
         }
 
         const body = await request.json();
-        const { petId, type, name, dueDate, notes } = body;
+        const { petId, type, dueDate } = body;
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+        const notes = typeof body.notes === 'string' && body.notes.trim() ? body.notes.trim().slice(0, 500) : null;
 
         if (!petId || !type || !name) {
             return NextResponse.json(
-                { success: false, error: 'Missing required fields' },
+                { success: false, error: 'Completá la mascota, el tipo y el nombre del registro' },
                 { status: 400 }
             );
+        }
+
+        if (!HEALTH_RECORD_TYPES.includes(type)) {
+            return NextResponse.json({ success: false, error: 'Elegí un tipo de registro válido' }, { status: 400 });
+        }
+
+        if (name.length > 80) {
+            return NextResponse.json({ success: false, error: 'El nombre puede tener hasta 80 caracteres' }, { status: 400 });
+        }
+
+        if (dueDate && Number.isNaN(new Date(dueDate).getTime())) {
+            return NextResponse.json({ success: false, error: 'La fecha no es válida' }, { status: 400 });
         }
 
         // Verify pet belongs to user
@@ -93,7 +109,7 @@ export async function POST(request: Request) {
 
         if (!owner || !owner.pets.some(p => p.id === petId)) {
             return NextResponse.json(
-                { success: false, error: 'Pet not found or not owned by user' },
+                { success: false, error: 'No encontramos esa mascota entre las tuyas' },
                 { status: 403 }
             );
         }
@@ -115,7 +131,7 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error('Error creating health record:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to create health record' },
+            { success: false, error: 'No pudimos guardar el registro de salud. Intentá de nuevo.' },
             { status: 500 }
         );
     }
@@ -126,14 +142,14 @@ export async function PATCH(request: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'Iniciá sesión para continuar' }, { status: 401 });
         }
 
         const body = await request.json();
         const { recordId, completedAt, notes, dueDate } = body;
 
         if (!recordId) {
-            return NextResponse.json({ success: false, error: 'recordId is required' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'Indicá el registro' }, { status: 400 });
         }
 
         const record = await db.petHealthRecord.findUnique({
@@ -155,7 +171,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ success: true, healthRecord: updated });
     } catch (error) {
         console.error('Error updating health record:', error);
-        return NextResponse.json({ success: false, error: 'Error al actualizar registro' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No pudimos actualizar el registro. Intentá de nuevo.' }, { status: 500 });
     }
 }
 
@@ -164,14 +180,14 @@ export async function DELETE(request: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'Iniciá sesión para continuar' }, { status: 401 });
         }
 
         const { searchParams } = new URL(request.url);
         const recordId = searchParams.get('recordId');
 
         if (!recordId) {
-            return NextResponse.json({ success: false, error: 'recordId is required' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'Indicá el registro' }, { status: 400 });
         }
 
         const record = await db.petHealthRecord.findUnique({
@@ -188,6 +204,6 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting health record:', error);
-        return NextResponse.json({ success: false, error: 'Error al eliminar registro' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No pudimos eliminar el registro. Intentá de nuevo.' }, { status: 500 });
     }
 }

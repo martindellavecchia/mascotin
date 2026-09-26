@@ -49,7 +49,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ success: true, groups: formattedGroups });
     } catch (error) {
         console.error('Error fetching groups:', error);
-        return NextResponse.json({ success: false, error: 'Error fetching groups' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudieron cargar los grupos' }, { status: 500 });
     }
 }
 
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const body = await req.json();
@@ -88,6 +88,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, group });
     } catch (error) {
         console.error('Error creating group:', error);
-        return NextResponse.json({ success: false, error: 'Error creating group' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo crear el grupo' }, { status: 500 });
     }
 }

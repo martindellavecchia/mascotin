@@ -34,6 +34,8 @@ import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import ReportPostDialog from '@/components/feed/ReportPostDialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -102,6 +104,10 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [deleting, setDeleting] = useState(false);
+    const [likePending, setLikePending] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [reportOpen, setReportOpen] = useState(false);
+    const isAlertPost = post.postType === 'lost_pet' || post.postType === 'found_pet';
 
     // Event Attendance
     const [isAttending, setIsAttending] = useState(post.isAttending || false);
@@ -113,6 +119,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     const [comments, setComments] = useState<Comment[]>([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [newComment, setNewComment] = useState('');
+    const [submittingComment, setSubmittingComment] = useState(false);
     const openNeedTypes = post.rescueCase?.openNeedTypes || [];
     const contactNeed = post.rescueCase && openNeedTypes.includes(post.rescueCase.primaryNeed)
         ? post.rescueCase.primaryNeed
@@ -133,28 +140,75 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
         if (showComments && comments.length === 0) {
             setLoadingComments(true);
             fetch(`/api/posts/${post.id}/comments`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.comments) setComments(data.comments);
+                .then(async res => {
+                    const data = await res.json().catch(() => null);
+                    if (!res.ok || !Array.isArray(data?.comments)) {
+                        throw new Error(data?.error || 'Error al cargar comentarios');
+                    }
+                    setComments(data.comments);
                 })
-                .catch(() => toast.error('Error al cargar comentarios'))
+                .catch((error: unknown) => {
+                    toast.error(error instanceof Error ? error.message : 'Error al cargar comentarios');
+                })
                 .finally(() => setLoadingComments(false));
         }
     }, [showComments, post.id, comments.length]);
 
     const handleLike = async () => {
-        // Optimistic update
+        if (likePending) return;
         const newIsLiked = !isLiked;
         setIsLiked(newIsLiked);
         setLikeCount(prev => newIsLiked ? prev + 1 : prev - 1);
+        setLikePending(true);
 
-        try {
-            await fetch(`/api/posts/${post.id}/like`, { method: 'POST' });
-            onLike?.();
-        } catch (error) {
-            // Revert
+        const revert = (message?: string) => {
             setIsLiked(!newIsLiked);
             setLikeCount(prev => newIsLiked ? prev - 1 : prev + 1);
+            toast.error(message || 'No se pudo actualizar el me gusta');
+        };
+
+        try {
+            const res = await fetch(`/api/posts/${post.id}/like`, { method: 'POST' });
+            const data = await res.json().catch(() => null);
+            if (res.ok && data?.success) {
+                onLike?.();
+            } else {
+                revert(data?.error);
+            }
+        } catch {
+            revert();
+        } finally {
+            setLikePending(false);
+        }
+    };
+
+    const handleShare = async () => {
+        const sharePath = isAlertPost
+            ? `/alerts?post=${post.id}&type=${isResolved ? 'resolved' : post.postType}`
+            : isFosterCase && post.rescueCase
+                ? `/hogares-de-transito/casos/${post.rescueCase.id}`
+                : '/community';
+        const url = `${window.location.origin}${sharePath}`;
+        const title = isAlertPost
+            ? post.postType === 'found_pet' ? 'Mascota encontrada en Huella' : 'Mascota perdida en Huella'
+            : `Publicación de ${post.author?.name || 'la comunidad'} en Huella`;
+        const excerpt = post.content.length > 140 ? `${post.content.slice(0, 137)}...` : post.content;
+
+        if (typeof navigator.share === 'function') {
+            try {
+                await navigator.share({ title, text: excerpt, url });
+                return;
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+            }
+        }
+
+        try {
+            const hasPermalink = sharePath !== '/community';
+            await navigator.clipboard.writeText(hasPermalink ? url : `${excerpt}\n\n${url}`);
+            toast.success('Enlace copiado');
+        } catch {
+            toast.error('No pudimos copiar el enlace');
         }
     };
 
@@ -183,38 +237,45 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     const handleAddComment = async () => {
-        if (!newComment.trim()) return;
+        if (!newComment.trim() || submittingComment) return;
 
+        setSubmittingComment(true);
         try {
             const res = await fetch(`/api/posts/${post.id}/comments`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: newComment }),
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => null);
 
-            if (data.comment) {
-                setComments([...comments, data.comment]);
+            if (res.ok && data?.comment) {
+                setComments(prev => [...prev, data.comment]);
                 setNewComment('');
+            } else {
+                toast.error(data?.error || 'No se pudo agregar el comentario');
             }
         } catch {
-            toast.error('Error al agregar comentario');
+            toast.error('Error de conexión. Tu comentario sigue en el borrador.');
+        } finally {
+            setSubmittingComment(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!confirm('¿Estás seguro de que querés eliminar esta publicación?')) return;
-
         setDeleting(true);
         try {
             const res = await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
             if (res.ok) {
                 toast.success('Publicación eliminada');
                 onDelete?.(post.id);
-            } else {
-                toast.error('Error al eliminar');
+                return true;
             }
-        } catch (error) {
-            toast.error('Error al eliminar');
+            const data = await res.json().catch(() => null);
+            toast.error(data?.error || 'No se pudo eliminar la publicación');
+            return false;
+        } catch {
+            toast.error('No se pudo eliminar la publicación');
+            return false;
         } finally {
             setDeleting(false);
         }
@@ -329,7 +390,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                         Editar
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
+                                    <DropdownMenuItem onSelect={() => setConfirmDeleteOpen(true)} className="text-red-600 focus:text-red-600">
                                         <Trash2 className="mr-2 size-4" aria-hidden="true" />
                                         Eliminar
                                     </DropdownMenuItem>
@@ -345,22 +406,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             )}
                             {post.author?.id !== currentUserId && post.author?.id && (
                                 <DropdownMenuItem
-                                    onClick={async () => {
-                                        const response = await fetch('/api/reports', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                reportedId: post.author?.id,
-                                                targetType: post.postType === 'lost_pet' || post.postType === 'found_pet' ? 'ALERT' : 'POST',
-                                                targetId: post.id,
-                                                reason: 'inappropriate',
-                                            }),
-                                        });
-                                        const data = await response.json();
-                                        toast[data.success ? 'success' : 'error'](
-                                            data.success ? 'Publicación reportada' : data.error || 'No se pudo reportar'
-                                        );
-                                    }}
+                                    onSelect={() => setReportOpen(true)}
                                     className="text-red-600 focus:text-red-600"
                                 >
                                     <Flag className="mr-2 size-4" aria-hidden="true" />
@@ -570,7 +616,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             />
                             <button
                                 onClick={handleAddComment}
-                                disabled={!newComment.trim()}
+                                disabled={!newComment.trim() || submittingComment}
                                 aria-label="Enviar comentario"
                                 className="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50"
                             >
@@ -605,11 +651,38 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     <span className="text-xs">{post.postType === 'question' ? 'Responder' : 'Comentar'}</span>
                 </Button>
 
-                <Button variant="ghost" size="sm" className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600" aria-label="Compartir">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600"
+                    aria-label="Compartir"
+                    onClick={() => void handleShare()}
+                >
                     <Share2 className="size-4" aria-hidden="true" />
                     <span className="text-xs">Compartir</span>
                 </Button>
             </div>
+
+            {post.author?.id === currentUserId && !isFosterCase && (
+                <ConfirmDialog
+                    open={confirmDeleteOpen}
+                    onOpenChange={setConfirmDeleteOpen}
+                    title="¿Eliminar esta publicación?"
+                    description="Se van a borrar también sus comentarios y me gusta. Esta acción no se puede deshacer."
+                    confirmLabel="Eliminar"
+                    destructive
+                    onConfirm={handleDelete}
+                />
+            )}
+            {currentUserId && post.author?.id && post.author.id !== currentUserId && (
+                <ReportPostDialog
+                    open={reportOpen}
+                    onOpenChange={setReportOpen}
+                    reportedId={post.author.id}
+                    targetId={post.id}
+                    targetType={isAlertPost ? 'ALERT' : 'POST'}
+                />
+            )}
         </Card>
     );
 }

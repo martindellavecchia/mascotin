@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import {
   Bell,
+  CalendarClock,
   CalendarDays,
   HeartHandshake,
   Home,
@@ -46,7 +47,7 @@ const SECONDARY_NAV_LINKS: NavigationLink[] = [
   { href: '/shop', label: 'Servicios', icon: Store },
   { href: '/profile', label: 'Perfil', icon: UserRound },
   { href: '/settings', label: 'Configuración', icon: Settings },
-  { href: '/appointments', label: 'Mis turnos', icon: Store },
+  { href: '/appointments', label: 'Mis turnos', icon: CalendarClock },
 ];
 
 const NotificationBell = dynamic(

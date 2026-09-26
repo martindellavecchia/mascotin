@@ -31,7 +31,7 @@ export async function GET(
         });
 
         if (!post) {
-            return NextResponse.json({ success: false, error: 'No encontrado' }, { status: 404 });
+            return NextResponse.json({ success: false, error: 'Publicación no encontrada' }, { status: 404 });
         }
 
         return NextResponse.json({ success: true, post });
@@ -62,11 +62,11 @@ export async function PUT(
         });
 
         if (!existingPost) {
-            return NextResponse.json({ success: false, error: 'No encontrado' }, { status: 404 });
+            return NextResponse.json({ success: false, error: 'Publicación no encontrada' }, { status: 404 });
         }
 
         if (existingPost.authorId !== session.user.id) {
-            return NextResponse.json({ success: false, error: 'Not authorized to edit this post' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No podés editar esta publicación' }, { status: 403 });
         }
 
         const { content, images, postType, eventDate, eventLocation } = body;
@@ -109,16 +109,16 @@ export async function DELETE(
         });
 
         if (!post) {
-            return NextResponse.json({ success: false, error: 'No encontrado' }, { status: 404 });
+            return NextResponse.json({ success: false, error: 'Publicación no encontrada' }, { status: 404 });
         }
 
         if (post.authorId !== session.user.id) {
-            return NextResponse.json({ success: false, error: 'Not authorized to delete this post' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No podés eliminar esta publicación' }, { status: 403 });
         }
 
         await db.post.delete({ where: { id } });
 
-        return NextResponse.json({ success: true, message: 'Post deleted' });
+        return NextResponse.json({ success: true, message: 'Publicación eliminada' });
     } catch (error) {
         console.error('Error deleting post:', error);
         return NextResponse.json({ success: false, error: 'Error interno del servidor' }, { status: 500 });

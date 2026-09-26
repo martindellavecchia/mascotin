@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LoaderCircle, Send } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { mergeMessagesById } from '@/lib/messages';
@@ -33,10 +34,24 @@ export default function GroupChat({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [latestCursor, setLatestCursor] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [hasMoreBefore, setHasMoreBefore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [olderError, setOlderError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const { fetchWithError, abort } = useFetchWithError();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emptyConversationCursorRef = useRef<string | null>(null);
+  const scrollRestoreRef = useRef<{ scrollHeight: number; scrollTop: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const node = scrollContainerRef.current;
+    const snapshot = scrollRestoreRef.current;
+    if (!node || !snapshot) return;
+    node.scrollTop = node.scrollHeight - snapshot.scrollHeight + snapshot.scrollTop;
+    scrollRestoreRef.current = null;
+  }, [messages]);
 
   const isNearBottom = useCallback(() => {
     const node = scrollContainerRef.current;
@@ -90,9 +105,38 @@ export default function GroupChat({
     );
 
     if (result.success && result.data) {
+      setLoadError(false);
+      setHasMoreBefore(Boolean(result.data.hasMoreBefore));
       applyPage(result.data, { replace: true, autoScroll: true });
+    } else {
+      setLoadError(true);
     }
   }, [applyPage, fetchWithError, groupId]);
+
+  const loadOlderMessages = async () => {
+    const oldest = messages.find((message) => !message.id.startsWith('temp-'));
+    if (!oldest || loadingOlder) return;
+
+    setLoadingOlder(true);
+    setOlderError(false);
+    const params = new URLSearchParams({ limit: '50', before: oldest.createdAt });
+    const result = await fetchWithError<GroupMessagePageResponse>(
+      `/api/groups/${groupId}/messages?${params.toString()}`,
+      { showError: false }
+    );
+
+    if (result.success && result.data) {
+      const node = scrollContainerRef.current;
+      if (node) {
+        scrollRestoreRef.current = { scrollHeight: node.scrollHeight, scrollTop: node.scrollTop };
+      }
+      setHasMoreBefore(Boolean(result.data.hasMoreBefore));
+      setMessages((previous) => mergeMessagesById(previous, result.data!.messages || []));
+    } else {
+      setOlderError(true);
+    }
+    setLoadingOlder(false);
+  };
 
   const pollForNewMessages = useCallback(async () => {
     const params = new URLSearchParams({
@@ -129,7 +173,7 @@ export default function GroupChat({
   }, [applyPage, fetchWithError, groupId, isNearBottom, latestCursor]);
 
   const { markActivity } = useAdaptivePolling({
-    enabled: Boolean(groupId) && !loading,
+    enabled: Boolean(groupId) && !loading && !loadError,
     onPoll: pollForNewMessages,
     activeIntervalMs: 5_000,
     idleIntervalMs: 15_000,
@@ -142,8 +186,11 @@ export default function GroupChat({
     }
 
     setLoading(true);
+    setLoadError(false);
     setMessages([]);
     setLatestCursor(null);
+    setHasMoreBefore(false);
+    setOlderError(false);
     emptyConversationCursorRef.current = null;
 
     loadInitialMessages().finally(() => {
@@ -153,7 +200,7 @@ export default function GroupChat({
     return () => {
       abort();
     };
-  }, [abort, groupId, loadInitialMessages]);
+  }, [abort, groupId, loadInitialMessages, reloadKey]);
 
   const handleSend = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -172,7 +219,7 @@ export default function GroupChat({
       createdAt: new Date().toISOString(),
       sender: {
         id: currentUserId,
-        name: 'Tú',
+        name: 'Vos',
         image: null,
       },
     };
@@ -223,12 +270,41 @@ export default function GroupChat({
     );
   }
 
+  if (loadError) {
+    return (
+      <Card className={`flex h-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-4 ${className || ''}`}>
+        <StateFeedback
+          status="error"
+          title="No pudimos cargar el chat del grupo"
+          description="Revisá tu conexión e intentá de nuevo."
+          action={<Button variant="outline" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</Button>}
+        />
+      </Card>
+    );
+  }
+
   return (
     <Card className={`flex h-full min-h-0 min-w-0 flex-col overflow-hidden ${className || ''}`}>
       <div
         ref={scrollContainerRef}
         className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-4"
       >
+        {hasMoreBefore && (
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void loadOlderMessages()}
+              disabled={loadingOlder}
+            >
+              {loadingOlder && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
+              {loadingOlder ? 'Cargando…' : 'Cargar mensajes anteriores'}
+            </Button>
+            {olderError && (
+              <p role="alert" className="text-xs text-destructive">No pudimos cargar mensajes anteriores. Intentá de nuevo.</p>
+            )}
+          </div>
+        )}
         {messages.length === 0 && (
           <div className="text-center text-slate-400 py-10">
             <p>No hay mensajes aún.</p>

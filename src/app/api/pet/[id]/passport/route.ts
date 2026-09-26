@@ -12,7 +12,7 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Iniciá sesión para continuar' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -30,7 +30,7 @@ export async function GET(
         },
         healthRecords: {
           orderBy: { dueDate: 'asc' },
-          take: 12,
+          take: 50,
         },
       },
     });
@@ -40,13 +40,15 @@ export async function GET(
     }
 
     const identified = await ensurePetIdentity(pet);
+    const isOwner = pet.owner.userId === session.user.id;
+    const { userId: _ownerUserId, ...owner } = pet.owner;
+    const payload = withImageFields({ ...pet, ...identified, owner });
 
     return NextResponse.json({
       success: true,
-      pet: {
-        ...withImageFields({ ...pet, ...identified }),
-        isOwner: pet.owner.userId === session.user.id,
-      },
+      pet: isOwner
+        ? { ...payload, isOwner }
+        : { ...payload, isOwner, healthRecords: [], microchipId: null, emergencyToken: null },
     });
   } catch {
     return NextResponse.json(

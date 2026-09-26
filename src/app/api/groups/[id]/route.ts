@@ -14,7 +14,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         });
 
         if (!group) {
-            return NextResponse.json({ success: false, error: 'Group not found' }, { status: 404 });
+            return NextResponse.json({ success: false, error: 'Grupo no encontrado' }, { status: 404 });
         }
 
         // Check if current user is member (requires getting session or userId from param if used)
@@ -22,7 +22,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         return NextResponse.json({ success: true, group });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error fetching group' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo cargar el grupo' }, { status: 500 });
     }
 }
 
@@ -30,14 +30,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const group = await prisma.group.findUnique({ where: { id: params.id } });
-        if (!group) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+        if (!group) return NextResponse.json({ success: false, error: 'Grupo no encontrado' }, { status: 404 });
 
         if (group.creatorId !== session.user.id) {
-            return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No tenés permiso para realizar esta acción' }, { status: 403 });
         }
 
         const { name, description, image } = await req.json();
@@ -49,7 +49,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
         return NextResponse.json({ success: true, group: updatedGroup });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error updating group' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo actualizar el grupo' }, { status: 500 });
     }
 }
 
@@ -57,20 +57,20 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const group = await prisma.group.findUnique({ where: { id: params.id } });
-        if (!group) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+        if (!group) return NextResponse.json({ success: false, error: 'Grupo no encontrado' }, { status: 404 });
 
         if (group.creatorId !== session.user.id) {
-            return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No tenés permiso para realizar esta acción' }, { status: 403 });
         }
 
         await prisma.group.delete({ where: { id: params.id } });
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error deleting group' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo eliminar el grupo' }, { status: 500 });
     }
 }

@@ -30,14 +30,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
     });
 
     if (!provider) {
-      return NextResponse.json({ success: false, error: 'Provider not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Proveedor no encontrado' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, provider });
   } catch (error) {
     console.error('Error fetching provider:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch provider' },
+      { success: false, error: 'No pudimos cargar el proveedor' },
       { status: 500 }
     );
   }
@@ -69,7 +69,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   } catch (error) {
     console.error('Error updating provider:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update provider' },
+      { success: false, error: 'No pudimos actualizar el proveedor' },
       { status: 500 }
     );
   }
@@ -108,7 +108,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   } catch (error) {
     console.error('Error deleting provider:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete provider' },
+      { success: false, error: 'No pudimos eliminar el proveedor' },
       { status: 500 }
     );
   }

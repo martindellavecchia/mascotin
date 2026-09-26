@@ -28,7 +28,7 @@ export async function requireAdmin(): Promise<NextResponse | null> {
 
     if (!session?.user?.id) {
         return NextResponse.json(
-            { success: false, error: 'Not authenticated' },
+            { success: false, error: 'No autenticado' },
             { status: 401 }
         );
     }
@@ -40,7 +40,7 @@ export async function requireAdmin(): Promise<NextResponse | null> {
 
     if (user?.role !== 'ADMIN') {
         return NextResponse.json(
-            { success: false, error: 'Admin access required' },
+            { success: false, error: 'Se requieren permisos de administración' },
             { status: 403 }
         );
     }

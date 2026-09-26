@@ -40,4 +40,25 @@ describe('profile PetCard image compatibility', () => {
       'data:image/webp;base64,abc'
     );
   });
+
+  it('renders puppies as less than one year old', () => {
+    render(<PetCard pet={{ ...pet, age: 0 }} onEdit={jest.fn()} onDelete={jest.fn()} />);
+
+    expect(screen.getByText('Menos de 1 año')).toBeInTheDocument();
+    expect(screen.queryByText('0 años')).not.toBeInTheDocument();
+  });
+
+  it('hides unset facts of pets created through the short wizard', () => {
+    render(
+      <PetCard
+        pet={{ ...pet, age: 0, gender: '', size: '', energy: '' }}
+        onEdit={jest.fn()}
+        onDelete={jest.fn()}
+      />
+    );
+
+    expect(screen.queryByText(/año/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Macho')).not.toBeInTheDocument();
+    expect(screen.queryByText('Hembra')).not.toBeInTheDocument();
+  });
 });

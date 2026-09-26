@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 import {
+  buildStoreDetailSelect,
   mapPublicStoreDetail,
   PUBLIC_STORE_CARD_KEYS,
   toPublicStoreCard,
@@ -53,12 +54,17 @@ describe('public store DTOs', () => {
       slug: 'paw-spa',
       description: 'Baño',
       address: 'Palermo',
+      phone: null,
+      email: null,
+      latitude: null,
+      longitude: null,
       image: null,
       images: '[]',
       tags: '[]',
       ratingAverage: 4.5,
       reviewCount: 1,
       category: { id: 'cat-1', name: 'Peluquería' },
+      promotions: [],
       bookingServices: [
         { id: 'svc-1', name: 'Baño', description: 'Completo', price: 8000, duration: 60 },
       ],
@@ -82,12 +88,55 @@ describe('public store DTOs', () => {
     });
 
     expect(detail.reviews[0].helpfulCount).toBe(3);
-    expect(detail).not.toHaveProperty('phone');
-    expect(detail).not.toHaveProperty('email');
+    expect(detail.phone).toBeNull();
+    expect(detail.email).toBeNull();
+    expect(detail.promotions).toEqual([]);
     expect(detail).not.toHaveProperty('owner');
     expect(detail).not.toHaveProperty('providerId');
     expect(detail.reviews[0]).not.toHaveProperty('helpfulVotes');
     expect(detail.reviews[0].author).not.toHaveProperty('id');
+  });
+
+  it('exposes public contact data, coordinates and active promotions', () => {
+    const startsAt = new Date('2026-09-01T00:00:00.000Z');
+    const endsAt = new Date('2026-10-01T00:00:00.000Z');
+    const detail = mapPublicStoreDetail({
+      id: 'store-1',
+      name: 'Paw Spa',
+      slug: 'paw-spa',
+      description: 'Baño',
+      address: 'Palermo',
+      phone: ' +54 9 11 5555-1234 ',
+      email: ' hola@pawspa.com ',
+      latitude: -34.58,
+      longitude: -58.42,
+      image: null,
+      images: '["https://images.unsplash.com/a.jpg"]',
+      tags: '[]',
+      ratingAverage: 0,
+      reviewCount: 0,
+      category: { id: 'cat-1', name: 'Peluquería' },
+      promotions: [{ id: 'promo-1', title: '20% off', body: 'En baños completos', startsAt, endsAt }],
+      bookingServices: [],
+      reviews: [],
+    });
+
+    expect(detail.phone).toBe('+54 9 11 5555-1234');
+    expect(detail.email).toBe('hola@pawspa.com');
+    expect(detail.latitude).toBe(-34.58);
+    expect(detail.longitude).toBe(-58.42);
+    expect(detail.images).toEqual(['https://images.unsplash.com/a.jpg']);
+    expect(detail.promotions).toEqual([
+      { id: 'promo-1', title: '20% off', body: 'En baños completos', startsAt, endsAt },
+    ]);
+  });
+
+  it('only selects currently active promotions for the public detail', () => {
+    const now = new Date('2026-09-26T12:00:00.000Z');
+    const select = buildStoreDetailSelect(now);
+    expect(select.promotions.where).toEqual({ startsAt: { lte: now }, endsAt: { gte: now } });
+    expect(select.phone).toBe(true);
+    expect(select.email).toBe(true);
   });
 
   it('uses _count helpfulVotes in the public detail select', () => {

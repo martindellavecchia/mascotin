@@ -11,7 +11,7 @@ export async function GET(request: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'No autenticado' },
                 { status: 401 }
             );
         }
@@ -20,16 +20,16 @@ export async function GET(request: Request) {
         const groupId = searchParams.get('groupId');
         const category = searchParams.get('category');
         const limit = searchParams.get('limit');
-        const action = searchParams.get('action'); // 'all' to see past events
-        const take = limit ? parseInt(limit) : 20;
+        const action = searchParams.get('action'); // 'all' includes past events, 'past' only past ones
+        const parsedLimit = limit ? parseInt(limit) : 20;
+        const take = Number.isFinite(parsedLimit) ? Math.min(Math.max(parsedLimit, 1), 100) : 20;
 
         const where: Prisma.EventWhereInput = {};
 
-        // Only filter by date if NOT asking for all (default behavior is upcoming only)
-        if (action !== 'all') {
-            where.date = {
-                gte: new Date(),
-            };
+        if (action === 'past') {
+            where.date = { lt: new Date() };
+        } else if (action !== 'all') {
+            where.date = { gte: new Date() };
         }
 
         if (groupId) {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
         const events = await db.event.findMany({
             where,
             orderBy: {
-                date: 'asc',
+                date: action === 'past' ? 'desc' : 'asc',
             },
             take,
             include: {
@@ -96,7 +96,7 @@ export async function GET(request: Request) {
     } catch (error) {
         console.error('Error fetching events:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch events' },
+            { success: false, error: 'No se pudieron cargar los eventos' },
             { status: 500 }
         );
     }
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'No autenticado' },
                 { status: 401 }
             );
         }
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error('Error creating event:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to create event' },
+            { success: false, error: 'No se pudo crear el evento' },
             { status: 500 }
         );
     }

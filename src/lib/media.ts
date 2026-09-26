@@ -45,7 +45,9 @@ export function isRenderableImage(source?: string | null): source is string {
     const url = new URL(source);
     if (url.protocol !== 'https:') return false;
 
-    return url.hostname === 'images.unsplash.com' || url.hostname.endsWith('.neon.tech');
+    return url.hostname === 'images.unsplash.com'
+      || url.hostname.endsWith('.neon.tech')
+      || url.hostname.endsWith('.public.blob.vercel-storage.com');
   } catch {
     return false;
   }

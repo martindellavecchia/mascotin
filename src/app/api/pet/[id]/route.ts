@@ -14,7 +14,7 @@ export async function GET(
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Iniciá sesión para continuar' },
                 { status: 401 }
             );
         }
@@ -30,7 +30,7 @@ export async function GET(
 
         if (!pet || pet.owner.user.syntheticRunId !== (viewer?.syntheticRunId || null)) {
             return NextResponse.json(
-                { success: false, error: 'Pet not found' },
+                { success: false, error: 'Mascota no encontrada' },
                 { status: 404 }
             );
         }
@@ -39,7 +39,7 @@ export async function GET(
         return NextResponse.json({ success: true, pet: { ...pet, owner } });
     } catch (error) {
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch pet' },
+            { success: false, error: 'No pudimos cargar la mascota. Intentá de nuevo.' },
             { status: 500 }
         );
     }
@@ -54,7 +54,7 @@ export async function PUT(
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Iniciá sesión para continuar' },
                 { status: 401 }
             );
         }
@@ -70,14 +70,14 @@ export async function PUT(
 
         if (!pet) {
             return NextResponse.json(
-                { success: false, error: 'Pet not found' },
+                { success: false, error: 'Mascota no encontrada' },
                 { status: 404 }
             );
         }
 
         if (pet.owner.userId !== session.user.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authorized to edit this pet' },
+                { success: false, error: 'No podés editar esta mascota' },
                 { status: 403 }
             );
         }
@@ -151,7 +151,7 @@ export async function PUT(
         return NextResponse.json({ success: true, pet: updatedPet });
     } catch (error) {
         return NextResponse.json(
-            { success: false, error: 'Failed to update pet' },
+            { success: false, error: 'No pudimos guardar la mascota. Intentá de nuevo.' },
             { status: 500 }
         );
     }
@@ -166,7 +166,7 @@ export async function DELETE(
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Iniciá sesión para continuar' },
                 { status: 401 }
             );
         }
@@ -181,14 +181,14 @@ export async function DELETE(
 
         if (!pet) {
             return NextResponse.json(
-                { success: false, error: 'Pet not found' },
+                { success: false, error: 'Mascota no encontrada' },
                 { status: 404 }
             );
         }
 
         if (pet.owner.userId !== session.user.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authorized to delete this pet' },
+                { success: false, error: 'No podés eliminar esta mascota' },
                 { status: 403 }
             );
         }
@@ -197,10 +197,10 @@ export async function DELETE(
             where: { id },
         });
 
-        return NextResponse.json({ success: true, message: 'Pet deleted successfully' });
+        return NextResponse.json({ success: true, message: 'Mascota eliminada' });
     } catch (error) {
         return NextResponse.json(
-            { success: false, error: 'Failed to delete pet' },
+            { success: false, error: 'No pudimos eliminar la mascota. Intentá de nuevo.' },
             { status: 500 }
         );
     }

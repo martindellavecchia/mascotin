@@ -71,9 +71,20 @@ export interface PublicStoreDetail {
   slug: string;
   description: string | null;
   address: string | null;
+  phone: string | null;
+  email: string | null;
+  latitude: number | null;
+  longitude: number | null;
   image: string | null;
   images: string[];
   tags: string[];
+  promotions: Array<{
+    id: string;
+    title: string;
+    body: string;
+    startsAt: Date;
+    endsAt: Date;
+  }>;
   category: { id: string; name: string };
   ratingAverage: number;
   reviewCount: number;
@@ -304,18 +315,28 @@ export const getCachedPublicMapStores = unstable_cache(getPublicMapStores, ['sto
   tags: [STORE_CACHE_TAGS.directory],
 });
 
-export const storeDetailSelect = {
+export const buildStoreDetailSelect = (now: Date) => ({
   id: true,
   name: true,
   slug: true,
   description: true,
   address: true,
+  phone: true,
+  email: true,
+  latitude: true,
+  longitude: true,
   image: true,
   images: true,
   tags: true,
   ratingAverage: true,
   reviewCount: true,
   category: { select: { id: true, name: true } },
+  promotions: {
+    where: { startsAt: { lte: now }, endsAt: { gte: now } },
+    select: { id: true, title: true, body: true, startsAt: true, endsAt: true },
+    orderBy: { endsAt: 'asc' as const },
+    take: 3,
+  },
   bookingServices: {
     select: { id: true, name: true, description: true, price: true, duration: true },
     orderBy: { createdAt: 'desc' as const },
@@ -345,9 +366,11 @@ export const storeDetailSelect = {
     },
     orderBy: { createdAt: 'desc' as const },
   },
-} satisfies Prisma.StoreSelect;
+}) satisfies Prisma.StoreSelect;
 
-type StoreDetailQueryResult = Prisma.StoreGetPayload<{ select: typeof storeDetailSelect }>;
+type StoreDetailQueryResult = Prisma.StoreGetPayload<{
+  select: ReturnType<typeof buildStoreDetailSelect>;
+}>;
 
 export function mapPublicStoreDetail(store: StoreDetailQueryResult): PublicStoreDetail {
   return {
@@ -356,9 +379,20 @@ export function mapPublicStoreDetail(store: StoreDetailQueryResult): PublicStore
     slug: store.slug,
     description: store.description,
     address: store.address,
+    phone: store.phone?.trim() || null,
+    email: store.email?.trim() || null,
+    latitude: store.latitude,
+    longitude: store.longitude,
     image: store.image,
     images: parseStoreImages(store.images),
     tags: parseJsonStringArray(store.tags),
+    promotions: store.promotions.map((promotion) => ({
+      id: promotion.id,
+      title: promotion.title,
+      body: promotion.body,
+      startsAt: promotion.startsAt,
+      endsAt: promotion.endsAt,
+    })),
     category: store.category,
     ratingAverage: store.ratingAverage,
     reviewCount: store.reviewCount,
@@ -384,7 +418,7 @@ export function mapPublicStoreDetail(store: StoreDetailQueryResult): PublicStore
 export async function getPublicStoreBySlug(slug: string): Promise<PublicStoreDetail | null> {
   const store = await db.store.findFirst({
     where: { slug, isActive: true },
-    select: storeDetailSelect,
+    select: buildStoreDetailSelect(new Date()),
   });
 
   if (!store) return null;

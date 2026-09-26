@@ -44,7 +44,7 @@ export async function GET(
 
         if (!user) {
             return NextResponse.json(
-                { success: false, error: 'User not found' },
+                { success: false, error: 'Usuario no encontrado' },
                 { status: 404 }
             );
         }
@@ -53,7 +53,7 @@ export async function GET(
     } catch (error) {
         console.error('Error fetching user:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch user' },
+            { success: false, error: 'No pudimos cargar el usuario' },
             { status: 500 }
         );
     }
@@ -75,7 +75,7 @@ export async function PATCH(
         // Prevent admin from demoting themselves
         if (params.id === session?.user?.id && role && role !== 'ADMIN') {
             return NextResponse.json(
-                { success: false, error: 'Cannot change your own role' },
+                { success: false, error: 'No podés cambiar tu propio rol' },
                 { status: 400 }
             );
         }
@@ -85,7 +85,7 @@ export async function PATCH(
         if (role !== undefined) {
             if (!['OWNER', 'PROVIDER', 'ADMIN'].includes(role)) {
                 return NextResponse.json(
-                    { success: false, error: 'Invalid role' },
+                    { success: false, error: 'Rol inválido' },
                     { status: 400 }
                 );
             }
@@ -116,7 +116,7 @@ export async function PATCH(
             // Prevent admin from blocking themselves
             if (params.id === session?.user?.id && isBlocked) {
                 return NextResponse.json(
-                    { success: false, error: 'Cannot block yourself' },
+                    { success: false, error: 'No podés bloquear tu propia cuenta' },
                     { status: 400 }
                 );
             }
@@ -139,7 +139,7 @@ export async function PATCH(
     } catch (error) {
         console.error('Error updating user:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to update user' },
+            { success: false, error: 'No pudimos actualizar el usuario' },
             { status: 500 }
         );
     }
@@ -159,7 +159,7 @@ export async function DELETE(
         // Prevent admin from deleting themselves
         if (params.id === session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Cannot delete yourself' },
+                { success: false, error: 'No podés eliminar tu propia cuenta' },
                 { status: 400 }
             );
         }
@@ -168,11 +168,11 @@ export async function DELETE(
             where: { id: params.id },
         });
 
-        return NextResponse.json({ success: true, message: 'User deleted' });
+        return NextResponse.json({ success: true, message: 'Usuario eliminado' });
     } catch (error) {
         console.error('Error deleting user:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to delete user' },
+            { success: false, error: 'No pudimos eliminar el usuario' },
             { status: 500 }
         );
     }

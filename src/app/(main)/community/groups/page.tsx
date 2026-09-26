@@ -93,6 +93,7 @@ export default function GroupsDirectoryPage() {
 
                     <form onSubmit={handleSearch} className="flex gap-2 border-y border-border bg-surface py-4">
                         <Input
+                            aria-label="Buscar grupos"
                             placeholder="Buscar grupos..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}

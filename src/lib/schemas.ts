@@ -2,39 +2,44 @@ import { z } from 'zod';
 import { containsPrivatePublicRescueData } from '@/lib/rescue';
 
 export const petSchema = z.object({
-  name: z.string().trim().min(1, "El nombre es requerido").max(50),
+  name: z.string().trim().min(1, "El nombre es requerido").max(50, "El nombre puede tener hasta 50 caracteres"),
   petType: z.enum(['dog', 'cat', 'bird', 'other'], {
     message: "El tipo de mascota es requerido",
   }),
-  breed: z.string().max(50).optional(),
-  age: z.number().min(0, "La edad debe ser positiva").max(30, "Edad no válida"),
-  weight: z.number().min(0, "El peso debe ser positivo").max(200, "Peso no válido").optional(),
+  breed: z.string().max(50, "La raza puede tener hasta 50 caracteres").optional(),
+  age: z.number({ error: "Ingresá la edad" })
+    .int("Ingresá la edad en años enteros")
+    .min(0, "La edad debe ser positiva")
+    .max(30, "Edad no válida"),
+  weight: z.number({ error: "Ingresá un peso válido" }).min(0, "El peso debe ser positivo").max(200, "Peso no válido").optional(),
   size: z.enum(['small', 'medium', 'large', 'xlarge'], {
-    message: "El tamaño es requerido",
+    message: "Elegí el tamaño",
   }),
   gender: z.enum(['male', 'female'], {
-    message: "El género es requerido",
+    message: "Elegí el sexo",
   }),
-  vaccinated: z.boolean().default(true),
-  neutered: z.boolean().default(false),
+  vaccinated: z.boolean().nullable().optional(),
+  neutered: z.boolean().nullable().optional(),
   energy: z.enum(['low', 'medium', 'high'], {
-    message: "El nivel de energía es requerido",
+    message: "Elegí el nivel de energía",
   }),
-  bio: z.string().min(10, "La bio debe tener al menos 10 caracteres").max(500),
-  activities: z.array(z.enum(['walk', 'play', 'fetch', 'swim', 'socialize', 'groom', 'training'])).min(1, "Seleccioná al menos una actividad"),
-  location: z.string().min(2, "La ubicación es requerida").max(100),
+  bio: z.string().trim().min(10, "La biografía debe tener al menos 10 caracteres").max(500, "La biografía puede tener hasta 500 caracteres"),
+  activities: z.array(z.enum(['walk', 'play', 'fetch', 'swim', 'socialize', 'groom', 'training']), {
+    error: "Seleccioná al menos una actividad",
+  }).min(1, "Seleccioná al menos una actividad"),
+  location: z.string().trim().min(2, "La ubicación es requerida").max(100, "La ubicación puede tener hasta 100 caracteres"),
   images: z.array(z.string())
-    .min(1, "Al menos una imagen es requerida")
-    .max(6, "Máximo 6 imágenes"),
+    .min(1, "Agregá al menos una foto")
+    .max(6, "Máximo 6 fotos"),
   goodWithKids: z.enum(['yes', 'no', 'unknown']).optional(),
   goodWithDogs: z.enum(['yes', 'no', 'unknown']).optional(),
   goodWithCats: z.enum(['yes', 'no', 'unknown']).optional(),
   goodWithStrangers: z.enum(['yes', 'no', 'unknown']).optional(),
   temperament: z.array(z.enum(['sociable', 'territorial', 'anxious', 'playful', 'calm', 'independent'])).optional(),
-  microchipId: z.string().max(50).optional(),
-  allergies: z.string().max(300).optional(),
-  specialNeeds: z.string().max(500).optional(),
-  vetClinicName: z.string().max(120).optional(),
+  microchipId: z.string().max(50, "El microchip puede tener hasta 50 caracteres").optional(),
+  allergies: z.string().max(300, "Las alergias pueden tener hasta 300 caracteres").optional(),
+  specialNeeds: z.string().max(500, "Las necesidades especiales pueden tener hasta 500 caracteres").optional(),
+  vetClinicName: z.string().max(120, "La veterinaria puede tener hasta 120 caracteres").optional(),
   matchIntent: z.array(z.enum(['walk', 'play', 'social', 'sit'])).optional(),
   sharePhoneOnScan: z.boolean().optional(),
   shareVetOnScan: z.boolean().optional(),

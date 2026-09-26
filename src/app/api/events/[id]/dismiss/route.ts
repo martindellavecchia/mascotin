@@ -7,7 +7,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const { id } = params;
@@ -18,7 +18,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         });
 
         if (!event) {
-            return NextResponse.json({ success: false, error: 'Event not found' }, { status: 404 });
+            return NextResponse.json({ success: false, error: 'Evento no encontrado' }, { status: 404 });
         }
 
         // Create dismissal
@@ -52,6 +52,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error dismissing event:', error);
-        return NextResponse.json({ success: false, error: 'Failed to dismiss event' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo ocultar el evento' }, { status: 500 });
     }
 }

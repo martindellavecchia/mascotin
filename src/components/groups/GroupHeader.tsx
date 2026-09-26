@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Pencil, Trash2, UserRound, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
-import EditGroupModal from './EditGroupModal';
+import EditGroupModal from '@/components/groups/EditGroupModal';
 
 interface GroupHeaderProps {
     group: {
@@ -37,30 +38,33 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
             if (res.ok) {
                 toast.success(isMember ? 'Saliste del grupo' : 'Te uniste al grupo');
                 onJoinChange();
-            } else {
-                const data = await res.json();
-                toast.error(data.error || 'Error al actualizar membresía');
+                return true;
             }
-        } catch (error) {
-            toast.error('Error de conexión');
+            const data = await res.json().catch(() => null);
+            toast.error(data?.error || 'No se pudo actualizar tu membresía');
+            return false;
+        } catch {
+            toast.error('Error de conexión. Intentá de nuevo.');
+            return false;
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!confirm('¿Estás seguro de eliminar este grupo? Esta acción no se puede deshacer.')) return;
-
         try {
             const res = await fetch(`/api/groups/${group.id}`, { method: 'DELETE' });
             if (res.ok) {
                 toast.success('Grupo eliminado');
                 router.push('/community/groups');
-            } else {
-                toast.error('Error al eliminar grupo');
+                return true;
             }
-        } catch (error) {
-            toast.error('Error al eliminar grupo');
+            const data = await res.json().catch(() => null);
+            toast.error(data?.error || 'No se pudo eliminar el grupo');
+            return false;
+        } catch {
+            toast.error('Error de conexión. Intentá de nuevo.');
+            return false;
         }
     };
 
@@ -95,7 +99,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                 )}
                                 {isCreator && (
                                     <Badge variant="warning">
-                                        Creador
+                                        Creador/a
                                     </Badge>
                                 )}
                             </div>
@@ -108,19 +112,40 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                         <Pencil className="mr-2 size-5" aria-hidden="true" />
                                         Editar
                                     </Button>
-                                    <Button variant="destructive" className="min-h-11 w-full sm:w-auto" onClick={handleDelete}>
-                                        <Trash2 className="mr-2 size-5" aria-hidden="true" />
-                                        Eliminar
-                                    </Button>
+                                    <ConfirmDialog
+                                        title={`¿Eliminar "${group.name}"?`}
+                                        description="Se van a borrar las publicaciones, el chat y los eventos del grupo. Esta acción no se puede deshacer."
+                                        confirmLabel="Eliminar grupo"
+                                        destructive
+                                        onConfirm={handleDelete}
+                                        trigger={
+                                            <Button variant="destructive" className="min-h-11 w-full sm:w-auto">
+                                                <Trash2 className="mr-2 size-5" aria-hidden="true" />
+                                                Eliminar
+                                            </Button>
+                                        }
+                                    />
                                 </>
+                            ) : isMember ? (
+                                <ConfirmDialog
+                                    title={`¿Salir de "${group.name}"?`}
+                                    description="Vas a dejar de ver el chat del grupo. Podés volver a unirte cuando quieras."
+                                    confirmLabel="Salir del grupo"
+                                    destructive
+                                    onConfirm={handleJoinLeave}
+                                    trigger={
+                                        <Button variant="outline" className="col-span-2 min-h-11 w-full sm:w-auto" disabled={loading}>
+                                            {loading ? 'Procesando...' : 'Salir del grupo'}
+                                        </Button>
+                                    }
+                                />
                             ) : (
                                 <Button
-                                    onClick={handleJoinLeave}
-                                    variant={isMember ? "outline" : "default"}
+                                    onClick={() => void handleJoinLeave()}
                                     className="col-span-2 min-h-11 w-full sm:w-auto"
                                     disabled={loading}
                                 >
-                                    {loading ? 'Procesando...' : isMember ? 'Salir del grupo' : 'Unirse al grupo'}
+                                    {loading ? 'Procesando...' : 'Unirse al grupo'}
                                 </Button>
                             )}
                         </div>

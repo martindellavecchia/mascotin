@@ -207,7 +207,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                             <div className="flex gap-2 flex-wrap">
                                 {images.map((img, idx) => (
                                     <div key={idx} className="relative w-20 h-20">
-                                        <img src={img} alt="" className="w-full h-full object-cover rounded-lg" />
+                                        <img src={img} alt={`Imagen ${idx + 1} de la publicación`} className="w-full h-full object-cover rounded-lg" />
                                         <button
                                             onClick={() => removeImage(idx)}
                                             className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-md bg-red-500 text-xs text-white"

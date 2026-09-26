@@ -1,9 +1,9 @@
 'use client';
 
+import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MessageCircle, MessageCircleOff } from 'lucide-react';
 import ConversationList from '@/components/messages/ConversationList';
 import UnifiedInbox from '@/components/messages/UnifiedInbox';
 import type { InboxRow } from '@/lib/server/inbox';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { notifyNotificationsChanged } from '@/hooks/useNotifications';
 import { shouldUnoptimizeImage } from '@/lib/media';
 import type { MessageGroupListItem } from '@/lib/server/messages';
 import type { MatchWithPet } from '@/types/messages';
@@ -84,8 +85,40 @@ export default function MessagesClientShell({
   const [groups, setGroups] = useState<MessageGroupListItem[]>(initialGroups);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<'match' | 'group' | null>(null);
+  const [verifiedMissingMatchId, setVerifiedMissingMatchId] = useState<string | null>(null);
   const urlHydratedRef = useRef(false);
   const { fetchWithError } = useFetchWithError();
+  const selectedMatch = selectedType === 'match'
+    ? matches.find((item) => item.matchId === selectedId)
+    : undefined;
+  const needsMatchLookup =
+    selectedType === 'match' && Boolean(selectedId) && !selectedMatch && verifiedMissingMatchId !== selectedId;
+
+  useEffect(() => {
+    if (!needsMatchLookup || !selectedId) return;
+
+    let cancelled = false;
+    void fetchWithError<{ matches: MatchWithPet[] }>('/api/matches', { showError: false }).then((result) => {
+      if (cancelled) return;
+      if (result.success && result.data) {
+        setMatches(result.data.matches || []);
+      }
+      setVerifiedMissingMatchId(selectedId);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchWithError, needsMatchLookup, selectedId]);
+
+  const handleMessagesRead = useCallback((matchId: string) => {
+    setInbox((current) =>
+      current?.map((row) =>
+        row.kind === 'match' && row.id === matchId ? { ...row, unread: 0 } : row
+      )
+    );
+    notifyNotificationsChanged();
+  }, []);
 
   useEffect(() => {
     if (urlHydratedRef.current) return;
@@ -213,7 +246,29 @@ export default function MessagesClientShell({
       );
     }
 
-    const match = matches.find((item) => item.matchId === selectedId);
+    if (!selectedMatch) {
+      if (needsMatchLookup) {
+        return (
+          <div className="flex h-full min-h-0 min-w-0 items-center justify-center">
+            <LoadingSpinner size="lg" />
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex h-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 bg-background p-6 text-center">
+          <MessageCircleOff className="size-10 text-muted-foreground" aria-hidden="true" />
+          <h2 className="text-lg font-semibold text-foreground">Conversación no disponible</h2>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Puede que esta coincidencia ya no exista o que no tengas acceso a ella.
+          </p>
+          <Button type="button" variant="outline" onClick={clearSelection}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Volver a mensajes
+          </Button>
+        </div>
+      );
+    }
 
     return (
       <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
@@ -233,7 +288,8 @@ export default function MessagesClientShell({
           <ChatWindow
             matchId={selectedId}
             currentUserId={session?.user?.id || ''}
-            otherPet={match}
+            otherPet={selectedMatch}
+            onMessagesRead={handleMessagesRead}
           />
         </div>
       </div>
@@ -244,7 +300,7 @@ export default function MessagesClientShell({
   const showChat = Boolean(selectedId);
 
   return (
-    <div className="h-[calc(100dvh-8rem)] min-h-0 min-w-0 bg-background lg:h-dvh">
+    <div className="h-[calc(100dvh-8.25rem-env(safe-area-inset-bottom))] min-h-0 min-w-0 bg-background lg:h-dvh">
       <div className="mx-auto grid h-full max-w-6xl min-w-0 grid-cols-1 gap-0 p-0 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:p-8">
         <div
           className={`h-full min-h-0 min-w-0 flex-col overflow-hidden border-x-0 border-y border-border bg-surface sm:rounded-xl sm:border ${

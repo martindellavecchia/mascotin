@@ -4,16 +4,20 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
+    AlertTriangle,
     Briefcase,
     CircleX,
     Clock,
     MapPin,
+    Pencil,
     Plus,
     RefreshCw,
     Store,
+    Trash2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
@@ -63,8 +67,10 @@ export default function ProviderPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [providerRequest, setProviderRequest] = useState<ProviderRequest | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
     const [addServiceOpen, setAddServiceOpen] = useState(false);
+    const [editingService, setEditingService] = useState<Service | null>(null);
 
     // Request form
     const [businessName, setBusinessName] = useState('');
@@ -88,23 +94,61 @@ export default function ProviderPage() {
     }, [status, router]);
 
     const fetchProviderData = async () => {
+        setLoading(true);
+        setLoadError(false);
         try {
             const res = await fetch('/api/provider');
             const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error);
 
-            if (data.success) {
-                if (data.provider) {
-                    setProvider(data.provider);
-                    setServices(data.provider.services || []);
-                }
-                if (data.providerRequest) {
-                    setProviderRequest(data.providerRequest);
-                }
-            }
+            setProvider(data.provider ?? null);
+            setServices(data.provider?.services || []);
+            setProviderRequest(data.providerRequest ?? null);
         } catch (error) {
             console.error('Error fetching provider data:', error);
+            setLoadError(true);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const resetServiceForm = () => {
+        setServiceName('');
+        setServiceDesc('');
+        setServicePrice('');
+        setServiceDuration('60');
+    };
+
+    const openAddService = () => {
+        setEditingService(null);
+        resetServiceForm();
+        setAddServiceOpen(true);
+    };
+
+    const openEditService = (service: Service) => {
+        setEditingService(service);
+        setServiceName(service.name);
+        setServiceDesc(service.description);
+        setServicePrice(String(service.price));
+        setServiceDuration(String(service.duration));
+        setAddServiceOpen(true);
+    };
+
+    const handleDeleteService = async (service: Service) => {
+        try {
+            const res = await fetch(`/api/provider/services/${service.id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!data.success) {
+                toast.error(data.error || 'No pudimos eliminar el servicio');
+                return false;
+            }
+            setServices(prev => prev.filter(item => item.id !== service.id));
+            toast.success('Servicio eliminado');
+            return true;
+        } catch (error) {
+            console.error('Error deleting service:', error);
+            toast.error('No pudimos eliminar el servicio');
+            return false;
         }
     };
 
@@ -147,37 +191,69 @@ export default function ProviderPage() {
             return;
         }
 
+        const fallbackError = editingService ? 'No pudimos guardar los cambios' : 'Error al agregar servicio';
         setSubmitting(true);
         try {
-            const res = await fetch('/api/provider/services', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: serviceName,
-                    description: serviceDesc,
-                    price: servicePrice,
-                    duration: serviceDuration,
-                }),
-            });
+            const res = await fetch(
+                editingService ? `/api/provider/services/${editingService.id}` : '/api/provider/services',
+                {
+                    method: editingService ? 'PATCH' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: serviceName,
+                        description: serviceDesc,
+                        price: servicePrice,
+                        duration: serviceDuration,
+                    }),
+                }
+            );
 
             const data = await res.json();
             if (data.success) {
-                toast.success('¡Servicio agregado!');
-                setServices(prev => [data.service, ...prev]);
+                if (editingService) {
+                    toast.success('Servicio actualizado');
+                    setServices(prev => prev.map(item => (item.id === data.service.id ? data.service : item)));
+                } else {
+                    toast.success('¡Servicio agregado!');
+                    setServices(prev => [data.service, ...prev]);
+                }
                 setAddServiceOpen(false);
-                setServiceName('');
-                setServiceDesc('');
-                setServicePrice('');
-                setServiceDuration('60');
+                setEditingService(null);
+                resetServiceForm();
             } else {
-                toast.error(data.error || 'Error al agregar servicio');
+                toast.error(data.error || fallbackError);
             }
         } catch (error) {
-            toast.error('Error al agregar servicio');
+            console.error('Error saving service:', error);
+            toast.error(fallbackError);
         } finally {
             setSubmitting(false);
         }
     };
+
+    if (loadError && !loading) {
+        return (
+            <div className="min-h-screen bg-background">
+                <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+                    <Card className="text-center" role="alert">
+                        <CardContent className="p-8">
+                            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-red-100">
+                                <AlertTriangle className="size-8 text-red-600" aria-hidden="true" />
+                            </div>
+                            <h1 className="mb-2 text-2xl font-bold text-slate-800">No pudimos cargar tu panel</h1>
+                            <p className="mb-6 text-slate-600">
+                                Revisá tu conexión e intentá de nuevo. Tus datos de proveedor no se perdieron.
+                            </p>
+                            <Button onClick={() => void fetchProviderData()}>
+                                <RefreshCw className="mr-2 size-5" aria-hidden="true" />
+                                Reintentar
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
+    }
 
     if (loading || status === 'loading') {
         return (
@@ -243,7 +319,7 @@ export default function ProviderPage() {
                                 <TabsContent value="services">
                                     <div className="flex items-center justify-between mb-4">
                                         <h2 className="text-xl font-bold text-slate-800">Mis servicios</h2>
-                                        <Button onClick={() => setAddServiceOpen(true)}>
+                                        <Button onClick={openAddService}>
                                             <Plus className="mr-2 size-5" aria-hidden="true" />
                                             Agregar servicio
                                         </Button>
@@ -252,23 +328,64 @@ export default function ProviderPage() {
                                         <EmptyState
                                             icon={<Briefcase className="size-11" aria-hidden="true" />}
                                             title="Todavía no publicaste servicios"
-                                            action={<Button onClick={() => setAddServiceOpen(true)}>Agregar el primero</Button>}
+                                            action={<Button onClick={openAddService}>Agregar el primero</Button>}
                                         />
                                     ) : (
                                         <div className="divide-y divide-border border-y border-border bg-surface">
-                                            {services.map(service => (
-                                                <div key={service.id} className="p-4">
+                                            {services.map(service => {
+                                                const bookings = service._count?.appointments || 0;
+                                                return (
+                                                    <div key={service.id} className="p-4">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <h3 className="font-semibold text-slate-800">{service.name}</h3>
                                                             <Badge variant="outline">{service.duration} min</Badge>
                                                         </div>
                                                         <p className="text-sm text-slate-500 mb-3 line-clamp-2">{service.description}</p>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-lg font-bold text-teal-600">${service.price.toLocaleString()}</span>
-                                                            <span className="text-xs text-slate-400">{service._count?.appointments || 0} reservas</span>
+                                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                                            <div className="flex items-baseline gap-3">
+                                                                <span className="text-lg font-bold text-teal-600">${service.price.toLocaleString('es-AR')}</span>
+                                                                <span className="text-xs text-slate-400">{bookings} {bookings === 1 ? 'reserva' : 'reservas'}</span>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => openEditService(service)}
+                                                                    aria-label={`Editar servicio ${service.name}`}
+                                                                >
+                                                                    <Pencil className="mr-1 size-4" aria-hidden="true" />
+                                                                    Editar
+                                                                </Button>
+                                                                {bookings === 0 && (
+                                                                    <ConfirmDialog
+                                                                        title={`¿Eliminar "${service.name}"?`}
+                                                                        description="El servicio deja de aparecer en tu perfil público. Esta acción no se puede deshacer."
+                                                                        confirmLabel="Eliminar servicio"
+                                                                        destructive
+                                                                        onConfirm={() => handleDeleteService(service)}
+                                                                        trigger={
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                className="text-red-600 hover:bg-red-50"
+                                                                                aria-label={`Eliminar servicio ${service.name}`}
+                                                                            >
+                                                                                <Trash2 className="mr-1 size-4" aria-hidden="true" />
+                                                                                Eliminar
+                                                                            </Button>
+                                                                        }
+                                                                    />
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                </div>
-                                            ))}
+                                                        {bookings > 0 && (
+                                                            <p className="mt-2 text-xs text-slate-500">
+                                                                Tiene turnos registrados, así que no se puede eliminar para conservar el historial. Podés editarlo cuando quieras.
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </TabsContent>
@@ -279,10 +396,16 @@ export default function ProviderPage() {
                         </div>
                     </div>
                 </div>
-                <Dialog open={addServiceOpen} onOpenChange={setAddServiceOpen}>
+                <Dialog
+                    open={addServiceOpen}
+                    onOpenChange={(open) => {
+                        setAddServiceOpen(open);
+                        if (!open) setEditingService(null);
+                    }}
+                >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Agregar nuevo servicio</DialogTitle>
+                            <DialogTitle>{editingService ? 'Editar servicio' : 'Agregar nuevo servicio'}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div>
@@ -305,9 +428,17 @@ export default function ProviderPage() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setAddServiceOpen(false)}>Cancelar</Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setAddServiceOpen(false);
+                                    setEditingService(null);
+                                }}
+                            >
+                                Cancelar
+                            </Button>
                             <Button onClick={handleAddService} disabled={submitting}>
-                                {submitting ? 'Guardando...' : 'Guardar servicio'}
+                                {submitting ? 'Guardando...' : editingService ? 'Guardar cambios' : 'Guardar servicio'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

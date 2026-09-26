@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Tenés que iniciar sesión' }, { status: 401 });
     }
 
     // Get provider profile
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     });
 
     if (!provider) {
-      return NextResponse.json({ success: false, error: 'Not a provider' }, { status: 403 });
+      return NextResponse.json({ success: false, error: 'Necesitás una cuenta de proveedor' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching provider appointments:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch appointments' },
+      { success: false, error: 'No pudimos cargar los turnos' },
       { status: 500 }
     );
   }

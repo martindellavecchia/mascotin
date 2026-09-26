@@ -30,7 +30,12 @@ export default function GuestHomePage() {
               <Link href="/login">Ya tengo cuenta</Link>
             </Button>
           </div>
-          <p className="mt-5 text-sm text-muted-foreground">Gratis para la comunidad. Tus datos personales permanecen privados.</p>
+          <p className="mt-5 text-sm text-muted-foreground">
+            Gratis para la comunidad. Tus datos personales permanecen privados.{' '}
+            <Link href="/shop" className="font-semibold text-primary underline-offset-4 hover:underline">
+              Ver servicios sin registrarte
+            </Link>
+          </p>
         </div>
 
         <div className="relative min-h-[24rem] overflow-hidden rounded-xl border border-border bg-surface sm:min-h-[32rem]">

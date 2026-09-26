@@ -5,6 +5,7 @@ import { LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 
 interface GroupMembersProps {
@@ -47,8 +48,6 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
     }, [groupId]);
 
     const handleRemoveMember = async (userId: string) => {
-        if (!confirm('¿Estás seguro de eliminar a este miembro?')) return;
-
         try {
             const res = await fetch(`/api/groups/${groupId}/members/${userId}`, {
                 method: 'DELETE',
@@ -56,12 +55,15 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
 
             if (res.ok) {
                 toast.success('Miembro eliminado');
-                fetchMembers(); // Refresh list
-            } else {
-                toast.error('Error al eliminar miembro');
+                fetchMembers();
+                return true;
             }
-        } catch (error) {
-            toast.error('Error al eliminar miembro');
+            const data = await res.json().catch(() => null);
+            toast.error(data?.error || 'No se pudo eliminar al miembro');
+            return false;
+        } catch {
+            toast.error('Error de conexión. Intentá de nuevo.');
+            return false;
         }
     };
 
@@ -69,7 +71,7 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
 
     return (
         <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-slate-800">Miembros del Grupo ({members.length})</h3>
+            <h3 className="font-semibold text-lg text-slate-800">Miembros del grupo ({members.length})</h3>
             <div className="grid gap-4">
                 {members.map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-100">
@@ -82,25 +84,33 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
                                 <p className="font-medium text-slate-900 flex items-center gap-2">
                                     {member.user.name}
                                     {member.role === 'ADMIN' && (
-                                        <Badge variant="secondary" className="text-[10px] h-5 bg-amber-100 text-amber-700">Admin</Badge>
+                                        <Badge variant="secondary" className="text-[10px] h-5 bg-amber-100 text-amber-700">Administrador/a</Badge>
                                     )}
                                 </p>
                                 <p className="text-xs text-slate-500">
-                                    Unido el {new Date(member.joinedAt).toLocaleDateString()}
+                                    Se sumó el {new Date(member.joinedAt).toLocaleDateString('es-AR')}
                                 </p>
                             </div>
                         </div>
 
                         {isCreator && member.user.id !== currentUserId && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                onClick={() => handleRemoveMember(member.user.id)}
-                                aria-label="Eliminar miembro"
-                            >
-                                <LogOut className="size-5" aria-hidden="true" />
-                            </Button>
+                            <ConfirmDialog
+                                title={`¿Quitar a ${member.user.name} del grupo?`}
+                                description="Dejará de ver el chat y las publicaciones del grupo. Puede volver a unirse más adelante."
+                                confirmLabel="Quitar del grupo"
+                                destructive
+                                onConfirm={() => handleRemoveMember(member.user.id)}
+                                trigger={
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                        aria-label={`Quitar a ${member.user.name} del grupo`}
+                                    >
+                                        <LogOut className="size-5" aria-hidden="true" />
+                                    </Button>
+                                }
+                            />
                         )}
                     </div>
                 ))}

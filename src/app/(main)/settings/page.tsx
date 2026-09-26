@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
-import IntentEntry from '@/components/home/IntentEntry';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -15,21 +13,17 @@ import {
     Key,
     MessageCircle,
     MessageSquare,
-    Monitor,
-    Moon,
     Newspaper,
     Bell,
-    Palette,
     PawPrint,
     SlidersHorizontal,
     Stethoscope,
-    Sun,
     TriangleAlert,
     type LucideIcon,
 } from 'lucide-react';
+import IntentEntry from '@/components/home/IntentEntry';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { StateFeedback } from '@/components/ui/state-feedback';
@@ -50,12 +44,12 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { getPrimaryImageUrl } from '@/lib/media';
 import { useInvalidateViewerData, useMyPets, viewerQueryKeys } from '@/hooks/useViewerData';
+import { getPrimaryImageUrl } from '@/lib/media';
+import { PET_TYPE_LABELS, getOptionLabel } from '@/lib/pet-display';
 import type { Pet } from '@/types';
 
 interface Settings {
-    theme: string;
     matchingPaused: boolean;
     matchDistance: number;
     matchPetTypes: string[];
@@ -77,6 +71,8 @@ const PET_TYPES = [
     { value: 'other', label: 'Otros' },
 ];
 
+const distanceFormatter = new Intl.NumberFormat('es-AR');
+
 const PET_SIZES = [
     { value: 'small', label: 'Pequeño' },
     { value: 'medium', label: 'Mediano' },
@@ -87,7 +83,6 @@ const PET_SIZES = [
 export default function SettingsPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
-    const { setTheme } = useTheme();
     const userId = session?.user?.id;
     const queryClient = useQueryClient();
     const petsQuery = useMyPets(userId);
@@ -98,6 +93,7 @@ export default function SettingsPage() {
     const [settings, setSettings] = useState<Settings | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [draftDistance, setDraftDistance] = useState<number | null>(null);
 
     // Password form
     const [currentPassword, setCurrentPassword] = useState('');
@@ -125,8 +121,7 @@ export default function SettingsPage() {
             const settingsData = await settingsRes.json();
 
             if (settingsRes.ok && settingsData.success) {
-                setSettings({ ...settingsData.settings, theme: 'light' });
-                setTheme('light');
+                setSettings(settingsData.settings);
             } else {
                 setLoadError('No pudimos cargar tu configuración. Intentá de nuevo.');
             }
@@ -233,12 +228,6 @@ export default function SettingsPage() {
         }
     };
 
-    const handleThemeChange = (theme: string) => {
-        if (theme !== 'light') return;
-        setTheme(theme);
-        updateSetting({ theme });
-    };
-
     const toggleArrayItem = (arr: string[], item: string) => {
         return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
     };
@@ -261,6 +250,7 @@ export default function SettingsPage() {
     }
 
     const getPetImage = (pet: Pet) => getPrimaryImageUrl(pet.images, pet.thumbnailIndex);
+    const matchDistance = draftDistance ?? settings.matchDistance;
 
     return (
         <div className="min-h-screen bg-background">
@@ -274,7 +264,6 @@ export default function SettingsPage() {
                             <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="mascotas">Mascotas</TabsTrigger>
                             <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="notificaciones">Notificaciones</TabsTrigger>
                             <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="feed">Feed</TabsTrigger>
-                            <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="apariencia">Apariencia</TabsTrigger>
                         </TabsList>
                     </div>
 
@@ -293,7 +282,7 @@ export default function SettingsPage() {
                                 <div className="flex min-w-0 items-center justify-between gap-4">
                                     <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Perfil visible</p>
-                                        <p className="text-sm text-slate-500">Otros usuarios pueden encontrar tu perfil y mascotas</p>
+                                        <p className="text-sm text-slate-500">Si lo desactivás, tus mascotas no aparecen en Explorar, sugerencias ni tendencias. Tus matches y chats siguen activos.</p>
                                     </div>
                                     <Switch
                                         aria-label="Hacer visible mi perfil"
@@ -419,7 +408,7 @@ export default function SettingsPage() {
                                                         )}
                                                         <div className="min-w-0">
                                                             <p className="truncate font-medium text-slate-800">{pet.name}</p>
-                                                            <p className="truncate text-xs text-slate-500">{pet.breed || pet.petType}</p>
+                                                            <p className="truncate text-xs text-slate-500">{pet.breed || getOptionLabel(PET_TYPE_LABELS, pet.petType) || 'Mascota'}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex shrink-0 items-center gap-2">
@@ -462,15 +451,22 @@ export default function SettingsPage() {
 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <p className="font-medium text-slate-700">Distancia máxima</p>
-                                        <span className="text-sm font-medium text-teal-600">{settings.matchDistance} km</span>
+                                        <p id="match-distance-label" className="font-medium text-slate-700">Distancia máxima</p>
+                                        <span className="text-sm font-medium tabular-nums text-teal-600" aria-live="polite">
+                                            {distanceFormatter.format(matchDistance)} km
+                                        </span>
                                     </div>
                                     <Slider
-                                        value={[settings.matchDistance]}
-                                        min={1}
+                                        aria-labelledby="match-distance-label"
+                                        value={[matchDistance]}
+                                        min={5}
                                         max={200}
                                         step={5}
-                                        onValueCommit={(v) => updateSetting({ matchDistance: v[0] })}
+                                        onValueChange={(v) => setDraftDistance(v[0])}
+                                        onValueCommit={(v) => {
+                                            setDraftDistance(null);
+                                            if (v[0] !== settings.matchDistance) void updateSetting({ matchDistance: v[0] });
+                                        }}
                                     />
                                 </div>
 
@@ -568,47 +564,6 @@ export default function SettingsPage() {
                                         onCheckedChange={(v) => updateSetting({ hideResolvedLostPets: v })}
                                     />
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* APARIENCIA */}
-                    <TabsContent value="apariencia">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <Palette className="size-5 text-slate-400" aria-hidden="true" />
-                                    Tema
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                    {([
-                                        { value: 'light', label: 'Claro', icon: Sun, disabled: false },
-                                        { value: 'dark', label: 'Oscuro', icon: Moon, disabled: true },
-                                        { value: 'system', label: 'Sistema', icon: Monitor, disabled: true },
-                                    ] as Array<{ value: string; label: string; icon: LucideIcon; disabled: boolean }>).map(t => (
-                                        <button
-                                            key={t.value}
-                                            onClick={() => handleThemeChange(t.value)}
-                                            disabled={t.disabled}
-                                            className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border-2 p-4 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 ${
-                                                settings.theme === t.value
-                                                    ? 'border-teal-500 bg-teal-50 text-teal-700'
-                                                    : t.disabled
-                                                      ? 'cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400'
-                                                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                                            }`}
-                                        >
-                                            <t.icon className="size-7" aria-hidden="true" />
-                                            <span className="text-sm font-medium">{t.label}</span>
-                                            {t.disabled && <span className="text-[11px]">Próximamente</span>}
-                                        </button>
-                                    ))}
-                                </div>
-                                <p className="text-sm text-slate-500">
-                                    Huella usa el modo claro para mantener una experiencia visual consistente.
-                                </p>
                             </CardContent>
                         </Card>
                     </TabsContent>

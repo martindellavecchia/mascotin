@@ -13,17 +13,19 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const { searchParams } = new URL(req.url);
         const rawAfter = searchParams.get('after');
+        const rawBefore = searchParams.get('before');
         const after = parseMessageCursor(rawAfter);
+        const before = parseMessageCursor(rawBefore);
         const limit = clampMessageLimit(searchParams.get('limit'));
 
-        if (rawAfter && !after) {
+        if ((rawAfter && !after) || (rawBefore && !before) || (after && before)) {
             return NextResponse.json(
-                { success: false, error: 'after must be a valid ISO date' },
+                { success: false, error: 'La fecha indicada no es válida' },
                 { status: 400 }
             );
         }
@@ -41,6 +43,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             where: {
                 groupId: params.id,
                 ...(after ? { createdAt: { gt: after } } : {}),
+                ...(before ? { createdAt: { lt: before } } : {}),
             },
             include: {
                 sender: {
@@ -61,20 +64,20 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             limit,
             incremental: Boolean(after),
         });
-        if (page.latestCursor) {
+        if (page.latestCursor && !before) {
             await prisma.groupMember.updateMany({ where: { groupId: params.id, userId: session.user.id, lastReadAt: { lt: new Date(page.latestCursor) } }, data: { lastReadAt: new Date(page.latestCursor) } });
         }
 
         return NextResponse.json({ success: true, ...page });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error fetching messages' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudieron cargar los mensajes' }, { status: 500 });
     }
 }
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        if (!session?.user?.id) return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
 
         const { content } = await req.json();
 
@@ -84,7 +87,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         });
 
         if (!member) {
-            return NextResponse.json({ success: false, error: 'Not a member' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No sos miembro de este grupo' }, { status: 403 });
         }
 
         const message = await prisma.message.create({
@@ -116,6 +119,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         return NextResponse.json({ success: true, message });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error sending message' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo enviar el mensaje' }, { status: 500 });
     }
 }

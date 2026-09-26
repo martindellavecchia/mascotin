@@ -94,7 +94,10 @@ export default function ConversationList({
                                 )}
                             >
                                 <Avatar className="h-12 w-12 shrink-0">
-                                    <AvatarImage src={match.primaryImageUrl || getPrimaryImageUrl(match.images, match.thumbnailIndex ?? 0) || undefined} />
+                                    <AvatarImage
+                                        src={match.primaryImageUrl || getPrimaryImageUrl(match.images, match.thumbnailIndex ?? 0) || undefined}
+                                        alt={`Foto de ${match.name}`}
+                                    />
                                     <AvatarFallback className="bg-teal-100 text-teal-700">{match.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">

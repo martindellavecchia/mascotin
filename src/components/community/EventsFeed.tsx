@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MapPin, MessagesSquare } from 'lucide-react';
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { ChevronDown, Loader2, MapPin, MessagesSquare } from 'lucide-react';
 import CreatePostCard from '@/components/community/CreatePostCard';
 import EditPostModal from '@/components/community/EditPostModal';
 import PostCard from '@/components/feed/PostCard';
@@ -47,6 +47,13 @@ interface EventsFeedProps {
     refreshKey?: number;
 }
 
+interface PostsPage {
+    posts: Post[];
+    nextCursor: string | null;
+}
+
+const PAGE_SIZE = 20;
+
 export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
     const { data: session } = useSession();
     const userId = session?.user?.id;
@@ -71,21 +78,31 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
         void queryClient.invalidateQueries({ queryKey: ['viewer', userId, 'posts'] });
     }, [refreshKey, queryClient, userId]);
 
-    const postsQuery = useQuery({
+    const postsQuery = useInfiniteQuery({
         queryKey: viewerQueryKeys.posts(userId, activeFilter || ''),
         enabled: Boolean(userId) && activeFilter !== null,
         staleTime: 30_000,
         retry: false,
-        queryFn: async ({ signal }) => {
-            const params = new URLSearchParams({ limit: '20' });
+        initialPageParam: null as string | null,
+        queryFn: async ({ signal, pageParam }): Promise<PostsPage> => {
+            const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
             if (activeFilter) params.set('postType', activeFilter);
+            if (pageParam) params.set('cursor', pageParam);
             const response = await fetch(`/api/posts?${params}`, { signal });
-            const data = await response.json() as { posts?: Post[] };
+            const data = await response.json() as { posts?: Post[]; nextCursor?: string | null; hasMore?: boolean };
             if (!response.ok || !Array.isArray(data.posts)) throw new Error('No se pudieron cargar las publicaciones');
-            return data.posts;
+            return { posts: data.posts, nextCursor: data.hasMore === false ? null : data.nextCursor ?? null };
         },
+        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     });
-    const posts = postsQuery.data ?? [];
+    const posts = useMemo(() => {
+        const seen = new Set<string>();
+        return (postsQuery.data?.pages ?? []).flatMap((page) => page.posts).filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+        });
+    }, [postsQuery.data]);
     const loading = postsQuery.isPending;
     const loadError = postsQuery.isError && !postsQuery.data;
     const fetchPosts = () => {
@@ -161,13 +178,47 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                         currentUserId={session?.user?.id}
                         onLike={() => void fetchPosts()}
                         onDelete={() => {
-                            queryClient.setQueryData<Post[]>(viewerQueryKeys.posts(userId, activeFilter || ''),
-                                current => current?.filter(item => item.id !== post.id));
+                            queryClient.setQueryData<InfiniteData<PostsPage, string | null>>(
+                                viewerQueryKeys.posts(userId, activeFilter || ''),
+                                current => current && {
+                                    ...current,
+                                    pages: current.pages.map(page => ({
+                                        ...page,
+                                        posts: page.posts.filter(item => item.id !== post.id),
+                                    })),
+                                },
+                            );
                             fetchPosts();
                         }}
                         onEdit={(p) => setEditingPost(p as Post)}
                     />
                 ))
+            )}
+
+            {!loading && !loadError && postsQuery.hasNextPage && (
+                <div className="flex flex-col items-center gap-2 py-2">
+                    {postsQuery.isFetchNextPageError && (
+                        <p role="alert" className="text-sm text-destructive">No pudimos cargar más publicaciones.</p>
+                    )}
+                    <Button
+                        variant="outline"
+                        className="w-full max-w-xs"
+                        disabled={postsQuery.isFetchingNextPage}
+                        onClick={() => void postsQuery.fetchNextPage()}
+                    >
+                        {postsQuery.isFetchingNextPage ? (
+                            <>
+                                <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+                                Cargando…
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown className="mr-2 size-5" aria-hidden="true" />
+                                {postsQuery.isFetchNextPageError ? 'Reintentar' : 'Cargar más'}
+                            </>
+                        )}
+                    </Button>
+                </div>
             )}
 
             {/* Edit Modal */}

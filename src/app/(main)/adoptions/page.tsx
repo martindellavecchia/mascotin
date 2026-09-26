@@ -38,6 +38,13 @@ interface AdoptionCard {
   };
 }
 
+const LISTING_STATUS_LABELS: Record<string, string> = {
+  OPEN: 'Disponible',
+  PENDING: 'En proceso',
+  ADOPTED: 'Adoptada',
+  CLOSED: 'Cerrada',
+};
+
 function AdoptionsContent() {
   const searchParams = useSearchParams();
   const [listings, setListings] = useState<AdoptionCard[]>([]);
@@ -192,21 +199,26 @@ function AdoptionsContent() {
 
       {showCreate && (
         <Card className="space-y-3 p-4">
+          <Label htmlFor="listing-pet">Mascota</Label>
           <Select
             value={listingForm.petId || undefined}
             onValueChange={(value) => setListingForm({ ...listingForm, petId: value })}
           >
-            <SelectTrigger className="w-full"><SelectValue placeholder="Elegí una mascota" /></SelectTrigger>
+            <SelectTrigger id="listing-pet" className="w-full"><SelectValue placeholder="Elegí una mascota" /></SelectTrigger>
             <SelectContent>
               {pets.map((pet) => (
                 <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Textarea placeholder="Carácter" value={listingForm.character} onChange={(e) => setListingForm({ ...listingForm, character: e.target.value })} />
-          <Input placeholder="Necesidades especiales" value={listingForm.specialNeeds} onChange={(e) => setListingForm({ ...listingForm, specialNeeds: e.target.value })} />
-          <Input placeholder="Requisitos para el hogar" value={listingForm.requirements} onChange={(e) => setListingForm({ ...listingForm, requirements: e.target.value })} />
-          <Input placeholder="Zona" value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} />
+          <Label htmlFor="listing-character">Carácter</Label>
+          <Textarea id="listing-character" placeholder="Carácter" value={listingForm.character} onChange={(e) => setListingForm({ ...listingForm, character: e.target.value })} />
+          <Label htmlFor="listing-special-needs">Necesidades especiales</Label>
+          <Input id="listing-special-needs" placeholder="Necesidades especiales" value={listingForm.specialNeeds} onChange={(e) => setListingForm({ ...listingForm, specialNeeds: e.target.value })} />
+          <Label htmlFor="listing-requirements">Requisitos para el hogar</Label>
+          <Input id="listing-requirements" placeholder="Requisitos para el hogar" value={listingForm.requirements} onChange={(e) => setListingForm({ ...listingForm, requirements: e.target.value })} />
+          <Label htmlFor="listing-location">Zona</Label>
+          <Input id="listing-location" placeholder="Barrio o ciudad" value={listingForm.location} onChange={(e) => setListingForm({ ...listingForm, location: e.target.value })} />
           <Button onClick={async () => {
             const response = await fetch('/api/adoptions', {
               method: 'POST',
@@ -267,7 +279,7 @@ function AdoptionsContent() {
                   )}
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-bold">{listing.pet.name}</h2>
-                    <Badge>{listing.status}</Badge>
+                    <Badge>{LISTING_STATUS_LABELS[listing.status] || 'Sin estado'}</Badge>
                   </div>
                   <p className="text-sm text-slate-600">{listing.character}</p>
                   {listing.pet.goodWithKids === 'yes' && <Badge variant="outline">Bien con niños</Badge>}

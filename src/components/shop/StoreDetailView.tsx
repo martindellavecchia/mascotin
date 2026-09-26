@@ -1,17 +1,41 @@
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowLeft, BadgeCheck, MapPin, MessageSquareText, Star, Store } from 'lucide-react';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MessageSquareText,
+  Navigation,
+  Phone,
+  Star,
+  Store,
+  Tag,
+} from 'lucide-react';
 import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
 import { BookServiceButton } from '@/components/shop/StoreBookingIsland';
+import StoreGalleryIsland from '@/components/shop/StoreGalleryIsland';
 import StoreReviewActionsIsland from '@/components/shop/StoreReviewActionsIsland';
 import StoreReviewFormIsland from '@/components/shop/StoreReviewFormIsland';
 import { StoreViewerProvider } from '@/components/shop/StoreViewerProvider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
 import type { PublicStoreDetail } from '@/lib/server/stores';
+import { getStoreContactLinks } from '@/lib/store-contact';
+import { DEFAULT_TIME_ZONE } from '@/lib/timezone-label';
+
+function formatPromotionEnd(value: Date | string) {
+  return new Date(value).toLocaleDateString('es-AR', {
+    timeZone: DEFAULT_TIME_ZONE,
+    day: 'numeric',
+    month: 'long',
+  });
+}
 
 const trustClasses: Record<string, string> = {
   emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',
@@ -22,6 +46,10 @@ const trustClasses: Record<string, string> = {
 };
 
 export default function StoreDetailView({ store }: { store: PublicStoreDetail }) {
+  const contact = getStoreContactLinks(store);
+  const hasContact = Boolean(contact.call || contact.whatsapp || contact.email || contact.directions);
+  const promotions = store.promotions ?? [];
+
   return (
     <StoreViewerProvider store={{ id: store.id, slug: store.slug }}>
       <main className="min-h-screen bg-background pb-14">
@@ -62,6 +90,42 @@ export default function StoreDetailView({ store }: { store: PublicStoreDetail })
                     {store.address}
                   </p>
                 )}
+                {hasContact && (
+                  <div className="mt-4 flex flex-wrap gap-2" aria-label="Contacto del negocio" role="group">
+                    {contact.call && (
+                      <Button asChild variant="outline" size="sm">
+                        <a href={contact.call}>
+                          <Phone className="size-4" aria-hidden="true" />
+                          Llamar
+                        </a>
+                      </Button>
+                    )}
+                    {contact.whatsapp && (
+                      <Button asChild variant="outline" size="sm">
+                        <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="size-4" aria-hidden="true" />
+                          WhatsApp
+                        </a>
+                      </Button>
+                    )}
+                    {contact.email && (
+                      <Button asChild variant="outline" size="sm">
+                        <a href={contact.email}>
+                          <Mail className="size-4" aria-hidden="true" />
+                          Escribir
+                        </a>
+                      </Button>
+                    )}
+                    {contact.directions && (
+                      <Button asChild variant="outline" size="sm">
+                        <a href={contact.directions} target="_blank" rel="noopener noreferrer">
+                          <Navigation className="size-4" aria-hidden="true" />
+                          Cómo llegar
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="border-t border-border px-0 pt-5 text-left sm:col-span-2 xl:col-span-1 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
                 <p className="flex items-center justify-center gap-1 text-3xl font-bold text-slate-900">
@@ -77,6 +141,24 @@ export default function StoreDetailView({ store }: { store: PublicStoreDetail })
 
         <div className="mx-auto grid max-w-6xl min-w-0 gap-7 px-4 py-8 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0 space-y-7">
+            {promotions.length > 0 && (
+              <section aria-labelledby="store-promotions-title" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4">
+                <h2 id="store-promotions-title" className="flex items-center gap-2 text-base font-bold text-amber-900">
+                  <Tag className="size-5" aria-hidden="true" />
+                  {promotions.length === 1 ? 'Promoción vigente' : 'Promociones vigentes'}
+                </h2>
+                <ul className="mt-2 space-y-3">
+                  {promotions.map((promotion) => (
+                    <li key={promotion.id}>
+                      <p className="font-semibold text-slate-900 [overflow-wrap:anywhere]">{promotion.title}</p>
+                      <p className="mt-0.5 text-sm text-slate-700 [overflow-wrap:anywhere]">{promotion.body}</p>
+                      <p className="mt-1 text-xs text-amber-800">Válida hasta el {formatPromotionEnd(promotion.endsAt)}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             <section>
               <h2 className="text-xl font-bold text-slate-900">Servicios disponibles</h2>
               <div className="mt-4 divide-y divide-border border-y border-border bg-surface">
@@ -99,6 +181,8 @@ export default function StoreDetailView({ store }: { store: PublicStoreDetail })
                 )}
               </div>
             </section>
+
+            {store.images.length > 0 && <StoreGalleryIsland images={store.images} storeName={store.name} />}
 
             <section>
               <div className="flex items-center justify-between gap-3">

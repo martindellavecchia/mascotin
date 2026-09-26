@@ -1,18 +1,22 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { PawPrint } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Loader2, PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import LostPetForm from '@/components/community/LostPetForm';
 import { getPrimaryImageUrl } from '@/lib/media';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface AlertPost {
@@ -29,6 +33,14 @@ interface AlertPost {
   _count?: { sightings: number };
 }
 
+type AlertTab = 'lost_pet' | 'found_pet' | 'resolved';
+
+const ALERT_TABS: AlertTab[] = ['lost_pet', 'found_pet', 'resolved'];
+
+function parseTab(value: string | null): AlertTab | null {
+  return ALERT_TABS.includes(value as AlertTab) ? (value as AlertTab) : null;
+}
+
 export default function AlertsPage() {
   return (
     <Suspense fallback={<div className="p-8 text-center text-slate-500">Cargando alertas...</div>}>
@@ -39,10 +51,13 @@ export default function AlertsPage() {
 
 function AlertsPageContent() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
   const reportParam = searchParams.get('report');
   const selectedPostId = searchParams.get('post');
+  const deepLinkedTab = parseTab(searchParams.get('type'));
   const initialPetId = searchParams.get('petId') || undefined;
-  const [tab, setTab] = useState<'lost_pet' | 'found_pet' | 'resolved'>('lost_pet');
+  const [tab, setTab] = useState<AlertTab>(deepLinkedTab || 'lost_pet');
   const [alerts, setAlerts] = useState<AlertPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -51,13 +66,18 @@ function AlertsPageContent() {
   const [sightingPostId, setSightingPostId] = useState<string | null>(null);
   const [sightingNotes, setSightingNotes] = useState('');
   const [sightingLocation, setSightingLocation] = useState('');
+  const [submittingSighting, setSubmittingSighting] = useState(false);
+  const [resolvingPostId, setResolvingPostId] = useState<string | null>(null);
+  const [hideResolved, setHideResolved] = useState(false);
+
+  const showResolvedTab = !hideResolved || deepLinkedTab === 'resolved';
 
   const query = useMemo(() => {
     if (tab === 'resolved') return 'resolved=true';
     return `type=${tab}`;
   }, [tab]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
@@ -71,15 +91,34 @@ function AlertsPageContent() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    void load();
   }, [query]);
 
   useEffect(() => {
-    if (reportParam === 'lost') {
-      setFormMode('lost');
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const controller = new AbortController();
+    fetch('/api/settings', { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.success) setHideResolved(Boolean(data.settings?.hideResolvedLostPets));
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        console.error('Error fetching alert preferences:', error);
+      });
+    return () => controller.abort();
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (!showResolvedTab && tab === 'resolved') setTab('lost_pet');
+  }, [showResolvedTab, tab]);
+
+  useEffect(() => {
+    if (reportParam === 'lost' || reportParam === 'found') {
+      setFormMode(reportParam);
       setFormOpen(true);
     }
   }, [reportParam]);
@@ -91,24 +130,68 @@ function AlertsPageContent() {
     });
   }, [alerts, loading, selectedPostId]);
 
+  const openForm = (mode: 'lost' | 'found') => {
+    setFormMode(mode);
+    setFormOpen(true);
+  };
+
   const submitSighting = async () => {
-    if (!sightingPostId) return;
-    const response = await fetch(`/api/posts/${sightingPostId}/sightings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes: sightingNotes, location: sightingLocation }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      toast.success('Avistamiento registrado');
-      setSightingPostId(null);
-      setSightingNotes('');
-      setSightingLocation('');
-      void load();
-    } else {
-      toast.error(data.error || 'No se pudo registrar');
+    if (!sightingPostId || submittingSighting) return;
+    setSubmittingSighting(true);
+    try {
+      const response = await fetch(`/api/posts/${sightingPostId}/sightings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: sightingNotes, location: sightingLocation }),
+      });
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.success) {
+        toast.success('Avistamiento registrado');
+        setSightingPostId(null);
+        setSightingNotes('');
+        setSightingLocation('');
+        void load();
+      } else {
+        toast.error(data?.error || 'No se pudo registrar el avistamiento');
+      }
+    } catch {
+      toast.error('Error de conexión. Intentá de nuevo.');
+    } finally {
+      setSubmittingSighting(false);
     }
   };
+
+  const toggleResolved = async (alert: AlertPost) => {
+    if (resolvingPostId) return;
+    const targetResolved = !alert.isResolved;
+    setResolvingPostId(alert.id);
+    try {
+      const response = await fetch(`/api/posts/${alert.id}/resolve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isResolved: targetResolved }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success) {
+        toast.error(data?.error || 'No se pudo actualizar la alerta');
+        return;
+      }
+      const isResolved = typeof data.post?.isResolved === 'boolean' ? data.post.isResolved : targetResolved;
+      toast.success(data.message || (isResolved ? 'Alerta marcada como resuelta' : 'Alerta reactivada'));
+      setAlerts((current) => {
+        if (isResolved && hideResolved) return current.filter((item) => item.id !== alert.id);
+        return current.map((item) => (item.id === alert.id ? { ...item, isResolved } : item));
+      });
+    } catch {
+      toast.error('Error de conexión. Intentá de nuevo.');
+    } finally {
+      setResolvingPostId(null);
+    }
+  };
+
+  const visibleAlerts = hideResolved && tab !== 'resolved'
+    ? alerts.filter((alert) => !alert.isResolved)
+    : alerts;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
@@ -119,28 +202,35 @@ function AlertsPageContent() {
           <Button
             variant="outline"
             className="w-full sm:w-auto"
-            onClick={() => window.location.assign('/hogares-de-transito?create=case')}
+            onClick={() => openForm('found')}
           >
             Encontré una mascota
           </Button>
           <Button
             variant="outline"
             className="w-full border-red-200 text-red-700 hover:bg-red-50 sm:w-auto"
-            onClick={() => {
-              setFormMode('lost');
-              setFormOpen(true);
-            }}
+            onClick={() => openForm('lost')}
           >
             Reportar perdida
           </Button>
         </div>}
       />
 
-      <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="min-w-0">
-        <TabsList className="grid h-auto w-full grid-cols-3">
+      <p className="text-sm text-muted-foreground">
+        ¿El animal que encontraste necesita tránsito, traslado o atención veterinaria?{' '}
+        <Link
+          href="/hogares-de-transito?create=case"
+          className="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
+          Pedí ayuda a la red solidaria
+        </Link>
+      </p>
+
+      <Tabs value={tab} onValueChange={(value) => setTab(value as AlertTab)} className="min-w-0">
+        <TabsList className={cn('grid h-auto w-full', showResolvedTab ? 'grid-cols-3' : 'grid-cols-2')}>
           <TabsTrigger className="min-h-10 px-2" value="lost_pet">Perdidas</TabsTrigger>
           <TabsTrigger className="min-h-10 px-2" value="found_pet">Encontradas</TabsTrigger>
-          <TabsTrigger className="min-h-10 px-2" value="resolved">Resueltas</TabsTrigger>
+          {showResolvedTab && <TabsTrigger className="min-h-10 px-2" value="resolved">Resueltas</TabsTrigger>}
         </TabsList>
       </Tabs>
 
@@ -164,12 +254,14 @@ function AlertsPageContent() {
             action={<Button variant="outline" onClick={() => void load()}>Reintentar</Button>}
           />
         )}
-        {!loading && !loadError && alerts.length === 0 && (
+        {!loading && !loadError && visibleAlerts.length === 0 && (
           <EmptyState title="No hay alertas en esta sección" />
         )}
-        {!loading && !loadError && alerts.map((alert) => {
+        {!loading && !loadError && visibleAlerts.map((alert) => {
           const image = getPrimaryImageUrl(alert.images);
           const isSelected = selectedPostId === alert.id;
+          const isOwner = Boolean(currentUserId && alert.author?.id === currentUserId);
+          const isResolving = resolvingPostId === alert.id;
           return (
             <Card
               id={`alert-${alert.id}`}
@@ -201,24 +293,61 @@ function AlertsPageContent() {
                   <p className="text-xs text-slate-400">
                     {alert._count?.sightings || 0} avistamientos
                   </p>
-                  <Button variant="outline" size="sm" onClick={() => setSightingPostId(alert.id)}>
-                    Registrar avistamiento
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    {isOwner && (
+                      <Button
+                        size="sm"
+                        variant={alert.isResolved ? 'outline' : 'default'}
+                        disabled={isResolving}
+                        onClick={() => void toggleResolved(alert)}
+                      >
+                        {isResolving && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+                        {alert.isResolved
+                          ? 'Reactivar alerta'
+                          : alert.postType === 'found_pet' ? 'Marcar como resuelta' : '¡Lo encontré!'}
+                      </Button>
+                    )}
+                    {!alert.isResolved && (
+                      <Button variant="outline" size="sm" onClick={() => setSightingPostId(alert.id)}>
+                        Registrar avistamiento
+                      </Button>
+                    )}
+                  </div>
                   {sightingPostId === alert.id && (
                     <div className="space-y-2 border-t border-border pt-3">
-                      <Input
-                        placeholder="Dónde la viste"
-                        value={sightingLocation}
-                        onChange={(event) => setSightingLocation(event.target.value)}
-                      />
-                      <Textarea
-                        placeholder="Detalles del avistamiento"
-                        value={sightingNotes}
-                        onChange={(event) => setSightingNotes(event.target.value)}
-                      />
-                      <Button size="sm" onClick={() => void submitSighting()}>
-                        Enviar avistamiento
-                      </Button>
+                      <div className="space-y-1">
+                        <Label htmlFor={`sighting-location-${alert.id}`}>Dónde la viste</Label>
+                        <Input
+                          id={`sighting-location-${alert.id}`}
+                          placeholder="Ej: Plaza Italia, Palermo"
+                          value={sightingLocation}
+                          onChange={(event) => setSightingLocation(event.target.value)}
+                          disabled={submittingSighting}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`sighting-notes-${alert.id}`}>Detalles del avistamiento</Label>
+                        <Textarea
+                          id={`sighting-notes-${alert.id}`}
+                          value={sightingNotes}
+                          onChange={(event) => setSightingNotes(event.target.value)}
+                          disabled={submittingSighting}
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" onClick={() => void submitSighting()} disabled={submittingSighting}>
+                          {submittingSighting && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+                          {submittingSighting ? 'Enviando…' : 'Enviar avistamiento'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSightingPostId(null)}
+                          disabled={submittingSighting}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -231,7 +360,11 @@ function AlertsPageContent() {
       <LostPetForm
         open={formOpen}
         onOpenChange={setFormOpen}
-        onSuccess={() => void load()}
+        onSuccess={() => {
+          const nextTab: AlertTab = formMode === 'found' ? 'found_pet' : 'lost_pet';
+          if (nextTab === tab) void load();
+          else setTab(nextTab);
+        }}
         mode={formMode}
         initialPetId={initialPetId}
       />

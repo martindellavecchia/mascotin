@@ -20,12 +20,12 @@ export default function BusinessOwnerBadge({ className, compact = false }: Busin
               className
             )}
             role="img"
-            aria-label="Owner de negocio verificado"
+            aria-label="Dueño/a de negocio verificado"
           >
             <Store className="size-3" aria-hidden="true" />
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top">Owner de negocio en Huella</TooltipContent>
+        <TooltipContent side="top">Dueño/a de un negocio en Huella</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

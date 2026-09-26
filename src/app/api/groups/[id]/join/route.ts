@@ -7,7 +7,7 @@ import { createNotificationBulk } from '@/lib/notifications';
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        if (!session?.user?.id) return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
 
         const existingMember = await prisma.groupMember.findUnique({
             where: {
@@ -19,7 +19,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         });
 
         if (existingMember) {
-            return NextResponse.json({ success: false, error: 'Already a member' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'Ya sos miembro de este grupo' }, { status: 400 });
         }
 
         await prisma.groupMember.create({
@@ -56,20 +56,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error joining group' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No pudimos sumarte al grupo' }, { status: 500 });
     }
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        if (!session?.user?.id) return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
 
         const group = await prisma.group.findUnique({ where: { id: params.id } });
-        if (!group) return NextResponse.json({ success: false, error: 'No encontrado' }, { status: 404 });
+        if (!group) return NextResponse.json({ success: false, error: 'Grupo no encontrado' }, { status: 404 });
 
         if (group.creatorId === session.user.id) {
-            return NextResponse.json({ success: false, error: 'Creator cannot leave group. Delete it instead.' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'Quien creó el grupo no puede abandonarlo. Si querés, podés eliminarlo.' }, { status: 400 });
         }
 
         await prisma.groupMember.delete({
@@ -83,6 +83,6 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error leaving group' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo abandonar el grupo' }, { status: 500 });
     }
 }

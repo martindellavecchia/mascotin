@@ -19,17 +19,30 @@ export async function GET(req: Request) {
         const limit = parseInt(searchParams.get('limit') || '10');
         const cursor = searchParams.get('cursor'); // Post ID for cursor-based pagination
 
-        const feedPage = await getFeedPage({
-            userId: session.user.id,
-            petId,
-            postType,
-            limit,
-            cursor,
-        });
+        const [feedPage, settings] = await Promise.all([
+            getFeedPage({
+                userId: session.user.id,
+                petId,
+                postType,
+                limit,
+                cursor,
+            }),
+            prisma.userSettings.findUnique({
+                where: { userId: session.user.id },
+                select: { hideResolvedLostPets: true },
+            }),
+        ]);
+
+        const posts = settings?.hideResolvedLostPets
+            ? feedPage.posts.filter((post) => !(
+                (post.postType === 'lost_pet' || post.postType === 'found_pet') && post.isResolved
+            ))
+            : feedPage.posts;
 
         return NextResponse.json({
             success: true,
             ...feedPage,
+            posts,
         });
     } catch (error) {
         console.error('Error fetching posts:', error);

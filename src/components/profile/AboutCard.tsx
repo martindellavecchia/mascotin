@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { ChevronDown, ChevronUp, Info, Pencil } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ function isEmptyBio(bio?: string): boolean {
 
 export function AboutCard({ bio, onEdit }: AboutCardProps) {
     const [expanded, setExpanded] = useState(false);
+    const contentId = useId();
     const empty = isEmptyBio(bio);
 
     if (empty) {
@@ -58,23 +59,33 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
     return (
         <Card>
             <CardHeader className="pb-2">
-                <CardTitle
-                    className="text-lg flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors"
-                    onClick={() => isLongText && setExpanded(!expanded)}
-                >
-                    <Info className="size-5 text-teal-500" aria-hidden="true" />
-                    Sobre mí
-                    {isLongText && (
-                        expanded ? (
-                            <ChevronUp className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
-                        ) : (
-                            <ChevronDown className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
-                        )
+                <CardTitle className="text-lg">
+                    {isLongText ? (
+                        <button
+                            type="button"
+                            className="flex w-full items-center gap-2 rounded-md text-left transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40"
+                            onClick={() => setExpanded(!expanded)}
+                            aria-expanded={expanded}
+                            aria-controls={contentId}
+                        >
+                            <Info className="size-5 text-teal-500" aria-hidden="true" />
+                            Sobre mí
+                            {expanded ? (
+                                <ChevronUp className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
+                            ) : (
+                                <ChevronDown className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
+                            )}
+                        </button>
+                    ) : (
+                        <span className="flex items-center gap-2">
+                            <Info className="size-5 text-teal-500" aria-hidden="true" />
+                            Sobre mí
+                        </span>
                     )}
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-slate-600 leading-relaxed transition-all duration-300">
+                <p id={contentId} className="text-slate-600 leading-relaxed transition-all duration-300">
                     {content}
                 </p>
 
@@ -84,6 +95,8 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                         size="sm"
                         className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 p-0 h-auto font-medium"
                         onClick={() => setExpanded(!expanded)}
+                        aria-expanded={expanded}
+                        aria-controls={contentId}
                     >
                         {expanded ? 'Leer menos' : 'Leer más'}
                     </Button>

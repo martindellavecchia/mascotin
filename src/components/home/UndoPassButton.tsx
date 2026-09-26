@@ -8,7 +8,7 @@ export default function UndoPassButton({
 }: {
   petId: string;
   revision: number;
-  onUndo: () => void;
+  onUndo: (restoredPetId?: string) => void;
 }) {
   const [swipeId, setSwipeId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,7 +43,7 @@ export default function UndoPassButton({
               const d = await r.json();
               if (!r.ok) throw new Error(d.error);
               setSwipeId(null);
-              onUndo();
+              onUndo(typeof d.petId === 'string' ? d.petId : undefined);
             } catch (err) {
               setError(err instanceof Error ? err.message : 'No pudimos deshacer el pase');
             } finally {

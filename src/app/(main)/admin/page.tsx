@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -105,14 +106,32 @@ interface Pagination {
     totalPages: number;
 }
 
+interface UserStats {
+    totalUsers: number;
+    byRole: { OWNER: number; PROVIDER: number; ADMIN: number };
+}
+
+const PROVIDERS_PAGE_SIZE = 20;
+
 export default function AdminPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
 
     const [users, setUsers] = useState<User[]>([]);
+    const [userStats, setUserStats] = useState<UserStats | null>(null);
     const [providers, setProviders] = useState<Provider[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingProviders, setLoadingProviders] = useState(true);
+    const [providersError, setProvidersError] = useState(false);
+    const [providerSearch, setProviderSearch] = useState('');
+    const [debouncedProviderSearch, setDebouncedProviderSearch] = useState('');
+    const [providerPagination, setProviderPagination] = useState<Pagination>({
+        page: 1,
+        limit: PROVIDERS_PAGE_SIZE,
+        total: 0,
+        totalPages: 0,
+    });
+    const [providerToDelete, setProviderToDelete] = useState<Provider | null>(null);
     const [pagination, setPagination] = useState<Pagination>({
         page: 1,
         limit: 20,
@@ -131,6 +150,7 @@ export default function AdminPage() {
     // Provider requests state
     const [providerRequests, setProviderRequests] = useState<ProviderRequestItem[]>([]);
     const [loadingRequests, setLoadingRequests] = useState(true);
+    const [requestsError, setRequestsError] = useState(false);
     const [requestCounts, setRequestCounts] = useState({ PENDING: 0, APPROVED: 0, REJECTED: 0 });
     const [requestFilter, setRequestFilter] = useState('PENDING');
     const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
@@ -154,6 +174,7 @@ export default function AdminPage() {
             if (data.success) {
                 setUsers(data.users);
                 setPagination(data.pagination);
+                if (data.stats) setUserStats(data.stats);
             } else if (res.status === 403) {
                 router.push('/inicio');
                 toast.error('Acceso denegado');
@@ -169,35 +190,63 @@ export default function AdminPage() {
     const fetchProviders = useCallback(async () => {
         try {
             setLoadingProviders(true);
-            const res = await fetch('/api/admin/providers');
+            setProvidersError(false);
+            const params = new URLSearchParams({
+                page: providerPagination.page.toString(),
+                limit: PROVIDERS_PAGE_SIZE.toString(),
+            });
+            if (debouncedProviderSearch) params.set('search', debouncedProviderSearch);
+            const res = await fetch(`/api/admin/providers?${params.toString()}`);
             const data = await res.json();
-            if (data.success) {
-                setProviders(data.providers);
-            }
+            if (!res.ok || !data.success) throw new Error(data.error);
+            setProviders(data.providers);
+            setProviderPagination(data.pagination);
         } catch (error) {
             console.error('Error fetching providers:', error);
+            setProvidersError(true);
+            toast.error('No pudimos cargar los proveedores');
         } finally {
             setLoadingProviders(false);
         }
-    }, []);
+    }, [providerPagination.page, debouncedProviderSearch]);
 
     const fetchProviderRequests = useCallback(async () => {
         try {
             setLoadingRequests(true);
+            setRequestsError(false);
             const params = new URLSearchParams();
             if (requestFilter) params.set('status', requestFilter);
             const res = await fetch(`/api/admin/provider-requests?${params.toString()}`);
             const data = await res.json();
-            if (data.success) {
-                setProviderRequests(data.requests);
-                setRequestCounts(data.counts);
-            }
+            if (!res.ok || !data.success) throw new Error(data.error);
+            setProviderRequests(data.requests);
+            setRequestCounts(data.counts);
         } catch (error) {
             console.error('Error fetching provider requests:', error);
+            setRequestsError(true);
+            toast.error('No pudimos cargar las solicitudes de proveedor');
         } finally {
             setLoadingRequests(false);
         }
     }, [requestFilter]);
+
+    const deleteProvider = async (provider: Provider) => {
+        try {
+            const res = await fetch(`/api/admin/providers/${provider.id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!data.success) {
+                toast.error(data.error || 'No pudimos eliminar el proveedor');
+                return false;
+            }
+            toast.success('Proveedor eliminado');
+            void fetchProviders();
+            return true;
+        } catch (error) {
+            console.error('Error deleting provider:', error);
+            toast.error('No pudimos eliminar el proveedor');
+            return false;
+        }
+    };
 
     const handleReviewRequest = async (status: 'APPROVED' | 'REJECTED') => {
         if (!selectedRequest) return;
@@ -230,16 +279,28 @@ export default function AdminPage() {
             router.push('/login');
         } else if (status === 'authenticated') {
             fetchUsers();
-            fetchProviders();
-            fetchProviderRequests();
         }
     }, [status, fetchUsers, router]);
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            fetchProviders();
+        }
+    }, [status, fetchProviders]);
 
     useEffect(() => {
         if (status === 'authenticated') {
             fetchProviderRequests();
         }
     }, [requestFilter, fetchProviderRequests, status]);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setDebouncedProviderSearch(providerSearch.trim());
+            setProviderPagination(p => (p.page === 1 ? p : { ...p, page: 1 }));
+        }, 300);
+        return () => window.clearTimeout(timer);
+    }, [providerSearch]);
 
     const openAction = (user: User, type: 'role' | 'block' | 'password' | 'delete') => {
         setSelectedUser(user);
@@ -529,6 +590,13 @@ export default function AdminPage() {
                                     <div className="p-8 text-center">
                                         <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
                                     </div>
+                                ) : requestsError ? (
+                                    <div role="alert" className="p-8 text-center">
+                                        <p className="text-sm font-medium text-destructive">No pudimos cargar las solicitudes.</p>
+                                        <Button variant="outline" className="mt-4" onClick={() => void fetchProviderRequests()}>
+                                            Reintentar
+                                        </Button>
+                                    </div>
                                 ) : providerRequests.length === 0 ? (
                                     <div className="p-8 text-center text-slate-400">
                                         <Inbox className="mb-2 size-10" aria-hidden="true" />
@@ -607,15 +675,17 @@ export default function AdminPage() {
                             <Card>
                                 <CardContent className="p-6 text-center">
                                     <Users className="mb-2 size-10 text-slate-400" aria-hidden="true" />
-                                    <p className="text-3xl font-bold text-slate-800">{pagination.total}</p>
-                                    <p className="text-slate-500">Usuarios Totales</p>
+                                    <p className="text-3xl font-bold text-slate-800">
+                                        {userStats ? userStats.totalUsers.toLocaleString('es-AR') : '—'}
+                                    </p>
+                                    <p className="text-slate-500">Usuarios totales</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-6 text-center">
                                     <Store className="mb-2 size-10 text-teal-400" aria-hidden="true" />
                                     <p className="text-3xl font-bold text-slate-800">
-                                        {users.filter(u => u.role === 'PROVIDER').length}
+                                        {userStats ? userStats.byRole.PROVIDER.toLocaleString('es-AR') : '—'}
                                     </p>
                                     <p className="text-slate-500">Proveedores</p>
                                 </CardContent>
@@ -624,7 +694,7 @@ export default function AdminPage() {
                                 <CardContent className="p-6 text-center">
                                     <ShieldUser className="mb-2 size-10 text-teal-500" aria-hidden="true" />
                                     <p className="text-3xl font-bold text-slate-800">
-                                        {users.filter(u => u.role === 'ADMIN').length}
+                                        {userStats ? userStats.byRole.ADMIN.toLocaleString('es-AR') : '—'}
                                     </p>
                                     <p className="text-slate-500">Administradores</p>
                                 </CardContent>
@@ -634,18 +704,39 @@ export default function AdminPage() {
 
                     <TabsContent value="providers">
                         <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg">Proveedores Registrados</CardTitle>
+                            <CardHeader className="gap-3">
+                                <CardTitle className="text-lg">Proveedores registrados</CardTitle>
+                                <div className="relative max-w-md">
+                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                                    <Input
+                                        value={providerSearch}
+                                        onChange={(e) => setProviderSearch(e.target.value)}
+                                        placeholder="Buscar por negocio, zona o email..."
+                                        aria-label="Buscar proveedores"
+                                        className="pl-9"
+                                    />
+                                </div>
                             </CardHeader>
                             <CardContent className="p-0">
                                 {loadingProviders ? (
                                     <div className="p-8 text-center">
                                         <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
                                     </div>
+                                ) : providersError ? (
+                                    <div role="alert" className="p-8 text-center">
+                                        <p className="text-sm font-medium text-destructive">No pudimos cargar los proveedores.</p>
+                                        <Button variant="outline" className="mt-4" onClick={() => void fetchProviders()}>
+                                            Reintentar
+                                        </Button>
+                                    </div>
                                 ) : providers.length === 0 ? (
                                     <div className="p-8 text-center text-slate-400">
                                         <Store className="mb-2 size-10" aria-hidden="true" />
-                                        <p>No hay proveedores registrados</p>
+                                        <p>
+                                            {debouncedProviderSearch
+                                                ? `No encontramos proveedores para "${debouncedProviderSearch}"`
+                                                : 'No hay proveedores registrados'}
+                                        </p>
                                     </div>
                                 ) : (
                                     <div className="overflow-x-auto">
@@ -654,7 +745,7 @@ export default function AdminPage() {
                                                 <tr>
                                                     <th className="text-left p-4 font-medium text-slate-600">Negocio</th>
                                                     <th className="text-left p-4 font-medium text-slate-600">Ubicación</th>
-                                                    <th className="text-left p-4 font-medium text-slate-600">Rating</th>
+                                                    <th className="text-left p-4 font-medium text-slate-600">Calificación</th>
                                                     <th className="text-left p-4 font-medium text-slate-600">Servicios</th>
                                                     <th className="text-right p-4 font-medium text-slate-600">Acciones</th>
                                                 </tr>
@@ -681,7 +772,11 @@ export default function AdminPage() {
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-1">
                                                                 <Star className="size-3.5 text-amber-400" aria-hidden="true" fill="currentColor" />
-                                                                <span className="font-medium">{provider.rating?.toFixed(1) || 'N/A'}</span>
+                                                                <span className="font-medium">
+                                                                    {provider.reviewCount
+                                                                        ? provider.rating.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+                                                                        : 'Sin datos'}
+                                                                </span>
                                                                 <span className="text-slate-400 text-sm">({provider.reviewCount || 0})</span>
                                                             </div>
                                                         </td>
@@ -693,19 +788,8 @@ export default function AdminPage() {
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 className="text-red-600 hover:bg-red-50"
-                                                                onClick={async () => {
-                                                                    if (confirm('¿Eliminar este proveedor?')) {
-                                                                        const res = await fetch(`/api/admin/providers/${provider.id}`, { method: 'DELETE' });
-                                                                        const data = await res.json();
-                                                                        if (data.success) {
-                                                                            toast.success('Proveedor eliminado');
-                                                                            fetchProviders();
-                                                                        } else {
-                                                                            toast.error(data.error);
-                                                                        }
-                                                                    }
-                                                                }}
-                                                                aria-label="Eliminar"
+                                                                onClick={() => setProviderToDelete(provider)}
+                                                                aria-label={`Eliminar proveedor ${provider.businessName}`}
                                                             >
                                                                 <Trash2 className="size-5" aria-hidden="true" />
                                                             </Button>
@@ -714,6 +798,31 @@ export default function AdminPage() {
                                                 ))}
                                             </tbody>
                                         </table>
+                                    </div>
+                                )}
+                                {!providersError && providerPagination.total > 0 && (
+                                    <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
+                                        <p className="text-sm text-slate-500">
+                                            Página {providerPagination.page} de {Math.max(providerPagination.totalPages, 1)} · {providerPagination.total.toLocaleString('es-AR')} proveedores
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-2 sm:flex">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={loadingProviders || providerPagination.page <= 1}
+                                                onClick={() => setProviderPagination(p => ({ ...p, page: p.page - 1 }))}
+                                            >
+                                                Anterior
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={loadingProviders || providerPagination.page >= providerPagination.totalPages}
+                                                onClick={() => setProviderPagination(p => ({ ...p, page: p.page + 1 }))}
+                                            >
+                                                Siguiente
+                                            </Button>
+                                        </div>
                                     </div>
                                 )}
                             </CardContent>
@@ -808,6 +917,20 @@ export default function AdminPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={providerToDelete !== null}
+                onOpenChange={(open) => !open && setProviderToDelete(null)}
+                title={`¿Eliminar a ${providerToDelete?.businessName ?? 'este proveedor'}?`}
+                description={
+                    <span className="block rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
+                        <span className="font-semibold">Acción irreversible.</span> Se eliminan su perfil de proveedor y sus servicios. Si tiene historial de turnos, no se va a poder eliminar.
+                    </span>
+                }
+                confirmLabel="Eliminar proveedor"
+                destructive
+                onConfirm={async () => (providerToDelete ? deleteProvider(providerToDelete) : true)}
+            />
 
             {/* Review Provider Request Dialog */}
             <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>

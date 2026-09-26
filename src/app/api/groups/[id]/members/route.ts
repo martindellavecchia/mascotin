@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         // Verify user is a member of this group

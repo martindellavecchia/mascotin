@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 type Meetup = {
   id: string;
@@ -175,30 +176,34 @@ export default function MeetupPanel({ matchId, userId }: { matchId: string; user
                     >
                       Aceptar
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={busy}
-                      onClick={() =>
-                        void save({ id: row.id, version: row.version, action: 'DECLINE' })
+                    <ConfirmDialog
+                      title="¿Declinar esta propuesta?"
+                      description="La otra persona va a ver la propuesta como declinada. Si cambiás de idea, van a tener que proponer un nuevo encuentro."
+                      confirmLabel="Declinar"
+                      destructive
+                      onConfirm={() => save({ id: row.id, version: row.version, action: 'DECLINE' })}
+                      trigger={
+                        <Button size="sm" variant="outline" disabled={busy}>
+                          Declinar
+                        </Button>
                       }
-                    >
-                      Declinar
-                    </Button>
+                    />
                   </>
                 )}
               {['PROPOSED', 'ACCEPTED'].includes(row.status) && (
                 <>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={busy}
-                    onClick={() =>
-                      void save({ id: row.id, version: row.version, action: 'CANCEL' })
+                  <ConfirmDialog
+                    title={row.status === 'ACCEPTED' ? '¿Cancelar el encuentro?' : '¿Cancelar la propuesta?'}
+                    description="La propuesta queda cancelada para ambas partes y no se puede deshacer."
+                    confirmLabel="Cancelar propuesta"
+                    destructive
+                    onConfirm={() => save({ id: row.id, version: row.version, action: 'CANCEL' })}
+                    trigger={
+                      <Button size="sm" variant="ghost" disabled={busy}>
+                        Cancelar propuesta
+                      </Button>
                     }
-                  >
-                    Cancelar propuesta
-                  </Button>
+                  />
                   {row.proposedById === userId && new Date(row.date) > new Date() && (
                     <Button
                       size="sm"

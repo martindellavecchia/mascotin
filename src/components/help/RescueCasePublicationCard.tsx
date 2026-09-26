@@ -92,7 +92,7 @@ export default function RescueCasePublicationCard({
             <div className="flex gap-2">
               {images.map((image, index) => (
                 <button key={image} type="button" onClick={() => setImageIndex(index)} className={`relative size-20 overflow-hidden rounded-xl border-2 ${imageIndex === index ? 'border-teal-600' : 'border-transparent'}`} aria-label={`Usar foto ${index + 1}`} aria-pressed={imageIndex === index}>
-                  <Image src={image} alt="" fill sizes="80px" unoptimized={shouldUnoptimizeImage(image)} className="object-cover" />
+                  <Image src={image} alt={`Foto ${index + 1} del caso`} fill sizes="80px" unoptimized={shouldUnoptimizeImage(image)} className="object-cover" />
                 </button>
               ))}
             </div>

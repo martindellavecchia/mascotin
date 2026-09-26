@@ -44,16 +44,45 @@ export default function ShopDirectory({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const skipInitialFetch = useRef(true);
+  const [urlReady, setUrlReady] = useState(false);
   const hasFilters = Boolean(search.trim() || zone.trim() || categoryId !== '_all' || minRating !== '_all');
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setSearch(params.get('search') || ''); setCategoryId(params.get('categoryId') || '_all'); setMinRating(params.get('minRating') || '_all'); setZone(params.get('zone') || '');
+    const initialSearch = params.get('search') || '';
+    setSearch(initialSearch);
+    setDebouncedSearch(initialSearch.trim());
+    setCategoryId(params.get('categoryId') || '_all');
+    setMinRating(params.get('minRating') || '_all');
+    setZone(params.get('zone') || '');
+    setSortBy(params.get('sortBy') || 'recommended');
+    setUrlReady(true);
   }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250);
     return () => window.clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    if (!urlReady) return;
+    const params = new URLSearchParams(window.location.search);
+    const entries: Record<string, string> = {
+      search: debouncedSearch,
+      zone: zone.trim(),
+      categoryId: categoryId === '_all' ? '' : categoryId,
+      minRating: minRating === '_all' ? '' : minRating,
+      sortBy: sortBy === 'recommended' ? '' : sortBy,
+    };
+    for (const [key, value] of Object.entries(entries)) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+    if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      window.history.replaceState(window.history.state, '', nextUrl);
+    }
+  }, [urlReady, debouncedSearch, zone, categoryId, minRating, sortBy]);
 
   useEffect(() => {
     const isDefault =

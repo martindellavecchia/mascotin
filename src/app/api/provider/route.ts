@@ -10,7 +10,7 @@ export async function GET() {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Tenés que iniciar sesión' },
                 { status: 401 }
             );
         }
@@ -21,6 +21,7 @@ export async function GET() {
                 include: {
                     services: {
                         orderBy: { createdAt: 'desc' },
+                        include: { _count: { select: { appointments: true } } },
                     },
                 },
             }),
@@ -39,7 +40,7 @@ export async function GET() {
     } catch (error) {
         console.error('Error fetching provider profile:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch provider profile' },
+            { success: false, error: 'No pudimos cargar tu perfil de proveedor' },
             { status: 500 }
         );
     }
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Tenés que iniciar sesión' },
                 { status: 401 }
             );
         }

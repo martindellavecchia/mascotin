@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import sharp from 'sharp';
+import { put } from '@vercel/blob';
 import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
     }
 
     if (file.type === 'image/svg+xml') {
-      return NextResponse.json({ success: false, error: 'SVG no está permitido en este prototipo' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Las imágenes SVG no están permitidas. Usá JPG, PNG o WebP.' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -59,17 +60,34 @@ export async function POST(request: Request) {
       })
       .toBuffer();
 
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const blob = await put(`uploads/${session.user.id}/${Date.now()}.webp`, optimizedBuffer, {
+          access: 'public',
+          contentType: 'image/webp',
+          addRandomSuffix: true,
+        });
+        return NextResponse.json({ success: true, url: blob.url });
+      } catch (error) {
+        log.error('Blob upload failed', error, { userId: session.user.id });
+        return NextResponse.json(
+          { success: false, error: 'No pudimos guardar la imagen. Intentá de nuevo en unos segundos.' },
+          { status: 502 }
+        );
+      }
+    }
+
     if (optimizedBuffer.length > MAX_OUTPUT_FILE_SIZE) {
       return NextResponse.json(
         {
           success: false,
-          error: 'La imagen sigue siendo muy pesada para este prototipo free. Usa una imagen más liviana.',
+          error: 'La imagen es demasiado pesada. Probá con una foto más liviana o recortada.',
         },
         { status: 400 }
       );
     }
 
-    // Persistimos la imagen inline para evitar filesystem efímero y servicios pagos.
+    // Without Blob storage configured, images are stored inline because the serverless filesystem is ephemeral.
     const dataUrl = `data:image/webp;base64,${optimizedBuffer.toString('base64')}`;
 
     return NextResponse.json({

@@ -9,6 +9,7 @@ import { useStoreViewer } from '@/components/shop/StoreViewerProvider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Textarea } from '@/components/ui/textarea';
 
 export default function StoreReviewFormIsland() {
@@ -54,20 +55,25 @@ export default function StoreReviewFormIsland() {
   };
 
   const deleteReview = async () => {
-    if (!viewer.ownReviewId) return;
+    if (!viewer.ownReviewId) return true;
     setReviewLoading(true);
     try {
       const response = await fetch(`/api/stores/${store.id}/reviews/${viewer.ownReviewId}`, { method: 'DELETE' });
+      if (response.status === 401) {
+        requireAuth();
+        return true;
+      }
       const data = await response.json();
-      if (response.status === 401) return requireAuth();
       if (!data.success) throw new Error(data.error);
       setRating(0);
       setComment('');
       toast.success('Reseña eliminada');
       await refreshViewer();
       router.refresh();
+      return true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo eliminar la reseña');
+      return false;
     } finally {
       setReviewLoading(false);
     }
@@ -81,7 +87,7 @@ export default function StoreReviewFormIsland() {
       <CardContent>
         {viewer.isOwner ? (
           <div className="rounded-xl bg-teal-50 p-4 text-sm text-teal-800">
-            <p className="font-semibold">Sos owner de este negocio</p>
+            <p className="font-semibold">Sos dueño/a de este negocio</p>
             <p className="mt-1">Podés responder reseñas, pero no calificar tu propio perfil.</p>
           </div>
         ) : canReview ? (
@@ -124,14 +130,22 @@ export default function StoreReviewFormIsland() {
               {reviewLoading ? 'Guardando...' : viewer.ownReview ? 'Actualizar reseña' : 'Publicar reseña'}
             </Button>
             {viewer.ownReview && (
-              <Button
-                variant="ghost"
-                className="mt-1 w-full text-rose-600 hover:text-rose-700"
-                onClick={() => void deleteReview()}
-                disabled={reviewLoading}
-              >
-                Eliminar mi reseña
-              </Button>
+              <ConfirmDialog
+                title="¿Eliminar tu reseña?"
+                description="Se va a borrar tu calificación y tu comentario de este negocio. Si después querés, podés volver a escribirla."
+                confirmLabel="Eliminar reseña"
+                destructive
+                onConfirm={deleteReview}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    className="mt-1 w-full text-rose-600 hover:text-rose-700"
+                    disabled={reviewLoading}
+                  >
+                    Eliminar mi reseña
+                  </Button>
+                }
+              />
             )}
           </div>
         ) : viewer.reviewEligibility === 'unauthenticated' ? (

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SITE_URL } from "@/lib/site-url";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -13,12 +14,21 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Huella | Comunidad, cuidado y encuentros para mascotas",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Huella | Comunidad, cuidado y encuentros para mascotas",
+    template: "%s | Huella",
+  },
   description:
     "Una red cercana para conocer mascotas, coordinar ayuda, participar en comunidad y encontrar servicios confiables.",
   keywords: ["Huella", "mascotas", "hogares de tránsito", "adopción", "servicios", "comunidad"],
   authors: [{ name: "Huella" }],
   manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Huella",
+    statusBarStyle: "default",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico?v=huella-1", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
@@ -30,15 +40,24 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Huella",
     description: "Comunidad, cuidado y encuentros para mascotas",
-    url: "https://mascotin.app",
+    url: "/",
     siteName: "Huella",
+    locale: "es_AR",
     type: "website",
+    images: [{ url: "/images/hero-dogs.webp", alt: "Dos perros jugando al aire libre" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Huella",
     description: "Comunidad, cuidado y encuentros para mascotas",
+    images: ["/images/hero-dogs.webp"],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#4b244a",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

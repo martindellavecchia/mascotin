@@ -54,7 +54,7 @@ export default function GroupsSidebar() {
                         <Link key={group.id} href={`/community/groups/${group.id}`} className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-lg transition-colors">
                             <div className="w-10 h-10 rounded-lg bg-slate-200 overflow-hidden shrink-0">
                                 {group.image ? (
-                                    <img src={group.image} alt="" className="w-full h-full object-cover" />
+                                    <img src={group.image} alt={group.name} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-teal-100">
                                         <Users className="size-5 text-teal-300" aria-hidden="true" />

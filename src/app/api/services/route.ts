@@ -9,7 +9,7 @@ export async function GET(request: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Tenés que iniciar sesión' },
                 { status: 401 }
             );
         }
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
     } catch (error) {
         console.error('Error fetching services:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch services' },
+            { success: false, error: 'No pudimos cargar los servicios' },
             { status: 500 }
         );
     }

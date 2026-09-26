@@ -38,6 +38,22 @@ describe('AboutCard', () => {
     render(<AboutCard bio="Me encanta pasear con mis perros por el parque todos los días." />);
     expect(screen.getByText(/me encanta pasear con mis perros/i)).toBeInTheDocument();
   });
+
+  it('expands a long bio from the keyboard with the title button', async () => {
+    const user = userEvent.setup();
+    const longBio = `${'Me encanta pasear con mis perros por el parque. '.repeat(5)}Final de la historia.`;
+    render(<AboutCard bio={longBio} />);
+
+    const toggle = screen.getByRole('button', { name: /sobre mí/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText(/final de la historia/i)).not.toBeInTheDocument();
+
+    toggle.focus();
+    await user.keyboard('{Enter}');
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/final de la historia/i)).toBeInTheDocument();
+  });
 });
 
 describe('Profile PetCard gender', () => {

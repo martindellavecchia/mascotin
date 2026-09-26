@@ -21,6 +21,7 @@ describe('ShopDirectory', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     global.fetch = jest.fn();
+    window.history.replaceState(null, '', '/shop');
   });
 
   afterEach(() => {
@@ -88,6 +89,43 @@ describe('ShopDirectory', () => {
     await act(async () => {
       jest.advanceTimersByTime(400);
     });
+  });
+
+  it('restores filters from the URL and keeps the URL in sync with the debounced search', async () => {
+    window.history.replaceState(null, '', '/shop?search=vet&zone=Palermo&utm_source=x');
+    const fetchMock = global.fetch as jest.Mock;
+    fetchMock.mockResolvedValue({ json: async () => ({ success: true, stores: [store] }) });
+
+    render(
+      <ShopDirectory
+        initialCategories={[{ id: 'cat-1', name: 'Peluquería' }]}
+        initialStores={[store]}
+      />
+    );
+
+    const input = screen.getByPlaceholderText(/Buscar negocio/i);
+    expect(input).toHaveValue('vet');
+    await act(async () => {
+      jest.advanceTimersByTime(0);
+    });
+    expect(fetchMock.mock.calls[0][0]).toContain('search=vet');
+    expect(fetchMock.mock.calls[0][0]).toContain('zone=Palermo');
+
+    fireEvent.change(input, { target: { value: 'baño' } });
+    expect(new URLSearchParams(window.location.search).get('search')).toBe('vet');
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+    });
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get('search')).toBe('baño');
+    expect(params.get('zone')).toBe('Palermo');
+    expect(params.get('utm_source')).toBe('x');
+
+    fireEvent.change(input, { target: { value: '' } });
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+    });
+    expect(new URLSearchParams(window.location.search).has('search')).toBe(false);
   });
 
   it('shows loading, empty and error states after a filter request', async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Camera, ChevronDown, Hourglass, PawPrint, Trees } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,9 +21,10 @@ interface OwnerFormProps {
   defaultName?: string;
   onSuccess?: (owner: Owner) => void;
   onCancel?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export default function OwnerForm({ userId, initialData, defaultName, onSuccess, onCancel }: OwnerFormProps) {
+export default function OwnerForm({ userId, initialData, defaultName, onSuccess, onCancel, onDirtyChange }: OwnerFormProps) {
   const invalidateViewerData = useInvalidateViewerData();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -43,6 +44,12 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
       hasOtherPets: initialData?.hasOtherPets ?? false,
     },
   });
+
+  const isDirty = form.formState.isDirty || profileImage !== (initialData?.image || '');
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -280,7 +287,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
         </details>
 
         <div className="flex gap-3">
-          {onCancel && <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>}
+          {onCancel && <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>Cancelar</Button>}
           <Button type="submit" className="flex-1" disabled={loading || uploading}>
             {loading ? (
               <>

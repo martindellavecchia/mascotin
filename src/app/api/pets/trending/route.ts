@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { VISIBLE_PROFILE_USER_FILTER } from '@/lib/server/profile-visibility';
 
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Iniciá sesión para continuar' },
                 { status: 401 }
             );
         }
@@ -28,7 +29,9 @@ export async function GET() {
             where: {
                 isActive: true,
                 id: { notIn: ownPetIds },
-                owner: { user: { syntheticRunId: viewer?.syntheticRunId || null } },
+                owner: {
+                    user: { syntheticRunId: viewer?.syntheticRunId || null, ...VISIBLE_PROFILE_USER_FILTER },
+                },
             },
             orderBy: [
                 { totalMatches: 'desc' },
@@ -43,12 +46,12 @@ export async function GET() {
             pets: trendingPets,
         }, {
             headers: {
-                'Cache-Control': 'public, max-age=300, s-maxage=600',
+                'Cache-Control': 'private, max-age=300',
             },
         });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch trending pets' },
+            { success: false, error: 'No pudimos cargar las mascotas destacadas. Intentá de nuevo.' },
             { status: 500 }
         );
     }

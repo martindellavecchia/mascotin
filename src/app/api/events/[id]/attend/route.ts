@@ -13,7 +13,7 @@ export async function POST(
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'No autenticado' },
                 { status: 401 }
             );
         }
@@ -78,7 +78,7 @@ export async function POST(
     } catch (error) {
         console.error('Error toggling attendance:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to update attendance' },
+            { success: false, error: 'No se pudo actualizar tu asistencia' },
             { status: 500 }
         );
     }

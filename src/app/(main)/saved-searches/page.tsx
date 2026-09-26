@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { searchHref, type SearchFilters } from '@/lib/product-search';
@@ -54,8 +55,14 @@ export default function SavedSearchesPage() {
       if (!r.ok) throw new Error();
       setEdit(null);
       await load();
+      return true;
     } catch {
-      setError('No pudimos guardar el cambio. Intentá nuevamente.');
+      setError(
+        method === 'DELETE'
+          ? 'No pudimos eliminar la búsqueda. Intentá nuevamente.'
+          : 'No pudimos guardar el cambio. Intentá nuevamente.'
+      );
+      return false;
     } finally {
       setBusy(null);
     }
@@ -257,13 +264,18 @@ export default function SavedSearchesPage() {
                 >
                   {search.enabled ? 'Pausar' : 'Reactivar'}
                 </Button>
-                <Button
-                  variant="ghost"
-                  disabled={busy === search.id}
-                  onClick={() => void update(search.id, 'DELETE')}
-                >
-                  Eliminar
-                </Button>
+                <ConfirmDialog
+                  title={`¿Eliminar "${search.name}"?`}
+                  description="Vas a dejar de recibir el resumen diario de esta búsqueda. Esta acción no se puede deshacer."
+                  confirmLabel="Eliminar búsqueda"
+                  destructive
+                  onConfirm={() => update(search.id, 'DELETE')}
+                  trigger={
+                    <Button variant="ghost" disabled={busy === search.id}>
+                      Eliminar
+                    </Button>
+                  }
+                />
               </div>
             )}
           </section>

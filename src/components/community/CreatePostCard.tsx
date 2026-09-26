@@ -46,7 +46,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
         for (let i = 0; i < files.length && images.length + i < 4; i++) {
             const file = files[i];
             if (file.size > 5 * 1024 * 1024) {
-                toast.error('Imagen muy grande (max 5MB)');
+                toast.error(`"${file.name}" es muy grande (máximo 5 MB)`);
                 continue;
             }
 
@@ -58,15 +58,18 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                     method: 'POST',
                     body: formData,
                 });
-                const data = await response.json();
-                if (data.success && data.url) {
+                const data = await response.json().catch(() => null);
+                if (response.ok && data?.success && data.url) {
                     setImages(prev => [...prev, data.url]);
+                } else {
+                    toast.error(data?.error || `No se pudo subir "${file.name}"`);
                 }
-            } catch (error) {
-                toast.error('Error al subir imagen');
+            } catch {
+                toast.error(`No se pudo subir "${file.name}". Revisá tu conexión.`);
             }
         }
         setUploading(false);
+        e.target.value = '';
     };
 
     const removeImage = (index: number) => {
@@ -214,7 +217,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                     <div className="flex gap-2 flex-wrap">
                                         {images.map((img, idx) => (
                                             <div key={idx} className="relative w-20 h-20">
-                                                <img src={img} alt="" className="w-full h-full object-cover rounded-lg" />
+                                                <img src={img} alt={`Imagen ${idx + 1} de la publicación`} className="w-full h-full object-cover rounded-lg" />
                                                 <button
                                                     onClick={() => removeImage(idx)}
                                                     className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-lg bg-destructive text-white"

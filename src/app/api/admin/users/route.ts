@@ -28,7 +28,7 @@ export async function GET(request: Request) {
         if (role) {
             if (!Object.values(UserRole).includes(role as UserRole)) {
                 return NextResponse.json(
-                    { success: false, error: 'Invalid role filter' },
+                    { success: false, error: 'Filtro de rol inválido' },
                     { status: 400 }
                 );
             }
@@ -76,6 +76,14 @@ export async function GET(request: Request) {
             }),
             db.user.count({ where }),
         ]);
+        const roleGroups = await db.user.groupBy({
+            by: ['role'],
+            _count: { _all: true },
+        });
+        const byRole: Record<UserRole, number> = { OWNER: 0, PROVIDER: 0, ADMIN: 0 };
+        for (const group of roleGroups) {
+            byRole[group.role] = group._count._all;
+        }
 
         return NextResponse.json({
             success: true,
@@ -86,11 +94,15 @@ export async function GET(request: Request) {
                 total,
                 totalPages: Math.ceil(total / limit),
             },
+            stats: {
+                totalUsers: byRole.OWNER + byRole.PROVIDER + byRole.ADMIN,
+                byRole,
+            },
         });
     } catch (error) {
         console.error('Error fetching users:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch users' },
+            { success: false, error: 'No pudimos cargar los usuarios' },
             { status: 500 }
         );
     }

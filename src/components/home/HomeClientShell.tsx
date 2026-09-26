@@ -1,8 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
-import { Compass, Heart, PawPrint } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { Compass, Heart, MessageCircle, PawPrint, X } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Feed from '@/components/feed/Feed';
 import TodayActions from '@/components/home/TodayActions';
@@ -21,7 +22,7 @@ import type { HomeBootstrapSuggestion } from '@/lib/server/home';
 
 const MatchesPanel = dynamic(() => import('@/components/MatchesPanel'), {
   ssr: false,
-  loading: () => <PanelSkeleton label="Cargando matches..." />,
+  loading: () => <PanelSkeleton label="Cargando tu círculo..." />,
 });
 
 const ExploreTab = dynamic(() => import('@/components/home/ExploreTab'), {
@@ -30,6 +31,13 @@ const ExploreTab = dynamic(() => import('@/components/home/ExploreTab'), {
 });
 
 type HomeTab = 'home' | 'explore' | 'matches';
+
+const MATCH_CELEBRATION_MS = 6000;
+
+interface MatchCelebration {
+  petName: string;
+  matchId: string | null;
+}
 
 interface HomeClientShellProps {
   session: {
@@ -131,6 +139,7 @@ export default function HomeClientShell({
   initialFeedNextCursor,
   initialFeedHasMore,
 }: HomeClientShellProps) {
+  const router = useRouter();
   const { fetchWithError } = useFetchWithError();
   const invalidateViewerData = useInvalidateViewerData();
   const myPets = initialPets;
@@ -142,13 +151,36 @@ export default function HomeClientShell({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Pet[]>([]);
   const [exploreLoading, setExploreLoading] = useState(false);
+  const [exploreError, setExploreError] = useState(false);
+  const [exploreLoadedPetId, setExploreLoadedPetId] = useState<string | null>(null);
   const [matchesLoading, setMatchesLoading] = useState(false);
+  const [matchesError, setMatchesError] = useState(false);
   const [hasLoadedMatches, setHasLoadedMatches] = useState(false);
-  const [matchNotification, setMatchNotification] = useState<string | null>(null);
+  const [matchCelebration, setMatchCelebration] = useState<MatchCelebration | null>(null);
   const swipingRef = useRef(false);
   const lastExplorePetIdRef = useRef<string | null>(null);
+  const celebrationTimerRef = useRef<number | null>(null);
   const urlHydratedRef = useRef(false);
   const activePet = myPets.find((pet) => pet.id === selectedPetId) || myPets[0];
+
+  useEffect(() => () => {
+    if (celebrationTimerRef.current) window.clearTimeout(celebrationTimerRef.current);
+  }, []);
+
+  const dismissCelebration = () => {
+    if (celebrationTimerRef.current) window.clearTimeout(celebrationTimerRef.current);
+    celebrationTimerRef.current = null;
+    setMatchCelebration(null);
+  };
+
+  const showCelebration = (celebration: MatchCelebration) => {
+    if (celebrationTimerRef.current) window.clearTimeout(celebrationTimerRef.current);
+    setMatchCelebration(celebration);
+    celebrationTimerRef.current = window.setTimeout(() => {
+      celebrationTimerRef.current = null;
+      setMatchCelebration(null);
+    }, MATCH_CELEBRATION_MS);
+  };
 
   useEffect(() => {
     if (urlHydratedRef.current) return;
@@ -201,11 +233,14 @@ export default function HomeClientShell({
 
   const fetchMatches = async () => {
     setMatchesLoading(true);
-    const result = await fetchWithError<{ matches: Pet[] }>('/api/matches');
+    setMatchesError(false);
+    const result = await fetchWithError<{ matches: Pet[] }>('/api/matches', { showError: false });
 
     if (result.success && result.data) {
       setMatches(result.data.matches || []);
       setHasLoadedMatches(true);
+    } else {
+      setMatchesError(true);
     }
 
     setMatchesLoading(false);
@@ -222,17 +257,39 @@ export default function HomeClientShell({
     }
 
     setExploreLoading(true);
+    setExploreError(false);
     const result = await fetchWithError<{ pets: Pet[] }>(
-      `/api/pets?currentPetId=${selectedPetId}`
+      `/api/pets?currentPetId=${selectedPetId}`,
+      { showError: false }
     );
 
     if (result.success && result.data) {
       setPetsToSwipe(result.data.pets || []);
       setCurrentIndex(0);
       lastExplorePetIdRef.current = selectedPetId;
+      setExploreLoadedPetId(selectedPetId);
+    } else {
+      setExploreError(true);
     }
 
     setExploreLoading(false);
+  };
+
+  const handleUndoPass = (restoredPetId?: string) => {
+    const restoredIndex = restoredPetId
+      ? petsToSwipe.findIndex((pet) => pet.id === restoredPetId)
+      : -1;
+
+    if (restoredIndex < 0 || restoredIndex >= currentIndex) {
+      void fetchPetsForSwipe(true);
+      return;
+    }
+
+    const restoredPet = petsToSwipe[restoredIndex];
+    const nextIndex = currentIndex - 1;
+    const remaining = petsToSwipe.filter((_, index) => index !== restoredIndex);
+    setPetsToSwipe([...remaining.slice(0, nextIndex), restoredPet, ...remaining.slice(nextIndex)]);
+    setCurrentIndex(nextIndex);
   };
 
   useEffect(() => {
@@ -255,7 +312,7 @@ export default function HomeClientShell({
     const currentPet = petsToSwipe[currentIndex];
 
     try {
-      const result = await fetchWithError<SwipeResponse>('/api/swipe', {
+      const result = await fetchWithError<SwipeResponse & { matchId?: string | null }>('/api/swipe', {
         method: 'POST',
         body: JSON.stringify({
           fromPetId: selectedPetId,
@@ -266,8 +323,7 @@ export default function HomeClientShell({
 
       if (result.success && result.data?.matched) {
         invalidateViewerData();
-        setMatchNotification(currentPet.name);
-        setTimeout(() => setMatchNotification(null), 3000);
+        showCelebration({ petName: currentPet.name, matchId: result.data.matchId ?? null });
 
         if (hasLoadedMatches) {
           void fetchMatches();
@@ -351,13 +407,17 @@ export default function HomeClientShell({
               <ExploreTab
                 petsToSwipe={petsToSwipe}
                 currentIndex={currentIndex}
-                loading={exploreLoading}
+                loading={
+                  exploreLoading ||
+                  (Boolean(selectedPetId) && !exploreError && exploreLoadedPetId !== selectedPetId)
+                }
+                error={exploreError}
                 activePet={activePet}
                 onReload={() => void fetchPetsForSwipe(true)}
                 onLike={() => handleSwipe(true)}
                 onPass={() => handleSwipe(false)}
               />
-              {selectedPetId && <UndoPassButton petId={selectedPetId} revision={currentIndex} onUndo={() => void fetchPetsForSwipe(true)} />}
+              {selectedPetId && <UndoPassButton petId={selectedPetId} revision={currentIndex} onUndo={handleUndoPass} />}
             </TabsContent>
 
             <TabsContent value="matches" className="min-w-0 mt-0">
@@ -371,13 +431,14 @@ export default function HomeClientShell({
                   Seguir descubriendo
                 </Button>
               </div>
-              {matchesLoading && !hasLoadedMatches ? (
-                <PanelSkeleton label="Cargando matches..." />
+              {!hasLoadedMatches && (matchesLoading || !matchesError) ? (
+                <PanelSkeleton label="Cargando tu círculo..." />
               ) : (
                 <MatchesPanel
                   matches={matches}
                   currentUserId={session?.user?.id || ''}
-                  onRefresh={fetchMatches}
+                  onRefresh={() => void fetchMatches()}
+                  loadError={matchesError && !hasLoadedMatches}
                 />
               )}
             </TabsContent>
@@ -385,17 +446,45 @@ export default function HomeClientShell({
         </div>
       </DashboardLayout>
 
-      {matchNotification && (
-        <div className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-match-in">
+      {matchCelebration && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-match-in"
+        >
           <div className="rounded-lg border border-teal-600 bg-teal-700 px-5 py-3.5 text-white shadow-lg sm:px-6">
-            <div className="flex items-center gap-3">
-              <Heart className="size-7" fill="currentColor" aria-hidden="true" />
-              <div>
-                <p className="text-base font-semibold">¡Es un match!</p>
+            <div className="flex items-start gap-3">
+              <Heart className="mt-0.5 size-7 shrink-0" fill="currentColor" aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-semibold">¡Es una coincidencia!</p>
                 <p className="text-sm text-teal-100">
-                  Conectaste con {matchNotification}
+                  Conectaste con {matchCelebration.petName}
                 </p>
+                {matchCelebration.matchId && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="mt-3"
+                    onClick={() => {
+                      const matchId = matchCelebration.matchId;
+                      dismissCelebration();
+                      router.push(`/messages?matchId=${matchId}`);
+                    }}
+                  >
+                    <MessageCircle className="size-4" aria-hidden="true" />
+                    Abrir chat
+                  </Button>
+                )}
               </div>
+              <button
+                type="button"
+                onClick={dismissCelebration}
+                aria-label="Cerrar aviso"
+                className="-mr-2 -mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-teal-100 hover:bg-teal-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ export async function GET() {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Tenés que iniciar sesión' },
                 { status: 401 }
             );
         }
@@ -22,7 +22,7 @@ export async function GET() {
 
         if (!provider) {
             return NextResponse.json(
-                { success: false, error: 'Not a provider' },
+                { success: false, error: 'Necesitás una cuenta de proveedor' },
                 { status: 403 }
             );
         }
@@ -44,7 +44,7 @@ export async function GET() {
     } catch (error) {
         console.error('Error fetching services:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch services' },
+            { success: false, error: 'No pudimos cargar los servicios' },
             { status: 500 }
         );
     }
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
-                { success: false, error: 'Not authenticated' },
+                { success: false, error: 'Tenés que iniciar sesión' },
                 { status: 401 }
             );
         }
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
         if (!provider) {
             return NextResponse.json(
-                { success: false, error: 'Not a provider. Please register as a provider first.' },
+                { success: false, error: 'Necesitás una cuenta de proveedor aprobada' },
                 { status: 403 }
             );
         }
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error('Error creating service:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to create service' },
+            { success: false, error: 'No pudimos crear el servicio' },
             { status: 500 }
         );
     }

@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: 'Iniciá sesión para continuar' },
         { status: 401 }
       );
     }
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch pets' },
+      { success: false, error: 'No pudimos cargar tus mascotas. Intentá de nuevo.' },
       { status: 500 }
     );
   }

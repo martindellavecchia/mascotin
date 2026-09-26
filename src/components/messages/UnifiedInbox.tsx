@@ -1,6 +1,8 @@
 'use client';
-import Link from 'next/link';
 import { useState } from 'react';
+import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { InboxRow } from '@/lib/server/inbox';
 export default function UnifiedInbox({
@@ -17,6 +19,30 @@ export default function UnifiedInbox({
       (kind === 'all' || kind === r.kind) &&
       `${r.title} ${r.context}`.toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es'))
   );
+  if (rows.length === 0) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="border-b p-4">
+          <h1 className="text-lg font-bold">Mensajes</h1>
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+          <MessageCircle className="size-10 text-primary/40" aria-hidden="true" />
+          <h2 className="mt-3 font-semibold text-foreground">Todavía no tenés conversaciones</h2>
+          <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+            Cuando haya interés mutuo con otra mascota o te sumes a un grupo, vas a poder chatear acá.
+          </p>
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+            <Button asChild size="sm">
+              <Link href="/inicio?tab=explore">Ir a Descubrir</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/community/groups">Explorar grupos</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="space-y-3 border-b p-4">
@@ -68,6 +94,7 @@ export default function UnifiedInbox({
             'block w-full min-w-0 space-y-1 border-b p-4 text-left hover:bg-primary-soft focus-visible:ring-2 focus-visible:ring-primary';
           return row.kind === 'match' || row.kind === 'group' ? (
             <button
+              type="button"
               className={className}
               key={`${row.kind}:${row.id}`}
               onClick={() => onSelect(row.id, row.kind as 'match' | 'group')}

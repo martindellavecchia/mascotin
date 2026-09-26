@@ -7,7 +7,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const { id } = params;
@@ -19,7 +19,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         });
 
         if (!event) {
-            return NextResponse.json({ success: false, error: 'Event not found' }, { status: 404 });
+            return NextResponse.json({ success: false, error: 'Evento no encontrado' }, { status: 404 });
         }
 
         // Check if user is Author or Group Creator
@@ -37,7 +37,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         }
 
         if (!isAuthor && !isGroupAdmin) {
-            return NextResponse.json({ success: false, error: 'Unauthorized to view attendee details' }, { status: 403 });
+            return NextResponse.json({ success: false, error: 'No tenés permiso para ver los asistentes' }, { status: 403 });
         }
 
         // Fetch attendees
@@ -68,6 +68,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     } catch (error) {
         console.error('Error fetching attendees:', error);
-        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'Error interno del servidor' }, { status: 500 });
     }
 }

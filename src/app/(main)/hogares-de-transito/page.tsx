@@ -4,6 +4,8 @@ import HelpCenter from '@/components/help/HelpCenter';
 import PendingActions from '@/components/home/PendingActions';
 import { getCachedSession } from '@/lib/session';
 
+export const metadata = { title: 'Hogares de tránsito' };
+
 export default async function FosterHomesPage() {
   const session = await getCachedSession();
   if (!session?.user?.id) redirect('/login');

@@ -119,7 +119,7 @@ export default function CreateGroupModal({ open, onOpenChange, onSuccess }: Crea
                         <div className="flex gap-4 items-start">
                             {image && (
                                 <div className="w-16 h-16 rounded-md bg-slate-100 overflow-hidden shrink-0">
-                                    <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                                    <img src={image} alt="Vista previa de la imagen" className="w-full h-full object-cover" />
                                 </div>
                             )}
                             <div className="flex-1">

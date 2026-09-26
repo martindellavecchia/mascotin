@@ -13,7 +13,9 @@ describe('media helpers', () => {
     expect(isRenderableImage('/images/pet.png')).toBe(true);
     expect(isRenderableImage('https://images.unsplash.com/photo.jpg')).toBe(true);
     expect(isRenderableImage('https://cdn.neon.tech/pet.webp')).toBe(true);
+    expect(isRenderableImage('https://abc123.public.blob.vercel-storage.com/uploads/u/pet.webp')).toBe(true);
     expect(isRenderableImage('https://evil.example/pet.png')).toBe(false);
+    expect(isRenderableImage('https://public.blob.vercel-storage.com.evil.example/pet.png')).toBe(false);
     expect(isRenderableImage(null)).toBe(false);
   });
 

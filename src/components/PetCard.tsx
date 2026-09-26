@@ -10,9 +10,11 @@ import {
   Leaf,
   MapPin,
   PawPrint,
+  Ruler,
   ShieldCheck,
   Users,
   Waves,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 import type { Pet } from '@/types';
@@ -139,6 +141,24 @@ export default function PetCard({
               <MapPin className="size-5 shrink-0" aria-hidden="true" />
               {pet.location || pet.owner?.location || 'Cerca tuyo'}
             </p>
+            {(pet.size || pet.energy) && (
+              <ul className="mt-3 flex flex-wrap gap-2" aria-label="Características">
+                {pet.size && (
+                  <li className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
+                    <Ruler className="size-3.5" aria-hidden="true" />
+                    Tamaño
+                    <span className="font-semibold text-foreground">{getSizeLabel(pet.size)}</span>
+                  </li>
+                )}
+                {pet.energy && (
+                  <li className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
+                    <Zap className="size-3.5" aria-hidden="true" />
+                    Energía
+                    <span className="font-semibold text-foreground">{getEnergyLabel(pet.energy)}</span>
+                  </li>
+                )}
+              </ul>
+            )}
           </div>
 
           <div className="mt-7 border-t border-slate-200 pt-6">
@@ -187,8 +207,6 @@ export default function PetCard({
           </div>
 
           <div className="sr-only">
-            {pet.size && <span>{getSizeLabel(pet.size)}</span>}
-            {pet.energy && <span>{getEnergyLabel(pet.energy)}</span>}
             <span>Nivel {pet.level}</span>
             {activities.map((activity) => <span key={activity}>{activity}</span>)}
             {pet.vaccinated && <span>Vacunado</span>}
@@ -206,6 +224,7 @@ export default function PetCard({
                 variant="outline"
                 onClick={onPass}
                 disabled={actionsDisabled}
+                aria-keyshortcuts="ArrowLeft"
                 className="h-12 text-sm"
               >
                 Ahora no
@@ -214,6 +233,7 @@ export default function PetCard({
                 type="button"
                 onClick={onLike}
                 disabled={actionsDisabled}
+                aria-keyshortcuts="ArrowRight"
                 className="h-12 text-sm"
               >
                 <Heart className="mr-2 size-5" aria-hidden="true" />

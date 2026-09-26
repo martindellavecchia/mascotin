@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'Iniciá sesión para continuar' }, { status: 401 });
         }
 
         const limit = await rateLimit(`change-password:${session.user.id}`, RATE_LIMITS.auth);

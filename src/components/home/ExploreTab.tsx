@@ -1,26 +1,60 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { MapPin, PawPrint, ShieldCheck, SlidersHorizontal } from 'lucide-react';
-import type { Pet } from '@/types';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { CloudOff, MapPin, PawPrint, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import PetCard from '@/components/PetCard';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import type { Pet } from '@/types';
 
 interface ExploreTabProps {
   petsToSwipe: Pet[];
   currentIndex: number;
   loading: boolean;
+  error?: boolean;
   activePet?: Pet;
   onReload: () => void;
   onLike: () => void | Promise<void>;
   onPass: () => void | Promise<void>;
 }
 
+const INTERACTIVE_ROLES = [
+  'combobox',
+  'listbox',
+  'menu',
+  'menuitem',
+  'option',
+  'radio',
+  'radiogroup',
+  'slider',
+  'spinbutton',
+  'tab',
+  'tablist',
+  'textbox',
+];
+
+function shouldIgnoreSwipeKey(event: KeyboardEvent) {
+  if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return true;
+  }
+
+  const target = event.target instanceof HTMLElement ? event.target : null;
+  if (target) {
+    if (target.isContentEditable) return true;
+    if (target.closest('input, textarea, select, [contenteditable="true"]')) return true;
+    if (target.closest(INTERACTIVE_ROLES.map((role) => `[role="${role}"]`).join(','))) return true;
+  }
+
+  return Boolean(
+    document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"], [aria-modal="true"]')
+  );
+}
+
 export default function ExploreTab({
   petsToSwipe,
   currentIndex,
   loading,
+  error = false,
   activePet,
   onReload,
   onLike,
@@ -28,6 +62,7 @@ export default function ExploreTab({
 }: ExploreTabProps) {
   const currentPet = petsToSwipe[currentIndex];
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null);
+  const canSwipe = !loading && !error && Boolean(currentPet);
 
   useEffect(() => {
     setExitDirection(null);
@@ -48,6 +83,30 @@ export default function ExploreTab({
       try { await onLike(); } finally { setExitDirection(null); }
     }, 260);
   };
+
+  const swipeHandlersRef = useRef({ handlePass, handleLike });
+  useEffect(() => {
+    swipeHandlersRef.current = { handlePass, handleLike };
+  });
+
+  useEffect(() => {
+    if (!canSwipe) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      if (shouldIgnoreSwipeKey(event)) return;
+
+      event.preventDefault();
+      if (event.key === 'ArrowLeft') {
+        swipeHandlersRef.current.handlePass();
+      } else {
+        swipeHandlersRef.current.handleLike();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [canSwipe]);
 
   return (
     <section aria-labelledby="discover-title">
@@ -76,7 +135,21 @@ export default function ExploreTab({
             <p className="text-sm font-medium text-slate-600">Buscando mascotas cercanas...</p>
           </div>
         </div>
-      ) : currentIndex >= petsToSwipe.length || !currentPet ? (
+      ) : error ? (
+        <div
+          role="alert"
+          className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface p-8 text-center"
+        >
+          <div className="max-w-sm">
+            <CloudOff className="mx-auto size-14 text-muted-foreground" aria-hidden="true" />
+            <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground">No pudimos cargar mascotas</h2>
+            <p className="mt-2 text-muted-foreground">Revisá tu conexión y reintentá. Tus decisiones anteriores siguen guardadas.</p>
+            <Button onClick={onReload} className="mt-6 px-6">
+              Reintentar
+            </Button>
+          </div>
+        </div>
+      ) : !currentPet ? (
         <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface p-8 text-center">
           <div className="max-w-sm">
             <PawPrint className="size-16 text-teal-200" fill="currentColor" aria-hidden="true" />
@@ -88,15 +161,22 @@ export default function ExploreTab({
           </div>
         </div>
       ) : (
-        <div className={exitDirection === 'left' ? 'animate-swipe-out-left' : exitDirection === 'right' ? 'animate-swipe-out-right' : 'animate-fade-in'}>
-          <PetCard
-            pet={currentPet}
-            activePetName={activePet?.name}
-            onPass={handlePass}
-            onLike={handleLike}
-            actionsDisabled={Boolean(exitDirection)}
-          />
-        </div>
+        <>
+          <div className={exitDirection === 'left' ? 'animate-swipe-out-left' : exitDirection === 'right' ? 'animate-swipe-out-right' : 'animate-fade-in'}>
+            <PetCard
+              pet={currentPet}
+              activePetName={activePet?.name}
+              onPass={handlePass}
+              onLike={handleLike}
+              actionsDisabled={Boolean(exitDirection)}
+            />
+          </div>
+          <p className="mt-3 hidden text-xs text-muted-foreground sm:block">
+            Atajos de teclado: <kbd className="rounded border border-border bg-surface px-1.5 font-sans">←</kbd> Ahora no
+            {' · '}
+            <kbd className="rounded border border-border bg-surface px-1.5 font-sans">→</kbd> Quiero conocer
+          </p>
+        </>
       )}
 
       <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">

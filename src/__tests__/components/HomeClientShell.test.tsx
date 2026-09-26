@@ -32,50 +32,22 @@ jest.mock('@/hooks/useFetchWithError', () => ({
 jest.mock('@/components/DashboardLayout', () => ({
   __esModule: true,
   default: ({
-    leftSidebar,
     rightSidebar,
     children,
   }: {
-    leftSidebar?: React.ReactNode;
     rightSidebar?: React.ReactNode;
     children: React.ReactNode;
   }) => (
     <div>
-      <aside>{leftSidebar}</aside>
       <main>{children}</main>
       <aside>{rightSidebar}</aside>
     </div>
   ),
 }));
 
-jest.mock('@/components/HomeStats', () => ({
-  __esModule: true,
-  default: () => <div>Stats</div>,
-}));
-
 jest.mock('@/components/feed/Feed', () => ({
   __esModule: true,
   default: () => <div>Feed</div>,
-}));
-
-jest.mock('@/components/PetProfileSidebar', () => ({
-  __esModule: true,
-  default: () => <div>Sidebar</div>,
-}));
-
-jest.mock('@/components/widgets/NextAppointment', () => ({
-  __esModule: true,
-  default: () => <div>Next appointment</div>,
-}));
-
-jest.mock('@/components/widgets/LostPetWidget', () => ({
-  __esModule: true,
-  default: () => <div>Lost pets</div>,
-}));
-
-jest.mock('@/components/widgets/SuggestedPets', () => ({
-  __esModule: true,
-  default: () => <div>Suggested pets</div>,
 }));
 
 jest.mock('@/components/home/DeferredVisibilitySection', () => ({
@@ -232,9 +204,9 @@ describe('HomeClientShell', () => {
     });
 
     await waitFor(() => {
-      expect(mockFetchWithError).toHaveBeenCalledWith('/api/pets?currentPetId=pet-1');
+      expect(mockFetchWithError).toHaveBeenCalledWith('/api/pets?currentPetId=pet-1', expect.anything());
     });
-    expect(mockFetchWithError).not.toHaveBeenCalledWith('/api/matches');
+    expect(mockFetchWithError).not.toHaveBeenCalledWith('/api/matches', expect.anything());
   });
 
   it('fetches matches only after opening the matches tab', async () => {
@@ -243,9 +215,9 @@ describe('HomeClientShell', () => {
     await user.click(screen.getByRole('button', { name: /círculo/i }));
 
     await waitFor(() => {
-      expect(mockFetchWithError).toHaveBeenCalledWith('/api/matches');
+      expect(mockFetchWithError).toHaveBeenCalledWith('/api/matches', expect.anything());
     });
-    expect(mockFetchWithError).not.toHaveBeenCalledWith('/api/pets?currentPetId=pet-1');
+    expect(mockFetchWithError).not.toHaveBeenCalledWith('/api/pets?currentPetId=pet-1', expect.anything());
   });
 
   it('updates the URL with history.replaceState instead of router.replace', async () => {

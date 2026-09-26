@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 
     if (ownerId && ownerId !== owner.id) {
       return NextResponse.json(
-        { success: false, error: 'Not authorized to access these matches' },
+        { success: false, error: 'No tenés acceso a estas coincidencias' },
         { status: 403 }
       );
     }
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       });
       if (!pet) {
         return NextResponse.json(
-          { success: false, error: 'Pet not found' },
+          { success: false, error: 'Mascota no encontrada' },
           { status: 404 }
         );
       }
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
   } catch (error) {
     log.error('Error fetching matches', error, userId ? { userId } : undefined);
     return NextResponse.json(
-      { success: false, error: 'Error al obtener matches' },
+      { success: false, error: 'No pudimos cargar tus coincidencias' },
       { status: 500 }
     );
   }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { ExternalLink, Store } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
@@ -10,9 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { STORE_PLACE_TAGS, STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
+import { getTimeZoneLabel } from '@/lib/timezone-label';
 
 interface Category { id: string; name: string }
 interface Store {
@@ -150,7 +152,7 @@ export default function BusinessManagement() {
           <CardContent className="p-6">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-700"><Store className="size-7" aria-hidden="true" /></div>
             <h2 className="mt-4 text-xl font-bold text-slate-900">Publicá tu negocio</h2>
-            <p className="mt-1 max-w-2xl text-sm text-slate-600">Al publicarlo, tus servicios aparecerán agrupados en un perfil puntuable y tu avatar mostrará el badge de owner de negocio.</p>
+            <p className="mt-1 max-w-2xl text-sm text-slate-600">Al publicarlo, tus servicios aparecerán agrupados en un perfil con reseñas y tu avatar mostrará la insignia de dueño/a del negocio.</p>
           </CardContent>
         </Card>
       )}
@@ -198,34 +200,73 @@ export default function BusinessManagement() {
 }
 
 function PromotionCard({ storeId }: { storeId: string }) {
+  const fieldId = useId();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [startsAt, setStartsAt] = useState('');
   const [endsAt, setEndsAt] = useState('');
+  const [publishing, setPublishing] = useState(false);
+  const deviceTimeZone = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
+
+  const publish = async () => {
+    const start = new Date(startsAt);
+    const end = new Date(endsAt);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      toast.error('Completá la fecha de inicio y de fin');
+      return;
+    }
+    if (end <= start) {
+      toast.error('La fecha de fin tiene que ser posterior al inicio');
+      return;
+    }
+    setPublishing(true);
+    try {
+      const response = await fetch(`/api/provider/store/${storeId}/promotions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body, startsAt: start.toISOString(), endsAt: end.toISOString() }),
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error);
+      toast.success('Promoción publicada y negocio destacado');
+      setTitle('');
+      setBody('');
+      setStartsAt('');
+      setEndsAt('');
+    } catch (error) {
+      toast.error(error instanceof Error && error.message ? error.message : 'No se pudo publicar la promoción');
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   return (
     <Card>
       <CardHeader><CardTitle className="text-lg">Promoción destacada</CardTitle></CardHeader>
       <CardContent className="space-y-3">
-        <Input placeholder="Título" value={title} onChange={(event) => setTitle(event.target.value)} />
-        <Textarea placeholder="Detalle de la promoción" value={body} onChange={(event) => setBody(event.target.value)} />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} />
-          <Input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} />
+        <div>
+          <Label htmlFor={`${fieldId}-title`} className="mb-1.5 block">Título</Label>
+          <Input id={`${fieldId}-title`} placeholder="Ej: 20% off en baños" value={title} onChange={(event) => setTitle(event.target.value)} />
         </div>
-        <Button
-          variant="outline"
-          onClick={async () => {
-            const response = await fetch(`/api/provider/store/${storeId}/promotions`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title, body, startsAt, endsAt }),
-            });
-            const data = await response.json();
-            toast[data.success ? 'success' : 'error'](data.success ? 'Promoción publicada y negocio destacado' : data.error);
-          }}
-        >
-          Publicar promoción
+        <div>
+          <Label htmlFor={`${fieldId}-body`} className="mb-1.5 block">Detalle</Label>
+          <Textarea id={`${fieldId}-body`} placeholder="Detalle de la promoción" value={body} onChange={(event) => setBody(event.target.value)} />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label htmlFor={`${fieldId}-start`} className="mb-1.5 block">Inicio</Label>
+            <Input id={`${fieldId}-start`} type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} aria-describedby={`${fieldId}-tz`} />
+          </div>
+          <div>
+            <Label htmlFor={`${fieldId}-end`} className="mb-1.5 block">Fin</Label>
+            <Input id={`${fieldId}-end`} type="datetime-local" value={endsAt} min={startsAt || undefined} onChange={(event) => setEndsAt(event.target.value)} aria-describedby={`${fieldId}-tz`} />
+          </div>
+        </div>
+        <p id={`${fieldId}-tz`} className="text-xs text-slate-500">
+          Las fechas usan la hora de tu dispositivo ({getTimeZoneLabel(deviceTimeZone)}). La promoción se muestra en tu perfil público mientras esté vigente.
+        </p>
+        <Button variant="outline" onClick={() => void publish()} disabled={publishing || !title.trim() || !body.trim() || !startsAt || !endsAt}>
+          {publishing ? 'Publicando...' : 'Publicar promoción'}
         </Button>
       </CardContent>
     </Card>

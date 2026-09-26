@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         // Verify membership
@@ -54,7 +54,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         return NextResponse.json({ success: true, posts: formattedPosts });
     } catch (error) {
-        return NextResponse.json({ success: false, error: 'Error fetching group posts' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudieron cargar las publicaciones del grupo' }, { status: 500 });
     }
 }
 
@@ -122,6 +122,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         return NextResponse.json({ success: true, post });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ success: false, error: 'Error creating post' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'No se pudo crear la publicación' }, { status: 500 });
     }
 }

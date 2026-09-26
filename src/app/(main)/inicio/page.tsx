@@ -9,6 +9,8 @@ import { getHomeBootstrapData } from '@/lib/server/home';
 import { getCachedSession } from '@/lib/session';
 import type { Post } from '@/types';
 
+export const metadata = { title: 'Inicio' };
+
 function HomeError() {
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-3xl flex-1 flex-col justify-center px-4 py-6">

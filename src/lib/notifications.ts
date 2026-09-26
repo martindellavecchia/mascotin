@@ -5,7 +5,7 @@ import { productEnabled } from '@/lib/product-flags';
 
 export interface CreateNotificationParams {
   userId: string;
-  actorId: string;
+  actorId: string | null;
   type: NotificationType;
   title: string;
   body: string;

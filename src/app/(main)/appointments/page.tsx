@@ -2,8 +2,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import SlotPicker from '@/components/appointments/SlotPicker';
+import { DEFAULT_TIME_ZONE, getTimeZoneLabel } from '@/lib/timezone-label';
 const LABELS: Record<string, string> = {
   PENDING: 'Pendiente de confirmación',
   CONFIRMED: 'Confirmado',
@@ -27,7 +29,7 @@ type Appointment = {
 };
 function formatAppointmentDate(value: string, row: Appointment) {
   return new Date(value).toLocaleString('es-AR', {
-    timeZone: row.service.provider.schedule?.timeZone || 'America/Argentina/Buenos_Aires',
+    timeZone: row.service.provider.schedule?.timeZone || DEFAULT_TIME_ZONE,
     dateStyle: 'short',
     timeStyle: 'short',
     hourCycle: 'h23',
@@ -73,8 +75,10 @@ export default function AppointmentsPage() {
       if (!r.ok) throw new Error(d.error);
       setEditing(null);
       await load();
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No pudimos cambiar el turno');
+      return false;
     } finally {
       setBusy(false);
     }
@@ -120,10 +124,7 @@ export default function AppointmentsPage() {
               · {row.durationMinutes ?? row.service.duration} min
             </p>
             <p className="text-xs text-muted-foreground">
-              Hora del prestador:{' '}
-              {(
-                row.service.provider.schedule?.timeZone || 'America/Argentina/Buenos_Aires'
-              ).replaceAll('_', ' ')}
+              Horario en {getTimeZoneLabel(row.service.provider.schedule?.timeZone)}
             </p>
             <p className="font-medium text-primary">{LABELS[row.status] || row.status}</p>
             {new Date(row.date) > new Date() && ['PENDING', 'CONFIRMED'].includes(row.status) && (
@@ -138,13 +139,19 @@ export default function AppointmentsPage() {
                 >
                   Reprogramar
                 </Button>
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() => void change(row, { status: 'CANCELLED' })}
-                >
-                  Cancelar turno
-                </Button>
+                <ConfirmDialog
+                  title="¿Cancelar este turno?"
+                  description={`${row.service.name} para ${row.pet.name} el ${formatAppointmentDate(row.date, row)} (${getTimeZoneLabel(row.service.provider.schedule?.timeZone)}). El prestador va a ser notificado.`}
+                  confirmLabel="Cancelar turno"
+                  destructive
+                  onConfirm={() => change(row, { status: 'CANCELLED' })}
+                  trigger={
+                    <Button variant="ghost" disabled={busy}>
+                      Cancelar turno
+                    </Button>
+                  }
+                />
+
               </div>
             )}
             {editing === row.id && (
