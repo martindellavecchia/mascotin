@@ -43,8 +43,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getEventDateParts } from '@/lib/date-format';
 import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -112,6 +113,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     // Event Attendance
     const [isAttending, setIsAttending] = useState(post.isAttending || false);
     const eventEnded = Boolean(post.eventDate && new Date(post.eventDate).getTime() <= Date.now());
+    const eventDateParts = post.eventDate ? getEventDateParts(post.eventDate) : null;
     const [isResolved, setIsResolved] = useState(post.isResolved || false);
 
     // Comments state
@@ -362,7 +364,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         )}
                     </div>
                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
-                        <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: es })}</span>
+                        <span suppressHydrationWarning>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: es })}</span>
                         {post.location && (
                             <>
                                 <span>•</span>
@@ -470,22 +472,22 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
             )}
 
             {/* Event Info */}
-            {post.postType === 'event' && post.eventDate && (
+            {post.postType === 'event' && eventDateParts && (
                 <div className="mx-3 mb-2 rounded-lg border border-teal-100 bg-teal-50 p-2.5">
-                    <p className="mb-2 text-xs font-semibold text-primary">{eventEnded ? 'Finalizado' : 'Próximo'} · {format(new Date(post.eventDate), 'd MMM yyyy', { locale: es })}</p>
+                    <p className="mb-2 text-xs font-semibold text-primary" suppressHydrationWarning>{eventEnded ? 'Finalizado' : 'Próximo'} · {eventDateParts.label}</p>
                     <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
                         <div className="flex min-w-12 flex-col items-center rounded-md bg-white px-2 py-1.5">
                             <span className="text-xs text-teal-700 font-bold uppercase">
-                                {format(new Date(post.eventDate), 'MMM', { locale: es })}
+                                {eventDateParts.month}
                             </span>
                             <span className="text-xl font-bold text-teal-800">
-                                {format(new Date(post.eventDate), 'd')}
+                                {eventDateParts.day}
                             </span>
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1 text-sm text-teal-800">
                                 <Clock className="size-5" aria-hidden="true" />
-                                {format(new Date(post.eventDate), 'HH:mm')}
+                                {eventDateParts.time}
                             </div>
                             {post.eventLocation && (
                                 <div className="mt-1 flex min-w-0 items-start gap-1 text-sm text-teal-700 [overflow-wrap:anywhere]">
