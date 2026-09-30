@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getHomeHref, handleHomeLink } from '@/lib/home-navigation';
 import { ArrowRight, CalendarDays, Compass, HeartHandshake, Pencil } from 'lucide-react';
 import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { getRenderableImageUrls } from '@/lib/media';
@@ -20,7 +21,7 @@ export default function TodayActions({ activePet, suggestion }: TodayActionsProp
   );
   const actions = [
     {
-      href: '/inicio?tab=explore',
+      href: getHomeHref('explore', activePet?.id),
       title: suggestion ? `Conocé a ${suggestion.name}` : 'Conocé una mascota',
       description: `Descubrí una compañía compatible con ${activePet?.name || 'tu mascota'}.`,
       icon: Compass,
@@ -57,6 +58,7 @@ export default function TodayActions({ activePet, suggestion }: TodayActionsProp
             <Link
               key={action.href}
               href={action.href}
+              onClick={handleHomeLink}
               className="group flex min-h-44 flex-col rounded-xl border border-border bg-surface p-5 transition-colors hover:border-primary/35 hover:bg-primary-soft/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <span className={`flex size-11 items-center justify-center rounded-lg ${index === 0 ? 'bg-primary text-primary-foreground' : 'bg-primary-soft text-primary'}`}>

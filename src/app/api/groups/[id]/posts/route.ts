@@ -1,10 +1,13 @@
+import { createGroupPostSchema } from '@/lib/schemas';
+import { linkedEventSelect, withEventDetails } from '@/lib/server/event-posts';
 import { NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
@@ -12,7 +15,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         // Verify membership
         const membership = await prisma.groupMember.findUnique({
-            where: { groupId_userId: { groupId: params.id, userId: session.user.id } },
+            where: { groupId_userId: { groupId: id, userId: session.user.id } },
         });
         if (!membership) {
             return NextResponse.json({ success: false, error: 'No sos miembro de este grupo' }, { status: 403 });
@@ -20,9 +23,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         const posts = await prisma.post.findMany({
             where: {
-                groupId: params.id,
+                groupId: id,
             },
             include: {
+                event: { select: linkedEventSelect },
                 author: {
                     select: {
                         id: true,
@@ -48,7 +52,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         });
 
         const formattedPosts = posts.map(post => ({
-            ...post,
+            ...withEventDetails(post),
             isLiked: session?.user?.id ? post.likes.some(like => like.userId === session.user.id) : false,
         }));
 
@@ -58,29 +62,33 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
-        const body = await req.json();
-        const { content, image, postType, title, eventDate, eventLocation } = body;
+        const parsed = createGroupPostSchema.safeParse(await req.json());
+        if (!parsed.success) return NextResponse.json({ success: false, error: 'Datos inválidos', details: parsed.error.issues }, { status: 400 });
+        const { content, image, postType, title, eventDate, eventLocation } = parsed.data;
 
-        if (!content) {
-            return NextResponse.json({ success: false, error: 'El contenido es requerido' }, { status: 400 });
-        }
-
-        const post = await prisma.post.create({
+        const post = await prisma.$transaction(async (tx) => {
+            const event = postType === 'event' ? await tx.event.create({ data: {
+                title: title!, description: content, date: new Date(eventDate!), location: eventLocation!,
+                image: image || null, groupId: id, authorId: session.user.id,
+            } }) : null;
+            return tx.post.create({
             data: {
                 content,
                 images: image ? JSON.stringify([image]) : '[]',
                 authorId: session.user.id,
-                groupId: params.id,
+                groupId: id,
                 postType: postType || 'post',
                 eventDate: eventDate ? new Date(eventDate) : undefined,
                 eventLocation,
+                eventId: event?.id,
             },
             include: {
                 author: {
@@ -104,20 +112,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             },
         });
 
-        // Automatically create Event if postType is event
-        if (postType === 'event' && title && eventDate && eventLocation) {
-            await prisma.event.create({
-                data: {
-                    title,
-                    description: content,
-                    date: new Date(eventDate),
-                    location: eventLocation,
-                    image: image || null,
-                    groupId: params.id,
-                    authorId: session.user.id,
-                }
-            });
-        }
+        });
 
         return NextResponse.json({ success: true, post });
     } catch (error) {

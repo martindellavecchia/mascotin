@@ -18,7 +18,7 @@ export default function CommunityLayout({ children, header }: CommunityLayoutPro
   ];
 
   return (
-    <div className="mx-auto min-w-0 max-w-6xl px-4 py-4 sm:px-6 sm:py-8">
+    <div className="mx-auto w-full min-w-0 max-w-6xl px-4 py-4 sm:px-6 sm:py-8">
       {header}
       <nav aria-label="Secciones de comunidad" className="mb-4 overflow-x-auto border-b border-border">
         <div className="flex min-w-max gap-6">

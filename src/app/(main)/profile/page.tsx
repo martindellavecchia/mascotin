@@ -1,12 +1,13 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, PawPrint, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { StateFeedback } from '@/components/ui/state-feedback';
@@ -62,8 +63,23 @@ function ProfileContent() {
   const [showOwnerForm, setShowOwnerForm] = useState(false);
   const [showPetForm, setShowPetForm] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
-  const [ownerFormDirty, setOwnerFormDirty] = useState(false);
+  const ownerFormDirtyRef = useRef(false);
+  const setOwnerFormDirty = useCallback((dirty: boolean) => { ownerFormDirtyRef.current = dirty; }, []);
   const [petFormDirty, setPetFormDirty] = useState(false);
+  const ownerBusyRef = useRef(false);
+  const setOwnerBusy = useCallback((busy: boolean) => { ownerBusyRef.current = busy; }, []);
+  const ownerTriggerRef = useRef<HTMLElement | null>(null);
+  const ownerFocusRef = useRef<HTMLElement | null>(null);
+  const ownerDialogRef = useRef<HTMLDivElement>(null);
+  const profileMainRef = useRef<HTMLElement>(null);
+  const openOwnerForm = () => {
+    ownerTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setShowOwnerForm(true);
+  };
+  const restoreOwnerFocus = () => {
+    const target = ownerTriggerRef.current?.isConnected ? ownerTriggerRef.current : profileMainRef.current;
+    target?.focus();
+  };
   const [pendingDiscard, setPendingDiscard] = useState<ClosableModal | null>(null);
 
   // Delete Logic
@@ -117,8 +133,10 @@ function ProfileContent() {
   };
 
   const requestClose = (modal: ClosableModal) => {
-    const dirty = modal === 'owner' ? ownerFormDirty : petFormDirty;
+    if (pendingDiscard || (modal === 'owner' && ownerBusyRef.current)) return;
+    const dirty = modal === 'owner' ? ownerFormDirtyRef.current : petFormDirty;
     if (dirty) {
+      if (modal === 'owner') ownerFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setPendingDiscard(modal);
       return;
     }
@@ -206,13 +224,13 @@ function ProfileContent() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <main className="mx-auto min-w-0 w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+      <main ref={profileMainRef} tabIndex={-1} className="mx-auto min-w-0 w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto min-w-0 max-w-6xl">
           <PageHeader
             title="Mi perfil"
             description="Gestioná tu información y tus mascotas."
             action={<Button
-              onClick={() => setShowOwnerForm(true)}
+              onClick={openOwnerForm}
             >
               <Pencil className="mr-2 size-5" aria-hidden="true" />
               Editar perfil
@@ -223,7 +241,7 @@ function ProfileContent() {
             {/* Left Column: Owner Info */}
             <div className="min-w-0 space-y-6 xl:col-span-1">
               <ProfileCard owner={owner} email={session.user.email || ''} />
-              <AboutCard bio={owner.bio} onEdit={() => setShowOwnerForm(true)} />
+              <AboutCard bio={owner.bio} onEdit={openOwnerForm} />
               <StatsCard petsCount={pets.length} matchesCount={matchCountQuery.data} />
             </div>
 
@@ -275,36 +293,30 @@ function ProfileContent() {
       {/* Modals */}
 
       {/* Edit Owner Modal */}
-      {showOwnerForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
-          <Card className="relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto border-0 bg-white shadow-2xl">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-3 top-3 size-11 rounded-md hover:bg-slate-100 sm:right-4 sm:top-4"
-              onClick={() => requestClose('owner')}
-              aria-label="Cerrar edición de perfil"
-            >
-              <X className="size-5 text-slate-500" aria-hidden="true" />
-            </Button>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-900">Editar perfil</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <OwnerForm
-                userId={session.user.id}
-                initialData={owner}
-                onDirtyChange={setOwnerFormDirty}
-                onCancel={() => requestClose('owner')}
-                onSuccess={(updatedOwner) => {
-                  setOwner(updatedOwner);
-                  closeOwnerForm();
-                }}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <Dialog open={showOwnerForm} onOpenChange={(open) => { if (!open) requestClose('owner'); }}>
+        <DialogContent
+          ref={ownerDialogRef}
+          className="sm:max-w-2xl"
+          onInteractOutside={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => { event.preventDefault(); restoreOwnerFocus(); }}
+        >
+          <DialogHeader>
+            <DialogTitle>Editar perfil</DialogTitle>
+            <DialogDescription>Actualizá tu información y guardá los cambios cuando termines.</DialogDescription>
+          </DialogHeader>
+          <OwnerForm
+            userId={session.user.id}
+            initialData={owner}
+            onDirtyChange={setOwnerFormDirty}
+            onBusyChange={setOwnerBusy}
+            onCancel={() => requestClose('owner')}
+            onSuccess={(updatedOwner) => {
+              setOwner(updatedOwner);
+              closeOwnerForm();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Pet Form Modal (Create/Edit) */}
       {showPetForm && owner && (
@@ -350,6 +362,16 @@ function ProfileContent() {
       <ConfirmDialog
         open={pendingDiscard !== null}
         onOpenChange={(open) => !open && setPendingDiscard(null)}
+        onCloseAutoFocus={(event) => {
+          if (ownerDialogRef.current) {
+            event.preventDefault();
+            const target = ownerFocusRef.current?.isConnected ? ownerFocusRef.current : ownerDialogRef.current.querySelector<HTMLElement>('input, button');
+            target?.focus();
+          } else if (ownerTriggerRef.current) {
+            event.preventDefault();
+            restoreOwnerFocus();
+          }
+        }}
         title="¿Descartar cambios?"
         description="Tenés cambios sin guardar. Si cerrás ahora, se van a perder."
         confirmLabel="Descartar"

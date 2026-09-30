@@ -1,9 +1,9 @@
 'use client';
 
-import { type MouseEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { getHomeHref, getHomeTab, handleHomeLink } from '@/lib/home-navigation';
 import {
   Bell,
   CalendarClock,
@@ -116,42 +116,14 @@ interface HeaderProps {
 
 export default function Header({ session }: HeaderProps) {
   const pathname = getPublicShopPath(usePathname());
-  const [homeTab, setHomeTab] = useState<'home' | 'explore' | 'matches'>('home');
-
-  useEffect(() => {
-    const syncTab = () => {
-      const tab = new URLSearchParams(window.location.search).get('tab');
-      const nextTab = tab === 'explore' || tab === 'matches' ? tab : 'home';
-      setHomeTab((current) => (current === nextTab ? current : nextTab));
-    };
-
-    syncTab();
-    window.addEventListener('popstate', syncTab);
-    window.addEventListener('huella:home-tab', syncTab);
-    return () => {
-      window.removeEventListener('popstate', syncTab);
-      window.removeEventListener('huella:home-tab', syncTab);
-    };
-  }, []);
+  const searchParams = useSearchParams();
+  const homeTab = getHomeTab(searchParams.get('tab'));
+  const homeHref = (link: NavigationLink) => link.tab ? getHomeHref(link.tab, searchParams.get('petId')) : link.href;
 
   const isActive = (path: string, tab?: 'home' | 'explore') => {
     if (pathname !== path) return false;
     if (path !== '/inicio') return true;
     return tab === 'explore' ? homeTab === 'explore' : homeTab === 'home';
-  };
-
-  const handleHomeNavigation = (
-    event: MouseEvent<HTMLAnchorElement>,
-    tab?: HomeTab
-  ) => {
-    if (pathname !== '/inicio' || !tab) return;
-
-    event.preventDefault();
-    const params = new URLSearchParams(window.location.search);
-    params.set('tab', tab);
-    window.history.replaceState(window.history.state, '', `/inicio?${params.toString()}`);
-    setHomeTab(tab);
-    window.dispatchEvent(new Event('huella:home-tab'));
   };
 
   const isNavActive = (href: string, tab?: HomeTab) => {
@@ -171,9 +143,9 @@ export default function Header({ session }: HeaderProps) {
     return (
       <Link
         key={link.label}
-        href={getAccountShopPath(link.href) || link.href}
-        as={link.href}
-        onClick={(event) => handleHomeNavigation(event, link.tab)}
+        href={getAccountShopPath(link.href) || homeHref(link)}
+        as={homeHref(link)}
+        onClick={handleHomeLink}
         className={`group flex min-h-11 items-center gap-3 rounded-md border-l-2 px-3 py-2.5 text-[15px] font-medium transition-colors ${
           active
             ? 'border-primary bg-primary-soft text-primary'
@@ -225,8 +197,8 @@ export default function Header({ session }: HeaderProps) {
           return (
             <Link
               key={link.label}
-              href={link.href}
-              onClick={(event) => handleHomeNavigation(event, link.tab)}
+              href={homeHref(link)}
+              onClick={handleHomeLink}
               className={`flex min-h-[4.25rem] min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-[10px] font-semibold transition-colors min-[360px]:px-1 min-[360px]:text-[11px] ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
               aria-current={active ? 'page' : undefined}
             >

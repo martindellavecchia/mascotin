@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useSession } from 'next-auth/react';
 import { CircleAlert, ImagePlus, Lightbulb, MapPin, Megaphone, Phone } from 'lucide-react';
 import {
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
+import { parseImageUrls } from '@/lib/media';
 
 interface Pet {
     id: string;
@@ -40,6 +41,7 @@ interface LostPetFormProps {
 }
 
 export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'lost', initialPetId }: LostPetFormProps) {
+    const formId = useId();
     const { data: session } = useSession();
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(false);
@@ -86,13 +88,13 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
         setLoading(true);
         try {
             // Get pet image if pet selected
-            let images = '[]';
+            let images: string[] = [];
             if (imageUrl) {
-                images = JSON.stringify([imageUrl]);
+                images = [imageUrl];
             } else if (selectedPetId) {
                 const pet = pets.find(p => p.id === selectedPetId);
                 if (pet?.images) {
-                    images = pet.images;
+                    images = parseImageUrls(pet.images);
                 }
             }
 
@@ -103,7 +105,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     postType: mode === 'found' ? 'found_pet' : 'lost_pet',
                     content: description,
                     images,
-                    petId: selectedPetId || null,
+                    petId: selectedPetId || undefined,
                     lastSeenLocation,
                     contactPhone,
                     location: lastSeenLocation,
@@ -149,9 +151,9 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                     {mode === 'lost' && (
                         <div className="space-y-2">
-                            <Label>¿Es tu mascota?</Label>
+                            <Label htmlFor={formId + '-pet'}>¿Es tu mascota?</Label>
                             <Select value={selectedPetId || '_none'} onValueChange={(val) => setSelectedPetId(val === '_none' ? '' : val)} disabled={loadingPets}>
-                                <SelectTrigger>
+                                <SelectTrigger id={formId + '-pet'}>
                                     <SelectValue placeholder={loadingPets ? 'Cargando mascotas...' : 'Seleccioná una opción'} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -168,7 +170,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
                     {/* Image Upload - Always show */}
                     <div className="space-y-2">
-                        <Label>
+                        <Label htmlFor={formId + '-image'}>
                             Foto de la mascota {selectedPetId && <span className="text-slate-400 font-normal">(opcional - usará foto del perfil)</span>}
                         </Label>
                         <div
@@ -177,11 +179,11 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                             aria-label="Seleccionar una foto de la mascota"
                             className={`rounded-lg border-2 border-dashed p-4 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${imageUrl ? 'border-green-300 bg-green-50' : 'cursor-pointer border-slate-300 hover:border-teal-400 hover:bg-teal-50'
                                 }`}
-                            onClick={() => document.getElementById('lost-pet-image-input')?.click()}
+                            onClick={() => document.getElementById(formId + '-image')?.click()}
                             onKeyDown={(event) => {
                                 if (event.key === 'Enter' || event.key === ' ') {
                                     event.preventDefault();
-                                    document.getElementById('lost-pet-image-input')?.click();
+                                    document.getElementById(formId + '-image')?.click();
                                 }
                             }}
                             onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-teal-500', 'bg-teal-50'); }}
@@ -198,7 +200,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                             }}
                         >
                             <input
-                                id="lost-pet-image-input"
+                                id={formId + '-image'}
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
@@ -234,8 +236,9 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
                     {/* Description */}
                     <div className="space-y-2">
-                        <Label>Descripción *</Label>
+                        <Label htmlFor={formId + '-description'}>Descripción *</Label>
                         <Textarea
+                            id={formId + '-description'}
                             placeholder={mode === 'found'
                                 ? 'Describí a la mascota, si tiene collar o chapita y cómo está ahora...'
                                 : 'Describí a la mascota, características distintivas, circunstancias de la pérdida...'}
@@ -248,11 +251,12 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
                     {/* Last Seen Location */}
                     <div className="space-y-2">
-                        <Label className="flex items-center gap-1">
+                        <Label htmlFor={formId + '-location'} className="flex items-center gap-1">
                             <MapPin className="size-4" aria-hidden="true" />
                             {mode === 'found' ? 'Dónde la encontraste *' : 'Última ubicación vista *'}
                         </Label>
                         <Input
+                            id={formId + '-location'}
                             placeholder="Ej: Plaza San Martín, Palermo CABA"
                             value={lastSeenLocation}
                             onChange={(e) => setLastSeenLocation(e.target.value)}
@@ -262,11 +266,15 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
 
                     {/* Contact Phone */}
                     <div className="space-y-2">
-                        <Label className="flex items-center gap-1">
+                        <Label htmlFor={formId + '-phone'} className="flex items-center gap-1">
                             <Phone className="size-4" aria-hidden="true" />
                             Teléfono de contacto *
                         </Label>
                         <Input
+                            id={formId + '-phone'}
+                            type="tel"
+                            autoComplete="tel"
+                            aria-describedby={formId + '-contact-help'}
                             placeholder="Ej: 11-4567-8901"
                             value={contactPhone}
                             onChange={(e) => setContactPhone(e.target.value)}
@@ -277,7 +285,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     {/* Alert banner */}
                     <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
                         <Lightbulb className="mt-0.5 size-5" aria-hidden="true" />
-                        <p><span className="font-semibold">Importante:</span> la alerta será visible para toda la comunidad. Verificá que el teléfono sea correcto.</p>
+                        <p id={formId + '-contact-help'}><span className="font-semibold">Importante:</span> la alerta será visible para toda la comunidad. Verificá que el teléfono sea correcto.</p>
                     </div>
 
                     {/* Submit */}

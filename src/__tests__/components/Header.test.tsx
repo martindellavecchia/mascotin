@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(window.location.search),
   useRouter: () => ({
     push: jest.fn(),
   }),

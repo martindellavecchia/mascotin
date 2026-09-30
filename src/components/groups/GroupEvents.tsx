@@ -26,6 +26,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { eventInputToIso, toEventDateInput, formatEventDate } from '@/lib/date-format';
 
 interface GroupEventsProps {
     groupId: string;
@@ -158,8 +159,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
 
     useEffect(() => {
         if (editingEvent) {
-            const d = new Date(editingEvent.date);
-            const dateString = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            const dateString = toEventDateInput(editingEvent.date);
 
             setEditForm({
                 title: editingEvent.title,
@@ -197,7 +197,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
             const res = await fetch(`/api/events/${editingEvent.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(editForm)
+                body: JSON.stringify({ ...editForm, date: eventInputToIso(editForm.date, editingEvent.date) })
             });
             const data = await res.json();
             if (data.success) {
@@ -284,7 +284,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                         <div className="mb-2 mt-1 space-y-1 text-sm text-slate-500">
                                             <p className="flex items-start gap-1">
                                                 <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
-                                                <span>{new Date(event.date).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                                <span>{formatEventDate(event.date)}</span>
                                             </p>
                                             <p className="flex min-w-0 items-start gap-1 [overflow-wrap:anywhere]">
                                                 <MapPin className="size-3 shrink-0" aria-hidden="true" />
@@ -381,7 +381,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="group-event-date">Fecha y hora</Label>
+                            <Label htmlFor="group-event-date">Fecha y hora (Argentina)</Label>
                             <Input
                                 id="group-event-date"
                                 type="datetime-local"

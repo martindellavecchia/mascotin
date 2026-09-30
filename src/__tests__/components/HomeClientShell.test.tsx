@@ -1,6 +1,8 @@
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { installTestHistory } from '@/mocks/navigation';
+import NoPetsHome from '@/components/home/NoPetsHome';
 import HomeClientShell from '@/components/home/HomeClientShell';
 
 const mockPush = jest.fn();
@@ -11,13 +13,14 @@ jest.mock('@/components/home/IntentEntry', () => ({ __esModule: true, default: (
 
 jest.mock('next/dynamic', () => ({
   __esModule: true,
-  default: (_loader: unknown, options?: { loading?: () => React.ReactNode }) =>
-    function MockDynamicComponent() {
-      return <>{options?.loading ? options.loading() : null}</>;
-    },
+  default: (loader: () => unknown, options?: { loading?: () => React.ReactNode }) => {
+    if (String(loader).includes('ExploreTab')) return jest.requireActual('@/components/home/ExploreTab').default;
+    return function MockDynamicComponent() { return <>{options?.loading ? options.loading() : null}</>; };
+  },
 }));
 
 jest.mock('next/navigation', () => ({
+  useSearchParams: jest.requireActual('@/mocks/navigation').useTestSearchParams,
   useRouter: () => ({
     push: mockPush,
   }),
@@ -161,9 +164,12 @@ function buildProps() {
 }
 
 describe('HomeClientShell', () => {
+  let restoreHistory: () => void;
+  beforeAll(() => { restoreHistory = installTestHistory(); });
+  afterAll(() => restoreHistory());
   beforeEach(() => {
     jest.clearAllMocks();
-    window.history.replaceState(null, '', '/');
+    window.history.replaceState(null, '', '/inicio');
     mockFetchWithError.mockImplementation(async (url: string) => {
       if (url === '/api/matches') {
         return { success: true, data: { matches: [] } };
@@ -191,17 +197,14 @@ describe('HomeClientShell', () => {
     renderShell({ showCommunityFeed: false });
 
     expect(screen.getByRole('heading', { name: /elegí una acción con max/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /conocé una mascota/i })).toHaveAttribute('href', '/inicio?tab=explore');
+    expect(screen.getByRole('link', { name: /conocé una mascota/i })).toHaveAttribute('href', '/inicio?tab=explore&petId=pet-1');
     expect(screen.queryByText('Feed')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /círculo/i })).not.toBeInTheDocument();
   });
 
   it('fetches explore data only after opening the explore tab', async () => {
     renderShell();
-    window.history.replaceState(null, '', '/?tab=explore&petId=pet-1');
-    act(() => {
-      window.dispatchEvent(new Event('huella:home-tab'));
-    });
+    await userEvent.click(screen.getByRole('link', { name: /conocé una mascota/i }));
 
     await waitFor(() => {
       expect(mockFetchWithError).toHaveBeenCalledWith('/api/pets?currentPetId=pet-1', expect.anything());
@@ -220,16 +223,48 @@ describe('HomeClientShell', () => {
     expect(mockFetchWithError).not.toHaveBeenCalledWith('/api/pets?currentPetId=pet-1', expect.anything());
   });
 
-  it('updates the URL with history.replaceState instead of router.replace', async () => {
-    const replaceState = jest.spyOn(window.history, 'replaceState');
+  it('adds tab navigation to browser history with the active pet', async () => {
+    const pushState = window.history.pushState as jest.Mock;
     const user = userEvent.setup();
     renderShell();
     await user.click(screen.getByRole('button', { name: /círculo/i }));
     await user.click(screen.getByRole('button', { name: /seguir descubriendo/i }));
 
-    expect(replaceState).toHaveBeenCalled();
-    const url = String(replaceState.mock.calls.at(-1)?.[2] || '');
+    expect(pushState).toHaveBeenCalled();
+    const url = String(pushState.mock.calls.at(-1)?.[2] || '');
     expect(url).toContain('tab=explore');
-    replaceState.mockRestore();
+
   });
+  it('changes the visible panel on a real CTA click and retains the active pet', async () => {
+    window.history.replaceState(null, '', '/inicio?tab=home&petId=pet-2');
+    renderShell();
+    await userEvent.click(screen.getByRole('link', { name: /conocé una mascota/i }));
+    expect(await screen.findByRole('heading', { name: 'Descubrir' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'Inicio' })).not.toBeInTheDocument();
+    expect(window.location.search).toBe('?tab=explore&petId=pet-2');
+    expect(mockFetchWithError).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a late response for a previously selected pet', async () => {
+    let resolveFirst!: (value: unknown) => void;
+    mockFetchWithError.mockImplementation((url: string) => url.endsWith('pet-1')
+      ? new Promise((resolve) => { resolveFirst = resolve; })
+      : Promise.resolve({ success: true, data: { pets: [createPet('candidate-2', 'Candidata Luna')] } }));
+    window.history.replaceState(null, '', '/inicio?tab=explore&petId=pet-1');
+    renderShell();
+    act(() => window.history.pushState(null, '', '/inicio?tab=explore&petId=pet-2'));
+    expect(await screen.findByRole('heading', { name: /Candidata Luna/ })).toBeVisible();
+    await act(async () => resolveFirst({ success: true, data: { pets: [createPet('candidate-1', 'Candidato anterior')] } }));
+    expect(screen.queryByRole('heading', { name: /Candidato anterior/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Candidata Luna/ })).toBeVisible();
+  });
+
+  it('updates the no-pet screen when navigation changes and handles invalid tabs', () => {
+    render(<NoPetsHome />);
+    act(() => window.history.pushState(null, '', '/inicio?tab=explore'));
+    expect(screen.getByRole('heading', { name: 'Creá una mascota para empezar a descubrir' })).toBeVisible();
+    act(() => window.history.pushState(null, '', '/inicio?tab=invalid'));
+    expect(screen.getByRole('heading', { name: 'También podés crear el perfil de tu mascota' })).toBeVisible();
+  });
+
 });

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { CalendarDays, CircleHelp, Image as ImageIcon, MessageCircle, Pencil, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StateFeedback } from '@/components/ui/state-feedback';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { eventInputToIso } from '@/lib/date-format';
 import PostCard from '@/components/feed/PostCard';
 
 interface GroupFeedProps {
@@ -22,6 +24,7 @@ interface GroupFeedProps {
 }
 
 export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
+    const formId = useId();
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -119,7 +122,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                 postType: activeTab,
                 // Event specific
                 title: activeTab === 'event' ? eventTitle : undefined,
-                eventDate: activeTab === 'event' ? eventDate : undefined,
+                eventDate: activeTab === 'event' ? eventInputToIso(eventDate) : undefined,
                 eventLocation: activeTab === 'event' ? eventLocation : undefined,
             };
 
@@ -191,7 +194,9 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
 
                             <div className="min-w-0 flex-1 space-y-4">
                                 <TabsContent value="post" className="m-0 min-w-0 space-y-4">
+                                    <Label htmlFor={formId + '-post'}>Publicación para el grupo</Label>
                                     <Textarea
+                                        id={formId + '-post'} aria-required="true"
                                         placeholder="¿Qué querés compartir con el grupo?"
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px]"
                                         value={content}
@@ -200,7 +205,9 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                 </TabsContent>
 
                                 <TabsContent value="question" className="m-0 min-w-0 space-y-4">
+                                    <Label htmlFor={formId + '-question'}>Pregunta para el grupo</Label>
                                     <Textarea
+                                        id={formId + '-question'} aria-required="true"
                                         placeholder="Hacé una pregunta al grupo..."
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px] text-lg font-medium placeholder:font-normal"
                                         value={content}
@@ -209,25 +216,27 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                 </TabsContent>
 
                                 <TabsContent value="event" className="m-0 min-w-0 space-y-3">
+                                    <Label htmlFor={formId + '-title'}>Título del evento</Label>
                                     <Input
+                                        id={formId + '-title'} aria-required="true"
                                         placeholder="Título del evento"
                                         className="font-bold"
                                         value={eventTitle}
                                         onChange={(e) => setEventTitle(e.target.value)}
                                     />
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                        <Input
-                                            type="datetime-local"
-                                            value={eventDate}
-                                            onChange={(e) => setEventDate(e.target.value)}
-                                        />
-                                        <Input
-                                            placeholder="Ubicación"
-                                            value={eventLocation}
-                                            onChange={(e) => setEventLocation(e.target.value)}
-                                        />
+                                        <div className="space-y-1">
+                                            <Label htmlFor={formId + '-date'}>Fecha y hora (Argentina)</Label>
+                                            <Input id={formId + '-date'} aria-required="true" type="datetime-local" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor={formId + '-location'}>Ubicación</Label>
+                                            <Input id={formId + '-location'} aria-required="true" placeholder="Ubicación" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
+                                        </div>
                                     </div>
+                                    <Label htmlFor={formId + '-description'}>Descripción del evento</Label>
                                     <Textarea
+                                        id={formId + '-description'} aria-required="true"
                                         placeholder="Descripción del evento..."
                                         className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[60px]"
                                         value={content}

@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { CalendarDays, Camera, CircleHelp, ImagePlus, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { eventInputToIso, toEventDateInput } from '@/lib/date-format';
 
 interface EditPostModalProps {
     post: {
@@ -26,6 +28,7 @@ interface EditPostModalProps {
 type PostType = 'post' | 'photo' | 'event' | 'question';
 
 export default function EditPostModal({ post, open, onClose, onSave }: EditPostModalProps) {
+    const formId = useId();
     const [content, setContent] = useState('');
     const [postType, setPostType] = useState<PostType>('post');
     const [eventDate, setEventDate] = useState('');
@@ -39,7 +42,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
         if (post) {
             setContent(post.content || '');
             setPostType((post.postType as PostType) || 'post');
-            setEventDate(post.eventDate ? new Date(post.eventDate).toISOString().slice(0, 16) : '');
+            setEventDate(post.eventDate ? toEventDateInput(post.eventDate) : '');
             setEventLocation(post.eventLocation || '');
             try {
                 const parsed = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
@@ -100,7 +103,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                     content: content.trim(),
                     postType,
                     images,
-                    eventDate: postType === 'event' ? new Date(eventDate).toISOString() : null,
+                    eventDate: postType === 'event' ? eventInputToIso(eventDate, post.eventDate) : null,
                     eventLocation: postType === 'event' ? eventLocation : null,
                 }),
             });
@@ -151,7 +154,9 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                     </Tabs>
 
                     {/* Content */}
+                    <Label htmlFor={formId + '-content'}>Contenido de la publicación</Label>
                     <Textarea
+                        id={formId + '-content'} aria-required="true"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="¿Qué querés compartir?"
@@ -160,18 +165,20 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
 
                     {/* Event Fields */}
                     {postType === 'event' && (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
-                                <label className="text-xs font-medium text-slate-600 mb-1 block">Fecha y hora</label>
+                                <Label htmlFor={formId + '-date'} className="text-xs font-medium text-slate-600 mb-1 block">Fecha y hora (Argentina)</Label>
                                 <Input
+                                    id={formId + '-date'} aria-required="true"
                                     type="datetime-local"
                                     value={eventDate}
                                     onChange={(e) => setEventDate(e.target.value)}
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-medium text-slate-600 mb-1 block">Ubicación</label>
+                                <Label htmlFor={formId + '-location'} className="text-xs font-medium text-slate-600 mb-1 block">Ubicación</Label>
                                 <Input
+                                    id={formId + '-location'} aria-required="true"
                                     placeholder="Parque, plaza..."
                                     value={eventLocation}
                                     onChange={(e) => setEventLocation(e.target.value)}

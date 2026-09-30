@@ -5,6 +5,7 @@ import { Check, Clock, Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { APP_TIME_ZONE, EVENT_TIME_ZONE_LABEL, getEventDateParts } from '@/lib/date-format';
 
 interface Event {
     id: string;
@@ -76,9 +77,9 @@ export default function UpcomingEventsWidget() {
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr);
         return {
-            day: date.toLocaleDateString('es-AR', { weekday: 'short' }),
-            dayNum: date.getDate(),
-            time: date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+            day: date.toLocaleDateString('es-AR', { weekday: 'short', timeZone: APP_TIME_ZONE }),
+            dayNum: getEventDateParts(date).day,
+            time: getEventDateParts(date).time + ' (' + EVENT_TIME_ZONE_LABEL + ')',
         };
     };
 

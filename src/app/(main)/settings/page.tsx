@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId, useRef, Suspense } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getHomeHref } from '@/lib/home-navigation';
+import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -80,10 +82,15 @@ const PET_SIZES = [
     { value: 'xlarge', label: 'Muy grande' },
 ];
 
-export default function SettingsPage() {
+function SettingsContent() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const userId = session?.user?.id;
+    const formId = useId();
+    const searchParams = useSearchParams();
+    const requestedTab = searchParams.get('tab');
+    const activeTab = requestedTab && ['cuenta', 'mascotas', 'notificaciones', 'feed'].includes(requestedTab) ? requestedTab : 'cuenta';
+    const matchingSectionRef = useRef<HTMLDivElement>(null);
     const queryClient = useQueryClient();
     const petsQuery = useMyPets(userId);
     const invalidateViewerData = useInvalidateViewerData();
@@ -94,6 +101,15 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [draftDistance, setDraftDistance] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (loading || activeTab !== 'mascotas' || window.location.hash !== '#preferencias-matching') return;
+        const frame = requestAnimationFrame(() => {
+            matchingSectionRef.current?.scrollIntoView({ block: 'center' });
+            matchingSectionRef.current?.focus({ preventScroll: true });
+        });
+        return () => cancelAnimationFrame(frame);
+    }, [activeTab, loading]);
 
     // Password form
     const [currentPassword, setCurrentPassword] = useState('');
@@ -257,7 +273,16 @@ export default function SettingsPage() {
             <div className="mx-auto min-w-0 max-w-3xl px-4 py-8 sm:px-6">
                 <PageHeader title="Configuración" description="Personalizá tu experiencia en Huella." />
 
-                <Tabs defaultValue="cuenta" className="mt-6 min-w-0 w-full">
+                {searchParams.get('from') === 'discover' && (
+                    <Button asChild variant="link" className="mt-2 px-0">
+                        <Link href={getHomeHref('explore', pets.find((pet) => pet.id === searchParams.get('petId'))?.id)}>Volver a Descubrir</Link>
+                    </Button>
+                )}
+                <Tabs value={activeTab} onValueChange={(tab) => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set('tab', tab);
+                    window.history.pushState(null, '', '/settings?' + params.toString());
+                }} className="mt-6 min-w-0 w-full">
                     <div className="-mx-4 mb-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
                         <TabsList className="h-auto min-h-11 w-max min-w-full flex-nowrap justify-start">
                             <TabsTrigger className="min-h-11 min-w-28 flex-none sm:min-w-0 sm:flex-1" value="cuenta">Cuenta</TabsTrigger>
@@ -301,21 +326,30 @@ export default function SettingsPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
+                                <Label htmlFor={formId + '-current-password'}>Contraseña actual</Label>
                                 <Input
+                                    id={formId + '-current-password'}
+                                    autoComplete="current-password"
                                     className="min-h-11"
                                     type="password"
                                     placeholder="Contraseña actual"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                 />
+                                <Label htmlFor={formId + '-new-password'}>Nueva contraseña</Label>
                                 <Input
+                                    id={formId + '-new-password'}
+                                    autoComplete="new-password"
                                     className="min-h-11"
                                     type="password"
                                     placeholder="Nueva contraseña"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                 />
+                                <Label htmlFor={formId + '-confirm-password'}>Confirmar nueva contraseña</Label>
                                 <Input
+                                    id={formId + '-confirm-password'}
+                                    autoComplete="new-password"
                                     className="min-h-11"
                                     type="password"
                                     placeholder="Confirmar nueva contraseña"
@@ -429,12 +463,13 @@ export default function SettingsPage() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card id="preferencias-matching" ref={matchingSectionRef} tabIndex={-1}>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <SlidersHorizontal className="size-5 text-slate-400" aria-hidden="true" />
-                                    Preferencias de matching
+                                    Preferencias de búsqueda
                                 </CardTitle>
+                                <p className="text-sm text-muted-foreground">Estos ajustes se aplican a todas tus mascotas. Usamos la ubicación de la mascota activa o, si falta, la de tu perfil. Si no hay ubicación disponible, no se aplica el límite de distancia.</p>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="flex min-w-0 items-center justify-between gap-4">
@@ -571,4 +606,8 @@ export default function SettingsPage() {
             </div>
         </div>
     );
+}
+
+export default function SettingsPage() {
+    return <Suspense fallback={<StateFeedback status="loading" title="Cargando configuración" />}><SettingsContent /></Suspense>;
 }

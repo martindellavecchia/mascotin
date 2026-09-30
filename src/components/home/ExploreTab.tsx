@@ -118,12 +118,12 @@ export default function ExploreTab({
           <p className="mt-2 text-muted-foreground">Conocé mascotas compatibles con {activePet?.name || 'tu mascota'}.</p>
         </div>
         <Link
-          href="/settings"
+          href={'/settings?' + new URLSearchParams({ tab: 'mascotas', from: 'discover', ...(activePet ? { petId: activePet.id } : {}) }).toString() + '#preferencias-matching'}
           className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white"
-          aria-label="Preferencias de zona"
+          aria-label="Preferencias de búsqueda"
         >
           <MapPin className="size-6" aria-hidden="true" />
-          {activePet?.location || 'Tu zona'}
+          Preferencias de búsqueda
           <SlidersHorizontal className="size-5" aria-hidden="true" />
         </Link>
       </div>

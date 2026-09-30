@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { CalendarDays, Camera, CircleHelp, ImagePlus, Pencil, Star, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { eventInputToIso } from '@/lib/date-format';
 
 interface Pet {
     id: string;
@@ -27,6 +29,7 @@ interface CreatePostCardProps {
 type PostType = 'post' | 'photo' | 'event' | 'question' | 'recommendation';
 
 export default function CreatePostCard({ userImage, userName, pets, initialPetId, onPostCreated }: CreatePostCardProps) {
+    const formId = useId();
     const [postType, setPostType] = useState<PostType>('post');
     const [content, setContent] = useState('');
     const [images, setImages] = useState<string[]>([]);
@@ -97,7 +100,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                     postType,
                     images: images,
                     petId: selectedPetId || undefined,
-                    eventDate: postType === 'event' ? new Date(eventDate).toISOString() : undefined,
+                    eventDate: postType === 'event' ? eventInputToIso(eventDate) : undefined,
                     eventLocation: postType === 'event' ? eventLocation : undefined,
                 }),
             });
@@ -182,7 +185,9 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                 </Tabs>
 
                                 {/* Content */}
+                                <Label htmlFor={formId + '-content'}>Contenido de la publicación</Label>
                                 <Textarea
+                                    id={formId + '-content'} aria-required="true"
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder={getPlaceholder()}
@@ -192,18 +197,20 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
 
                                 {/* Event Fields */}
                                 {postType === 'event' && (
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <div>
-                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Fecha y hora</label>
+                                            <Label htmlFor={formId + '-date'} className="text-xs font-medium text-slate-600 mb-1 block">Fecha y hora (Argentina)</Label>
                                             <Input
+                                                id={formId + '-date'} aria-required="true"
                                                 type="datetime-local"
                                                 value={eventDate}
                                                 onChange={(e) => setEventDate(e.target.value)}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Ubicación</label>
+                                            <Label htmlFor={formId + '-location'} className="text-xs font-medium text-slate-600 mb-1 block">Ubicación</Label>
                                             <Input
+                                                id={formId + '-location'} aria-required="true"
                                                 placeholder="Parque, plaza..."
                                                 value={eventLocation}
                                                 onChange={(e) => setEventLocation(e.target.value)}
@@ -231,8 +238,8 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                 )}
 
                                 {/* Actions */}
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                                    <div className="flex items-center gap-2">
+                                <div className="flex flex-col gap-3 border-t border-slate-100 pt-2 sm:flex-row sm:items-end sm:justify-between">
+                                    <div className="flex min-w-0 items-end gap-2">
                                         <input
                                             ref={fileInputRef}
                                             type="file"
@@ -253,20 +260,24 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                         </Button>
 
                                         {pets && pets.length > 0 && (
+                                            <div className="min-w-0 space-y-1">
+                                            <Label htmlFor={formId + '-pet'}>Mascota de la publicación</Label>
                                             <select
+                                                id={formId + '-pet'}
                                                 value={selectedPetId}
                                                 onChange={(e) => setSelectedPetId(e.target.value)}
-                                                className="min-h-10 rounded-md border border-slate-300 bg-surface px-2 py-1 text-sm text-slate-600"
+                                                className="min-h-10 max-w-full rounded-md border border-slate-300 bg-surface px-2 py-1 text-sm text-slate-600"
                                             >
                                                 <option value="">Sin mascota</option>
                                                 {pets.map(pet => (
                                                     <option key={pet.id} value={pet.id}>{pet.name}</option>
                                                 ))}
                                             </select>
+                                            </div>
                                         )}
                                     </div>
 
-                                    <div className="flex gap-2">
+                                    <div className="flex shrink-0 justify-end gap-2">
                                         <Button
                                             variant="ghost"
                                             size="sm"

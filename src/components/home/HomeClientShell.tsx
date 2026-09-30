@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getHomeTab, navigateHome, type HomeTab } from '@/lib/home-navigation';
 import { Compass, Heart, MessageCircle, PawPrint, X } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Feed from '@/components/feed/Feed';
@@ -29,8 +30,6 @@ const ExploreTab = dynamic(() => import('@/components/home/ExploreTab'), {
   ssr: false,
   loading: () => <PanelSkeleton label="Preparando exploración..." tall />,
 });
-
-type HomeTab = 'home' | 'explore' | 'matches';
 
 const MATCH_CELEBRATION_MS = 6000;
 
@@ -59,35 +58,6 @@ interface HomeClientShellProps {
   initialFeedHasMore: boolean;
 }
 
-function getValidTab(value: string | null): HomeTab {
-  if (value === 'explore' || value === 'matches') {
-    return value;
-  }
-
-  return 'home';
-}
-
-function readHomeUrlState(pets: Pet[], fallbackPetId?: string) {
-  if (typeof window === 'undefined') {
-    return {
-      tab: 'home' as HomeTab,
-      petId: fallbackPetId || pets[0]?.id,
-    };
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const petFromUrl = params.get('petId');
-  const petId =
-    petFromUrl && pets.some((pet) => pet.id === petFromUrl)
-      ? petFromUrl
-      : fallbackPetId || pets[0]?.id;
-
-  return {
-    tab: getValidTab(params.get('tab')),
-    petId,
-  };
-}
-
 function PanelSkeleton({
   label,
   tall = false,
@@ -109,26 +79,6 @@ function PanelSkeleton({
   );
 }
 
-function writeShallowHomeUrl(nextTab: HomeTab, nextPetId?: string) {
-  const params = new URLSearchParams(window.location.search);
-  params.set('tab', nextTab);
-
-  if (nextPetId) {
-    params.set('petId', nextPetId);
-  } else {
-    params.delete('petId');
-  }
-
-  const query = params.toString();
-  const pathname = window.location.pathname || '/';
-  window.history.replaceState(
-    window.history.state,
-    '',
-    query ? `${pathname}?${query}` : pathname
-  );
-  window.dispatchEvent(new Event('huella:home-tab'));
-}
-
 export default function HomeClientShell({
   session,
   initialPets,
@@ -143,10 +93,14 @@ export default function HomeClientShell({
   const { fetchWithError } = useFetchWithError();
   const invalidateViewerData = useInvalidateViewerData();
   const myPets = initialPets;
-  const [activeTab, setActiveTab] = useState<HomeTab>('home');
-  const [selectedPetId, setSelectedPetId] = useState<string | undefined>(
-    initialSelectedPetId || initialPets[0]?.id
-  );
+  const searchParams = useSearchParams();
+  const activeTab = getHomeTab(searchParams.get('tab'));
+  const requestedPetId = searchParams.get('petId');
+  const selectedPetId = myPets.find((pet) => pet.id === requestedPetId)?.id
+    ?? myPets.find((pet) => pet.id === initialSelectedPetId)?.id
+    ?? myPets[0]?.id;
+  const selectedPetRef = useRef(selectedPetId);
+  selectedPetRef.current = selectedPetId;
   const [petsToSwipe, setPetsToSwipe] = useState<Pet[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Pet[]>([]);
@@ -158,9 +112,8 @@ export default function HomeClientShell({
   const [hasLoadedMatches, setHasLoadedMatches] = useState(false);
   const [matchCelebration, setMatchCelebration] = useState<MatchCelebration | null>(null);
   const swipingRef = useRef(false);
-  const lastExplorePetIdRef = useRef<string | null>(null);
+  const exploreRequestRef = useRef(0);
   const celebrationTimerRef = useRef<number | null>(null);
-  const urlHydratedRef = useRef(false);
   const activePet = myPets.find((pet) => pet.id === selectedPetId) || myPets[0];
 
   useEffect(() => () => {
@@ -183,29 +136,6 @@ export default function HomeClientShell({
   };
 
   useEffect(() => {
-    if (urlHydratedRef.current) return;
-    urlHydratedRef.current = true;
-    const fromUrl = readHomeUrlState(myPets, initialSelectedPetId);
-    setActiveTab(fromUrl.tab);
-    setSelectedPetId(fromUrl.petId);
-  }, [initialSelectedPetId, myPets]);
-
-  useEffect(() => {
-    const onPopState = () => {
-      const fromUrl = readHomeUrlState(myPets, initialSelectedPetId);
-      setActiveTab(fromUrl.tab);
-      setSelectedPetId(fromUrl.petId);
-    };
-
-    window.addEventListener('popstate', onPopState);
-    window.addEventListener('huella:home-tab', onPopState);
-    return () => {
-      window.removeEventListener('popstate', onPopState);
-      window.removeEventListener('huella:home-tab', onPopState);
-    };
-  }, [initialSelectedPetId, myPets]);
-
-  useEffect(() => {
     const prefetch = () => {
       void import('@/components/home/ExploreTab');
       void import('@/components/MatchesPanel');
@@ -216,19 +146,7 @@ export default function HomeClientShell({
   }, []);
 
   const syncHomeState = (nextTab: HomeTab, nextPetId?: string) => {
-    setActiveTab(nextTab);
-    if (nextPetId) {
-      setSelectedPetId(nextPetId);
-    }
-
-    if (nextTab === 'explore') {
-      setExploreLoading(true);
-    }
-    if (nextTab === 'matches' && !hasLoadedMatches) {
-      setMatchesLoading(true);
-    }
-
-    writeShallowHomeUrl(nextTab, nextPetId ?? selectedPetId);
+    navigateHome(nextTab, nextPetId ?? selectedPetId);
   };
 
   const fetchMatches = async () => {
@@ -246,15 +164,12 @@ export default function HomeClientShell({
     setMatchesLoading(false);
   };
 
-  const fetchPetsForSwipe = async (force = false) => {
+  const fetchPetsForSwipe = async () => {
     if (!selectedPetId) {
       setExploreLoading(false);
       return;
     }
-    if (!force && lastExplorePetIdRef.current === selectedPetId) {
-      setExploreLoading(false);
-      return;
-    }
+    const requestId = ++exploreRequestRef.current;
 
     setExploreLoading(true);
     setExploreError(false);
@@ -263,10 +178,11 @@ export default function HomeClientShell({
       { showError: false }
     );
 
+    if (requestId !== exploreRequestRef.current || selectedPetRef.current !== selectedPetId) return;
+
     if (result.success && result.data) {
       setPetsToSwipe(result.data.pets || []);
       setCurrentIndex(0);
-      lastExplorePetIdRef.current = selectedPetId;
       setExploreLoadedPetId(selectedPetId);
     } else {
       setExploreError(true);
@@ -281,7 +197,7 @@ export default function HomeClientShell({
       : -1;
 
     if (restoredIndex < 0 || restoredIndex >= currentIndex) {
-      void fetchPetsForSwipe(true);
+      void fetchPetsForSwipe();
       return;
     }
 
@@ -302,10 +218,11 @@ export default function HomeClientShell({
     if (activeTab === 'explore' && selectedPetId) {
       void fetchPetsForSwipe();
     }
+    return () => { exploreRequestRef.current += 1; };
   }, [activeTab, selectedPetId]);
 
   const handleSwipe = async (isLike: boolean) => {
-    if (swipingRef.current) return;
+    if (swipingRef.current || exploreLoadedPetId !== selectedPetId || exploreLoading) return;
     if (currentIndex >= petsToSwipe.length || !selectedPetId) return;
 
     swipingRef.current = true;
@@ -413,7 +330,7 @@ export default function HomeClientShell({
                 }
                 error={exploreError}
                 activePet={activePet}
-                onReload={() => void fetchPetsForSwipe(true)}
+                onReload={() => void fetchPetsForSwipe()}
                 onLike={() => handleSwipe(true)}
                 onPass={() => handleSwipe(false)}
               />

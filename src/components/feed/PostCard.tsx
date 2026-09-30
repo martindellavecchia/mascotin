@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { getEventDateParts } from '@/lib/date-format';
+import { getEventDateParts, EVENT_TIME_ZONE_LABEL } from '@/lib/date-format';
 import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -487,7 +487,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1 text-sm text-teal-800">
                                 <Clock className="size-5" aria-hidden="true" />
-                                {eventDateParts.time}
+                                {eventDateParts.time} <span className="text-xs text-muted-foreground">({EVENT_TIME_ZONE_LABEL})</span>
                             </div>
                             {post.eventLocation && (
                                 <div className="mt-1 flex min-w-0 items-start gap-1 text-sm text-teal-700 [overflow-wrap:anywhere]">

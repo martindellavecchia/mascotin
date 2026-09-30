@@ -1,3 +1,4 @@
+import { withEventDetails } from '@/lib/server/event-posts';
 import 'server-only';
 
 import { Prisma } from '@prisma/client';
@@ -83,6 +84,8 @@ export async function getFeedPage({
       event: {
         select: {
           id: true,
+          date: true,
+          location: true,
           attendees: {
             where: { userId },
             select: { id: true },
@@ -119,7 +122,7 @@ export async function getFeedPage({
       stores?: { id: string }[];
     };
     const authorImage = author?.image || author?.owner?.image || null;
-    const normalizedPost = withImageFields(post);
+    const normalizedPost = withImageFields(withEventDetails(post));
 
     const isFosterCase = Boolean(post.rescueCase);
     return {

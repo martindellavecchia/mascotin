@@ -1,18 +1,21 @@
+import { updateEventSchema } from '@/lib/schemas';
+import { assertEventEditor, EventPostError } from '@/lib/server/event-posts';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db as prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
 
 // GET - Get single event
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
         const event = await prisma.event.findUnique({
-            where: { id: params.id },
+            where: { id: id },
             include: {
                 author: { select: { id: true, name: true, image: true } },
                 _count: { select: { attendees: true } },
@@ -33,60 +36,43 @@ export async function GET(request: Request, { params }: { params: { id: string }
             },
         });
     } catch (error) {
+        if (error instanceof EventPostError) return NextResponse.json({ success: false, error: error.message }, { status: error.status });
         console.error('Error fetching event:', error);
         return NextResponse.json({ success: false, error: 'Error al obtener evento' }, { status: 500 });
     }
 }
 
 // PUT - Update an event
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { title, description, date, location } = body;
-
-        const event = await prisma.event.findUnique({
-            where: { id: params.id },
-            include: { group: { include: { members: true } } }
-        });
-
-        if (!event) return NextResponse.json({ success: false, error: 'Evento no encontrado' }, { status: 404 });
-
-        let isAuthorized = false;
-        if (event.authorId === session.user.id) isAuthorized = true;
-        else if (event.groupId) {
-            const membership = await prisma.groupMember.findUnique({
-                where: { groupId_userId: { groupId: event.groupId, userId: session.user.id } }
-            });
-            if (membership?.role === 'ADMIN') isAuthorized = true;
-        }
-
-        if (!isAuthorized) return NextResponse.json({ success: false, error: 'No tenés permiso para modificar este evento' }, { status: 403 });
-
-        const updatedEvent = await prisma.event.update({
-            where: { id: params.id },
-            data: {
-                title,
-                description,
-                date: new Date(date),
-                location
-            }
+        const parsed = updateEventSchema.safeParse(await request.json());
+        if (!parsed.success) return NextResponse.json({ success: false, error: 'Datos inválidos', details: parsed.error.issues }, { status: 400 });
+        const updatedEvent = await prisma.$transaction(async (tx) => {
+            const event = await tx.event.findUnique({ where: { id } });
+            if (!event) throw new EventPostError('Evento no encontrado', 404);
+            await assertEventEditor(tx, event, session.user.id);
+            const { date, ...data } = parsed.data;
+            return tx.event.update({ where: { id }, data: { ...data, ...(date !== undefined ? { date: new Date(date) } : {}) } });
         });
 
         return NextResponse.json({ success: true, event: updatedEvent });
     } catch (error) {
+        if (error instanceof EventPostError) return NextResponse.json({ success: false, error: error.message }, { status: error.status });
         console.error('Error updating event:', error);
         return NextResponse.json({ success: false, error: 'No se pudo actualizar el evento' }, { status: 500 });
     }
 }
 
 // DELETE - Remove an event
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json(
@@ -95,44 +81,17 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             );
         }
 
-        const event = await prisma.event.findUnique({
-            where: { id: params.id },
-            include: { group: { include: { members: true } } }
+        await prisma.$transaction(async (tx) => {
+            const event = await tx.event.findUnique({ where: { id } });
+            if (!event) throw new EventPostError('Evento no encontrado', 404);
+            await assertEventEditor(tx, event, session.user.id);
+            await tx.post.updateMany({ where: { eventId: id }, data: { eventId: null, eventDate: null, eventLocation: null, postType: 'post' } });
+            await tx.event.delete({ where: { id } });
         });
-
-        if (!event) {
-            return NextResponse.json({ success: false, error: 'Evento no encontrado' }, { status: 404 });
-        }
-
-        let isAuthorized = false;
-
-        // 1. Author can delete
-        if (event.authorId === session.user.id) {
-            isAuthorized = true;
-        }
-        // 2. Group Admin can delete (if event is in group)
-        else if (event.groupId) {
-            const membership = await prisma.groupMember.findUnique({
-                where: {
-                    groupId_userId: {
-                        groupId: event.groupId,
-                        userId: session.user.id
-                    }
-                }
-            });
-            if (membership?.role === 'ADMIN') {
-                isAuthorized = true;
-            }
-        }
-
-        if (!isAuthorized) {
-            return NextResponse.json({ success: false, error: 'No tenés permiso para modificar este evento' }, { status: 403 });
-        }
-
-        await prisma.event.delete({ where: { id: params.id } });
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        if (error instanceof EventPostError) return NextResponse.json({ success: false, error: error.message }, { status: error.status });
         console.error('Error deleting event:', error);
         return NextResponse.json(
             { success: false, error: 'No se pudo eliminar el evento' },

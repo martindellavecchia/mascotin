@@ -29,6 +29,7 @@ const EVENT_CATEGORIES = [
 const EMPTY_FORM = { title: '', description: '', date: '', location: '', category: 'otro' };
 
 type Timeframe = 'upcoming' | 'past';
+import { APP_TIME_ZONE, EVENT_TIME_ZONE_LABEL, eventInputToIso, getEventCalendarDate, getEventDateParts } from '@/lib/date-format';
 
 interface CommunityEvent {
     id: string;
@@ -86,9 +87,9 @@ export default function CommunityEventsPage() {
         void fetchEvents();
     }, [fetchEvents]);
 
-    const eventDays = useMemo(() => events.map((event) => new Date(event.date)), [events]);
+    const eventDays = useMemo(() => events.map((event) => getEventCalendarDate(event.date)), [events]);
     const visibleEvents = useMemo(
-        () => selectedDate ? events.filter((event) => isSameDay(new Date(event.date), selectedDate)) : events,
+        () => selectedDate ? events.filter((event) => isSameDay(getEventCalendarDate(event.date), selectedDate)) : events,
         [events, selectedDate],
     );
 
@@ -128,7 +129,7 @@ export default function CommunityEventsPage() {
             const res = await fetch('/api/events', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
+                body: JSON.stringify({ ...form, date: eventInputToIso(form.date) }),
             });
             const data = await res.json().catch(() => null);
             if (res.ok && data?.success) {
@@ -200,7 +201,7 @@ export default function CommunityEventsPage() {
                                 <Textarea id="event-description" placeholder="Contá de qué se trata y qué hay que llevar" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor="event-date">Fecha y hora</Label>
+                                <Label htmlFor="event-date">Fecha y hora (Argentina)</Label>
                                 <Input id="event-date" type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
                             </div>
                             <div className="space-y-1">
@@ -283,9 +284,9 @@ export default function CommunityEventsPage() {
                                 return (
                                     <article key={event.id} className="flex flex-col gap-4 px-4 py-5 md:flex-row">
                                         <div className="flex shrink-0 flex-row items-center justify-center gap-2 rounded-lg bg-primary-soft px-4 py-3 text-primary md:w-24 md:flex-col md:gap-0 md:text-center">
-                                            <span className="block text-sm font-bold uppercase">{date.toLocaleDateString('es-AR', { month: 'short' })}</span>
-                                            <span className="block text-3xl font-bold">{date.getDate()}</span>
-                                            <span className="block text-xs uppercase opacity-75">{date.toLocaleDateString('es-AR', { weekday: 'short' })}</span>
+                                            <span className="block text-sm font-bold uppercase">{getEventDateParts(date).month}</span>
+                                            <span className="block text-3xl font-bold">{getEventDateParts(date).day}</span>
+                                            <span className="block text-xs uppercase opacity-75">{date.toLocaleDateString('es-AR', { weekday: 'short', timeZone: APP_TIME_ZONE })}</span>
                                         </div>
 
                                         <div className="flex-1 space-y-2">
@@ -303,7 +304,7 @@ export default function CommunityEventsPage() {
                                             <div className="flex flex-wrap gap-4 text-sm text-slate-500 pt-2">
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="size-4" aria-hidden="true" />
-                                                    {date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                    {getEventDateParts(date).time + ' (' + EVENT_TIME_ZONE_LABEL + ')'}
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <MapPin className="size-4" aria-hidden="true" />

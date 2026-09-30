@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, type ComponentProps } from 'react';
 import { Loader2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -27,6 +27,7 @@ interface ConfirmDialogProps {
   trigger?: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onCloseAutoFocus?: ComponentProps<typeof AlertDialogContent>['onCloseAutoFocus'];
 }
 
 export function ConfirmDialog({
@@ -39,6 +40,7 @@ export function ConfirmDialog({
   trigger,
   open: controlledOpen,
   onOpenChange,
+  onCloseAutoFocus,
 }: ConfirmDialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -67,7 +69,7 @@ export function ConfirmDialog({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
-      <AlertDialogContent>
+      <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription className={cn(!description && 'sr-only')}>

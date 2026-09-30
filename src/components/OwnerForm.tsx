@@ -22,9 +22,10 @@ interface OwnerFormProps {
   onSuccess?: (owner: Owner) => void;
   onCancel?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
+  onBusyChange?: (busy: boolean) => void;
 }
 
-export default function OwnerForm({ userId, initialData, defaultName, onSuccess, onCancel, onDirtyChange }: OwnerFormProps) {
+export default function OwnerForm({ userId, initialData, defaultName, onSuccess, onCancel, onDirtyChange, onBusyChange }: OwnerFormProps) {
   const invalidateViewerData = useInvalidateViewerData();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -44,6 +45,11 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
       hasOtherPets: initialData?.hasOtherPets ?? false,
     },
   });
+
+  useEffect(() => {
+    onBusyChange?.(loading || uploading);
+    return () => onBusyChange?.(false);
+  }, [loading, uploading, onBusyChange]);
 
   const isDirty = form.formState.isDirty || profileImage !== (initialData?.image || '');
 

@@ -1,3 +1,4 @@
+import { installTestHistory } from '@/mocks/navigation';
 import { StrictMode, useState } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -18,7 +19,7 @@ jest.mock('next-auth/react', () => ({
 }));
 jest.mock('next/navigation', () => {
   const router = { push: jest.fn() };
-  return { useRouter: () => router, useSearchParams: () => new URLSearchParams() };
+  return { useRouter: () => router, useSearchParams: jest.requireActual('@/mocks/navigation').useTestSearchParams };
 });
 jest.mock('next-themes', () => ({ useTheme: () => ({ setTheme: jest.fn() }) }));
 jest.mock('@/components/community/CreatePostCard', () => ({ __esModule: true, default: () => null }));
@@ -31,6 +32,9 @@ const owner = { id: 'owner-a', userId: 'viewer-a', name: 'Ana', location: 'Córd
 const requestCount = (path: string) => (global.fetch as jest.Mock).mock.calls.filter(([url]) => url === path).length;
 
 describe('viewer navigation cache', () => {
+  let restoreHistory: () => void;
+  beforeAll(() => { restoreHistory = installTestHistory(); });
+  afterAll(() => restoreHistory());
   beforeEach(() => {
     (useSession as jest.Mock).mockReturnValue({ data: mockSession, status: 'authenticated' });
     (global.fetch as jest.Mock).mockReset().mockImplementation((url: string) => {

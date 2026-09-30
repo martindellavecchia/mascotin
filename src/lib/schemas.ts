@@ -71,10 +71,12 @@ export const createGroupSchema = z.object({
   image: z.string().optional(),
 });
 
+export const eventInstantSchema = z.iso.datetime({ offset: true, message: 'La fecha debe incluir una zona horaria válida' });
+
 export const createEventSchema = z.object({
   title: z.string().min(2, "El título es requerido").max(200),
   description: z.string().max(2000).optional(),
-  date: z.string().min(1, "La fecha es requerida"),
+  date: eventInstantSchema,
   location: z.string().min(2, "La ubicación es requerida").max(200),
   image: z.string().optional(),
   maxAttendees: z.number().int().positive().optional(),
@@ -94,10 +96,39 @@ export const createPostSchema = z.object({
   images: z.array(z.string()).max(10).optional(),
   location: z.string().max(200).optional(),
   postType: z.enum(['post', 'photo', 'event', 'lost_pet', 'found_pet', 'question', 'recommendation']).default('post'),
-  eventDate: z.string().optional(),
+  eventDate: eventInstantSchema.optional(),
   eventLocation: z.string().max(200).optional(),
   contactPhone: z.string().max(20).optional(),
   lastSeenLocation: z.string().max(200).optional(),
+}).superRefine((post, ctx) => {
+  if (post.postType === 'event') {
+    if (!post.eventDate) ctx.addIssue({ code: 'custom', path: ['eventDate'], message: 'La fecha es requerida' });
+    if (!post.eventLocation?.trim()) ctx.addIssue({ code: 'custom', path: ['eventLocation'], message: 'La ubicación es requerida' });
+  }
+});
+
+export const updateEventSchema = createEventSchema.pick({ title: true, description: true, date: true, location: true }).partial();
+
+export const createGroupPostSchema = z.object({
+  content: z.string().trim().min(1, 'El contenido es requerido').max(5000),
+  image: z.string().optional(),
+  postType: z.enum(['post', 'question', 'event']).default('post'),
+  title: z.string().trim().min(1, 'El título es requerido').max(200).optional(),
+  eventDate: eventInstantSchema.optional(),
+  eventLocation: z.string().trim().max(200).optional(),
+}).superRefine((post, ctx) => {
+  if (post.postType !== 'event') return;
+  for (const field of ['title', 'eventDate', 'eventLocation'] as const) {
+    if (!post[field]) ctx.addIssue({ code: 'custom', path: [field], message: 'Completá los datos del evento' });
+  }
+});
+
+export const updatePostSchema = z.object({
+  content: z.string().trim().min(1, 'El contenido es requerido').max(5000).optional(),
+  images: z.union([z.array(z.string()).max(10), z.string()]).optional(),
+  postType: z.enum(['post', 'photo', 'event', 'lost_pet', 'found_pet', 'question', 'recommendation']).optional(),
+  eventDate: eventInstantSchema.nullable().optional(),
+  eventLocation: z.string().max(200).nullable().optional(),
 });
 
 export const createReportSchema = z.object({

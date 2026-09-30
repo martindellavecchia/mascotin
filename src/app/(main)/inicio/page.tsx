@@ -1,8 +1,7 @@
 import Link from 'next/link';
-import { CircleAlert, PawPrint, Plus } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 import HomeClientShell from '@/components/home/HomeClientShell';
-import IntentEntry from '@/components/home/IntentEntry';
-import PendingActions from '@/components/home/PendingActions';
+import NoPetsHome from '@/components/home/NoPetsHome';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getHomeBootstrapData } from '@/lib/server/home';
@@ -24,45 +23,23 @@ function HomeError() {
   );
 }
 
-function NoPetsHome({ requestedTab }: { requestedTab: string | undefined }) {
-  const isDiscover = requestedTab === 'explore';
-
-  return (
-    <>
-      <main className="mx-auto flex min-h-[60vh] max-w-3xl flex-1 flex-col justify-center px-4 py-6">
-        {!isDiscover && <IntentEntry />}
-        {!isDiscover && <PendingActions />}
-        <EmptyState
-          headingLevel="h1"
-          icon={<PawPrint className="size-11" aria-hidden="true" />}
-          title={isDiscover ? 'Creá una mascota para empezar a descubrir' : 'También podés crear el perfil de tu mascota'}
-          description={isDiscover
-            ? 'Solo te vamos a pedir el nombre y el tipo. No necesitás foto y después volvés directo a Descubrir.'
-            : 'Si querés conocer compañía compatible, empezá con el nombre y el tipo. Para adoptar, ayudar o buscar servicios no necesitás una mascota.'}
-          action={<Button asChild><Link href="/create-pet"><Plus className="mr-2 size-5" aria-hidden="true" />Crear perfil básico</Link></Button>}
-        />
-      </main>
-    </>
-  );
-}
-
 export default async function InicioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; petId?: string }>;
 }) {
   const session = await getCachedSession();
-  const { tab } = await searchParams;
+  const { petId } = await searchParams;
 
   if (!session?.user?.id) {
     return <HomeError />;
   }
 
   try {
-    const homeData = await getHomeBootstrapData(session.user.id);
+    const homeData = await getHomeBootstrapData(session.user.id, petId);
 
     if (homeData.pets.length === 0) {
-      return <NoPetsHome requestedTab={tab} />;
+      return <NoPetsHome />;
     }
 
     const showCommunityFeed = homeData.hasMatches || homeData.hasOwnPosts;
