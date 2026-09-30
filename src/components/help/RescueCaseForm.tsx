@@ -78,9 +78,9 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label>Especie</Label>
+          <Label htmlFor="rescue-species">Especie</Label>
           <Select value={form.species} onValueChange={(species) => setForm((current) => ({ ...current, species }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="rescue-species"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="dog">Perro</SelectItem>
               <SelectItem value="cat">Gato</SelectItem>
@@ -89,9 +89,9 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Tamaño estimado</Label>
+          <Label htmlFor="rescue-size">Tamaño estimado</Label>
           <Select value={form.size} onValueChange={(size) => setForm((current) => ({ ...current, size }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="rescue-size"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="small">Pequeño</SelectItem>
               <SelectItem value="medium">Mediano</SelectItem>
@@ -100,9 +100,9 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Urgencia</Label>
+          <Label htmlFor="rescue-urgency">Urgencia</Label>
           <Select value={form.urgency} onValueChange={(urgency) => setForm((current) => ({ ...current, urgency }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="rescue-urgency"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="NORMAL">Necesita resguardo</SelectItem>
               <SelectItem value="HIGH">Necesita atención pronto</SelectItem>
@@ -118,13 +118,13 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
           <p className="mt-1 text-sm text-slate-600">Elegí una necesidad principal y hasta cuatro complementarias.</p>
         </div>
         <div className="space-y-2">
-          <Label>Necesidad principal</Label>
+          <Label htmlFor="rescue-need">Necesidad principal</Label>
           <Select value={form.primaryNeed} onValueChange={(value) => setForm((current) => ({
             ...current,
             primaryNeed: value as NeedType,
             additionalNeeds: current.additionalNeeds.filter((need) => need !== value),
           }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="rescue-need"><SelectValue /></SelectTrigger>
             <SelectContent>{NEED_TYPES.map((type) => <SelectItem key={type} value={type}>{RESCUE_NEED_LABELS[type]}</SelectItem>)}</SelectContent>
           </Select>
         </div>
@@ -196,12 +196,12 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         {[form.primaryNeed, ...form.additionalNeeds].includes('FOSTER') && <div className="space-y-2">
-          <Label>Radio de búsqueda</Label>
+          <Label htmlFor="rescue-radius">Radio de búsqueda</Label>
           <Select
             value={String(form.searchRadiusKm)}
             onValueChange={(value) => setForm((current) => ({ ...current, searchRadiusKm: Number(value) }))}
           >
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="rescue-radius"><SelectValue /></SelectTrigger>
             <SelectContent>
               {[5, 10, 20, 50].map((radius) => (
                 <SelectItem key={radius} value={String(radius)}>{radius} km</SelectItem>

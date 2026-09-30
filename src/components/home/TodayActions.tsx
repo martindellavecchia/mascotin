@@ -8,7 +8,7 @@ import type { Pet } from '@/types';
 
 interface TodayActionsProps {
   activePet?: Pet;
-  suggestion?: HomeBootstrapSuggestion;
+  suggestion?: Pick<HomeBootstrapSuggestion, 'name'>;
 }
 
 export default function TodayActions({ activePet, suggestion }: TodayActionsProps) {

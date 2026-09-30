@@ -44,6 +44,15 @@ describe('PostCard like', () => {
     global.fetch = jest.fn();
   });
 
+  it.each([true, false])('keeps past event attendance read-only when attending=%s', async (isAttending) => {
+    render(<PostCard post={generalPost({ postType: 'event', eventId: 'event-1', eventDate: '2020-01-01T12:00:00Z', isAttending })} currentUserId="viewer-1" />);
+    const action = screen.getByRole('button', { name: 'Finalizado' });
+    expect(action).toBeDisabled();
+    expect(action).toHaveAttribute('aria-pressed', String(isAttending));
+    await userEvent.click(action);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
   it('keeps the optimistic like when the request succeeds', async () => {
     const onLike = jest.fn();
     mockFetchResponse(true, { success: true, liked: true });

@@ -76,7 +76,7 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
           <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
             Copiar enlace
           </Button>
-          <Button type="button" size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => void shareLink()}>
+          <Button type="button" variant="brand" size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => void shareLink()}>
             Compartir
           </Button>
         </div>

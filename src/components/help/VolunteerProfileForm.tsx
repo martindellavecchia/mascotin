@@ -90,7 +90,7 @@ export default function VolunteerProfileForm({ profile, onSaved }: {
         onLocationChange={(location) => setForm((current) => ({ ...current, location }))}
         onCoordinatesChange={(latitude, longitude) => setForm((current) => ({ ...current, latitude, longitude }))}
       />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="volunteer-radius">Radio</Label>
           <div className="relative"><Input id="volunteer-radius" type="number" min={1} max={50} value={form.radiusKm} onChange={(event) => setForm((current) => ({ ...current, radiusKm: Math.min(50, Math.max(1, Number(event.target.value) || 1)) }))} className="pr-10" /><span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">km</span></div>

@@ -102,6 +102,9 @@ export default function HomeClientShell({
   const selectedPetRef = useRef(selectedPetId);
   selectedPetRef.current = selectedPetId;
   const [petsToSwipe, setPetsToSwipe] = useState<Pet[]>([]);
+  const [suggestionsByPet, setSuggestionsByPet] = useState<Record<string, Pick<HomeBootstrapSuggestion, 'name'> | undefined>>(
+    () => initialSelectedPetId ? { [initialSelectedPetId]: initialSuggestions[0] } : {}
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Pet[]>([]);
   const [exploreLoading, setExploreLoading] = useState(false);
@@ -182,9 +185,11 @@ export default function HomeClientShell({
 
     if (result.success && result.data) {
       setPetsToSwipe(result.data.pets || []);
+      setSuggestionsByPet((current) => ({ ...current, [selectedPetId]: result.data?.pets?.[0] }));
       setCurrentIndex(0);
       setExploreLoadedPetId(selectedPetId);
     } else {
+      setSuggestionsByPet((current) => ({ ...current, [selectedPetId]: undefined }));
       setExploreError(true);
     }
 
@@ -202,6 +207,7 @@ export default function HomeClientShell({
     }
 
     const restoredPet = petsToSwipe[restoredIndex];
+    if (selectedPetId) setSuggestionsByPet((current) => ({ ...current, [selectedPetId]: restoredPet }));
     const nextIndex = currentIndex - 1;
     const remaining = petsToSwipe.filter((_, index) => index !== restoredIndex);
     setPetsToSwipe([...remaining.slice(0, nextIndex), restoredPet, ...remaining.slice(nextIndex)]);
@@ -247,7 +253,10 @@ export default function HomeClientShell({
         }
       }
 
-      if (result.success) setCurrentIndex((previous) => previous + 1);
+      if (result.success) {
+        setSuggestionsByPet((current) => ({ ...current, [selectedPetId]: petsToSwipe[currentIndex + 1] }));
+        if (selectedPetRef.current === selectedPetId) setCurrentIndex((previous) => previous + 1);
+      }
     } finally {
       swipingRef.current = false;
     }
@@ -291,7 +300,7 @@ export default function HomeClientShell({
               </div>
               <TodayActions
                 activePet={activePet}
-                suggestion={selectedPetId === initialSelectedPetId ? initialSuggestions[0] : undefined}
+                suggestion={suggestionsByPet[selectedPetId ?? '']}
               />
               {showCommunityFeed && (
                 <section aria-labelledby="circle-feed-title" className="space-y-4 border-t border-border pt-6">

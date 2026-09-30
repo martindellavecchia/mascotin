@@ -96,6 +96,8 @@ export default function CommunityEventsPage() {
     const handleAttend = async (eventId: string, currentStatus: boolean) => {
         if (!session) return toast.error('Iniciá sesión para participar');
         if (pendingAttendId) return;
+        const event = events.find((item) => item.id === eventId);
+        if (!event || new Date(event.date).getTime() <= Date.now()) return;
 
         const applyAttendance = (attending: boolean) => {
             setEvents((current) => current.map((ev) => {
@@ -322,11 +324,11 @@ export default function CommunityEventsPage() {
                                                 onClick={() => void handleAttend(event.id, event.isAttending)}
                                                 variant={event.isAttending ? "outline" : "default"}
                                                 className={event.isAttending ? 'border-primary text-primary' : undefined}
-                                                disabled={pendingAttendId === event.id || (ended && !event.isAttending)}
+                                                disabled={pendingAttendId === event.id || ended}
                                             >
                                                 {event.isAttending && <Check className="size-4" aria-hidden="true" />}
                                                 {ended
-                                                    ? event.isAttending ? 'Retirar asistencia' : 'Finalizado'
+                                                    ? 'Finalizado'
                                                     : event.isAttending ? 'Asistiré' : 'Asistir'}
                                             </Button>
                                         </div>

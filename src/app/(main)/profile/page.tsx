@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Pencil, PawPrint, Plus, X } from 'lucide-react';
+import { Pencil, PawPrint, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
@@ -66,6 +66,12 @@ function ProfileContent() {
   const ownerFormDirtyRef = useRef(false);
   const setOwnerFormDirty = useCallback((dirty: boolean) => { ownerFormDirtyRef.current = dirty; }, []);
   const [petFormDirty, setPetFormDirty] = useState(false);
+  const petBusyRef = useRef(false);
+  const setPetBusy = useCallback((busy: boolean) => { petBusyRef.current = busy; }, []);
+  const petTriggerRef = useRef<HTMLElement | null>(null);
+  const petFocusRef = useRef<HTMLElement | null>(null);
+  const petDialogRef = useRef<HTMLDivElement>(null);
+  const discardModalRef = useRef<ClosableModal | null>(null);
   const ownerBusyRef = useRef(false);
   const setOwnerBusy = useCallback((busy: boolean) => { ownerBusyRef.current = busy; }, []);
   const ownerTriggerRef = useRef<HTMLElement | null>(null);
@@ -78,6 +84,10 @@ function ProfileContent() {
   };
   const restoreOwnerFocus = () => {
     const target = ownerTriggerRef.current?.isConnected ? ownerTriggerRef.current : profileMainRef.current;
+    target?.focus();
+  };
+  const restorePetFocus = () => {
+    const target = petTriggerRef.current?.isConnected ? petTriggerRef.current : profileMainRef.current;
     target?.focus();
   };
   const [pendingDiscard, setPendingDiscard] = useState<ClosableModal | null>(null);
@@ -133,10 +143,12 @@ function ProfileContent() {
   };
 
   const requestClose = (modal: ClosableModal) => {
-    if (pendingDiscard || (modal === 'owner' && ownerBusyRef.current)) return;
+    if (pendingDiscard || (modal === 'owner' ? ownerBusyRef.current : petBusyRef.current)) return;
     const dirty = modal === 'owner' ? ownerFormDirtyRef.current : petFormDirty;
     if (dirty) {
-      if (modal === 'owner') ownerFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      discardModalRef.current = modal;
+      const focusRef = modal === 'owner' ? ownerFocusRef : petFocusRef;
+      focusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setPendingDiscard(modal);
       return;
     }
@@ -145,6 +157,7 @@ function ProfileContent() {
   };
 
   const openPetForm = (pet: Pet | null) => {
+    petTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setEditingPet(pet);
     setPetFormDirty(false);
     setShowPetForm(true);
@@ -319,51 +332,52 @@ function ProfileContent() {
       </Dialog>
 
       {/* Pet Form Modal (Create/Edit) */}
-      {showPetForm && owner && (
-        <div className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-          <Card className="relative h-[100dvh] max-h-[100dvh] w-full max-w-full overflow-y-auto rounded-none border-0 bg-white shadow-2xl sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-2xl sm:rounded-xl">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-3 top-3 z-10 size-11 rounded-md hover:bg-slate-100 sm:right-4 sm:top-4"
-              onClick={() => requestClose('pet')}
-              aria-label="Cerrar formulario de mascota"
-            >
-              <X className="size-5 text-slate-500" aria-hidden="true" />
-            </Button>
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-900 pr-10">
-                {editingPet ? 'Editar Mascota' : 'Registrar Nueva Mascota'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PetForm
-                key={editingPet?.id ?? 'new'}
-                ownerId={owner.id}
-                initialData={editingPet}
-                onDirtyChange={setPetFormDirty}
-                onSuccess={(newPet) => {
-                  if (editingPet) {
-                    setPets((currentPets) => currentPets.map((pet) =>
-                      pet.id === newPet.id ? newPet : pet
-                    ));
-                  } else {
-                    setPets((currentPets) => [newPet, ...currentPets]);
-                  }
-                  closePetForm();
-                }}
-                onCancel={() => requestClose('pet')}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <Dialog open={showPetForm} onOpenChange={(open) => { if (!open) requestClose('pet'); }}>
+        <DialogContent
+          ref={petDialogRef}
+          aria-modal="true"
+          className="sm:max-w-2xl"
+          onInteractOutside={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => { event.preventDefault(); restorePetFocus(); }}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {editingPet ? 'Editar mascota' : 'Registrar nueva mascota'}
+            </DialogTitle>
+            <DialogDescription>Completá la información de tu mascota y guardá los cambios cuando termines.</DialogDescription>
+          </DialogHeader>
+          <PetForm
+            key={editingPet?.id ?? 'new'}
+            ownerId={owner.id}
+            initialData={editingPet}
+            onDirtyChange={setPetFormDirty}
+            onBusyChange={setPetBusy}
+            onSuccess={(newPet) => {
+              if (editingPet) {
+                setPets((currentPets) => currentPets.map((pet) =>
+                  pet.id === newPet.id ? newPet : pet
+                ));
+              } else {
+                setPets((currentPets) => [newPet, ...currentPets]);
+              }
+              closePetForm();
+            }}
+            onCancel={() => requestClose('pet')}
+          />
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={pendingDiscard !== null}
         onOpenChange={(open) => !open && setPendingDiscard(null)}
         onCloseAutoFocus={(event) => {
-          if (ownerDialogRef.current) {
+          if (discardModalRef.current === 'pet') {
+            event.preventDefault();
+            if (petDialogRef.current) {
+              const target = petFocusRef.current?.isConnected ? petFocusRef.current : petDialogRef.current.querySelector<HTMLElement>('input, button');
+              target?.focus();
+            } else restorePetFocus();
+          } else if (ownerDialogRef.current) {
             event.preventDefault();
             const target = ownerFocusRef.current?.isConnected ? ownerFocusRef.current : ownerDialogRef.current.querySelector<HTMLElement>('input, button');
             target?.focus();

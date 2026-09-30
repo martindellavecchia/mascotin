@@ -1,9 +1,9 @@
 import 'server-only';
 
 import { db } from '@/lib/db';
+import { DISCOVERY_CANDIDATE_LIMIT, DISCOVERY_CANDIDATE_ORDER, getPetDiscoveryQuery } from '@/lib/server/pet-discovery';
 import { getPrimaryImageUrl } from '@/lib/media';
 import {
-  parseMatchPreferences,
   rankCandidates,
   type MatchableCandidatePet,
   type MatchableCurrentPet,
@@ -47,41 +47,12 @@ export async function getRankedPetMatches(options: {
   myPetIds: string[];
   limit?: number;
 }): Promise<ScoredMatch[]> {
-  const [settings, viewer, swipedPets, blockedRelations] = await Promise.all([
-    db.userSettings.findUnique({ where: { userId: options.userId } }),
-    db.user.findUnique({ where: { id: options.userId }, select: { syntheticRunId: true } }),
-    db.swipe.findMany({
-      where: { fromPetId: options.currentPet.id, undoneAt: null },
-      select: { toPetId: true },
-      take: 500,
-    }),
-    db.blockedUser.findMany({
-      where: {
-        OR: [{ blockerId: options.userId }, { blockedId: options.userId }],
-      },
-      select: { blockerId: true, blockedId: true },
-    }),
-  ]);
-  const preferences = parseMatchPreferences(settings);
-
-  const swipedPetIds = swipedPets
-    .map((swipe) => swipe.toPetId)
-    .filter((id): id is string => Boolean(id));
-  const blockedUserIds = blockedRelations.map((relation) =>
-    relation.blockerId === options.userId ? relation.blockedId : relation.blockerId
-  );
-
+  const { where, preferences } = await getPetDiscoveryQuery(options);
   const candidates = (await db.pet.findMany({
-    where: {
-      isActive: true,
-      id: { notIn: [...options.myPetIds, ...swipedPetIds] },
-      owner: {
-        userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
-        user: { syntheticRunId: viewer?.syntheticRunId || null },
-      },
-    },
+    where,
     select: CANDIDATE_SELECT,
-    take: 80,
+    orderBy: DISCOVERY_CANDIDATE_ORDER,
+    take: DISCOVERY_CANDIDATE_LIMIT,
   })) as MatchableCandidatePet[];
 
   const ranked = rankCandidates(
@@ -100,14 +71,11 @@ export async function getRankedPetMatches(options: {
     where: {
       id: { in: ranked.map((pet) => pet.id) },
       isActive: true,
-      owner: {
-        userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
-        user: { syntheticRunId: viewer?.syntheticRunId || null },
-      },
+      owner: where.owner,
     },
     select: { id: true, images: true, thumbnailIndex: true },
   });
   const imagesByPet = new Map(photos.map((pet) => [pet.id, getPrimaryImageUrl(pet.images, pet.thumbnailIndex ?? 0)]));
 
-  return ranked.map((pet) => ({ ...pet, image: imagesByPet.get(pet.id) ?? null }));
+  return ranked.filter((pet) => imagesByPet.has(pet.id)).map((pet) => ({ ...pet, image: imagesByPet.get(pet.id) ?? null }));
 }

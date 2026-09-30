@@ -82,4 +82,20 @@ describe('CommunityEventsPage', () => {
 
     expect(global.fetch).toHaveBeenLastCalledWith(expect.stringContaining('action=past'));
   });
+
+  it('keeps past attendance as history and disables actions for both event types', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ success: true, events: [
+      { ...events[0], date: '2020-01-01T12:00:00Z', isAttending: true, group: { id: 'group', name: 'Grupo' } },
+      { ...events[1], date: '2020-01-01T12:00:00Z', isAttending: false },
+    ] }) });
+    render(<CommunityEventsPage />);
+    const buttons = await screen.findAllByRole('button', { name: 'Finalizado' });
+    expect(buttons).toHaveLength(2);
+    for (const button of buttons) {
+      expect(button).toBeDisabled();
+      await userEvent.click(button);
+    }
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('2 asistentes')).toBeVisible();
+  });
 });

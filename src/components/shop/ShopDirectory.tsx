@@ -141,7 +141,7 @@ export default function ShopDirectory({
             <label className="mb-3 block text-sm font-medium">Zona elegida<Input value={zone} onChange={e => setZone(e.target.value)} placeholder="Barrio o ciudad (opcional)" /></label>
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar negocio, servicio o zona" className="h-12 pl-11" />
+              <Input aria-label="Buscar negocio, servicio o zona" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar negocio, servicio o zona" className="h-12 pl-11" />
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <Select value={categoryId} onValueChange={setCategoryId}>

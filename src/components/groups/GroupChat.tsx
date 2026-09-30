@@ -354,6 +354,7 @@ export default function GroupChat({
             type="submit"
             size="icon"
             aria-label="Enviar mensaje"
+            variant="brand"
             className="h-11 w-11 shrink-0 bg-teal-500 hover:bg-teal-600"
             disabled={sending}
           >

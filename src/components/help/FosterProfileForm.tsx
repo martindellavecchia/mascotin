@@ -170,9 +170,9 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
           </div>
         </div>
         <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-          <Label>Tipo de vivienda</Label>
+          <Label htmlFor="foster-housing">Tipo de vivienda</Label>
           <Select value={form.housingType} onValueChange={(housingType) => setForm((current) => ({ ...current, housingType }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="foster-housing"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="apartment">Departamento</SelectItem>
               <SelectItem value="house">Casa</SelectItem>
@@ -189,9 +189,9 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
           <Input id="available-until" type="date" value={form.availableUntil} onChange={(event) => setForm((current) => ({ ...current, availableUntil: event.target.value }))} />
         </div>
         <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-          <Label>Experiencia</Label>
+          <Label htmlFor="foster-experience">Experiencia</Label>
           <Select value={form.experience} onValueChange={(experience) => setForm((current) => ({ ...current, experience }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="foster-experience"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Primera vez</SelectItem>
               <SelectItem value="some">Algo de experiencia</SelectItem>

@@ -88,9 +88,10 @@ interface PetFormProps {
   onSuccess?: (pet: Pet) => void;
   onCancel?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
+  onBusyChange?: (busy: boolean) => void;
 }
 
-export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onDirtyChange }: PetFormProps) {
+export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onDirtyChange, onBusyChange }: PetFormProps) {
   const invalidateViewerData = useInvalidateViewerData();
   const formRef = useRef<HTMLFormElement>(null);
   const initialImages = parseImageUrls(initialData?.images);
@@ -270,6 +271,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
   };
 
   const busy = loading || uploading;
+  useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   const gender = form.watch('gender');
 
   return (
@@ -817,7 +819,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
               variant="outline"
               className="w-full sm:w-auto"
               onClick={onCancel}
-              disabled={loading}
+              disabled={busy}
             >
               Cancelar
             </Button>

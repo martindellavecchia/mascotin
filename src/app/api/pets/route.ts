@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { parseMatchPreferences, passesMatchFilters, scorePetMatch } from '@/lib/matching';
+import { passesMatchFilters, scorePetMatch } from '@/lib/matching';
 import { currentOrigin } from '@/lib/matching';
-import { VISIBLE_PROFILE_USER_FILTER } from '@/lib/server/profile-visibility';
+import { DISCOVERY_CANDIDATE_LIMIT, DISCOVERY_CANDIDATE_ORDER, getPetDiscoveryQuery } from '@/lib/server/pet-discovery';
 
 export async function GET(request: Request) {
   try {
@@ -47,70 +46,13 @@ export async function GET(request: Request) {
       );
     }
 
-    const settings = await db.userSettings.findUnique({
-      where: { userId: session.user.id },
+    const { where, preferences } = await getPetDiscoveryQuery({
+      userId: session.user.id, currentPet, petType, location,
     });
-    const viewer = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { syntheticRunId: true },
-    });
-    const preferences = parseMatchPreferences(settings);
-
-    const where: Prisma.PetWhereInput = {
-      isActive: true,
-      ownerId: { not: currentPet.ownerId },
-    };
-
-    if (petType) {
-      where.petType = petType;
-    } else if (preferences.matchPetTypes.length > 0) {
-      where.petType = { in: preferences.matchPetTypes };
-    } else {
-      where.petType = currentPet.petType;
-    }
-
-    if (location) {
-      where.location = location;
-    }
-
-    if (preferences.matchPetSizes.length > 0) {
-      where.size = { in: preferences.matchPetSizes };
-    }
-
-    const swipedPetIds = await db.swipe.findMany({
-      where: { fromPetId: currentPetId, undoneAt: null },
-      select: { toPetId: true },
-    });
-
-    const swipedIds = swipedPetIds
-      .map((swipe) => swipe.toPetId)
-      .filter((id): id is string => id !== null);
-
-    where.id = swipedIds.length > 0
-      ? { not: currentPetId, notIn: swipedIds }
-      : { not: currentPetId };
-
-    const blockedRelations = await db.blockedUser.findMany({
-      where: {
-        OR: [
-          { blockerId: session.user.id },
-          { blockedId: session.user.id },
-        ],
-      },
-      select: { blockerId: true, blockedId: true },
-    });
-    const blockedUserIds = blockedRelations.map((relation) =>
-      relation.blockerId === session.user.id ? relation.blockedId : relation.blockerId
-    );
-
-    where.owner = {
-      userId: blockedUserIds.length > 0 ? { notIn: blockedUserIds } : undefined,
-      user: { syntheticRunId: viewer?.syntheticRunId || null, ...VISIBLE_PROFILE_USER_FILTER },
-    };
 
     const pets = await db.pet.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: DISCOVERY_CANDIDATE_ORDER,
       include: {
         owner: {
           select: {
@@ -130,7 +72,7 @@ export async function GET(request: Request) {
           },
         },
       },
-      take: 50,
+      take: DISCOVERY_CANDIDATE_LIMIT,
     });
 
     const origin = currentOrigin(currentPet, currentPet.owner);

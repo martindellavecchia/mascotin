@@ -157,7 +157,7 @@ export default function EditGroupModal({ open, onOpenChange, onSuccess, group }:
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancelar
                         </Button>
-                        <Button type="submit" className="bg-teal-500 hover:bg-teal-600" disabled={loading || uploading}>
+                        <Button type="submit" variant="brand" className="bg-teal-500 hover:bg-teal-600" disabled={loading || uploading}>
                             {loading ? 'Guardando...' : 'Guardar Cambios'}
                         </Button>
                     </DialogFooter>

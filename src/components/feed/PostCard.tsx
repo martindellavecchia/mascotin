@@ -215,7 +215,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
     };
 
     const handleAttend = async () => {
-        if (!post.eventId) return;
+        if (!post.eventId || (post.eventDate && new Date(post.eventDate).getTime() <= Date.now())) return;
 
         // Optimistic
         const previousState = isAttending;
@@ -502,14 +502,15 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 variant={isAttending ? 'tonal' : 'default'}
                                 className="col-span-2 min-h-11 w-full sm:col-span-1 sm:w-auto"
                                 onClick={handleAttend}
-                                disabled={eventEnded && !isAttending}
+                                disabled={eventEnded}
+                                aria-pressed={isAttending}
                             >
-                                {isAttending ? (
+                                {eventEnded ? 'Finalizado' : isAttending ? (
                                     <>
                                         <Check className="mr-1 size-4" aria-hidden="true" />
-                                        {eventEnded ? 'Retirar asistencia' : 'Asistiré'}
+                                        Asistiré
                                     </>
-                                ) : eventEnded ? 'Evento finalizado' : 'Asistir'}
+                                ) : 'Asistir'}
                             </Button>
                         )}
                     </div>
@@ -605,6 +606,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         <div className="relative min-w-0 flex-1">
                             <input
                                 type="text"
+                                aria-label="Escribí un comentario"
                                 placeholder="Escribí un comentario"
                                 className="min-h-10 w-full rounded-lg border border-border bg-surface py-2 pl-3 pr-11 text-xs focus:border-primary focus:outline-none"
                                 value={newComment}

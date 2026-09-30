@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -53,6 +54,7 @@ interface CompatibilityFieldsProps {
 }
 
 export default function CompatibilityFields({ data, onChange }: CompatibilityFieldsProps) {
+  const fieldId = useId();
   const toggleList = (field: 'temperament' | 'matchIntent', id: string) => {
     const current = data[field] || [];
     onChange(
@@ -66,12 +68,12 @@ export default function CompatibilityFields({ data, onChange }: CompatibilityFie
       <div className="grid gap-4 sm:grid-cols-2">
         {COMPATIBILITY_QUESTIONS.map((question) => (
           <div key={question.key} className="space-y-2">
-            <Label>{question.label}</Label>
+            <Label htmlFor={`${fieldId}-${question.key}`}>{question.label}</Label>
             <Select
               value={data[question.key] || 'unknown'}
               onValueChange={(value) => onChange(question.key, value)}
             >
-              <SelectTrigger>
+              <SelectTrigger id={`${fieldId}-${question.key}`}>
                 <SelectValue placeholder="Elegir" />
               </SelectTrigger>
               <SelectContent>

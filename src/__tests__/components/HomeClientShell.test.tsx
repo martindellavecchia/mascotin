@@ -267,4 +267,22 @@ describe('HomeClientShell', () => {
     expect(screen.getByRole('heading', { name: 'También podés crear el perfil de tu mascota' })).toBeVisible();
   });
 
+  it('clears a named recommendation after discovery confirms an empty list', async () => {
+    renderShell({ initialSuggestions: [{ id: 'mishi', name: 'Mishi', petType: 'cat', breed: null, image: null, matchScore: 1, matchReason: '' }] });
+    await userEvent.click(screen.getByRole('link', { name: /Conocé a Mishi/ }));
+    await screen.findByRole('heading', { name: 'Ya conociste a todos por aquí' });
+    act(() => window.history.pushState(null, '', '/inicio?tab=home&petId=pet-1'));
+    expect(screen.queryByText('Conocé a Mishi')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Conocé una mascota/ })).toBeVisible();
+  });
+
+  it('uses the latest discovered candidate for the selected pet on returning home', async () => {
+    mockFetchWithError.mockResolvedValue({ success: true, data: { pets: [createPet('next', 'Mora')] } });
+    window.history.replaceState(null, '', '/inicio?tab=explore&petId=pet-2');
+    renderShell();
+    await screen.findByRole('heading', { name: /Mora/ });
+    act(() => window.history.pushState(null, '', '/inicio?tab=home&petId=pet-2'));
+    expect(screen.getByRole('link', { name: /Conocé a Mora/ })).toHaveAttribute('href', '/inicio?tab=explore&petId=pet-2');
+  });
+
 });

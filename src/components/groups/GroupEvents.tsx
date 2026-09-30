@@ -101,7 +101,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
     };
 
     const handleAttend = async (event: Event) => {
-        if (pendingAttendId) return;
+        if (pendingAttendId || new Date(event.date).getTime() <= Date.now()) return;
         setPendingAttendId(event.id);
         try {
             const res = await fetch(`/api/events/${event.id}/attend`, { method: 'POST' });
@@ -335,16 +335,14 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                             size="sm"
                                             variant={event.isAttending ? 'outline' : 'default'}
                                             className="min-h-10"
-                                            disabled={pendingAttendId === event.id || (ended && !event.isAttending)}
+                                            disabled={pendingAttendId === event.id || ended}
                                             onClick={() => void handleAttend(event)}
                                             aria-pressed={Boolean(event.isAttending)}
                                         >
                                             {pendingAttendId === event.id
                                                 ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                                                 : event.isAttending && <Check className="size-4" aria-hidden="true" />}
-                                            {event.isAttending
-                                                ? 'Cancelar asistencia'
-                                                : ended ? 'Evento finalizado' : 'Asistir'}
+                                            {ended ? 'Finalizado' : event.isAttending ? 'Cancelar asistencia' : 'Asistir'}
                                         </Button>
                                     </div>
                                 )}
@@ -422,7 +420,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                         <DialogTitle className="pr-6 [overflow-wrap:anywhere]">Asistentes: {viewingEvent?.title}</DialogTitle>
                     </DialogHeader>
 
-                    <div className="py-4">
+                    <div className="min-w-0 py-4">
                         {loadingAttendees ? (
                             <div className="text-center py-8 text-slate-500">Cargando asistentes...</div>
                         ) : attendees.length === 0 ? (
@@ -468,7 +466,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                         <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
                             <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setViewingEvent(null)}>Cerrar</Button>
                             {attendees.length > 0 && (
-                                <Button onClick={downloadCSV} className="min-h-11 w-full bg-teal-600 hover:bg-teal-700 sm:w-auto">
+                                <Button variant="brand" onClick={downloadCSV} className="min-h-11 w-full bg-teal-600 hover:bg-teal-700 sm:w-auto">
                                     <Download className="mr-2 size-4" aria-hidden="true" />
                                     Descargar CSV
                                 </Button>
