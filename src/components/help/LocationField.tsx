@@ -61,7 +61,7 @@ export default function LocationField({
           {locating ? 'Ubicando…' : hasCoordinates ? 'Ubicación lista' : 'Usar ubicación actual'}
         </Button>
       </div>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-muted-foreground">
         La ubicación exacta se usa para calcular distancias y nunca se muestra a otros usuarios.
       </p>
     </div>

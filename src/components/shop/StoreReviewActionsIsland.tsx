@@ -82,13 +82,13 @@ export default function StoreReviewActionsIsland({
         <>
           <button
             onClick={() => void toggleHelpful()}
-            className={`min-h-10 px-2 font-medium ${isHelpful ? 'text-teal-700' : 'text-slate-500 hover:text-teal-700'}`}
+            className={`min-h-10 px-2 font-medium ${isHelpful ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
           >
             Útil ({helpfulCount})
           </button>
           <button
             onClick={() => (viewer.isAuthenticated ? setReportOpen(true) : requireAuth())}
-            className="min-h-10 px-2 text-slate-500 hover:text-rose-600"
+            className="min-h-10 px-2 text-muted-foreground hover:text-destructive"
           >
             Reportar
           </button>
@@ -96,14 +96,16 @@ export default function StoreReviewActionsIsland({
       )}
 
       {viewer.isOwner && !hasBusinessReply && (
-        <div className="mt-4 flex w-full basis-full flex-col gap-2 sm:flex-row">
+        <div className="mt-4 flex w-full basis-full flex-col gap-2">
           <Textarea
+            aria-label="Respuesta pública del negocio"
             value={reply}
             onChange={(event) => setReply(event.target.value)}
-            placeholder="Responder públicamente con respeto..."
+            placeholder="Respondé públicamente con respeto"
             rows={2}
+            className="min-h-20"
           />
-          <Button variant="outline" onClick={() => void submitReply()}>
+          <Button variant="outline" size="sm" className="self-end" onClick={() => void submitReply()}>
             Responder
           </Button>
         </div>
@@ -117,7 +119,7 @@ export default function StoreReviewActionsIsland({
           </DialogHeader>
           <div className="space-y-4 py-3">
             <Select value={reportReason} onValueChange={setReportReason}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Motivo del reporte">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -128,6 +130,7 @@ export default function StoreReviewActionsIsland({
               </SelectContent>
             </Select>
             <Textarea
+              aria-label="Contexto para moderación"
               value={reportDescription}
               onChange={(event) => setReportDescription(event.target.value)}
               placeholder="Agregá contexto para moderación (opcional)"
@@ -136,7 +139,7 @@ export default function StoreReviewActionsIsland({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setReportOpen(false)}>Cancelar</Button>
-            <Button className="bg-rose-600 hover:bg-rose-700" onClick={() => void submitReport()}>
+            <Button variant="destructive" onClick={() => void submitReport()}>
               Enviar reporte
             </Button>
           </DialogFooter>

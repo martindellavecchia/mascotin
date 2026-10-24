@@ -51,15 +51,15 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
     <Card>
       <CardHeader className="pb-2 text-center">
         <CardTitle className="text-base">QR de emergencia</CardTitle>
-        <p className="text-xs font-normal text-slate-500">
+        <p className="text-xs font-normal text-muted-foreground">
           Quien lo escanee ve solo el contacto de emergencia que habilitaste.
         </p>
       </CardHeader>
       <CardContent className="text-center">
         {src ? (
-          <img src={src} alt="QR de emergencia" className="mx-auto rounded-lg border border-slate-100" />
+          <img src={src} alt="QR de emergencia" className="mx-auto rounded-lg border border-border" />
         ) : (
-          <p className="text-sm text-slate-500">Generando código...</p>
+          <p className="text-sm text-muted-foreground">Generando código...</p>
         )}
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           {src ? (
@@ -76,7 +76,7 @@ export default function EmergencyQr({ token }: { token?: string | null }) {
           <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
             Copiar enlace
           </Button>
-          <Button type="button" variant="brand" size="sm" className="bg-teal-600 hover:bg-teal-700" onClick={() => void shareLink()}>
+          <Button type="button" variant="brand" size="sm" onClick={() => void shareLink()}>
             Compartir
           </Button>
         </div>

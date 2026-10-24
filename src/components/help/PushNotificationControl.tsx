@@ -99,21 +99,21 @@ export default function PushNotificationControl() {
     }
   };
 
-  if (loading) return <div className="h-20 animate-pulse rounded-xl bg-slate-100" />;
+  if (loading) return <div className="h-20 animate-pulse rounded-xl bg-muted" />;
   if (permission === 'unsupported') {
-    return <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">Este navegador no admite Web Push. Las alertas internas seguirán funcionando.</p>;
+    return <p className="rounded-xl bg-background p-4 text-sm text-slate-600">Este navegador no admite Web Push. Las alertas internas seguirán funcionando.</p>;
   }
   if (!configured) {
     return <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Web Push todavía no está habilitado en este entorno. Las alertas internas siguen activas.</p>;
   }
   if (permission === 'denied') {
-    return <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">El navegador bloqueó las notificaciones. No volveremos a pedir permiso; podés cambiarlo desde la configuración del sitio.</p>;
+    return <p className="rounded-xl bg-background p-4 text-sm text-slate-600">El navegador bloqueó las notificaciones. No volveremos a pedir permiso; podés cambiarlo desde la configuración del sitio.</p>;
   }
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p className="font-medium text-slate-900">Notificaciones en este dispositivo</p>
-        <p className="mt-1 text-sm text-slate-500">Solo para casos, ofertas, selecciones, mensajes y cambios críticos.</p>
+        <p className="font-medium text-foreground">Notificaciones en este dispositivo</p>
+        <p className="mt-1 text-sm text-muted-foreground">Solo para casos, ofertas, selecciones, mensajes y cambios críticos.</p>
       </div>
       {deviceSubscribed ? (
         <Button type="button" variant="outline" disabled={acting} onClick={() => void deactivate()}>{acting ? 'Desactivando…' : 'Desactivar push'}</Button>

@@ -14,24 +14,24 @@ export function ProfileCard({ owner, email }: ProfileCardProps) {
     const initials = owner.name.split(' ').map((n) => n[0]).join('');
 
     return (
-        <Card className="overflow-hidden">
-            <div className="h-24 bg-teal-100"></div>
+        <Card className="gap-0 overflow-hidden py-0">
+            <div className="h-24 bg-primary-soft"></div>
             <CardContent className="pt-0 pb-6 px-6 -mt-12">
-                <Avatar className="w-24 h-24 border-4 border-white mx-auto">
+                <Avatar className="mx-auto size-24 border-4 border-surface">
                     {owner.image ? (
                         <AvatarImage src={owner.image} alt={owner.name} className="object-cover" />
                     ) : (
-                        <AvatarFallback className="bg-teal-500 text-white text-2xl font-bold">
+                        <AvatarFallback className="bg-primary text-2xl font-bold text-primary-foreground">
                             {initials}
                         </AvatarFallback>
                     )}
                 </Avatar>
                 <div className="text-center mt-4">
-                    <h2 className="text-xl font-bold text-slate-900">{owner.name}</h2>
-                    {email && <p className="text-slate-500 text-sm">{email}</p>}
+                    <h2 className="text-xl font-bold text-foreground">{owner.name}</h2>
+                    {email && <p className="text-muted-foreground text-sm">{email}</p>}
 
                     {location && (
-                        <div className="flex items-center justify-center gap-1 mt-2 text-teal-600">
+                        <div className="flex items-center justify-center gap-1 mt-2 text-primary">
                             <MapPin className="size-5" aria-hidden="true" />
                             <span className="text-sm font-medium">{location}</span>
                         </div>

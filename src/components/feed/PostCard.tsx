@@ -4,9 +4,7 @@ import { memo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
     CalendarDays,
-    Camera,
     Check,
-    ChevronRight,
     CircleAlert,
     CircleCheck,
     CircleHelp,
@@ -18,7 +16,6 @@ import {
     MapPin,
     MessageCircle,
     MoreHorizontal,
-    PawPrint,
     Pencil,
     Phone,
     Send,
@@ -33,7 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import BusinessOwnerBadge from '@/components/business/BusinessOwnerBadge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { LoadingSpinner } from '@/components/ui/loading';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import ReportPostDialog from '@/components/feed/ReportPostDialog';
 import {
@@ -50,6 +47,7 @@ import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { RESCUE_STATUS_LABELS, SIZE_LABELS, SPECIES_LABELS } from '@/lib/foster';
+import { cn, countLabel } from '@/lib/utils';
 import { RESCUE_NEED_LABELS } from '@/lib/rescue';
 import type { RescueNeedType } from '@prisma/client';
 
@@ -87,7 +85,6 @@ const POST_TYPE_ICONS: Record<string, LucideIcon> = {
     event: CalendarDays,
     question: CircleHelp,
     recommendation: Star,
-    photo: Camera,
 };
 
 interface PostCardProps {
@@ -283,104 +280,112 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
         }
     };
 
+    const commentCount = comments.length || post._count?.comments || 0;
+    const isLostPet = post.postType === 'lost_pet';
+    const typeLabel = post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : null;
+    const TypeIcon = post.postType ? POST_TYPE_ICONS[post.postType] : undefined;
+
+    const toggleResolved = async () => {
+        const targetResolvedState = !isResolved;
+
+        try {
+            const res = await fetch(`/api/posts/${post.id}/resolve`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isResolved: targetResolvedState }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                const updatedState = typeof data.post?.isResolved === 'boolean'
+                    ? data.post.isResolved
+                    : targetResolvedState;
+                setIsResolved(updatedState);
+                toast.success(data.message || 'Estado actualizado');
+            } else {
+                toast.error(data.error || 'No se pudo actualizar el estado');
+            }
+        } catch {
+            toast.error('Error al actualizar');
+        }
+    };
+
     return (
-        <Card className={`mb-2 min-w-0 gap-0 overflow-hidden py-0 ${deleting ? 'opacity-50' : ''} ${post.postType === 'lost_pet' ? (isResolved ? 'border border-green-200 bg-green-50/20' : 'border border-red-200 bg-red-50/20') : isFosterCase ? 'border-orange-200 bg-surface' : 'border-border bg-surface'}`}>
+        <Card className={cn(
+            'min-w-0 gap-0 overflow-hidden py-0',
+            deleting && 'opacity-50',
+            isLostPet ? (isResolved ? 'border-success/35' : 'border-destructive/35') : isFosterCase && 'border-orange-200',
+        )}>
             {isFosterCase && post.rescueCase && (
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-3 py-2 text-orange-900">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-bold">
-                        <HandHeart className="size-5" aria-hidden="true" />
-                        RED SOLIDARIA
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-200 bg-orange-50 px-4 py-2 text-orange-900">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold">
+                        <HandHeart className="size-4" aria-hidden="true" />
+                        Red solidaria
                     </span>
-                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold">
+                    <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold">
                         {RESCUE_STATUS_LABELS[post.rescueCase.status] || post.rescueCase.status}
                     </span>
                 </div>
             )}
-            {/* Lost Pet Banner */}
-            {post.postType === 'lost_pet' && (
-                <div className={`flex flex-col items-start justify-between gap-2 border-b px-3 py-2 text-sm sm:flex-row sm:items-center ${isResolved ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'}`}>
-                    <div className="flex min-w-0 items-center gap-1.5 text-white">
+            {isLostPet && (
+                <div className={cn(
+                    'flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2',
+                    isResolved ? 'border-success/20 bg-success/10 text-green-800' : 'border-destructive/20 bg-destructive/10 text-destructive',
+                )}>
+                    <span className="inline-flex min-w-0 items-center gap-1.5 text-sm font-semibold">
                         {isResolved ? (
-                            <CircleCheck className="size-5 shrink-0" aria-hidden="true" />
+                            <CircleCheck className="size-4 shrink-0" aria-hidden="true" />
                         ) : (
-                            <CircleAlert className="size-5 shrink-0" aria-hidden="true" />
+                            <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
                         )}
-                        <span className="text-sm font-bold [overflow-wrap:anywhere]">
-                            {isResolved ? '¡MASCOTA ENCONTRADA!' : 'MASCOTA PERDIDA'}
-                        </span>
-                    </div>
+                        {isResolved ? 'Mascota encontrada' : 'Mascota perdida'}
+                    </span>
                     {currentUserId && post.author?.id === currentUserId && (
-                        <button
-                            onClick={async () => {
-                                const targetResolvedState = !isResolved;
-
-                                try {
-                                    const res = await fetch(`/api/posts/${post.id}/resolve`, {
-                                        method: 'PATCH',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ isResolved: targetResolvedState }),
-                                    });
-                                    const data = await res.json();
-                                    if (data.success) {
-                                        const updatedState = typeof data.post?.isResolved === 'boolean'
-                                            ? data.post.isResolved
-                                            : targetResolvedState;
-                                        setIsResolved(updatedState);
-                                        toast.success(data.message || 'Estado actualizado');
-                                    } else {
-                                        toast.error(data.error || 'No se pudo actualizar el estado');
-                                    }
-                                } catch {
-                                    toast.error('Error al actualizar');
-                                }
-                            }}
-                            className={`min-h-9 shrink-0 rounded-md px-3 py-1 text-xs font-bold transition-colors ${isResolved
-                                ? 'bg-white/20 hover:bg-white/30 text-white'
-                                : 'bg-white text-green-600 hover:bg-green-50'
-                                }`}
-                        >
-                            {isResolved ? 'Reactivar alerta' : '¡Lo encontré!'}
-                        </button>
+                        <Button size="sm" variant="outline" className="min-h-9" onClick={() => void toggleResolved()}>
+                            {isResolved ? 'Reactivar alerta' : 'Marcar como encontrada'}
+                        </Button>
                     )}
                 </div>
             )}
-            {/* Header */}
-            <div className="flex min-w-0 items-center gap-2.5 px-3 py-2.5">
+
+            <div className="flex min-w-0 items-center gap-3 px-4 pb-2 pt-3">
                 <span className="relative shrink-0">
-                    <Avatar className="h-8 w-8 border border-slate-100">
+                    <Avatar className="size-9">
                         <AvatarImage src={post.author?.image || undefined} />
-                        <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                        <AvatarFallback className="text-sm">{post.author?.name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                     {post.author?.isBusinessOwner && <BusinessOwnerBadge compact />}
                 </span>
-                <div className="flex-1 min-w-0">
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <span className="min-w-0 text-sm font-semibold text-slate-900 [overflow-wrap:anywhere]">{post.author?.name || 'Usuario'}</span>
-                        {post.pet && (
-                            <span className="inline-flex min-w-0 items-center gap-0.5 text-xs text-slate-500 [overflow-wrap:anywhere]">
-                              con {post.pet.name}
-                              <PawPrint className="size-4 text-teal-600" aria-hidden="true" />
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500">
+                <div className="min-w-0 flex-1">
+                    <p className="min-w-0 text-sm [overflow-wrap:anywhere]">
+                        <span className="font-semibold text-foreground">{post.author?.name || 'Usuario'}</span>
+                        {post.pet && <span className="text-muted-foreground"> con {post.pet.name}</span>}
+                    </p>
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
                         <span suppressHydrationWarning>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: es })}</span>
                         {post.location && (
                             <>
-                                <span>•</span>
-                                <span className="flex min-w-0 items-start gap-0.5 [overflow-wrap:anywhere]">
+                                <span aria-hidden="true">·</span>
+                                <span className="inline-flex min-w-0 items-center gap-0.5 [overflow-wrap:anywhere]">
                                     <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
                                     {post.location}
                                 </span>
                             </>
                         )}
+                        {typeLabel && (
+                            <>
+                                <span aria-hidden="true">·</span>
+                                <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                                    {TypeIcon && <TypeIcon className="size-3.5" aria-hidden="true" />}
+                                    {typeLabel}
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
-                {/* Only show menu if user is the post author */}
                 {currentUserId && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-400" aria-label="Más opciones">
+                            <Button variant="ghost" size="icon" className="-mr-2 text-muted-foreground" aria-label="Más opciones">
                                 <MoreHorizontal className="size-5" aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -388,11 +393,11 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             {post.author?.id === currentUserId && !isFosterCase && (
                                 <>
                                     <DropdownMenuItem onClick={() => onEdit?.(post)}>
-                                        <Pencil className="mr-2 size-4 text-slate-500" aria-hidden="true" />
+                                        <Pencil className="mr-2 size-4 text-muted-foreground" aria-hidden="true" />
                                         Editar
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onSelect={() => setConfirmDeleteOpen(true)} className="text-red-600 focus:text-red-600">
+                                    <DropdownMenuItem onSelect={() => setConfirmDeleteOpen(true)} className="text-destructive focus:text-destructive">
                                         <Trash2 className="mr-2 size-4" aria-hidden="true" />
                                         Eliminar
                                     </DropdownMenuItem>
@@ -401,7 +406,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             {isFosterCase && post.canManage && post.rescueCase && (
                                 <DropdownMenuItem asChild>
                                     <Link href={`/hogares-de-transito/casos/${post.rescueCase.id}`}>
-                                        <Settings className="mr-2 size-4 text-slate-500" aria-hidden="true" />
+                                        <Settings className="mr-2 size-4 text-muted-foreground" aria-hidden="true" />
                                         Gestionar caso
                                     </Link>
                                 </DropdownMenuItem>
@@ -409,7 +414,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             {post.author?.id !== currentUserId && post.author?.id && (
                                 <DropdownMenuItem
                                     onSelect={() => setReportOpen(true)}
-                                    className="text-red-600 focus:text-red-600"
+                                    className="text-destructive focus:text-destructive"
                                 >
                                     <Flag className="mr-2 size-4" aria-hidden="true" />
                                     Reportar
@@ -420,40 +425,27 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                 )}
             </div>
 
-            {/* Post Type Badge */}
-            {post.postType && post.postType !== 'post' && (
-                <div className="px-3 pb-1">
-                    <Badge className={`text-xs py-0.5 ${post.postType === 'foster_case' ? 'bg-orange-50 text-orange-800' : post.postType === 'event' ? 'bg-teal-50 text-teal-800' :
-                        post.postType === 'question' ? 'bg-orange-50 text-orange-700' :
-                            post.postType === 'recommendation' ? 'bg-amber-50 text-amber-700' :
-                            post.postType === 'photo' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
-                        }`}>
-                        {(() => {
-                            const PostTypeIcon = POST_TYPE_ICONS[post.postType] ?? Camera;
-                            return <PostTypeIcon className="mr-1 size-4" aria-hidden="true" />;
-                        })()}
-                        {post.postType === 'foster_case' ? 'Caso de tránsito' : post.postType === 'event' ? 'Evento' : post.postType === 'question' ? 'Pregunta' : post.postType === 'recommendation' ? 'Recomendación' : 'Foto'}
-                    </Badge>
-                </div>
-            )}
-
-            {isFosterCase && post.rescueCase && (
-                <div className="mx-3 mb-3 rounded-xl border border-orange-100 bg-orange-50/70 p-3">
-                    <div className="flex flex-wrap gap-2 text-xs text-orange-900">
-                        <span className="rounded-full bg-white px-2.5 py-1 font-medium">{SPECIES_LABELS[post.rescueCase.species] || post.rescueCase.species}</span>
-                        <span className="rounded-full bg-white px-2.5 py-1 font-medium">{SIZE_LABELS[post.rescueCase.size] || post.rescueCase.size}</span>
-                        {post.rescueCase.urgency !== 'NORMAL' && <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-800">{post.rescueCase.urgency === 'CRITICAL' ? 'Crítico' : 'Urgente'}</span>}
-                    </div>
-                    <p className="mt-2 text-base font-semibold text-orange-950">
+            {isFosterCase && post.rescueCase ? (
+                <div className="px-4 pb-4">
+                    <p className="text-sm text-muted-foreground">
+                        {[
+                            SPECIES_LABELS[post.rescueCase.species] || post.rescueCase.species,
+                            SIZE_LABELS[post.rescueCase.size] || post.rescueCase.size,
+                        ].join(' · ')}
+                        {post.rescueCase.urgency !== 'NORMAL' && (
+                            <span className="font-semibold text-destructive"> · {post.rescueCase.urgency === 'CRITICAL' ? 'Crítico' : 'Urgente'}</span>
+                        )}
+                    </p>
+                    <p className="mt-1 font-semibold text-foreground">
                         Necesidad principal: {RESCUE_NEED_LABELS[post.rescueCase.primaryNeed]}
                     </p>
                     {post.rescueCase.additionalNeeds.length > 0 && (
-                        <p className="mt-1 text-xs text-orange-900">
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                             También necesita {post.rescueCase.additionalNeeds.map((need) => RESCUE_NEED_LABELS[need.type].toLowerCase()).join(', ')}
                         </p>
                     )}
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground [overflow-wrap:anywhere]">{post.content}</p>
-                    <Button asChild className="mt-3 w-full" variant={post.rescueCase.adoptionListingId ? 'default' : 'outline'}>
+                    <Button asChild className="mt-3 w-full sm:w-auto" variant={post.rescueCase.adoptionListingId ? 'default' : 'outline'}>
                         <Link href={post.rescueCase.adoptionListingId
                             ? `/adoptions/${post.rescueCase.adoptionListingId}`
                             : post.canManage || !contactNeed
@@ -469,138 +461,169 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                         </Link>
                     </Button>
                 </div>
+            ) : (
+                <div className="px-4 pb-3">
+                    <p className={cn(
+                        'whitespace-pre-wrap leading-relaxed text-foreground [overflow-wrap:anywhere]',
+                        post.postType === 'question' ? 'text-base font-semibold' : 'text-sm',
+                    )}>
+                        {post.content}
+                    </p>
+                </div>
             )}
 
-            {/* Event Info */}
             {post.postType === 'event' && eventDateParts && (
-                <div className="mx-3 mb-2 rounded-lg border border-teal-100 bg-teal-50 p-2.5">
-                    <p className="mb-2 text-xs font-semibold text-primary" suppressHydrationWarning>{eventEnded ? 'Finalizado' : 'Próximo'} · {eventDateParts.label}</p>
-                    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
-                        <div className="flex min-w-12 flex-col items-center rounded-md bg-white px-2 py-1.5">
-                            <span className="text-xs text-teal-700 font-bold uppercase">
-                                {eventDateParts.month}
-                            </span>
-                            <span className="text-xl font-bold text-teal-800">
-                                {eventDateParts.day}
-                            </span>
+                <div className="mx-4 mb-3 flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <div className="flex w-12 shrink-0 flex-col items-center rounded-md bg-primary-soft py-1.5 text-primary" aria-hidden="true">
+                            <span className="text-[11px] font-semibold uppercase leading-none">{eventDateParts.month}</span>
+                            <span className="mt-0.5 text-lg font-bold leading-tight">{eventDateParts.day}</span>
                         </div>
-                        <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1 text-sm text-teal-800">
-                                <Clock className="size-5" aria-hidden="true" />
-                                {eventDateParts.time} <span className="text-xs text-muted-foreground">({EVENT_TIME_ZONE_LABEL})</span>
-                            </div>
+                        <div className="min-w-0 text-sm">
+                            <p className="font-medium text-foreground" suppressHydrationWarning>
+                                {eventEnded ? 'Finalizado' : 'Próximo'} · {eventDateParts.label}
+                            </p>
+                            <p className="mt-0.5 flex items-center gap-1 text-muted-foreground">
+                                <Clock className="size-4 shrink-0" aria-hidden="true" />
+                                {eventDateParts.time} <span className="text-xs">({EVENT_TIME_ZONE_LABEL})</span>
+                            </p>
                             {post.eventLocation && (
-                                <div className="mt-1 flex min-w-0 items-start gap-1 text-sm text-teal-700 [overflow-wrap:anywhere]">
-                                    <MapPin className="size-5 shrink-0" aria-hidden="true" />
+                                <p className="mt-0.5 flex min-w-0 items-start gap-1 text-muted-foreground [overflow-wrap:anywhere]">
+                                    <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                                     {post.eventLocation}
-                                </div>
+                                </p>
                             )}
                         </div>
-                        {post.eventId && (
-                            <Button
-                                size="sm"
-                                variant={isAttending ? 'tonal' : 'default'}
-                                className="col-span-2 min-h-11 w-full sm:col-span-1 sm:w-auto"
-                                onClick={handleAttend}
-                                disabled={eventEnded}
-                                aria-pressed={isAttending}
-                            >
-                                {eventEnded ? 'Finalizado' : isAttending ? (
-                                    <>
-                                        <Check className="mr-1 size-4" aria-hidden="true" />
-                                        Asistiré
-                                    </>
-                                ) : 'Asistir'}
-                            </Button>
-                        )}
                     </div>
+                    {post.eventId && (
+                        <Button
+                            size="sm"
+                            variant={isAttending ? 'tonal' : 'outline'}
+                            className="w-full shrink-0 sm:w-auto"
+                            onClick={handleAttend}
+                            disabled={eventEnded}
+                            aria-pressed={isAttending}
+                        >
+                            {eventEnded ? 'Finalizado' : isAttending ? (
+                                <>
+                                    <Check className="size-4" aria-hidden="true" />
+                                    Asistiré
+                                </>
+                            ) : 'Asistir'}
+                        </Button>
+                    )}
                 </div>
             )}
 
-            {!isFosterCase && <div className="px-3 pb-3 pt-1">
-                <p className={`whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere] ${post.postType === 'question' ? 'text-base font-semibold text-foreground' : 'text-sm text-foreground'}`}>
-                    {post.content}
-                </p>
-            </div>}
-
-            {/* Lost Pet Contact Info */}
-            {post.postType === 'lost_pet' && (post.contactPhone || post.lastSeenLocation) && (
-                <div className="mx-3 mb-2 p-2 bg-red-50 rounded-lg border border-red-200">
-                    <div className="space-y-1">
-                        {post.lastSeenLocation && (
-                            <div className="flex min-w-0 items-start gap-2 text-sm text-red-700">
-                                <MapPin className="size-5 shrink-0" aria-hidden="true" />
-                                <span className="min-w-0 [overflow-wrap:anywhere]"><strong>Visto por última vez:</strong> {post.lastSeenLocation}</span>
+            {isLostPet && (post.contactPhone || post.lastSeenLocation) && (
+                <dl className="mx-4 mb-3 space-y-1 text-sm">
+                    {post.lastSeenLocation && (
+                        <div className="flex min-w-0 items-start gap-2">
+                            <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                            <div className="min-w-0 [overflow-wrap:anywhere]">
+                                <dt className="inline font-medium text-foreground">Visto por última vez: </dt>
+                                <dd className="inline text-muted-foreground">{post.lastSeenLocation}</dd>
                             </div>
-                        )}
-                        {post.contactPhone && (
-                            <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-0.5 text-sm text-red-700">
-                                <Phone className="size-5 shrink-0" aria-hidden="true" />
-                                <span className="shrink-0"><strong>Contacto:</strong></span>
-                                <a href={`tel:${post.contactPhone}`} className="inline-flex min-h-11 min-w-0 items-center font-bold underline [overflow-wrap:anywhere] hover:text-red-800">
+                        </div>
+                    )}
+                    {post.contactPhone && (
+                        <div className="flex min-w-0 items-center gap-2">
+                            <Phone className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                            <dt className="font-medium text-foreground">Contacto:</dt>
+                            <dd className="min-w-0">
+                                <a href={`tel:${post.contactPhone}`} className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 [overflow-wrap:anywhere] hover:text-primary-hover">
                                     {post.contactPhone}
                                 </a>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                            </dd>
+                        </div>
+                    )}
+                </dl>
             )}
 
-            {/* Images */}
             {primaryImageUrl && (
-                <div className="relative h-[220px] w-full bg-slate-100 sm:h-[280px]">
+                <div className="relative aspect-[16/10] w-full bg-muted sm:aspect-[2/1]">
                     <Image
                         src={primaryImageUrl}
                         alt="Contenido de la publicación"
                         fill
                         unoptimized={shouldUnoptimizeImage(primaryImageUrl)}
                         className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 600px"
+                        sizes="(max-width: 768px) 100vw, 680px"
                     />
                 </div>
             )}
 
-            {/* Footer / Stats */}
-            {(likeCount > 0 || (post._count?.comments || 0) > 0) && (
-                <div className="flex justify-between px-3 py-2 text-xs text-muted-foreground">
-                    <span>{likeCount} Me gusta</span>
-                    <span>{comments.length || post._count?.comments || 0} comentarios</span>
+            {(likeCount > 0 || commentCount > 0) && (
+                <div className="flex gap-3 px-4 pt-2.5 text-xs text-muted-foreground">
+                    {likeCount > 0 && <span>{likeCount} me gusta</span>}
+                    {commentCount > 0 && <span>{countLabel(commentCount, 'comentario', 'comentarios')}</span>}
                 </div>
             )}
 
-            {/* Comments Section */}
+            <div className="mt-2 flex min-w-0 items-center border-t border-border px-1 py-0.5">
+                <Button
+                    variant="ghost"
+                    className={cn('min-w-0 flex-1 gap-1.5 px-2', isLiked ? 'text-primary hover:text-primary' : 'text-muted-foreground')}
+                    onClick={handleLike}
+                    aria-label={isLiked ? 'Quitar me gusta' : 'Me gusta'}
+                    aria-pressed={isLiked}
+                >
+                    <Heart className="size-4" fill={isLiked ? 'currentColor' : 'none'} aria-hidden="true" />
+                    <span className="text-xs">Me gusta</span>
+                </Button>
+
+                <Button
+                    variant="ghost"
+                    className={cn('min-w-0 flex-1 gap-1.5 px-2', showComments ? 'bg-primary-soft text-primary' : 'text-muted-foreground')}
+                    onClick={() => setShowComments(!showComments)}
+                    aria-label={showComments ? 'Ocultar comentarios' : post.postType === 'question' ? 'Responder pregunta' : 'Mostrar comentarios'}
+                    aria-expanded={showComments}
+                >
+                    <MessageCircle className="size-4" aria-hidden="true" />
+                    <span className="text-xs">{post.postType === 'question' ? 'Responder' : 'Comentar'}</span>
+                </Button>
+
+                <Button
+                    variant="ghost"
+                    className="min-w-0 flex-1 gap-1.5 px-2 text-muted-foreground"
+                    aria-label="Compartir"
+                    onClick={() => void handleShare()}
+                >
+                    <Share2 className="size-4" aria-hidden="true" />
+                    <span className="text-xs">Compartir</span>
+                </Button>
+            </div>
+
             {showComments && (
-                <div className="bg-slate-50 border-t border-slate-100 px-3 py-2 space-y-2">
+                <div className="space-y-2 border-t border-border bg-background/60 px-4 py-3">
                     {loadingComments ? (
-                        <div className="flex justify-center py-2">
-                            <div className="w-5 h-5 border-2 border-slate-200 border-t-slate-400 rounded-full animate-spin"></div>
-                        </div>
+                        <LoadingSpinner size="sm" className="py-2" />
                     ) : (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                             {comments.map(comment => (
-                                <div key={comment.id} className="flex min-w-0 gap-1.5 text-xs">
+                                <div key={comment.id} className="flex min-w-0 gap-2 text-sm">
                                     <span className="relative mt-0.5 shrink-0">
-                                        <Avatar className="h-6 w-6">
+                                        <Avatar className="size-7">
                                             <AvatarImage src={comment.author.image || undefined} />
-                                            <AvatarFallback>{comment.author.name?.[0]}</AvatarFallback>
+                                            <AvatarFallback className="text-xs">{comment.author.name?.[0]}</AvatarFallback>
                                         </Avatar>
                                         {comment.author.isBusinessOwner && <BusinessOwnerBadge compact className="-bottom-1.5 -right-1.5" />}
                                     </span>
-                                    <div className="min-w-0 max-w-full rounded-lg bg-white px-2 py-1 text-xs [overflow-wrap:anywhere]">
-                                        <span className="mr-1 font-semibold">{comment.author.name}</span>
-                                        <span className="text-slate-700">{comment.content}</span>
+                                    <div className="min-w-0 max-w-full rounded-lg border border-border bg-surface px-3 py-1.5 [overflow-wrap:anywhere]">
+                                        <span className="mr-1 font-semibold text-foreground">{comment.author.name}</span>
+                                        <span className="text-foreground">{comment.content}</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    <div className="mt-1 flex min-w-0 items-center gap-1.5">
-                        <Avatar className="h-6 w-6 shrink-0">
+                    <div className="flex min-w-0 items-center gap-2 pt-1">
+                        <Avatar className="size-7 shrink-0">
                             {currentUserImage ? (
                                 <AvatarImage src={currentUserImage} />
                             ) : (
-                                <AvatarFallback className="bg-teal-500 text-white text-xs">Yo</AvatarFallback>
+                                <AvatarFallback className="bg-primary text-[11px] text-primary-foreground">Yo</AvatarFallback>
                             )}
                         </Avatar>
                         <div className="relative min-w-0 flex-1">
@@ -608,7 +631,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 type="text"
                                 aria-label="Escribí un comentario"
                                 placeholder="Escribí un comentario"
-                                className="min-h-10 w-full rounded-lg border border-border bg-surface py-2 pl-3 pr-11 text-xs focus:border-primary focus:outline-none"
+                                className="min-h-11 w-full rounded-md border border-border-control bg-surface py-2 pl-3 pr-11 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => {
@@ -622,7 +645,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 onClick={handleAddComment}
                                 disabled={!newComment.trim() || submittingComment}
                                 aria-label="Enviar comentario"
-                                className="absolute right-0 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50"
+                                className="absolute right-0.5 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-primary disabled:opacity-50"
                             >
                                 <Send className="size-5" aria-hidden="true" />
                             </button>
@@ -630,42 +653,6 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                     </div>
                 </div>
             )}
-
-            {/* Actions */}
-            <div className="flex min-w-0 items-center border-t border-slate-50 px-1 py-0.5">
-                <Button
-                    variant="ghost"
-                    className={`min-w-0 flex-1 gap-1 px-2 sm:gap-2 ${isLiked ? 'text-teal-600 hover:text-teal-700 hover:bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
-                    onClick={handleLike}
-                    aria-label={isLiked ? 'Quitar me gusta' : 'Me gusta'}
-                    aria-pressed={isLiked}
-                >
-                    <Heart className="size-4" fill={isLiked ? 'currentColor' : undefined} aria-hidden="true" />
-                    <span className="text-xs">Me gusta</span>
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    className={`min-w-0 flex-1 gap-1 px-2 sm:gap-2 ${showComments ? 'text-teal-500 bg-teal-50' : 'text-slate-500 hover:text-slate-600'}`}
-                    onClick={() => setShowComments(!showComments)}
-                    aria-label={showComments ? 'Ocultar comentarios' : post.postType === 'question' ? 'Responder pregunta' : 'Mostrar comentarios'}
-                    aria-expanded={showComments}
-                >
-                    <MessageCircle className="size-4" aria-hidden="true" />
-                    <span className="text-xs">{post.postType === 'question' ? 'Responder' : 'Comentar'}</span>
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="min-w-0 flex-1 gap-1 px-2 text-slate-500 hover:text-slate-600"
-                    aria-label="Compartir"
-                    onClick={() => void handleShare()}
-                >
-                    <Share2 className="size-4" aria-hidden="true" />
-                    <span className="text-xs">Compartir</span>
-                </Button>
-            </div>
 
             {post.author?.id === currentUserId && !isFosterCase && (
                 <ConfirmDialog

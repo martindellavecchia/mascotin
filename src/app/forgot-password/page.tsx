@@ -49,28 +49,28 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <MailCheck className="size-8" aria-hidden="true" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-800">Revisá tu correo</h1>
-            <p className="text-slate-600">
+            <h1 className="text-2xl font-bold text-foreground">Revisá tu correo</h1>
+            <p className="text-muted-foreground">
               Si el correo <span className="font-semibold">{email}</span> está registrado, vas a recibir instrucciones para restablecer tu contraseña.
             </p>
-            <Link href="/login" className="mt-4 inline-flex min-h-11 items-center text-teal-600 font-bold hover:text-teal-700 transition-colors">
+            <Link href="/login" className="mt-4 inline-flex min-h-11 items-center text-primary font-bold hover:text-primary transition-colors">
               Volver al inicio de sesión
             </Link>
           </div>
         ) : (
           <>
             <div className="mb-8 space-y-3">
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">
-                Recuperar <span className="text-teal-500">contraseña</span>
+              <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
+                Recuperar contraseña
               </h1>
-              <p className="text-slate-600 text-base font-medium">
+              <p className="text-base leading-relaxed text-muted-foreground">
                 Ingresá tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="email">Correo electrónico</label>
+                <label className="text-sm font-medium text-foreground" htmlFor="email">Correo electrónico</label>
                 <div className="relative">
                   <Input
                     id="email"
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
                     disabled={loading}
                     className="h-12 w-full pr-11 text-base"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Mail className="size-5" aria-hidden="true" />
                   </span>
                 </div>
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
             </form>
 
             <div className="mt-8 text-center">
-              <Link href="/login" className="inline-flex min-h-11 items-center text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors">
+              <Link href="/login" className="inline-flex min-h-11 items-center text-sm font-medium text-primary hover:text-primary transition-colors">
                 Volver al inicio de sesión
               </Link>
             </div>

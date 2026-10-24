@@ -55,32 +55,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   CONTENT_REPORT: Flag,
 };
 
-const COLOR_MAP: Record<string, string> = {
-  MATCH: 'text-pink-500',
-  MESSAGE: 'text-blue-500',
-  GROUP_MESSAGE: 'text-indigo-500',
-  COMMENT: 'text-teal-500',
-  LIKE: 'text-orange-500',
-  APPOINTMENT: 'text-green-500',
-  EVENT_ATTEND: 'text-teal-600',
-  PROVIDER_REQUEST: 'text-amber-600',
-  GROUP_JOIN: 'text-cyan-500',
-  LOST_PET_ALERT: 'text-red-500',
-  SIGHTING: 'text-amber-600',
-  ADOPTION_APPLICATION: 'text-teal-600',
-  ADOPTION_MATCH: 'text-pink-500',
-  FOSTER_OFFER: 'text-orange-600',
-  FOSTER_RESPONSE: 'text-teal-600',
-  FOSTER_PLACEMENT: 'text-emerald-600',
-  FOSTER_CASE_ALERT: 'text-orange-600',
-  FOSTER_ADOPTION: 'text-pink-600',
-  VOLUNTEER_OFFER: 'text-teal-600',
-  VOLUNTEER_RESPONSE: 'text-orange-600',
-  VOLUNTEER_ASSIGNMENT: 'text-emerald-600',
-  SOLIDARITY_ADOPTION_ALERT: 'text-pink-600',
-  SOLIDARITY_VETERINARY_ALERT: 'text-red-600',
-  CONTENT_REPORT: 'text-rose-600',
-};
+const URGENT_TYPES = new Set(['LOST_PET_ALERT', 'SOLIDARITY_VETERINARY_ALERT', 'CONTENT_REPORT']);
 
 interface NotificationItemProps {
   notification: Notification;
@@ -91,7 +66,7 @@ interface NotificationItemProps {
 export default function NotificationItem({ notification, onRead, onClose }: NotificationItemProps) {
   const router = useRouter();
   const Icon = ICON_MAP[notification.type] || Bell;
-  const color = COLOR_MAP[notification.type] || 'text-slate-500';
+  const urgent = URGENT_TYPES.has(notification.type);
 
   const handleClick = () => {
     if (!notification.read) {
@@ -106,20 +81,22 @@ export default function NotificationItem({ notification, onRead, onClose }: Noti
   return (
     <button
       onClick={handleClick}
-      className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 ${
-        !notification.read ? 'bg-teal-50/50' : ''
+      className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-primary-soft/50 ${
+        !notification.read ? 'bg-primary-soft/40' : ''
       }`}
     >
-      <Icon className={`size-6 mt-0.5 shrink-0 ${color}`} aria-hidden="true" />
+      <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${urgent ? 'bg-destructive/10 text-destructive' : 'bg-primary-soft text-primary'}`}>
+        <Icon className="size-4" aria-hidden="true" />
+      </span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm leading-snug ${!notification.read ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
+        <p className={`text-sm leading-snug ${!notification.read ? 'font-semibold text-foreground' : 'text-slate-700'}`}>
           {notification.title}
         </p>
-        <p className="text-xs text-slate-500 mt-0.5 truncate">{notification.body}</p>
-        <p className="text-xs text-slate-400 mt-1">{timeAgo(notification.createdAt)}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 truncate">{notification.body}</p>
+        <p className="text-xs text-muted-foreground mt-1">{timeAgo(notification.createdAt)}</p>
       </div>
       {!notification.read && (
-        <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 shrink-0" />
+        <span className="mt-2 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
       )}
     </button>
   );

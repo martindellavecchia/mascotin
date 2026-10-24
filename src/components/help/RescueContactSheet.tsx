@@ -187,10 +187,10 @@ export default function RescueContactSheet({
       <SheetContent
         side={isMobile ? 'bottom' : 'right'}
         className={isMobile
-          ? 'max-h-[92svh] overflow-y-auto rounded-t-2xl bg-white'
-          : 'w-full overflow-y-auto bg-white sm:max-w-xl'}
+          ? 'max-h-[92svh] overflow-y-auto rounded-t-2xl bg-surface'
+          : 'w-full overflow-y-auto bg-surface sm:max-w-xl'}
       >
-        <SheetHeader className="border-b border-slate-100 pr-14">
+        <SheetHeader className="border-b border-border pr-14">
           <SheetTitle>{activeContact ? 'Conversación privada' : 'Quiero ayudar'}</SheetTitle>
           <SheetDescription>
             {speciesLabel} · {location}. La dirección exacta y los datos personales permanecen privados.
@@ -246,14 +246,14 @@ export default function RescueContactSheet({
             )}
 
             {selectedOption && (
-              <div className="space-y-3 rounded-xl border border-slate-200 p-4">
+              <div className="space-y-3 rounded-xl border border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-semibold text-slate-900">{RESCUE_NEED_LABELS[selectedOption.needType]}</p>
+                  <p className="font-semibold text-foreground">{RESCUE_NEED_LABELS[selectedOption.needType]}</p>
                   <Badge variant="outline">Interés previo</Badge>
                 </div>
                 <p className="text-sm text-slate-600">{ELIGIBILITY_COPY[selectedOption.code]}</p>
                 <p className="text-sm text-slate-600">{COMMITMENT_COPY[selectedOption.needType]}</p>
-                <p className="text-xs font-medium text-slate-500">Confirmar interés todavía no te asigna el caso.</p>
+                <p className="text-xs font-medium text-muted-foreground">Confirmar interés todavía no te asigna el caso.</p>
               </div>
             )}
 

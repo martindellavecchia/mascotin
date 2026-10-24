@@ -194,9 +194,9 @@ export default function MessagesClientShell({
       return (
         <div className="flex h-full min-h-0 min-w-0 flex-col items-center justify-center bg-background p-6 text-center text-muted-foreground sm:p-8">
           <MessageCircle className="mb-4 size-12 text-primary/30" aria-hidden="true" />
-          <h3 className="mb-2 text-lg font-semibold text-foreground">
+          <h2 className="mb-2 text-lg font-semibold text-foreground">
             Tus mensajes
-          </h3>
+          </h2>
           <p className="max-w-md [overflow-wrap:anywhere]">Elegí una conversación o un grupo para empezar a chatear.</p>
         </div>
       );
@@ -218,7 +218,7 @@ export default function MessagesClientShell({
             >
               <ArrowLeft className="size-5" aria-hidden="true" />
             </Button>
-            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-200">
+            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
               {group?.image && (
                 <Image
                   src={group.image}
@@ -231,8 +231,8 @@ export default function MessagesClientShell({
               )}
             </div>
             <div className="min-w-0">
-              <h2 className="truncate font-bold text-slate-800">{group?.name}</h2>
-              <p className="text-xs text-slate-500">Grupo de Interés</p>
+              <h2 className="truncate font-bold text-foreground">{group?.name}</h2>
+              <p className="text-xs text-muted-foreground">Grupo de Interés</p>
             </div>
           </div>
           <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-background p-2 sm:p-4">
@@ -282,7 +282,7 @@ export default function MessagesClientShell({
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Button>
-          <span className="text-sm font-medium text-slate-700">Conversación</span>
+          <span className="text-sm font-medium text-foreground">Conversación</span>
         </div>
         <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
           <ChatWindow
@@ -307,7 +307,7 @@ export default function MessagesClientShell({
             showChat ? 'hidden lg:flex' : 'flex'
           }`}
         >
-          {inbox ? <UnifiedInbox rows={inbox} onSelect={handleSelect} /> : <ConversationList
+          {inbox ? <UnifiedInbox rows={inbox} onSelect={handleSelect} selectedId={selectedId} /> : <ConversationList
             matches={matches}
             groups={groups}
             selectedId={selectedId}

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { eventInputToIso, toEventDateInput, formatEventDate } from '@/lib/date-format';
+import { countLabel } from '@/lib/utils';
 
 interface GroupEventsProps {
     groupId: string;
@@ -235,7 +236,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
         document.body.removeChild(link);
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500">Cargando eventos...</div>;
+    if (loading) return <div className="p-8 text-center text-muted-foreground">Cargando eventos...</div>;
 
     if (loadError) {
         return (
@@ -250,12 +251,12 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
 
     return (
         <div className="min-w-0 space-y-4">
-            <h3 className="text-lg font-semibold text-slate-800 [overflow-wrap:anywhere]">Eventos del grupo ({events.length})</h3>
+            <h3 className="text-lg font-semibold text-foreground [overflow-wrap:anywhere]">Eventos del grupo ({events.length})</h3>
 
             {events.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
-                    <CalendarX className="mx-auto mb-2 size-10 text-slate-300" aria-hidden="true" />
-                    <p className="text-slate-500">No hay eventos programados.</p>
+                <div className="rounded-lg border border-dashed border-border bg-background px-4 py-10 text-center">
+                    <CalendarX className="mx-auto mb-2 size-10 text-primary/35" aria-hidden="true" />
+                    <p className="text-muted-foreground">No hay eventos programados.</p>
                 </div>
             ) : (
                 <div className="grid gap-4">
@@ -268,7 +269,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                             className={`group-card flex min-w-0 flex-col gap-4 p-4 transition-colors sm:flex-row ${canManage ? 'cursor-pointer hover:border-primary/35' : ''}`}
                             onClick={() => canManage && setViewingEvent(event)}
                         >
-                            <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-24 sm:w-24">
+                            <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-24 sm:w-24">
                                 {event.image ? (
                                     <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
                                 ) : (
@@ -280,8 +281,8 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                             <div className="min-w-0 flex-1">
                                 <div className="flex min-w-0 items-start justify-between gap-2">
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-slate-800 [overflow-wrap:anywhere]">{event.title}</h4>
-                                        <div className="mb-2 mt-1 space-y-1 text-sm text-slate-500">
+                                        <h4 className="font-bold text-foreground [overflow-wrap:anywhere]">{event.title}</h4>
+                                        <div className="mb-2 mt-1 space-y-1 text-sm text-muted-foreground">
                                             <p className="flex items-start gap-1">
                                                 <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
                                                 <span>{formatEventDate(event.date)}</span>
@@ -300,7 +301,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                                     variant="ghost"
                                                     size="icon"
                                                     aria-label={`Editar ${event.title}`}
-                                                    className="text-slate-400 hover:text-teal-600 hover:bg-teal-50"
+                                                    className="text-muted-foreground hover:text-primary hover:bg-teal-50"
                                                     onClick={() => setEditingEvent(event)}
                                                 >
                                                     <Pencil className="size-5" aria-hidden="true" />
@@ -309,7 +310,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                                     variant="ghost"
                                                     size="icon"
                                                     aria-label={`Eliminar ${event.title}`}
-                                                    className="text-slate-400 hover:text-red-500 hover:bg-red-50"
+                                                    className="text-muted-foreground hover:text-red-500 hover:bg-red-50"
                                                     onClick={() => setDeletingEvent(event)}
                                                 >
                                                     <Trash2 className="size-5" aria-hidden="true" />
@@ -318,13 +319,13 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                         )}
                                     </div>
                                 </div>
-                                <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-xs text-slate-400">
+                                <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                     <span className="min-w-0 [overflow-wrap:anywhere]">Organizado por {event.author.name}</span>
                                     {typeof event.attendeesCount === 'number' && (
-                                        <span>{event.attendeesCount} asistentes</span>
+                                        <span>{countLabel(event.attendeesCount, 'asistente', 'asistentes')}</span>
                                     )}
                                     {canManage && (
-                                        <span className="rounded-full bg-teal-50 px-2 py-0.5 font-medium text-teal-600">
+                                        <span className="rounded-full bg-teal-50 px-2 py-0.5 font-medium text-primary">
                                             Ver asistentes
                                         </span>
                                     )}
@@ -422,9 +423,9 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
 
                     <div className="min-w-0 py-4">
                         {loadingAttendees ? (
-                            <div className="text-center py-8 text-slate-500">Cargando asistentes...</div>
+                            <div className="text-center py-8 text-muted-foreground">Cargando asistentes...</div>
                         ) : attendees.length === 0 ? (
-                            <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg">
+                            <div className="text-center py-8 text-muted-foreground bg-background rounded-lg">
                                 No hay asistentes confirmados aún.
                             </div>
                         ) : (
@@ -448,7 +449,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                                     <span className="min-w-0 font-medium [overflow-wrap:anywhere]">{attendee.name}</span>
                                                 </TableCell>
                                                 <TableCell className="[overflow-wrap:anywhere]">{attendee.email}</TableCell>
-                                                <TableCell className="text-slate-500 text-xs">
+                                                <TableCell className="text-muted-foreground text-xs">
                                                     {new Date(attendee.confirmedAt).toLocaleDateString('es-AR')}
                                                 </TableCell>
                                             </TableRow>
@@ -460,13 +461,13 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                     </div>
 
                     <DialogFooter className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="text-center text-sm text-slate-500 sm:text-left">
-                            Total: {attendees.length} asistentes
+                        <div className="text-center text-sm text-muted-foreground sm:text-left">
+                            Total: {countLabel(attendees.length, 'asistente', 'asistentes')}
                         </div>
                         <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
                             <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setViewingEvent(null)}>Cerrar</Button>
                             {attendees.length > 0 && (
-                                <Button variant="brand" onClick={downloadCSV} className="min-h-11 w-full bg-teal-600 hover:bg-teal-700 sm:w-auto">
+                                <Button variant="brand" onClick={downloadCSV} className="min-h-11 w-full sm:w-auto">
                                     <Download className="mr-2 size-4" aria-hidden="true" />
                                     Descargar CSV
                                 </Button>

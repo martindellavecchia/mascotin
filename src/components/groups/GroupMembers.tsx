@@ -67,27 +67,27 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500">Cargando miembros...</div>;
+    if (loading) return <div className="p-8 text-center text-muted-foreground">Cargando miembros...</div>;
 
     return (
         <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-slate-800">Miembros del grupo ({members.length})</h3>
+            <h3 className="font-semibold text-lg text-foreground">Miembros del grupo ({members.length})</h3>
             <div className="grid gap-4">
                 {members.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-100">
+                    <div key={member.id} className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
                         <div className="flex items-center gap-3">
                             <Avatar>
                                 <AvatarImage src={member.user.image || undefined} />
                                 <AvatarFallback>{member.user.name[0]}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="font-medium text-slate-900 flex items-center gap-2">
+                                <p className="font-medium text-foreground flex items-center gap-2">
                                     {member.user.name}
                                     {member.role === 'ADMIN' && (
                                         <Badge variant="secondary" className="text-[10px] h-5 bg-amber-100 text-amber-700">Administrador/a</Badge>
                                     )}
                                 </p>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-muted-foreground">
                                     Se sumó el {new Date(member.joinedAt).toLocaleDateString('es-AR')}
                                 </p>
                             </div>

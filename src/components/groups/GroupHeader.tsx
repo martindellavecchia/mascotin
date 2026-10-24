@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import EditGroupModal from '@/components/groups/EditGroupModal';
+import { countLabel } from '@/lib/utils';
 
 interface GroupHeaderProps {
     group: {
@@ -71,12 +72,12 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
     return (
         <>
             <section className="mb-6 min-w-0 overflow-hidden rounded-xl border border-border bg-surface">
-                <div className="relative h-36 bg-slate-200 sm:h-48">
+                <div className="relative h-36 bg-muted sm:h-48">
                     {group.image ? (
                         <img src={group.image} alt={group.name} className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-teal-100">
-                            <Users className="size-16 text-teal-300" aria-hidden="true" />
+                        <div className="flex h-full w-full items-center justify-center bg-primary-soft">
+                            <Users className="size-12 text-primary/30" aria-hidden="true" />
                         </div>
                     )}
                 </div>
@@ -84,13 +85,13 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                 <div className="px-4 py-4 sm:px-6">
                     <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0 flex-1">
-                            <h1 className="mb-2 text-2xl font-bold text-slate-900 [overflow-wrap:anywhere] sm:text-3xl">{group.name}</h1>
-                            <p className="mb-4 max-w-2xl text-slate-600 [overflow-wrap:anywhere]">{group.description}</p>
+                            <h1 className="mb-2 text-2xl font-bold text-foreground [overflow-wrap:anywhere] sm:text-3xl">{group.name}</h1>
+                            <p className="mb-4 max-w-2xl text-foreground [overflow-wrap:anywhere]">{group.description}</p>
 
-                            <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 sm:gap-4">
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:gap-4">
                                 <span className="flex items-center gap-1">
-                                    <UserRound className="size-5" aria-hidden="true" />
-                                    {group._count.members} miembros
+                                    <UserRound className="size-4" aria-hidden="true" />
+                                    {countLabel(group._count.members, 'miembro', 'miembros')}
                                 </span>
                                 {isMember && (
                                     <Badge variant="verified">
@@ -119,7 +120,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                         destructive
                                         onConfirm={handleDelete}
                                         trigger={
-                                            <Button variant="destructive" className="min-h-11 w-full sm:w-auto">
+                                            <Button variant="outline" className="min-h-11 w-full text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive sm:w-auto">
                                                 <Trash2 className="mr-2 size-5" aria-hidden="true" />
                                                 Eliminar
                                             </Button>
@@ -134,7 +135,7 @@ export default function GroupHeader({ group, isMember, isCreator, onJoinChange }
                                     destructive
                                     onConfirm={handleJoinLeave}
                                     trigger={
-                                        <Button variant="outline" className="col-span-2 min-h-11 w-full sm:w-auto" disabled={loading}>
+                                        <Button variant="ghost" className="col-span-2 -ml-3 w-fit text-muted-foreground hover:bg-destructive/5 hover:text-destructive lg:ml-0" disabled={loading}>
                                             {loading ? 'Procesando...' : 'Salir del grupo'}
                                         </Button>
                                     }

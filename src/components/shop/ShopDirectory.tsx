@@ -2,27 +2,29 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { MapPin, Search, Star, Store } from 'lucide-react';
+import { Search, Star, Store } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { PublicStoreCard } from '@/lib/server/stores';
 import SaveSearchButton from '@/components/searches/SaveSearchButton';
+import { countLabel } from '@/lib/utils';
 
 interface Category {
   id: string;
   name: string;
 }
 
-const trustClasses: Record<string, string> = {
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  teal: 'bg-teal-50 text-teal-700 border-teal-200',
-  amber: 'bg-amber-50 text-amber-700 border-amber-200',
-  rose: 'bg-rose-50 text-rose-700 border-rose-200',
-  slate: 'bg-slate-50 text-slate-600 border-slate-200',
+const trustVariants: Record<string, 'success' | 'default' | 'warning' | 'destructive' | 'neutral'> = {
+  emerald: 'success',
+  teal: 'default',
+  amber: 'warning',
+  rose: 'destructive',
+  slate: 'neutral',
 };
 
 export default function ShopDirectory({
@@ -130,20 +132,25 @@ export default function ShopDirectory({
       <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <PageHeader
-            eyebrow="Directorio público"
             title="Servicios para tu mascota"
             description="Buscá por categoría, zona y experiencias verificadas de la comunidad."
-            action={<Button asChild variant="outline"><Link href="/map" prefetch={false}>Ver en el mapa</Link></Button>}
+            action={
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="ghost" className="text-primary"><Link href="/appointments">Mis turnos</Link></Button>
+                <Button asChild variant="outline"><Link href="/map" prefetch={false}>Ver en el mapa</Link></Button>
+              </div>
+            }
           />
 
-          <div className="mt-7 rounded-lg border border-border bg-background p-4">
-            <div className="mb-3 flex flex-wrap gap-3"><Button asChild variant="outline"><Link href="/appointments">Mis turnos</Link></Button><SaveSearchButton kind="SERVICES" filters={{ search, zone: zone.trim(), categoryId: categoryId === '_all' ? '' : categoryId, minRating: minRating === '_all' ? 0 : Number(minRating) }} /></div>
-            <label className="mb-3 block text-sm font-medium">Zona elegida<Input value={zone} onChange={e => setZone(e.target.value)} placeholder="Barrio o ciudad (opcional)" /></label>
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input aria-label="Buscar negocio, servicio o zona" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar negocio, servicio o zona" className="h-12 pl-11" />
+          <div className="mt-6 space-y-3">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <Input aria-label="Buscar negocio, servicio o zona" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar negocio, servicio o zona" className="pl-9" />
+              </div>
+              <Input aria-label="Zona elegida" value={zone} onChange={e => setZone(e.target.value)} placeholder="Zona: barrio o ciudad (opcional)" />
             </div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               <Select value={categoryId} onValueChange={setCategoryId}>
                 <SelectTrigger aria-label="Filtrar por categoría"><SelectValue placeholder="Categoría" /></SelectTrigger>
                 <SelectContent>
@@ -174,24 +181,23 @@ export default function ShopDirectory({
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-foreground">{stores.length} {stores.length === 1 ? 'negocio' : 'negocios'}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">La calificación y la cantidad de reseñas determinan el orden.</p>
+            <h2 className="text-lg font-semibold text-foreground">{stores.length} {stores.length === 1 ? 'negocio' : 'negocios'}</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">Ordenados por calificación y cantidad de reseñas.</p>
           </div>
-          <Button asChild variant="tonal">
-            <Link href="/provider" prefetch={false}>Administrar un negocio</Link>
-          </Button>
+          <SaveSearchButton kind="SERVICES" filters={{ search, zone: zone.trim(), categoryId: categoryId === '_all' ? '' : categoryId, minRating: minRating === '_all' ? 0 : Number(minRating) }} />
         </div>
 
         {error ? (
-          <div className="rounded-lg border border-destructive/30 bg-surface px-6 py-10 text-center">
-            <p className="text-sm font-medium text-destructive">{error}</p>
-            <Button variant="outline" className="mt-4" onClick={() => setRefreshKey((current) => current + 1)}>Intentar de nuevo</Button>
-          </div>
+          <StateFeedback
+            status="error"
+            title={error}
+            action={<Button variant="outline" onClick={() => setRefreshKey((current) => current + 1)}>Intentar de nuevo</Button>}
+          />
         ) : loading ? (
           <div className="divide-y divide-border border-y border-border bg-surface" aria-label="Cargando negocios">
-            {[0, 1, 2].map((item) => <div key={item} className="h-36 animate-pulse bg-slate-100" />)}
+            {[0, 1, 2].map((item) => <div key={item} className="h-28 animate-pulse bg-muted/60 motion-reduce:animate-none" />)}
           </div>
         ) : stores.length === 0 ? (
           <EmptyState
@@ -203,28 +209,41 @@ export default function ShopDirectory({
         ) : (
           <div className="divide-y divide-border border-y border-border bg-surface">
             {stores.map((store) => (
-              <Link key={store.id} href={`/shop/${store.slug}`} className="group grid gap-4 px-0 py-5 transition-colors hover:bg-primary-soft/45 sm:grid-cols-[112px_minmax(0,1fr)_auto] sm:px-4">
-                <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-primary-soft sm:w-28">
-                  {store.image ? <img src={store.image} alt={store.name} className="h-full w-full object-cover" /> : <Store className="size-10 text-primary/35" aria-hidden="true" />}
+              <Link key={store.id} href={`/shop/${store.slug}`} className="group grid grid-cols-[64px_minmax(0,1fr)] gap-x-4 gap-y-2 px-4 py-4 transition-colors hover:bg-primary-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:grid-cols-[96px_minmax(0,1fr)_auto] sm:py-5">
+                <div className="row-span-2 flex size-16 items-center justify-center overflow-hidden rounded-lg bg-primary-soft sm:row-span-1 sm:size-24">
+                  {store.image ? <img src={store.image} alt={store.name} className="h-full w-full object-cover" /> : <Store className="size-7 text-primary/35 sm:size-9" aria-hidden="true" />}
                 </div>
-                <div className="min-w-0 px-4 sm:px-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="min-w-0 truncate text-lg font-bold text-foreground group-hover:text-primary">{store.name}</h3>
-                    <Badge variant="neutral">{store.category.name}</Badge>
-                    <Badge variant="outline" className={trustClasses[store.trust.tone] || trustClasses.slate}>{store.trust.label}</Badge>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <h3 className="min-w-0 text-base font-semibold text-foreground group-hover:text-primary sm:text-lg">{store.name}</h3>
+                    <Badge variant={trustVariants[store.trust.tone] || 'neutral'}>{store.trust.label}</Badge>
                   </div>
-                  {store.address && <p className="mt-1 flex items-start gap-1 text-sm text-muted-foreground"><MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" /><span className="line-clamp-1">{store.address}</span></p>}
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600">{store.description || 'Sin descripción disponible.'}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{store.services[0] ? `${store.services[0].name} · $${store.services[0].price.toLocaleString('es-AR')}` : 'Próximamente publicará sus servicios'}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {store.category.name}
+                    {store.address && <span> · {store.address}</span>}
+                  </p>
+                  {store.description && <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground">{store.description}</p>}
+                  {store.services[0] && <p className="mt-1.5 text-sm text-muted-foreground">{store.services[0].name} · ${store.services[0].price.toLocaleString('es-AR')}</p>}
                 </div>
-                <div className="flex items-center justify-between gap-3 px-4 sm:flex-col sm:items-end sm:justify-start sm:px-0 sm:pt-1">
-                  <p className="flex items-center gap-1 font-bold text-foreground"><Star className="size-4 text-warning" aria-hidden="true" fill="currentColor" />{store.reviewCount ? store.ratingAverage.toFixed(1) : 'Nuevo'}</p>
-                  <p className="text-xs text-muted-foreground">{store.reviewCount} reseñas</p>
+                <div className="col-start-2 flex items-center gap-2 text-sm sm:col-start-3 sm:flex-col sm:items-end sm:gap-0.5 sm:pt-1">
+                  {store.reviewCount ? (
+                    <>
+                      <p className="flex items-center gap-1 font-semibold text-foreground"><Star className="size-4 text-highlight" aria-hidden="true" fill="currentColor" />{store.ratingAverage.toFixed(1)}</p>
+                      <p className="text-xs text-muted-foreground">{countLabel(store.reviewCount, 'reseña', 'reseñas')}</p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Sin reseñas todavía</p>
+                  )}
                 </div>
               </Link>
             ))}
           </div>
         )}
+
+        <p className="mt-6 text-sm text-muted-foreground">
+          ¿Tenés un negocio para mascotas?{' '}
+          <Link href="/provider" prefetch={false} className="font-semibold text-primary underline-offset-4 hover:underline">Administrar un negocio</Link>
+        </p>
       </section>
     </main>
   );

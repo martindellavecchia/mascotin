@@ -102,11 +102,11 @@ export default function PetPassportPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-        <div className="h-8 w-40 animate-pulse rounded-lg bg-slate-200" />
-        <div className="h-72 animate-pulse rounded-2xl bg-slate-200" />
+        <div className="h-8 w-40 animate-pulse rounded-lg bg-muted" />
+        <div className="h-72 animate-pulse rounded-2xl bg-muted" />
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="h-48 animate-pulse rounded-2xl bg-slate-200" />
-          <div className="h-48 animate-pulse rounded-2xl bg-slate-200" />
+          <div className="h-48 animate-pulse rounded-2xl bg-muted" />
+          <div className="h-48 animate-pulse rounded-2xl bg-muted" />
         </div>
       </div>
     );
@@ -115,7 +115,7 @@ export default function PetPassportPage() {
   if (!pet) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <p className="text-slate-500">No encontramos esta mascota.</p>
+        <p className="text-muted-foreground">No encontramos esta mascota.</p>
         <Button asChild variant="outline" className="mt-4">
           <Link href="/profile">Volver a Mis mascotas</Link>
         </Button>
@@ -149,14 +149,14 @@ export default function PetPassportPage() {
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
       <Link
         href="/profile"
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-slate-600 hover:text-teal-700"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-slate-600 hover:text-primary"
       >
         <ArrowLeft className="size-5" aria-hidden="true" />
         Mis mascotas
       </Link>
 
       <section className="overflow-hidden rounded-xl border border-border bg-surface">
-        <div className="relative h-72 bg-slate-100 sm:h-80">
+        <div className="relative h-60 bg-muted sm:h-80">
           {image ? (
             <Image
               src={image}
@@ -166,21 +166,20 @@ export default function PetPassportPage() {
               unoptimized={shouldUnoptimizeImage(image)}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-slate-300">
-              <PawPrint className="size-12" aria-hidden="true" />
+            <div className="flex h-full items-center justify-center bg-primary-soft">
+              <PawPrint className="size-12 text-primary/30" aria-hidden="true" />
             </div>
           )}
-          <div className="absolute inset-x-0 bottom-0 bg-slate-950/72 px-6 py-5">
-            <Badge className="mb-2 bg-white/90 text-teal-800 hover:bg-white/90">
-              {getOptionLabel(PET_TYPE_LABELS, pet.petType) ?? 'Mascota'}
-            </Badge>
-            <p className="text-sm font-medium text-teal-100">Pasaporte digital</p>
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">{pet.name}</h1>
-            <p className="mt-1 text-sm text-slate-200">{summary}</p>
-          </div>
         </div>
 
-        <div className="space-y-5 p-6">
+        <div className="space-y-5 p-5 sm:p-6">
+          <div>
+            <p className="text-sm font-semibold text-primary">
+              Pasaporte digital · {getOptionLabel(PET_TYPE_LABELS, pet.petType) ?? 'Mascota'}
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-[-0.035em] text-foreground sm:text-4xl">{pet.name}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{summary}</p>
+          </div>
           {pet.isOwner && (
             <PetCompletionPrompt
               petName={pet.name}
@@ -189,7 +188,7 @@ export default function PetPassportPage() {
             />
           )}
           <div className="flex flex-wrap items-start justify-between gap-4">
-            {pet.bio?.trim() && <p className="max-w-2xl text-slate-700">{pet.bio}</p>}
+            {pet.bio?.trim() && <p className="max-w-2xl text-foreground">{pet.bio}</p>}
             {pet.isOwner && (
               <div className="flex flex-wrap gap-2">
                 <Button asChild>
@@ -200,12 +199,12 @@ export default function PetPassportPage() {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-red-200 text-red-700 hover:bg-red-50">
+                    <Button variant="ghost" className="text-muted-foreground">
                       Más acciones
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild className="text-red-700 focus:text-red-700">
+                    <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
                       <Link href={`/alerts?report=lost&petId=${pet.id}`}>Reportar como perdida</Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -218,10 +217,10 @@ export default function PetPassportPage() {
             <dl className="grid grid-cols-2 gap-y-1 border-y border-border py-2 sm:grid-cols-3">
               {facts.map((fact) => (
                 <div key={fact.label} className="px-3 py-2">
-                  <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                  <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                     {fact.label}
                   </dt>
-                  <dd className={fact.value ? 'mt-0.5 text-sm font-semibold text-slate-900' : 'mt-0.5 text-sm text-slate-400'}>
+                  <dd className={fact.value ? 'mt-0.5 text-sm font-semibold text-foreground' : 'mt-0.5 text-sm text-muted-foreground'}>
                     {fact.value ?? UNSET_LABEL}
                   </dd>
                 </div>
@@ -231,17 +230,17 @@ export default function PetPassportPage() {
 
           <div className="flex flex-wrap gap-2">
             {pet.vaccinated && (
-              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">
+              <Badge>
                 {vaccinatedLabel(pet.gender)}
               </Badge>
             )}
             {pet.neutered && (
-              <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+              <Badge>
                 {neuteredLabel(pet.gender)}
               </Badge>
             )}
             {intents.slice(0, 3).map((intent) => (
-              <Badge key={intent} variant="outline" className="border-teal-200 text-teal-800">
+              <Badge key={intent} variant="outline">
                 {INTENT_LABELS[intent] || intent}
               </Badge>
             ))}
@@ -250,11 +249,11 @@ export default function PetPassportPage() {
 
           {activities.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">Actividades favoritas</h2>
+              <h2 className="text-sm font-semibold text-foreground">Actividades favoritas</h2>
               <ul className="mt-2 flex flex-wrap gap-2">
                 {activities.map((activity) => (
                   <li key={activity}>
-                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                    <Badge variant="outline">
                       {PET_ACTIVITY_LABELS[activity]}
                     </Badge>
                   </li>
@@ -264,8 +263,8 @@ export default function PetPassportPage() {
           )}
 
           {!pet.isOwner && pet.owner && (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              Responsable: <span className="font-medium text-slate-900">{pet.owner.name}</span>
+            <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm text-slate-600">
+              Responsable: <span className="font-medium text-foreground">{pet.owner.name}</span>
               {pet.owner.location ? ` · ${pet.owner.location}` : ''}
             </div>
           )}
@@ -289,14 +288,14 @@ export default function PetPassportPage() {
               return (
                 <div key={row.label} className="flex items-center justify-between gap-3">
                   <span className="text-slate-600">{row.label}</span>
-                  <span className={muted ? 'text-slate-400' : 'font-medium text-slate-900'}>
+                  <span className={muted ? 'text-muted-foreground' : 'font-medium text-foreground'}>
                     {COMPATIBILITY_LABELS[key] || key}
                   </span>
                 </div>
               );
             })}
             {temperament.length > 0 && (
-              <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
                 {temperament.slice(0, 3).map((tag) => (
                   <Badge key={tag} variant="outline">
                     {TEMPERAMENT_LABELS[tag] || tag}
@@ -318,19 +317,19 @@ export default function PetPassportPage() {
                 {healthRows.map((row) => (
                   <div key={row.label} className="flex items-start justify-between gap-3">
                     <span className="text-slate-600">{row.label}</span>
-                    <span className="text-right font-medium text-slate-900">{row.value}</span>
+                    <span className="text-right font-medium text-foreground">{row.value}</span>
                   </div>
                 ))}
               </div>
             ) : pet.isOwner ? (
-              <div className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
-                <p className="text-slate-500">Sumá microchip, veterinaria o alergias.</p>
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-background px-3 py-2.5">
+                <p className="text-muted-foreground">Sumá microchip, veterinaria o alergias.</p>
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/profile?petId=${pet.id}`}>Completar</Link>
                 </Button>
               </div>
             ) : (
-              <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-slate-500">
+              <p className="rounded-xl border border-dashed border-border bg-background px-4 py-6 text-center text-muted-foreground">
                 Sin datos de salud compartidos.
               </p>
             )}

@@ -105,10 +105,10 @@ export default function SolidarityAlerts() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Alertas solidarias</h2>
-        <p className="mt-1 text-sm text-slate-500">Son independientes de tu hogar y tu perfil de voluntariado. Todas empiezan desactivadas.</p>
+        <h2 className="text-xl font-bold text-foreground">Alertas solidarias</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Son independientes de tu hogar y tu perfil de voluntariado. Todas empiezan desactivadas.</p>
       </div>
-      {loading ? <div className="h-48 animate-pulse rounded-2xl bg-slate-200" /> : (
+      {loading ? <div className="h-48 animate-pulse rounded-2xl bg-muted" /> : (
         <>
           <Card>
             <CardHeader><CardTitle className="text-lg">Tu zona privada</CardTitle></CardHeader>
@@ -120,7 +120,7 @@ export default function SolidarityAlerts() {
                 onLocationChange={setLocation}
                 onCoordinatesChange={(nextLatitude, nextLongitude) => { setLatitude(nextLatitude); setLongitude(nextLongitude); }}
               />
-              <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+              <label className="flex items-start gap-3 rounded-xl border border-border bg-background p-4 text-sm text-slate-700">
                 <Checkbox checked={locationConsent} onCheckedChange={(checked) => setLocationConsent(checked === true)} />
                 <span>Acepto que Huella use esta ubicación sólo para calcular coincidencias. Nadie verá mis coordenadas.</span>
               </label>
@@ -140,7 +140,7 @@ export default function SolidarityAlerts() {
                         onCheckedChange={(enabled) => updateSubscription(subscription.type, { enabled })}
                       />
                     </div>
-                    <p className="text-sm font-normal text-slate-500">{config.description}</p>
+                    <p className="text-sm font-normal text-muted-foreground">{config.description}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
@@ -155,21 +155,21 @@ export default function SolidarityAlerts() {
                           onChange={(event) => updateSubscription(subscription.type, { radiusKm: Math.min(50, Math.max(1, Number(event.target.value) || 1)) })}
                           className="max-w-24"
                         />
-                        <span className="text-sm text-slate-500">km</span>
+                        <span className="text-sm text-muted-foreground">km</span>
                       </div>
                     </div>
                     {config.filters.map((filter) => (
                       <fieldset key={filter} className="space-y-2">
-                        <legend className="text-sm font-medium text-slate-800">{filter === 'species' ? 'Especie' : filter === 'sizes' ? 'Tamaño' : 'Urgencia'}</legend>
+                        <legend className="text-sm font-medium text-foreground">{filter === 'species' ? 'Especie' : filter === 'sizes' ? 'Tamaño' : 'Urgencia'}</legend>
                         <div className="space-y-1">
                           {OPTIONS[filter].map((option) => (
-                            <label key={option.value} className="flex min-h-10 items-center gap-2 rounded-lg px-2 hover:bg-slate-50">
+                            <label key={option.value} className="flex min-h-10 items-center gap-2 rounded-lg px-2 hover:bg-background">
                               <Checkbox checked={subscription[filter].includes(option.value)} onCheckedChange={() => toggleFilter(subscription.type, filter, option.value)} />
                               <span className="text-sm text-slate-600">{option.label}</span>
                             </label>
                           ))}
                         </div>
-                        <p className="text-xs text-slate-400">Sin selección = todas.</p>
+                        <p className="text-xs text-muted-foreground">Sin selección = todas.</p>
                       </fieldset>
                     ))}
                   </CardContent>

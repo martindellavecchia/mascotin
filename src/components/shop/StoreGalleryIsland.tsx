@@ -24,7 +24,7 @@ export default function StoreGalleryIsland({ images, storeName }: { images: stri
 
   return (
     <section aria-labelledby="store-gallery-title">
-      <h2 id="store-gallery-title" className="text-xl font-bold text-slate-900">Fotos</h2>
+      <h2 id="store-gallery-title" className="text-xl font-bold text-foreground">Fotos</h2>
       <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
         {photos.map((src, index) => (
           <li key={`${src}-${index}`}>
@@ -56,7 +56,7 @@ export default function StoreGalleryIsland({ images, storeName }: { images: stri
             </DialogDescription>
           </DialogHeader>
           {active && (
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-100">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-muted">
               <Image
                 src={active}
                 alt={`Foto ${(activeIndex ?? 0) + 1} de ${storeName}`}

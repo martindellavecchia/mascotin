@@ -85,22 +85,22 @@ export default function VolunteerPanel({ returnTo, initialProfileOpen = false }:
     }
   };
 
-  if (loading) return <div className="h-48 animate-pulse rounded-2xl bg-slate-200" />;
+  if (loading) return <div className="h-48 animate-pulse rounded-2xl bg-muted" />;
 
   return (
     <div className="space-y-5">
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div><CardTitle>Mi voluntariado</CardTitle><p className="mt-1 text-sm text-slate-500">Traslados, acompañamiento, rescate y logística; separado del hogar de tránsito.</p></div>
-          {profile && <Badge className={profile.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}>{profile.status === 'ACTIVE' ? 'Disponible' : profile.status === 'PAUSED' ? 'Pausado' : 'Suspendido'}</Badge>}
+          <div><CardTitle>Mi voluntariado</CardTitle><p className="mt-1 text-sm text-muted-foreground">Traslados, acompañamiento, rescate y logística; separado del hogar de tránsito.</p></div>
+          {profile && <Badge className={profile.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-slate-700'}>{profile.status === 'ACTIVE' ? 'Disponible' : profile.status === 'PAUSED' ? 'Pausado' : 'Suspendido'}</Badge>}
         </CardHeader>
         <CardContent className="space-y-4">
           {profile ? (
             <>
               <div className="grid gap-3 text-sm sm:grid-cols-3">
-                <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Zona y radio</p><p className="mt-1 font-medium text-slate-900">{profile.location} · {profile.radiusKm} km</p></div>
-                <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Cupo</p><p className="mt-1 font-medium text-slate-900">{profile.occupiedTasks}/{profile.maxConcurrentTasks} tareas activas</p></div>
-                <div className="rounded-xl bg-slate-50 p-4"><p className="text-slate-500">Roles</p><p className="mt-1 font-medium text-slate-900">{profile.roles.map((role) => VOLUNTEER_ROLE_LABELS[role]).join(', ')}</p></div>
+                <div className="rounded-xl bg-background p-4"><p className="text-muted-foreground">Zona y radio</p><p className="mt-1 font-medium text-foreground">{profile.location} · {profile.radiusKm} km</p></div>
+                <div className="rounded-xl bg-background p-4"><p className="text-muted-foreground">Cupo</p><p className="mt-1 font-medium text-foreground">{profile.occupiedTasks}/{profile.maxConcurrentTasks} tareas activas</p></div>
+                <div className="rounded-xl bg-background p-4"><p className="text-muted-foreground">Roles</p><p className="mt-1 font-medium text-foreground">{profile.roles.map((role) => VOLUNTEER_ROLE_LABELS[role]).join(', ')}</p></div>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button onClick={() => setDialogOpen(true)}>Editar perfil</Button>
@@ -114,12 +114,12 @@ export default function VolunteerPanel({ returnTo, initialProfileOpen = false }:
       </Card>
 
       <section className="space-y-3">
-        <div><h3 className="text-lg font-bold text-slate-900">Ofertas cercanas</h3><p className="text-sm text-slate-500">Vencen a las 24 horas. Mostrar interés no te asigna la tarea.</p></div>
-        {offers.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-center text-sm text-slate-500">No hay tareas compatibles por ahora.</CardContent></Card> : (
+        <div><h3 className="text-lg font-bold text-foreground">Ofertas cercanas</h3><p className="text-sm text-muted-foreground">Vencen a las 24 horas. Mostrar interés no te asigna la tarea.</p></div>
+        {offers.length === 0 ? <Card className="gap-0 py-0 border-dashed"><CardContent className="py-8 text-center text-sm text-muted-foreground">No hay tareas compatibles por ahora.</CardContent></Card> : (
           <div className="grid gap-4 md:grid-cols-2">
             {offers.map((offer) => (
-              <Card key={offer.id}><CardContent className="space-y-3 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-slate-900">{RESCUE_NEED_LABELS[offer.need.type]}</p><p className="text-sm text-slate-500">{offer.rescueCase.location} · {offer.distanceKm.toFixed(1)} km</p></div><Badge variant="outline">{offer.score}%</Badge></div>
+              <Card key={offer.id} className="gap-0 py-0"><CardContent className="space-y-3 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-foreground">{RESCUE_NEED_LABELS[offer.need.type]}</p><p className="text-sm text-muted-foreground">{offer.rescueCase.location} · {offer.distanceKm.toFixed(1)} km</p></div><Badge variant="outline">{offer.score}%</Badge></div>
                 <p className="text-sm text-slate-600">{VOLUNTEER_ROLE_LABELS[offer.role]}{offer.need.details ? ` · ${offer.need.details}` : ''}</p>
                 {offer.status === 'PENDING' ? <div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Me interesa</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div> : <Button asChild variant="outline" className="w-full"><Link href={`/hogares-de-transito/casos/${offer.rescueCase.id}`}>{offer.assignment ? 'Abrir tarea' : 'Ver caso'}</Link></Button>}
               </CardContent></Card>
@@ -129,12 +129,12 @@ export default function VolunteerPanel({ returnTo, initialProfileOpen = false }:
       </section>
 
       <section className="space-y-3">
-        <div><h3 className="text-lg font-bold text-slate-900">Tareas coordinadas</h3><p className="text-sm text-slate-500">El chat privado está disponible mientras la tarea permanece activa.</p></div>
-        {assignments.length === 0 ? <Card className="border-dashed"><CardContent className="py-8 text-center text-sm text-slate-500">Todavía no tenés tareas coordinadas.</CardContent></Card> : assignments.map((assignment) => (
-          <Card key={assignment.id}><CardContent className="space-y-4 p-4">
-            <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-slate-900">{RESCUE_NEED_LABELS[assignment.need.type]}</p><p className="text-sm text-slate-500">{assignment.rescueCase.location}</p></div><Badge className={assignment.status === 'ACTIVE' ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-700'}>{assignment.status === 'ACTIVE' ? 'Activa' : assignment.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}</Badge></div>
+        <div><h3 className="text-lg font-bold text-foreground">Tareas coordinadas</h3><p className="text-sm text-muted-foreground">El chat privado está disponible mientras la tarea permanece activa.</p></div>
+        {assignments.length === 0 ? <Card className="gap-0 py-0 border-dashed"><CardContent className="py-8 text-center text-sm text-muted-foreground">Todavía no tenés tareas coordinadas.</CardContent></Card> : assignments.map((assignment) => (
+          <Card key={assignment.id} className="gap-0 py-0"><CardContent className="space-y-4 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-foreground">{RESCUE_NEED_LABELS[assignment.need.type]}</p><p className="text-sm text-muted-foreground">{assignment.rescueCase.location}</p></div><Badge className={assignment.status === 'ACTIVE' ? 'bg-teal-100 text-primary' : 'bg-muted text-slate-700'}>{assignment.status === 'ACTIVE' ? 'Activa' : assignment.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}</Badge></div>
             <Button asChild variant="outline"><Link href={`/hogares-de-transito/casos/${assignment.rescueCase.id}`}>Abrir caso y chat</Link></Button>
-            {assignment.status === 'ACTIVE' && <div className="space-y-3 rounded-xl border border-slate-200 p-3">
+            {assignment.status === 'ACTIVE' && <div className="space-y-3 rounded-xl border border-border p-3">
               {assignment.isRequester && <Button disabled={acting} onClick={() => void mutate(`/api/volunteer/assignments/${assignment.id}/complete`, { method: 'POST' }, 'Tarea completada')}>Marcar tarea completada</Button>}
               <div className="space-y-2"><Label htmlFor={`cancel-${assignment.id}`}>Motivo si necesitás cancelar</Label><div className="flex flex-col gap-2 sm:flex-row"><Input id={`cancel-${assignment.id}`} value={cancelReasons[assignment.id] || ''} onChange={(event) => setCancelReasons((current) => ({ ...current, [assignment.id]: event.target.value }))} placeholder="Ej. cambió mi disponibilidad" /><Button variant="outline" disabled={acting || (cancelReasons[assignment.id] || '').trim().length < 3} onClick={() => void mutate(`/api/volunteer/assignments/${assignment.id}/cancel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: cancelReasons[assignment.id] }) }, 'Tarea cancelada y búsqueda reabierta')}>Cancelar tarea</Button></div></div>
             </div>}

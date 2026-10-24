@@ -88,15 +88,15 @@ export default function FosterAlertPreferences({ enabled }: { enabled: boolean }
     <Card>
       <CardHeader>
         <CardTitle>Alertas de casos cercanos</CardTitle>
-        <p className="text-sm text-slate-500">Son voluntarias y llegan sólo dentro de Huella.</p>
+        <p className="text-sm text-muted-foreground">Son voluntarias y llegan sólo dentro de Huella.</p>
       </CardHeader>
       <CardContent className="space-y-5">
-        {loading ? <div className="h-28 animate-pulse rounded-xl bg-slate-100" /> : (
+        {loading ? <div className="h-28 animate-pulse rounded-xl bg-muted" /> : (
           <>
-            <div className="flex min-h-11 items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
+            <div className="flex min-h-11 items-center justify-between gap-4 rounded-xl border border-border p-4">
               <div>
                 <Label htmlFor="foster-case-alerts" className="font-medium">Recibir alertas</Label>
-                <p className="mt-1 text-xs text-slate-500">Tu perfil debe permanecer activo y con cupo.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Tu perfil debe permanecer activo y con cupo.</p>
               </div>
               <Switch id="foster-case-alerts" checked={preferences.enabled} onCheckedChange={(checked) => setPreferences((current) => ({ ...current, enabled: checked }))} />
             </div>
@@ -104,19 +104,19 @@ export default function FosterAlertPreferences({ enabled }: { enabled: boolean }
               <Label htmlFor="foster-alert-radius">Radio de alertas</Label>
               <div className="flex items-center gap-2">
                 <Input id="foster-alert-radius" type="number" min={1} max={50} value={preferences.radiusKm} onChange={(event) => setPreferences((current) => ({ ...current, radiusKm: Math.min(50, Math.max(1, Number(event.target.value) || 1)) }))} className="max-w-28" />
-                <span className="text-sm text-slate-500">km desde tu zona</span>
+                <span className="text-sm text-muted-foreground">km desde tu zona</span>
               </div>
             </div>
             <fieldset className="space-y-2">
-              <legend className="text-sm font-medium text-slate-800">Especies</legend>
+              <legend className="text-sm font-medium text-foreground">Especies</legend>
               <div className="flex flex-wrap gap-3">
-                {SPECIES.map((item) => <label key={item.value} className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 px-3"><Checkbox checked={preferences.species.includes(item.value)} onCheckedChange={() => toggleList('species', item.value)} />{item.label}</label>)}
+                {SPECIES.map((item) => <label key={item.value} className="flex min-h-11 items-center gap-2 rounded-lg border border-border px-3"><Checkbox checked={preferences.species.includes(item.value)} onCheckedChange={() => toggleList('species', item.value)} />{item.label}</label>)}
               </div>
             </fieldset>
             <fieldset className="space-y-2">
-              <legend className="text-sm font-medium text-slate-800">Urgencia</legend>
+              <legend className="text-sm font-medium text-foreground">Urgencia</legend>
               <div className="flex flex-wrap gap-3">
-                {URGENCIES.map((item) => <label key={item.value} className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 px-3"><Checkbox checked={preferences.urgencies.includes(item.value)} onCheckedChange={() => toggleList('urgencies', item.value)} />{item.label}</label>)}
+                {URGENCIES.map((item) => <label key={item.value} className="flex min-h-11 items-center gap-2 rounded-lg border border-border px-3"><Checkbox checked={preferences.urgencies.includes(item.value)} onCheckedChange={() => toggleList('urgencies', item.value)} />{item.label}</label>)}
               </div>
             </fieldset>
             <Button disabled={saving} onClick={() => void save()}>{saving ? 'Guardando…' : 'Guardar alertas'}</Button>

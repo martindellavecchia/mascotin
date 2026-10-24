@@ -69,14 +69,14 @@ export default function VolunteerProfileForm({ profile, onSaved }: {
   return (
     <form onSubmit={submit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Ayudar como voluntario</h2>
-        <p className="mt-1 text-sm text-slate-500">Este perfil es independiente de ofrecer un hogar. Podés tener ambos.</p>
+        <h2 className="text-xl font-bold text-foreground">Ayudar como voluntario</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Este perfil es independiente de ofrecer un hogar. Podés tener ambos.</p>
       </div>
       <fieldset className="space-y-3">
-        <legend className="text-sm font-medium text-slate-800">Tareas que podés realizar</legend>
+        <legend className="text-sm font-medium text-foreground">Tareas que podés realizar</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {ROLES.map((role) => (
-            <label key={role.value} className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 px-3">
+            <label key={role.value} className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3">
               <Checkbox checked={form.roles.includes(role.value)} onCheckedChange={() => toggleRole(role.value)} />
               <span className="text-sm text-slate-700">{role.label}</span>
             </label>
@@ -93,7 +93,7 @@ export default function VolunteerProfileForm({ profile, onSaved }: {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="volunteer-radius">Radio</Label>
-          <div className="relative"><Input id="volunteer-radius" type="number" min={1} max={50} value={form.radiusKm} onChange={(event) => setForm((current) => ({ ...current, radiusKm: Math.min(50, Math.max(1, Number(event.target.value) || 1)) }))} className="pr-10" /><span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">km</span></div>
+          <div className="relative"><Input id="volunteer-radius" type="number" min={1} max={50} value={form.radiusKm} onChange={(event) => setForm((current) => ({ ...current, radiusKm: Math.min(50, Math.max(1, Number(event.target.value) || 1)) }))} className="pr-10" /><span className="pointer-events-none absolute right-3 top-2.5 text-sm text-muted-foreground">km</span></div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="volunteer-capacity">Tareas simultáneas</Label>

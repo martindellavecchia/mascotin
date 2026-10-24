@@ -95,12 +95,12 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="border-b border-slate-100 px-4 py-3">
-        <h2 className="font-semibold text-slate-900">Conversación privada</h2>
-        <p className="text-xs text-slate-500">{context === 'volunteer' ? 'Usen este espacio para coordinar únicamente la tarea acordada.' : 'Usen este espacio para coordinar la entrega y los cuidados.'}</p>
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+      <div className="border-b border-border px-4 py-3">
+        <h2 className="font-semibold text-foreground">Conversación privada</h2>
+        <p className="text-xs text-muted-foreground">{context === 'volunteer' ? 'Usen este espacio para coordinar únicamente la tarea acordada.' : 'Usen este espacio para coordinar la entrega y los cuidados.'}</p>
       </div>
-      <div className="max-h-80 min-h-48 space-y-3 overflow-y-auto bg-slate-50 p-4" aria-live="polite">
+      <div className="max-h-80 min-h-48 space-y-3 overflow-y-auto bg-background p-4" aria-live="polite">
         {loading ? (
           <p className="py-12 text-center text-sm text-slate-600">Cargando conversación…</p>
         ) : loadError ? (
@@ -111,7 +111,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
           const own = message.senderId === currentUserId;
           return (
             <div key={message.id} className={`flex ${own ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${own ? 'bg-teal-700 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>
+              <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${own ? 'bg-primary-hover text-white' : 'border border-border bg-surface text-slate-700'}`}>
                 <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{message.content}</p>
                 <p className={`mt-1 text-[10px] ${own ? 'text-teal-100' : 'text-slate-600'}`}>
                   {new Date(message.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
@@ -123,7 +123,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
         <div ref={endRef} />
       </div>
       {!loading && !loadError && enabled && serverCanWrite ? (
-        <div className="grid gap-2 border-t border-slate-100 p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid gap-2 border-t border-border p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
           <Label htmlFor={`rescue-message-${fosterOfferId || volunteerOfferId || placementId || volunteerAssignmentId}`} className="sr-only">Mensaje privado</Label>
           <Textarea
             id={`rescue-message-${fosterOfferId || volunteerOfferId || placementId || volunteerAssignmentId}`}
@@ -144,7 +144,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
           </Button>
         </div>
       ) : !loading && !loadError ? (
-        <p className="border-t border-slate-100 p-3 text-center text-xs text-slate-500">La conversación quedó cerrada.</p>
+        <p className="border-t border-border p-3 text-center text-xs text-muted-foreground">La conversación quedó cerrada.</p>
       ) : null}
     </div>
   );

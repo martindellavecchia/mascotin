@@ -22,6 +22,7 @@ import { RESCUE_NEED_LABELS, RESCUE_NEED_STATUS_LABELS } from '@/lib/rescue';
 import { VOLUNTEER_ROLE_LABELS } from '@/lib/volunteer';
 import { toast } from 'sonner';
 import type { RescueNeedTypeValue, RescueNeedView } from '@/components/help/types';
+import { countLabel } from '@/lib/utils';
 
 interface OfferDetail {
   id: string;
@@ -259,7 +260,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
   };
 
   if (loading) {
-    return <div className="mx-auto max-w-6xl space-y-4 px-4 py-8"><div className="h-10 w-40 animate-pulse rounded bg-slate-200" /><div className="h-80 animate-pulse rounded-2xl bg-slate-200" /></div>;
+    return <div className="mx-auto max-w-6xl space-y-4 px-4 py-8"><div className="h-10 w-40 animate-pulse rounded bg-muted" /><div className="h-80 animate-pulse rounded-2xl bg-muted" /></div>;
   }
   if (!data) {
     return <div className="mx-auto max-w-xl px-4 py-20 text-center"><h1 className="text-xl font-semibold">No pudimos abrir el caso</h1><p className="mt-2 text-sm text-muted-foreground">Es posible que se haya cerrado o que el enlace no sea correcto.</p><Button asChild variant="outline" className="mt-4"><Link href="/hogares-de-transito">Volver a Hogares de tránsito</Link></Button></div>;
@@ -289,55 +290,56 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost"><Link href="/hogares-de-transito"><ArrowLeft className="mr-2 size-5" aria-hidden="true" />Volver a Hogares de tránsito</Link></Button>
-        <Badge className="bg-teal-100 text-teal-800">{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
+        <Badge className="bg-teal-100 text-primary">{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
       </div>
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
         <div className="min-w-0 space-y-6">
-          <Card className="overflow-hidden">
+          <Card className="gap-0 overflow-hidden py-0">
             {image && (
-              <div className="relative aspect-[16/9] max-h-[480px] bg-slate-100">
+              <div className="relative aspect-[16/9] max-h-[480px] bg-muted">
                 <Image src={image} alt="Animal que necesita ayuda" fill sizes="(max-width: 1024px) 100vw, 65vw" unoptimized={shouldUnoptimizeImage(image)} className="object-cover" priority />
               </div>
             )}
             <CardContent className="space-y-5 p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-950">{SPECIES_LABELS[rescueCase.species]} · {SIZE_LABELS[rescueCase.size]}</h1>
-                  <p className="mt-1 text-sm text-slate-500">{rescueCase.location}{rescueCase.createdBy ? ` · publicado por ${rescueCase.createdBy.name || 'Usuario de Huella'}` : ''}</p>
+                  <h1 className="text-2xl font-bold text-foreground">{SPECIES_LABELS[rescueCase.species]} · {SIZE_LABELS[rescueCase.size]}</h1>
+                  <p className="mt-1 text-sm text-muted-foreground">{rescueCase.location}{rescueCase.createdBy ? ` · publicado por ${rescueCase.createdBy.name || 'Usuario de Huella'}` : ''}</p>
                 </div>
                 {rescueCase.urgency !== 'NORMAL' && <Badge className={rescueCase.urgency === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}>{rescueCase.urgency === 'CRITICAL' ? 'Situación crítica' : 'Alta urgencia'}</Badge>}
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-800">Estado aparente</p>
+                <p className="text-sm font-medium text-foreground">Estado aparente</p>
                 <p className="mt-1 text-sm text-slate-600">{rescueCase.apparentCondition}</p>
               </div>
-              <p className="whitespace-pre-wrap text-slate-700 [overflow-wrap:anywhere]">{rescueCase.description}</p>
-              <div className="space-y-3 rounded-xl border border-teal-100 bg-teal-50/50 p-4">
-                <p className="text-sm font-semibold text-slate-900">Necesidades del caso</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {rescueCase.needs.map((need) => (
-                    <div key={need.id} className="rounded-lg border border-teal-100 bg-white p-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-sm font-medium text-slate-900">{RESCUE_NEED_LABELS[need.type]}{need.isPrimary ? ' · Principal' : ''}</p>
-                        <Badge variant="outline">{RESCUE_NEED_STATUS_LABELS[need.status]}</Badge>
-                      </div>
-                      {need.details && <p className="mt-2 text-xs text-slate-600">{need.details}</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs text-slate-700">
-                <span className="rounded-full bg-slate-100 px-3 py-1.5">{rescueCase.requestedDays} días estimados</span>
-                <span className="rounded-full bg-slate-100 px-3 py-1.5">{rescueCase.searchRadiusKm} km de búsqueda</span>
-              </div>
+              <p className="whitespace-pre-wrap text-foreground [overflow-wrap:anywhere]">{rescueCase.description}</p>
+              {rescueCase.needs.length > 0 && (
+                <section aria-labelledby="case-needs-title" className="space-y-2 border-t border-border pt-4">
+                  <h2 id="case-needs-title" className="text-sm font-semibold text-foreground">Necesidades del caso</h2>
+                  <ul className="divide-y divide-border rounded-lg border border-border">
+                    {rescueCase.needs.map((need) => (
+                      <li key={need.id} className="px-3 py-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-sm font-medium text-foreground">{RESCUE_NEED_LABELS[need.type]}{need.isPrimary ? ' · Principal' : ''}</p>
+                          <Badge variant="outline">{RESCUE_NEED_STATUS_LABELS[need.status]}</Badge>
+                        </div>
+                        {need.details && <p className="mt-1 text-xs text-muted-foreground">{need.details}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              <p className="text-sm text-muted-foreground">
+                {countLabel(rescueCase.requestedDays, 'día estimado', 'días estimados')} · {rescueCase.searchRadiusKm} km de búsqueda
+              </p>
             </CardContent>
           </Card>
 
           {data.viewerRole === 'VISITOR' && (
-            <Card className="border-orange-200 bg-orange-50/40">
+            <Card className="gap-0 py-0 border-orange-200 bg-orange-50/40">
               <CardContent className="space-y-3 p-5">
-                <h2 className="font-semibold text-slate-900">{primaryNeed ? `Ayudar con ${RESCUE_NEED_LABELS[primaryNeed.type].toLowerCase()}` : 'Acompañar este caso'}</h2>
+                <h2 className="font-semibold text-foreground">{primaryNeed ? `Ayudar con ${RESCUE_NEED_LABELS[primaryNeed.type].toLowerCase()}` : 'Acompañar este caso'}</h2>
                 <p className="text-sm text-slate-600">Confirmá tu interés para abrir un chat privado antes de la selección. La ubicación exacta y los datos personales no se exponen.</p>
                 {rescueCase.adoptionListingId ? (
                   <Button asChild><Link href={`/adoptions/${rescueCase.adoptionListingId}`}>Ver ficha de adopción</Link></Button>
@@ -352,10 +354,10 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
 
           {rescueCase.needs.some((need) => need.type === 'VETERINARY') && (
             <Card>
-              <CardHeader><CardTitle className="text-lg">Veterinarias cercanas</CardTitle><p className="text-sm text-slate-500">Se calcula con la ubicación privada del caso y sólo muestra información pública del directorio. No realiza diagnósticos, pagos ni reservas.</p></CardHeader>
+              <CardHeader><CardTitle className="text-lg">Veterinarias cercanas</CardTitle><p className="text-sm text-muted-foreground">Se calcula con la ubicación privada del caso y sólo muestra información pública del directorio. No realiza diagnósticos, pagos ni reservas.</p></CardHeader>
               <CardContent className="space-y-3">
-                {veterinarians === null ? <Button variant="outline" disabled={acting} onClick={() => void loadVeterinarians()}>Ver hasta cinco veterinarias</Button> : veterinarians.length === 0 ? <p className="text-sm text-slate-500">No encontramos veterinarias con ubicación registrada.</p> : veterinarians.map((veterinarian) => (
-                  <div key={veterinarian.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium text-slate-900">{veterinarian.name}</p><p className="mt-1 text-sm text-slate-500">{veterinarian.address || 'Dirección disponible en la ficha'} · {veterinarian.distanceKm.toFixed(1)} km</p></div><Button asChild variant="outline"><Link href={veterinarian.link}>Ver directorio</Link></Button></div>
+                {veterinarians === null ? <Button variant="outline" disabled={acting} onClick={() => void loadVeterinarians()}>Ver hasta cinco veterinarias</Button> : veterinarians.length === 0 ? <p className="text-sm text-muted-foreground">No encontramos veterinarias con ubicación registrada.</p> : veterinarians.map((veterinarian) => (
+                  <div key={veterinarian.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium text-foreground">{veterinarian.name}</p><p className="mt-1 text-sm text-muted-foreground">{veterinarian.address || 'Dirección disponible en la ficha'} · {veterinarian.distanceKm.toFixed(1)} km</p></div><Button asChild variant="outline"><Link href={veterinarian.link}>Ver directorio</Link></Button></div>
                 ))}
               </CardContent>
             </Card>
@@ -366,8 +368,8 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
               <CardHeader><CardTitle className="text-lg">{placement.status === 'COORDINATING' ? 'Coordinar la entrega' : placement.status === 'ACTIVE' ? 'Tránsito en curso' : placement.status === 'AWAITING_ADOPTION' ? 'Cuidado durante la adopción' : 'Último tránsito'}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className={`rounded-xl border p-4 ${placement.requesterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium text-slate-800">Persona que rescató</p><p className="mt-1 text-sm text-slate-500">{placement.requesterConfirmedAt ? 'Entrega confirmada' : 'Falta confirmar la entrega'}</p></div>
-                  <div className={`rounded-xl border p-4 ${placement.fosterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200'}`}><p className="font-medium text-slate-800">Hogar de tránsito</p><p className="mt-1 text-sm text-slate-500">{placement.fosterConfirmedAt ? 'Recepción confirmada' : 'Falta confirmar la recepción'}</p></div>
+                  <div className={`rounded-xl border p-4 ${placement.requesterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-border'}`}><p className="font-medium text-foreground">Persona que rescató</p><p className="mt-1 text-sm text-muted-foreground">{placement.requesterConfirmedAt ? 'Entrega confirmada' : 'Falta confirmar la entrega'}</p></div>
+                  <div className={`rounded-xl border p-4 ${placement.fosterConfirmedAt ? 'border-emerald-200 bg-emerald-50' : 'border-border'}`}><p className="font-medium text-foreground">Hogar de tránsito</p><p className="mt-1 text-sm text-muted-foreground">{placement.fosterConfirmedAt ? 'Recepción confirmada' : 'Falta confirmar la recepción'}</p></div>
                 </div>
                 {needsMyConfirmation && <Button disabled={acting} onClick={() => void mutate(`/api/foster/placements/${placement.id}/confirm`, { method: 'POST' }, 'Confirmación guardada')}>Confirmar {data.viewerRole === 'CREATOR' ? 'que entregué al animal' : 'que recibí al animal'}</Button>}
                 {placement.status === 'COORDINATING' && (
@@ -412,9 +414,9 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
             <Card>
               <CardHeader><CardTitle className="text-lg">Tarea de voluntariado · {RESCUE_NEED_LABELS[volunteerAssignment.needType]}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-medium text-slate-900">Responsable: {volunteerAssignment.volunteer.name || 'Persona voluntaria'}</p><p className="text-sm text-slate-500">Aceptó únicamente esta tarea coordinada.</p></div><Badge className={volunteerAssignment.status === 'ACTIVE' ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-700'}>{volunteerAssignment.status === 'ACTIVE' ? 'Activa' : volunteerAssignment.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}</Badge></div>
+                <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-medium text-foreground">Responsable: {volunteerAssignment.volunteer.name || 'Persona voluntaria'}</p><p className="text-sm text-muted-foreground">Aceptó únicamente esta tarea coordinada.</p></div><Badge className={volunteerAssignment.status === 'ACTIVE' ? 'bg-teal-100 text-primary' : 'bg-muted text-slate-700'}>{volunteerAssignment.status === 'ACTIVE' ? 'Activa' : volunteerAssignment.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}</Badge></div>
                 {volunteerAssignment.status === 'ACTIVE' && (
-                  <div className="space-y-3 rounded-xl border border-slate-200 p-4">
+                  <div className="space-y-3 rounded-xl border border-border p-4">
                     {data.viewerRole === 'CREATOR' && <Button disabled={acting} onClick={() => void mutate(`/api/volunteer/assignments/${volunteerAssignment.id}/complete`, { method: 'POST' }, 'Tarea completada')}>Marcar tarea completada</Button>}
                     <div className="space-y-2"><Label htmlFor="volunteer-cancel-reason">Motivo para cancelar</Label><div className="flex flex-col gap-2 sm:flex-row"><Input id="volunteer-cancel-reason" value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} placeholder="Ej. cambió la disponibilidad" /><Button variant="outline" disabled={acting || cancelReason.trim().length < 3} onClick={() => void mutate(`/api/volunteer/assignments/${volunteerAssignment.id}/cancel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: cancelReason }) }, 'Tarea cancelada y búsqueda reabierta')}>Cancelar tarea</Button></div></div>
                   </div>
@@ -437,11 +439,11 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
             <Card>
               <CardHeader><CardTitle className="text-lg">Hogares contactados</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                {rescueCase.offers.length === 0 ? <p className="py-6 text-center text-sm text-slate-500">Todavía no encontramos hogares compatibles. Podés ampliar el radio.</p> : rescueCase.offers.map((offer) => (
-                  <div key={offer.id} className="rounded-xl border border-slate-200 p-4">
+                {rescueCase.offers.length === 0 ? <p className="py-6 text-center text-sm text-muted-foreground">Todavía no encontramos hogares compatibles. Podés ampliar el radio.</p> : rescueCase.offers.map((offer) => (
+                  <div key={offer.id} className="rounded-xl border border-border p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div><p className="font-medium text-slate-900">{offer.fosterProfile?.user.name || 'Hogar de tránsito'}</p><p className="text-sm text-slate-500">{offer.fosterProfile?.location} · {offer.distanceKm.toFixed(1)} km</p></div>
-                      <div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionado' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrado'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-teal-800">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div>
+                      <div><p className="font-medium text-foreground">{offer.fosterProfile?.user.name || 'Hogar de tránsito'}</p><p className="text-sm text-muted-foreground">{offer.fosterProfile?.location} · {offer.distanceKm.toFixed(1)} km</p></div>
+                      <div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionado' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrado'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-primary">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div>
                     </div>
                     {['INTERESTED', 'SELECTED'].includes(offer.status) && <div className="mt-3 flex flex-col gap-2 sm:flex-row"><Button variant="outline" onClick={() => showContact({ kind: 'FOSTER', offerId: offer.id, status: offer.status, expiresAt: offer.expiresAt })}>Conversar</Button>{offer.status === 'INTERESTED' && !placement && <Button disabled={acting} onClick={() => void mutate(`/api/foster/offers/${offer.id}/select`, { method: 'POST' }, 'Hogar seleccionado. Ya pueden coordinar.')}>Elegir este hogar</Button>}</div>}
                   </div>
@@ -455,8 +457,8 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
               <CardHeader><CardTitle className="text-lg">Personas voluntarias contactadas</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {rescueCase.volunteerOffers!.map((offer) => (
-                  <div key={offer.id} className="rounded-xl border border-slate-200 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-medium text-slate-900">{offer.volunteer?.name || 'Persona voluntaria'}</p><p className="text-sm text-slate-500">{VOLUNTEER_ROLE_LABELS[offer.role]} · {offer.distanceKm.toFixed(1)} km</p></div><div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionada' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrada'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-teal-800">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div></div>
+                  <div key={offer.id} className="rounded-xl border border-border p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-medium text-foreground">{offer.volunteer?.name || 'Persona voluntaria'}</p><p className="text-sm text-muted-foreground">{VOLUNTEER_ROLE_LABELS[offer.role]} · {offer.distanceKm.toFixed(1)} km</p></div><div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionada' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrada'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-primary">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div></div>
                     {['INTERESTED', 'SELECTED'].includes(offer.status) && <div className="mt-3 flex flex-col gap-2 sm:flex-row"><Button variant="outline" onClick={() => showContact({ kind: 'VOLUNTEER', offerId: offer.id, status: offer.status, expiresAt: offer.expiresAt })}>Conversar</Button>{offer.status === 'INTERESTED' && !rescueCase.volunteerAssignments?.some((assignment) => assignment.needId === offer.needId && assignment.status === 'ACTIVE') && <Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/select`, { method: 'POST' }, 'Tarea asignada. Ya pueden conversar.')}>Elegir responsable</Button>}</div>}
                   </div>
                 ))}
@@ -465,11 +467,11 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
           )}
 
           {isViewerVolunteer && myVolunteerOffer?.status === 'PENDING' && (
-            <Card><CardContent className="space-y-4 p-5"><h2 className="font-semibold text-slate-900">¿Podés tomar esta tarea?</h2><p className="text-sm text-slate-600">Mostrar interés no te asigna la tarea; la persona responsable deberá seleccionarte.</p><div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${myVolunteerOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Me interesa</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${myVolunteerOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div></CardContent></Card>
+            <Card className="gap-0 py-0"><CardContent className="space-y-4 p-5"><h2 className="font-semibold text-foreground">¿Podés tomar esta tarea?</h2><p className="text-sm text-slate-600">Mostrar interés no te asigna la tarea; la persona responsable deberá seleccionarte.</p><div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${myVolunteerOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Me interesa</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${myVolunteerOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div></CardContent></Card>
           )}
 
           {isViewerFoster && myOffer?.status === 'PENDING' && (
-            <Card><CardContent className="space-y-4 p-5"><h2 className="font-semibold text-slate-900">¿Podés recibir a este animal?</h2><p className="text-sm text-slate-600">Responder que sí todavía no inicia el tránsito. La persona que creó el caso deberá elegirte.</p><div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/foster/offers/${myOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Puedo ayudar</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/foster/offers/${myOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div></CardContent></Card>
+            <Card className="gap-0 py-0"><CardContent className="space-y-4 p-5"><h2 className="font-semibold text-foreground">¿Podés recibir a este animal?</h2><p className="text-sm text-slate-600">Responder que sí todavía no inicia el tránsito. La persona que creó el caso deberá elegirte.</p><div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/foster/offers/${myOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Puedo ayudar</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/foster/offers/${myOffer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div></CardContent></Card>
           )}
         </div>
 
@@ -485,10 +487,10 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
           )}
 
           {canChangeRadius && (
-            <Card><CardHeader><CardTitle className="text-base">Radio de búsqueda</CardTitle></CardHeader><CardContent className="space-y-3"><Label>Distancia máxima</Label><Select value={radius} onValueChange={setRadius}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{[5, 10, 20, 50].map((value) => <SelectItem key={value} value={String(value)}>{value} km</SelectItem>)}</SelectContent></Select><Button variant="outline" className="w-full" disabled={acting || Number(radius) === rescueCase.searchRadiusKm} onClick={() => void mutate(`/api/rescue-cases/${caseId}/radius`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ searchRadiusKm: Number(radius) }) }, 'Radio actualizado')}>Actualizar búsqueda</Button></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-base">Radio de búsqueda</CardTitle></CardHeader><CardContent className="space-y-3"><Label htmlFor="case-radius">Distancia máxima</Label><Select value={radius} onValueChange={setRadius}><SelectTrigger id="case-radius"><SelectValue /></SelectTrigger><SelectContent>{[5, 10, 20, 50].map((value) => <SelectItem key={value} value={String(value)}>{value} km</SelectItem>)}</SelectContent></Select><Button variant="outline" className="w-full" disabled={acting || Number(radius) === rescueCase.searchRadiusKm} onClick={() => void mutate(`/api/rescue-cases/${caseId}/radius`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ searchRadiusKm: Number(radius) }) }, 'Radio actualizado')}>Actualizar búsqueda</Button></CardContent></Card>
           )}
 
-          <Card><CardHeader><CardTitle className="text-base">Actividad</CardTitle></CardHeader><CardContent>{rescueCase.events.length === 0 ? <p className="text-sm text-slate-500">Sin actividad registrada.</p> : <ol className="space-y-4">{rescueCase.events.map((event) => <li key={event.id} className="relative border-l border-slate-200 pl-4"><span className="absolute -left-1.5 top-1 size-3 rounded-full border-2 border-white bg-teal-500" /><p className="text-sm font-medium text-slate-800">{EVENT_LABELS[event.type] || event.type}</p><p className="mt-0.5 text-xs text-slate-600">{new Date(event.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p></li>)}</ol>}</CardContent></Card>
+          <Card><CardHeader><CardTitle className="text-base">Actividad</CardTitle></CardHeader><CardContent>{rescueCase.events.length === 0 ? <p className="text-sm text-muted-foreground">Sin actividad registrada.</p> : <ol className="space-y-4">{rescueCase.events.map((event) => <li key={event.id} className="relative border-l border-border pl-4"><span className="absolute -left-1.5 top-1 size-3 rounded-full border-2 border-white bg-teal-500" /><p className="text-sm font-medium text-foreground">{EVENT_LABELS[event.type] || event.type}</p><p className="mt-0.5 text-xs text-slate-600">{new Date(event.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p></li>)}</ol>}</CardContent></Card>
 
           {data.viewerRole === 'CREATOR' && rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status)) && (
             <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" className="w-full text-red-600 hover:bg-red-50 hover:text-red-700">Cancelar caso</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Cancelar la solicitud?</AlertDialogTitle><AlertDialogDescription>Se cerrarán las solicitudes enviadas a los hogares. Esta acción no puede deshacerse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={async () => { const ok = await mutate(`/api/rescue-cases/${caseId}/cancel`, { method: 'POST' }, 'Caso cancelado'); if (ok) router.push('/hogares-de-transito'); }}>Cancelar caso</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>

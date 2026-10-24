@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { PawPrint } from 'lucide-react';
+import { ArrowLeft, PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -111,20 +111,23 @@ function AdoptionsContent() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-      <Link href="/hogares-de-transito" className="inline-flex min-h-11 items-center text-sm font-medium text-primary">Volver a Hogares de tránsito</Link>
+      <Link href="/hogares-de-transito" className="-ml-1 inline-flex min-h-11 items-center gap-1.5 px-1 text-sm font-medium text-muted-foreground hover:text-primary">
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Hogares de tránsito
+      </Link>
       <PageHeader
         title="Adopciones responsables"
         description="Conocé cada historia y postulá con información clara."
-        action={<div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
-          <Button className="w-full sm:w-auto" variant="outline" onClick={() => setShowProfile((value) => !value)}>Perfil adoptante</Button>
-          <Button className="w-full sm:w-auto" variant="outline" onClick={() => setShowCreate((value) => !value)}>Publicar ficha</Button>
+        action={<div className="flex flex-wrap gap-2">
+          <Button variant="outline" aria-expanded={showProfile} onClick={() => setShowProfile((value) => !value)}>Perfil adoptante</Button>
+          <Button variant="outline" aria-expanded={showCreate} onClick={() => setShowCreate((value) => !value)}>Publicar ficha</Button>
         </div>}
       />
 
-      <form className="space-y-3 rounded-xl border bg-surface p-4" onSubmit={e => { e.preventDefault(); const params = new URLSearchParams(); Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, String(v)); }); setQuery(params.toString()); }}>
-        <div className="grid gap-3 sm:grid-cols-2"><label className="text-sm font-medium">Buscar<Input value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} maxLength={100} /></label><label className="text-sm font-medium">Zona<Input placeholder="Barrio o ciudad (opcional)" value={filters.zone} onChange={e => setFilters({ ...filters, zone: e.target.value })} maxLength={100} /></label>
-        <label className="text-sm font-medium">Especie<select className="mt-1 h-11 w-full rounded-md border border-border-control bg-surface px-3" value={filters.species} onChange={e => setFilters({ ...filters, species: e.target.value as typeof filters.species })}><option value="">Todas</option><option value="dog">Perro</option><option value="cat">Gato</option><option value="bird">Ave</option><option value="other">Otra</option></select></label>
-        <label className="text-sm font-medium">Tamaño<select className="mt-1 h-11 w-full rounded-md border border-border-control bg-surface px-3" value={filters.size} onChange={e => setFilters({ ...filters, size: e.target.value as typeof filters.size })}><option value="">Todos</option><option value="small">Pequeño</option><option value="medium">Mediano</option><option value="large">Grande</option></select></label></div>
+      <form className="space-y-4 rounded-lg border border-border bg-surface p-4" onSubmit={e => { e.preventDefault(); const params = new URLSearchParams(); Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, String(v)); }); setQuery(params.toString()); }}>
+        <div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">Buscar<Input value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} maxLength={100} /></label><label className="grid gap-1.5 text-sm font-medium">Zona<Input placeholder="Barrio o ciudad (opcional)" value={filters.zone} onChange={e => setFilters({ ...filters, zone: e.target.value })} maxLength={100} /></label>
+        <label className="grid gap-1.5 text-sm font-medium">Especie<select className="h-11 w-full rounded-md border border-border-control bg-surface px-3 text-base font-normal text-foreground md:text-sm" value={filters.species} onChange={e => setFilters({ ...filters, species: e.target.value as typeof filters.species })}><option value="">Todas</option><option value="dog">Perro</option><option value="cat">Gato</option><option value="bird">Ave</option><option value="other">Otra</option></select></label>
+        <label className="grid gap-1.5 text-sm font-medium">Tamaño<select className="h-11 w-full rounded-md border border-border-control bg-surface px-3 text-base font-normal text-foreground md:text-sm" value={filters.size} onChange={e => setFilters({ ...filters, size: e.target.value as typeof filters.size })}><option value="">Todos</option><option value="small">Pequeño</option><option value="medium">Mediano</option><option value="large">Grande</option></select></label></div>
         <div className="flex flex-wrap gap-2"><Button>Buscar</Button><Button variant="outline" type="button" onClick={() => { setFilters(searchFiltersSchema.parse({})); setQuery(''); }}>Limpiar filtros</Button><SaveSearchButton kind="ADOPTION" filters={filters} /></div>
       </form>
 
@@ -240,12 +243,12 @@ function AdoptionsContent() {
       <div className="grid gap-4 md:grid-cols-2" aria-live="polite">
         {loading ? (
           [0, 1].map((item) => (
-            <Card key={item} className="overflow-hidden" aria-label="Cargando ficha de adopción">
-              <div className="h-48 animate-pulse bg-slate-200" />
+            <Card key={item} className="gap-0 overflow-hidden py-0" aria-label="Cargando ficha de adopción">
+              <div className="h-48 animate-pulse bg-muted" />
               <CardContent className="space-y-3 p-4">
-                <div className="h-6 w-2/5 animate-pulse rounded bg-slate-200" />
-                <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-                <div className="h-10 w-full animate-pulse rounded-lg bg-slate-100" />
+                <div className="h-6 w-2/5 animate-pulse rounded bg-muted" />
+                <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                <div className="h-10 w-full animate-pulse rounded-lg bg-muted" />
               </CardContent>
             </Card>
           ))
@@ -268,21 +271,22 @@ function AdoptionsContent() {
           listings.map((listing) => {
             const image = getPrimaryImageUrl(listing.pet.images, listing.pet.thumbnailIndex);
             return (
-              <Card key={listing.id} className="overflow-hidden">
-                <CardContent className="p-4 space-y-3">
+              <Card key={listing.id} className="gap-0 overflow-hidden py-0">
                   {image ? (
-                    <img src={image} alt={listing.pet.name} className="h-48 w-full rounded-xl object-cover" />
+                    <img src={image} alt={listing.pet.name} className="h-48 w-full object-cover" />
                   ) : (
-                    <div className="flex h-40 w-full items-center justify-center rounded-xl bg-primary-soft">
+                    <div className="flex h-40 w-full items-center justify-center bg-primary-soft">
                       <PawPrint className="size-10 text-primary/30" aria-hidden="true" />
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold">{listing.pet.name}</h2>
+                <CardContent className="flex flex-1 flex-col gap-2 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold text-foreground">{listing.pet.name}</h2>
                     <Badge>{LISTING_STATUS_LABELS[listing.status] || 'Sin estado'}</Badge>
                   </div>
-                  <p className="text-sm text-slate-600">{listing.character}</p>
-                  {listing.pet.goodWithKids === 'yes' && <Badge variant="outline">Bien con niños</Badge>}
+                  {listing.character && <p className="line-clamp-2 text-sm text-muted-foreground">{listing.character}</p>}
+                  {listing.pet.goodWithKids === 'yes' && <p className="text-xs font-medium text-primary">Bien con niños</p>}
+                  <div className="min-h-2 flex-1" aria-hidden="true" />
                   <Button asChild variant="outline" className="w-full">
                     <Link href={`/adoptions/${listing.id}`}>Ver ficha</Link>
                   </Button>
@@ -298,7 +302,7 @@ function AdoptionsContent() {
 
 export default function AdoptionsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-500">Cargando adopciones...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Cargando adopciones...</div>}>
       <AdoptionsContent />
     </Suspense>
   );

@@ -95,7 +95,7 @@ const HeaderUserMenu = dynamic(
         aria-label="Cargando menú de usuario"
         disabled
       >
-        <div className="size-9 animate-pulse rounded-full bg-slate-200" />
+        <div className="size-9 animate-pulse rounded-full bg-muted" />
       </Button>
     ),
   }
@@ -149,7 +149,7 @@ export default function Header({ session }: HeaderProps) {
         className={`group flex min-h-11 items-center gap-3 rounded-md border-l-2 px-3 py-2.5 text-[15px] font-medium transition-colors ${
           active
             ? 'border-primary bg-primary-soft text-primary'
-            : 'border-transparent text-muted-foreground hover:bg-slate-100 hover:text-foreground'
+            : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
         }`}
         aria-current={active ? 'page' : undefined}
       >

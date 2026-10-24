@@ -92,10 +92,10 @@ export default function UpcomingEventsWidget() {
                 <CardContent className="space-y-4">
                     {[1, 2].map(i => (
                         <div key={i} className="animate-pulse flex gap-3">
-                            <div className="w-12 h-16 bg-slate-200 rounded-lg"></div>
+                            <div className="w-12 h-16 bg-muted rounded-lg"></div>
                             <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                                <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                                <div className="h-4 bg-muted rounded w-3/4"></div>
+                                <div className="h-3 bg-muted rounded w-1/2"></div>
                             </div>
                         </div>
                     ))}
@@ -111,7 +111,7 @@ export default function UpcomingEventsWidget() {
                     <CardTitle className="text-lg">Próximos Eventos</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-slate-500 text-center py-4">
+                    <p className="text-sm text-muted-foreground text-center py-4">
                         No hay eventos próximos
                     </p>
                 </CardContent>
@@ -128,20 +128,20 @@ export default function UpcomingEventsWidget() {
                 {events.map(event => {
                     const { day, dayNum, time } = formatDate(event.date);
                     return (
-                        <div key={event.id} className="border-b border-slate-100 last:border-0 pb-3 last:pb-0">
+                        <div key={event.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
                             <div className="flex gap-3">
-                                <div className="bg-teal-100 text-teal-700 rounded-lg p-2 text-center min-w-[50px] h-fit">
+                                <div className="bg-teal-100 text-primary rounded-lg p-2 text-center min-w-[50px] h-fit">
                                     <span className="block text-xs font-bold uppercase">{day}</span>
                                     <span className="block text-lg font-bold">{dayNum}</span>
                                 </div>
                                 <div className="flex-1">
                                     {event.group && (
-                                        <span className="inline-block px-1.5 py-0.5 mb-1 text-[10px] font-medium bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+                                        <span className="mb-1 inline-block text-xs font-medium text-muted-foreground">
                                             {event.group.name}
                                         </span>
                                     )}
-                                    <h4 className="font-semibold text-sm text-slate-800 line-clamp-1">{event.title}</h4>
-                                    <div className="flex items-center text-xs text-slate-500 mt-1 gap-2">
+                                    <h4 className="font-semibold text-sm text-foreground line-clamp-1">{event.title}</h4>
+                                    <div className="flex items-center text-xs text-muted-foreground mt-1 gap-2">
                                         <span className="flex items-center gap-1">
                                             <Clock className="size-3" aria-hidden="true" />
                                             {time}
@@ -157,15 +157,15 @@ export default function UpcomingEventsWidget() {
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="min-h-10 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                    className="min-h-10 text-xs text-muted-foreground hover:bg-muted hover:text-slate-600"
                                     onClick={() => handleDismiss(event.id)}
                                 >
                                     No me interesa
                                 </Button>
                                 <Button
                                     size="sm"
-                                    variant={event.isAttending ? "default" : "ghost"}
-                                    className={`min-h-10 text-xs ${event.isAttending ? 'bg-teal-500 hover:bg-teal-600' : 'text-teal-600 hover:bg-teal-50'}`}
+                                    variant={event.isAttending ? "tonal" : "ghost"}
+                                    className={`min-h-10 text-xs ${event.isAttending ? '' : 'text-primary'}`}
                                     onClick={() => handleAttend(event.id)}
                                 >
                                     {event.isAttending && <Check className="size-4" aria-hidden="true" />}
@@ -177,7 +177,7 @@ export default function UpcomingEventsWidget() {
                 })}
                 <Button
                     variant="link"
-                    className="w-full text-teal-600"
+                    className="w-full text-primary"
                     onClick={() => window.location.href = '/community/events'}
                 >
                     Ver calendario completo

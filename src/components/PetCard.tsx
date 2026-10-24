@@ -2,24 +2,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import {
-  ArrowRight,
-  Circle,
-  GraduationCap,
-  Heart,
-  Leaf,
-  MapPin,
-  PawPrint,
-  Ruler,
-  ShieldCheck,
-  Users,
-  Waves,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, Heart, MapPin, PawPrint } from 'lucide-react';
 import type { Pet } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getImageUrlsWithPrimaryFirst, shouldUnoptimizeImage } from '@/lib/media';
 import { getPetTypeLabel } from '@/lib/petTypeIcon';
@@ -33,15 +18,15 @@ interface PetCardProps {
   actionsDisabled?: boolean;
 }
 
-const ACTIVITY_LABELS: Record<string, { icon: LucideIcon; label: string }> = {
-  walk: { icon: Leaf, label: 'Paseos tranquilos' },
-  walking: { icon: Leaf, label: 'Paseos tranquilos' },
-  play: { icon: Circle, label: 'Juguetona' },
-  playing: { icon: Circle, label: 'Juguetona' },
-  fetch: { icon: Circle, label: 'Le gusta buscar' },
-  socialize: { icon: Users, label: 'Sociable' },
-  swim: { icon: Waves, label: 'Le gusta nadar' },
-  training: { icon: GraduationCap, label: 'Entrenamiento' },
+const ACTIVITY_LABELS: Record<string, string> = {
+  walk: 'Paseos tranquilos',
+  walking: 'Paseos tranquilos',
+  play: 'Juguetona',
+  playing: 'Juguetona',
+  fetch: 'Le gusta buscar',
+  socialize: 'Sociable',
+  swim: 'Le gusta nadar',
+  training: 'Entrenamiento',
 };
 
 function getSizeLabel(size: string) {
@@ -77,14 +62,14 @@ export default function PetCard({
   const mainImage = displayImages[Math.min(imageIndex, Math.max(displayImages.length - 1, 0))];
   const hasImage = Boolean(mainImage);
 
-  const traits = activities
-    .map((activity) => ACTIVITY_LABELS[activity.toLowerCase()])
-    .filter((trait): trait is { icon: LucideIcon; label: string } => Boolean(trait))
-    .filter((trait, index, list) => list.findIndex((item) => item.label === trait.label) === index);
-
-  if (pet.vaccinated) {
-    traits.push({ icon: ShieldCheck, label: 'Vacunas al día' });
-  }
+  const traits = [
+    pet.goodWithKids === 'yes' ? 'Bien con niños' : null,
+    pet.goodWithDogs === 'yes' ? 'Bien con perros' : null,
+    ...activities.map((activity) => ACTIVITY_LABELS[activity.toLowerCase()]),
+    pet.vaccinated ? 'Vacunas al día' : null,
+  ]
+    .filter((trait): trait is string => Boolean(trait))
+    .filter((trait, index, list) => list.indexOf(trait) === index);
 
   const nextImage = () => {
     if (displayImages.length === 0) return;
@@ -94,7 +79,7 @@ export default function PetCard({
   return (
     <article className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface">
       <div className="grid min-h-0 lg:min-h-[520px] lg:grid-cols-[47%_53%] 2xl:min-h-[640px]">
-        <div className="relative min-h-[200px] overflow-hidden bg-slate-100 sm:min-h-[240px] lg:min-h-full">
+        <div className="relative min-h-[200px] overflow-hidden bg-muted sm:min-h-[240px] lg:min-h-full">
           {hasImage ? (
             <Image
               src={mainImage}
@@ -106,13 +91,13 @@ export default function PetCard({
               unoptimized={shouldUnoptimizeImage(mainImage)}
             />
           ) : (
-            <div className="flex h-full min-h-[200px] items-center justify-center text-slate-300 sm:min-h-[240px]">
-              <PawPrint className="size-20 text-slate-300" aria-hidden="true" />
+            <div className="flex h-full min-h-[200px] items-center justify-center sm:min-h-[240px]">
+              <PawPrint className="size-16 text-primary/25" aria-hidden="true" />
             </div>
           )}
 
-          {hasImage && (
-            <span className="absolute left-5 top-5 rounded-lg bg-slate-950/75 px-3 py-1.5 text-xs font-semibold text-white">
+          {displayImages.length > 1 && (
+            <span className="absolute left-4 top-4 rounded-md bg-foreground/75 px-2.5 py-1 text-xs font-semibold text-white">
               {imageIndex + 1} / {displayImages.length}
             </span>
           )}
@@ -123,7 +108,7 @@ export default function PetCard({
               size="icon"
               variant="secondary"
               onClick={nextImage}
-              className="absolute bottom-5 right-5 size-11 rounded-md border border-white/50 bg-white/90 text-slate-900 hover:bg-white"
+              className="absolute bottom-4 right-4 size-11 rounded-md bg-surface/90 text-foreground hover:bg-surface"
               aria-label="Ver siguiente foto"
             >
               <ArrowRight className="size-5" aria-hidden="true" />
@@ -131,79 +116,59 @@ export default function PetCard({
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col px-6 py-7 sm:px-8 sm:py-9 2xl:px-10">
+        <div className="flex min-w-0 flex-col px-5 py-6 sm:px-8 sm:py-8 2xl:px-10">
           <div>
-            <h2 className="break-words text-3xl font-bold leading-tight tracking-[-0.04em] text-slate-950 sm:text-[38px]">
+            <h2 className="break-words text-3xl font-bold leading-tight tracking-[-0.035em] text-foreground sm:text-4xl">
               {pet.name}{pet.age > 0 ? `, ${pet.age} años` : ''}
             </h2>
-            <p className="mt-2 text-lg text-slate-700">{pet.breed || getPetTypeLabel(pet.petType)}</p>
-            <p className="mt-4 flex min-w-0 items-start gap-2 break-words text-sm text-slate-500">
-              <MapPin className="size-5 shrink-0" aria-hidden="true" />
+            <p className="mt-1.5 text-lg text-muted-foreground">{pet.breed || getPetTypeLabel(pet.petType)}</p>
+            <p className="mt-3 flex min-w-0 items-start gap-1.5 break-words text-sm text-muted-foreground">
+              <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               {pet.location || pet.owner?.location || 'Cerca tuyo'}
             </p>
             {(pet.size || pet.energy) && (
-              <ul className="mt-3 flex flex-wrap gap-2" aria-label="Características">
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground" aria-label="Características">
                 {pet.size && (
-                  <li className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-                    <Ruler className="size-3.5" aria-hidden="true" />
-                    Tamaño
-                    <span className="font-semibold text-foreground">{getSizeLabel(pet.size)}</span>
+                  <li>
+                    Tamaño <span className="font-semibold text-foreground">{getSizeLabel(pet.size)}</span>
                   </li>
                 )}
                 {pet.energy && (
-                  <li className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-                    <Zap className="size-3.5" aria-hidden="true" />
-                    Energía
-                    <span className="font-semibold text-foreground">{getEnergyLabel(pet.energy)}</span>
+                  <li>
+                    Energía <span className="font-semibold text-foreground">{getEnergyLabel(pet.energy)}</span>
                   </li>
                 )}
               </ul>
             )}
           </div>
 
-          <div className="mt-7 border-t border-slate-200 pt-6">
-            <div className="flex items-center gap-3">
-              <Avatar className="size-12 border border-slate-200">
-                {pet.owner?.image && <AvatarImage src={pet.owner.image} alt={pet.owner.name} />}
-                <AvatarFallback className="bg-teal-50 text-sm font-bold text-teal-700">
-                  {(pet.owner?.name || 'Huella').slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-slate-900">
-                  {pet.owner?.name || 'Comunidad Huella'}
-                </p>
-                <p className="text-sm text-slate-500">Responsable en Huella</p>
-              </div>
+          <p className="mt-6 min-w-0 break-words text-[15px] leading-7 text-foreground">
+            {pet.bio || `Todavía no completaron la historia de ${pet.name}.`}
+          </p>
+
+          {traits.length > 0 && (
+            <ul className="mt-4 flex flex-wrap gap-2" aria-label="Rasgos">
+              {traits.slice(0, 5).map((trait) => (
+                <li key={trait} className="rounded-md bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+                  {trait}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
+            <Avatar className="size-10">
+              {pet.owner?.image && <AvatarImage src={pet.owner.image} alt={pet.owner.name} />}
+              <AvatarFallback className="text-sm">
+                {(pet.owner?.name || 'Huella').slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-foreground">
+                {pet.owner?.name || 'Comunidad Huella'}
+              </p>
+              <p className="text-sm text-muted-foreground">Responsable en Huella</p>
             </div>
-          </div>
-
-          <div className="mt-7 flex gap-3 text-slate-700">
-            <Heart className="mt-0.5 size-7 text-slate-400" aria-hidden="true" />
-            <p className="min-w-0 break-words text-[15px] leading-7">
-              {pet.bio || `Todavía no completaron la historia de ${pet.name}.`}
-            </p>
-          </div>
-
-          <div className="mt-7 flex flex-wrap gap-2">
-            {pet.goodWithKids === 'yes' && (
-              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">Bien con niños</Badge>
-            )}
-            {pet.goodWithDogs === 'yes' && (
-              <Badge variant="outline" className="border-teal-200 bg-teal-50 text-teal-700">Bien con perros</Badge>
-            )}
-            {traits.slice(0, 3).map((trait) => {
-              const TraitIcon = trait.icon;
-              return (
-              <span
-                key={trait.label}
-                className="inline-flex items-center gap-2 rounded-lg bg-teal-50 px-3 py-2 text-xs font-medium text-slate-700"
-              >
-                <TraitIcon className="size-4 text-teal-700" aria-hidden="true" />
-                {trait.label}
-              </span>
-              );
-            })}
           </div>
 
           <div className="sr-only">
@@ -212,7 +177,8 @@ export default function PetCard({
             {pet.vaccinated && <span>Vacunado</span>}
           </div>
 
-          <div className="mt-auto border-t border-slate-200 pt-6">
+          <div className="min-h-6 flex-1" aria-hidden="true" />
+          <div className="border-t border-border pt-5">
             <p className="mb-5 break-words text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">Por qué podría llevarse bien</span>
               {activePetName ? ` con ${activePetName}` : ''}
@@ -236,7 +202,7 @@ export default function PetCard({
                 aria-keyshortcuts="ArrowRight"
                 className="h-12 text-sm"
               >
-                <Heart className="mr-2 size-5" aria-hidden="true" />
+                <Heart className="size-5" aria-hidden="true" />
                 Quiero conocer
               </Button>
             </div>

@@ -45,10 +45,10 @@ export default function ConversationList({
 
     return (
         <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-            <div className="shrink-0 border-b border-slate-100 p-4">
+            <div className="shrink-0 border-b border-border p-4">
                 <h1 className="mb-3 text-lg font-bold text-foreground">Mensajes</h1>
                 <div className="relative mb-3">
-                    <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                    <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                     <Input
                         aria-label="Buscar conversaciones"
                         placeholder="Buscar conversaciones"
@@ -73,7 +73,7 @@ export default function ConversationList({
 
                 <TabsContent value="matches" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
                     {visibleMatches.length === 0 ? (
-                        <div className="p-6 text-center text-slate-400">
+                        <div className="p-6 text-center text-muted-foreground">
                             <PawPrint className="mb-2 size-10" aria-hidden="true" />
                             <p className="text-sm">{normalizedSearch ? 'No encontramos conversaciones.' : 'Todavía no tenés encuentros.'}</p>
                             {!normalizedSearch && (
@@ -90,7 +90,7 @@ export default function ConversationList({
                                 onClick={() => onSelect(match.matchId, 'match')}
                                 className={cn(
                                     "flex min-w-0 w-full cursor-pointer items-center gap-3 border-b border-slate-50 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500",
-                                    selectedId === match.matchId && selectedType === 'match' ? 'bg-teal-50' : 'hover:bg-slate-50'
+                                    selectedId === match.matchId && selectedType === 'match' ? 'bg-teal-50' : 'hover:bg-background'
                                 )}
                             >
                                 <Avatar className="h-12 w-12 shrink-0">
@@ -98,12 +98,12 @@ export default function ConversationList({
                                         src={match.primaryImageUrl || getPrimaryImageUrl(match.images, match.thumbnailIndex ?? 0) || undefined}
                                         alt={`Foto de ${match.name}`}
                                     />
-                                    <AvatarFallback className="bg-teal-100 text-teal-700">{match.name[0]}</AvatarFallback>
+                                    <AvatarFallback className="bg-teal-100 text-primary">{match.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-slate-900 text-sm truncate">{match.name}</p>
-                                    <p className="truncate text-xs text-teal-600">{match.breed || 'Mascota'}</p>
-                                    <p className="truncate text-sm text-slate-400">Abrir conversación</p>
+                                    <p className="font-semibold text-foreground text-sm truncate">{match.name}</p>
+                                    <p className="truncate text-xs text-primary">{match.breed || 'Mascota'}</p>
+                                    <p className="truncate text-sm text-muted-foreground">Abrir conversación</p>
                                 </div>
                             </button>
                         ))
@@ -112,7 +112,7 @@ export default function ConversationList({
 
                 <TabsContent value="groups" className="mt-2 min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain outline-none">
                     {visibleGroups.length === 0 ? (
-                        <div className="p-6 text-center text-slate-400">
+                        <div className="p-6 text-center text-muted-foreground">
                             <Users className="mb-2 size-10" aria-hidden="true" />
                             <p className="text-sm">{normalizedSearch ? 'No encontramos grupos.' : 'Todavía no pertenecés a ningún grupo.'}</p>
                             {!normalizedSearch && (
@@ -129,10 +129,10 @@ export default function ConversationList({
                                 onClick={() => onSelect(group.id, 'group')}
                                 className={cn(
                                     "flex min-w-0 w-full cursor-pointer items-center gap-3 border-b border-slate-50 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500",
-                                    selectedId === group.id && selectedType === 'group' ? 'bg-teal-50' : 'hover:bg-slate-50'
+                                    selectedId === group.id && selectedType === 'group' ? 'bg-teal-50' : 'hover:bg-background'
                                 )}
                             >
-                                <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0">
                                     {group.image ? (
                                         <Image
                                             src={group.image}
@@ -149,8 +149,8 @@ export default function ConversationList({
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-slate-900 text-sm truncate">{group.name}</p>
-                                    <p className="text-xs text-slate-500 truncate">{group.description}</p>
+                                    <p className="font-semibold text-foreground text-sm truncate">{group.name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{group.description}</p>
                                 </div>
                             </button>
                         ))

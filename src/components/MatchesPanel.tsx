@@ -40,7 +40,7 @@ function MatchAvatar({
           </div>
         </AvatarImage>
       ) : null}
-      <AvatarFallback className="bg-teal-50 text-lg font-semibold text-teal-700">
+      <AvatarFallback className="text-lg">
         {name?.[0] || '?'}
       </AvatarFallback>
     </Avatar>
@@ -59,14 +59,14 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
     return (
       <div
         role="alert"
-        className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-border bg-surface px-6 py-12 text-center"
+        className="flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-border bg-surface px-6 py-12 text-center"
       >
         <CloudOff className="size-12 text-muted-foreground" aria-hidden="true" />
         <h3 className="mt-4 text-lg font-semibold text-foreground">No pudimos cargar tu círculo</h3>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
           Revisá tu conexión y reintentá. Tus coincidencias siguen guardadas.
         </p>
-        <Button type="button" onClick={onRefresh} className="mt-6">
+        <Button type="button" variant="outline" onClick={onRefresh} className="mt-6">
           Reintentar
         </Button>
       </div>
@@ -76,10 +76,10 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
   return (
     <div className="h-full">
       {matches.length === 0 ? (
-        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
-          <Heart className="size-12 text-slate-300" aria-hidden="true" />
-          <h3 className="mt-4 text-lg font-semibold text-slate-800">Todavía no hay coincidencias</h3>
-          <p className="mt-2 max-w-sm text-sm text-slate-500">
+        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-surface px-6 py-12 text-center">
+          <Heart className="size-12 text-primary/35" aria-hidden="true" />
+          <h3 className="mt-4 text-lg font-semibold text-foreground">Todavía no hay coincidencias</h3>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Cuando haya interés mutuo, las mascotas van a aparecer acá para chatear en Mensajes.
           </p>
           <Button asChild className="mt-6">
@@ -99,19 +99,19 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
                     name={match.name}
                   />
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-slate-900">{match.name}</h3>
-                    <p className="truncate text-sm text-slate-500">
+                    <h3 className="truncate font-semibold text-foreground">{match.name}</h3>
+                    <p className="truncate text-sm text-muted-foreground">
                       {(match.bio || 'Nueva conexión').substring(0, 50)}
                     </p>
                     {match.matchId && (
-                      <p className="mt-1 text-xs font-medium text-teal-700">Abrir chat</p>
+                      <p className="mt-1 text-xs font-medium text-primary">Abrir chat</p>
                     )}
                   </div>
-                  {match.matchId && <ChevronRight className="text-slate-400" aria-hidden="true" />}
+                  {match.matchId && <ChevronRight className="text-muted-foreground" aria-hidden="true" />}
                 </div>
               );
               const cardClassName =
-                'block min-w-0 rounded-xl border border-slate-200 bg-card p-4 text-card-foreground shadow-sm';
+                'block min-w-0 rounded-lg border border-border bg-surface p-4 text-foreground';
 
               return (
                 <li key={match.matchId || match.id} className="min-w-0">
@@ -119,7 +119,7 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
                     <Link
                       href={`/messages?matchId=${match.matchId}`}
                       aria-label={`Abrir chat con ${match.name}`}
-                      className={`${cardClassName} transition-colors hover:border-teal-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}
+                      className={`${cardClassName} transition-colors hover:border-border-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}
                     >
                       {content}
                     </Link>

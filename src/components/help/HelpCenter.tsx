@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronRight,
@@ -32,7 +32,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { StateFeedback } from '@/components/ui/state-feedback';
-import { cn } from '@/lib/utils';
+import { cn, countLabel } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   RESCUE_STATUS_LABELS,
@@ -52,8 +52,8 @@ const EMPTY_DASHBOARD: HelpDashboardData = {
 function statusClass(status: string) {
   if (['IN_FOSTER', 'RESOLVED'].includes(status)) return 'bg-emerald-100 text-emerald-800';
   if (['INTERESTED', 'COORDINATING', 'ASSISTANCE_ACTIVE', 'NEEDS_ADOPTION'].includes(status)) return 'bg-orange-100 text-orange-800';
-  if (status === 'CANCELLED') return 'bg-slate-200 text-slate-600';
-  return 'bg-teal-100 text-teal-800';
+  if (status === 'CANCELLED') return 'bg-muted text-slate-600';
+  return 'bg-teal-100 text-primary';
 }
 
 function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
@@ -62,7 +62,7 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
   return (
     <div className="overflow-hidden bg-surface">
       <div className="grid min-w-0 grid-cols-[96px_minmax(0,1fr)] sm:grid-cols-[128px_minmax(0,1fr)]">
-        <div className="relative flex min-h-40 items-center justify-center bg-slate-100">
+        <div className="relative flex min-h-40 items-center justify-center bg-muted">
           {image ? (
             <Image
               src={image}
@@ -73,25 +73,25 @@ function RescueCaseCard({ rescueCase }: { rescueCase: RescueCaseSummary }) {
               className="object-cover"
             />
           ) : (
-            <PawPrint className="size-10 text-slate-300" aria-hidden="true" />
+            <PawPrint className="size-10 text-primary/35" aria-hidden="true" />
           )}
         </div>
         <div className="min-w-0 space-y-3 p-4">
           <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="font-semibold text-slate-900">
+              <p className="font-semibold text-foreground">
                 {SPECIES_LABELS[rescueCase.species] || 'Animal'} · {SIZE_LABELS[rescueCase.size] || rescueCase.size}
               </p>
-              <p className="truncate text-sm text-slate-500">{rescueCase.location}</p>
+              <p className="truncate text-sm text-muted-foreground">{rescueCase.location}</p>
             </div>
             <Badge className={statusClass(rescueCase.status)}>{RESCUE_STATUS_LABELS[rescueCase.status] || rescueCase.status}</Badge>
           </div>
           {primaryNeed && <p className="text-sm font-semibold text-primary">Necesita {RESCUE_NEED_LABELS[primaryNeed.type].toLowerCase()}</p>}
           <p className="line-clamp-2 text-sm text-slate-600">{rescueCase.description}</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span>{rescueCase.searchRadiusKm} km de radio</span>
-            <span>{rescueCase.offerCount} hogares contactados</span>
-            {rescueCase.interestedCount > 0 && <span className="font-medium text-orange-700">{rescueCase.interestedCount} interesados</span>}
+            <span>{countLabel(rescueCase.offerCount, 'hogar contactado', 'hogares contactados')}</span>
+            {rescueCase.interestedCount > 0 && <span className="font-medium text-orange-700">{countLabel(rescueCase.interestedCount, 'interesado', 'interesados')}</span>}
           </div>
           <Button asChild variant="outline" size="sm">
             <Link href={`/hogares-de-transito/casos/${rescueCase.id}`}>Ver seguimiento</Link>
@@ -116,7 +116,7 @@ function OfferCard({
   return (
     <Card className="gap-0 overflow-hidden py-0">
       {image && (
-        <div className="relative aspect-[16/8] bg-slate-100">
+        <div className="relative aspect-[16/8] bg-muted">
           <Image
             src={image}
             alt="Animal que necesita hogar de tránsito"
@@ -130,15 +130,15 @@ function OfferCard({
       <CardContent className="space-y-4 p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
-            <p className="font-semibold text-slate-900">
+            <p className="font-semibold text-foreground">
               {SPECIES_LABELS[offer.rescueCase.species]} · {SIZE_LABELS[offer.rescueCase.size]}
             </p>
-            <p className="text-sm text-slate-500">{offer.rescueCase.location} · {offer.distanceKm.toFixed(1)} km</p>
+            <p className="text-sm text-muted-foreground">{offer.rescueCase.location} · {offer.distanceKm.toFixed(1)} km</p>
           </div>
           <Badge variant="outline">{offer.score}% compatible</Badge>
         </div>
         <p className="line-clamp-3 text-sm text-slate-600">{offer.rescueCase.description}</p>
-        <ul className="space-y-1 text-xs text-slate-500">
+        <ul className="space-y-1 text-xs text-muted-foreground">
           {offer.reasons.map((reason) => <li key={reason}>• {reason}</li>)}
         </ul>
         {pending ? (
@@ -170,7 +170,7 @@ function OfferCard({
   );
 }
 
-export default function HelpCenter() {
+export default function HelpCenter({ pending }: { pending?: ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<FosterProfileView | null>(null);
@@ -261,7 +261,7 @@ export default function HelpCenter() {
         <div className="space-y-3">
           <div>
             <h2 className="text-lg font-bold tracking-tight text-primary">Ayuda temporal</h2>
-            <p className="mt-1 text-sm text-slate-500">Resguardo y tránsito para una mascota</p>
+            <p className="mt-1 text-sm text-muted-foreground">Resguardo y tránsito para una mascota</p>
           </div>
           <div className="divide-y divide-border border-y border-border bg-surface">
             {([
@@ -288,8 +288,8 @@ export default function HelpCenter() {
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold text-slate-900">{item.title}</span>
-                  <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
+                  <span className="block font-semibold text-foreground">{item.title}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{item.description}</span>
                 </span>
                 <ChevronRight className="size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </button>
@@ -301,7 +301,7 @@ export default function HelpCenter() {
         <div className="space-y-3">
           <div>
             <h2 className="text-lg font-bold tracking-tight text-orange-700">Adopción definitiva</h2>
-            <p className="mt-1 text-sm text-slate-500">Un hogar permanente para una mascota</p>
+            <p className="mt-1 text-sm text-muted-foreground">Un hogar permanente para una mascota</p>
           </div>
           <div className="divide-y divide-border border-y border-border bg-surface">
             {([
@@ -331,8 +331,8 @@ export default function HelpCenter() {
                   <Icon className="size-6" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold text-slate-900">{item.title}</span>
-                  <span className="mt-1 block text-sm text-slate-500">{item.description}</span>
+                  <span className="block font-semibold text-foreground">{item.title}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{item.description}</span>
                 </span>
                 <span className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 min-[900px]:flex">
                   {item.action}
@@ -357,6 +357,7 @@ export default function HelpCenter() {
         className="pb-4"
         action={hasParticipation && <Button variant="outline" className="gap-2 border-destructive/35 text-destructive hover:bg-destructive/5" onClick={() => setCaseDialogOpen(true)}><CircleAlert className="size-4" aria-hidden="true" />Encontré una mascota</Button>}
       />
+      {pending}
 
       {loading ? <StateFeedback status="loading" title="Cargando tu actividad" /> : loadError ? (
         <StateFeedback status="error" title="No pudimos cargar tu actividad" description="Intentá de nuevo para ver tus casos y solicitudes." action={<Button variant="outline" onClick={() => void load()}>Reintentar</Button>} />
@@ -366,21 +367,21 @@ export default function HelpCenter() {
       <Tabs id="help-activity" value={activeTab} onValueChange={setActiveTab} className="scroll-mt-24 gap-4">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-auto min-h-11 w-max min-w-full justify-start">
-            <TabsTrigger value="cases" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mis casos</TabsTrigger>
-            <TabsTrigger value="offers" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">
+            <TabsTrigger value="cases" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-primary">Mis casos</TabsTrigger>
+            <TabsTrigger value="offers" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-primary">
               Solicitudes recibidas {dashboard.offers.length > 0 && `(${dashboard.offers.length})`}
             </TabsTrigger>
-            <TabsTrigger value="home" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Mi hogar</TabsTrigger>
-            <TabsTrigger value="volunteer" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-teal-800">Voluntariado</TabsTrigger>
-            <TabsTrigger value="alerts" className="min-h-11 min-w-40 text-slate-700 data-[state=active]:text-teal-800">Alertas solidarias</TabsTrigger>
+            <TabsTrigger value="home" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-primary">Mi hogar</TabsTrigger>
+            <TabsTrigger value="volunteer" className="min-h-11 min-w-32 text-slate-700 data-[state=active]:text-primary">Voluntariado</TabsTrigger>
+            <TabsTrigger value="alerts" className="min-h-11 min-w-40 text-slate-700 data-[state=active]:text-primary">Alertas solidarias</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="cases" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Tus casos</h2>
-              <p className="text-sm text-slate-500">Seguimiento desde la búsqueda hasta el cierre.</p>
+              <h2 className="text-xl font-bold text-foreground">Tus casos</h2>
+              <p className="text-sm text-muted-foreground">Seguimiento desde la búsqueda hasta el cierre.</p>
             </div>
           </div>
           {dashboard.createdCases.length === 0 ? (
@@ -398,8 +399,8 @@ export default function HelpCenter() {
 
         <TabsContent value="offers" className="space-y-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Solicitudes recibidas</h2>
-            <p className="text-sm text-slate-500">Solo aparecen casos compatibles dentro del radio elegido por quien pidió ayuda.</p>
+            <h2 className="text-xl font-bold text-foreground">Solicitudes recibidas</h2>
+            <p className="text-sm text-muted-foreground">Solo aparecen casos compatibles dentro del radio elegido por quien pidió ayuda.</p>
           </div>
           {!profile ? (
             <EmptyState title="Primero activá tu hogar de tránsito" action={<Button onClick={() => setProfileDialogOpen(true)}>Crear perfil</Button>} />
@@ -424,17 +425,17 @@ export default function HelpCenter() {
             <div className="flex flex-row flex-wrap items-start justify-between gap-3 px-4">
               <div>
                 <h2 className="font-semibold text-foreground">Disponibilidad del hogar</h2>
-                <p className="mt-1 text-sm text-slate-500">No hay revisión previa; podés pausar nuevas solicitudes cuando lo necesites.</p>
+                <p className="mt-1 text-sm text-muted-foreground">No hay revisión previa; podés pausar nuevas solicitudes cuando lo necesites.</p>
               </div>
-              {profile && <Badge className={profile.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}>{profile.status === 'ACTIVE' ? 'Disponible' : profile.status === 'PAUSED' ? 'Pausado' : 'Suspendido'}</Badge>}
+              {profile && <Badge className={profile.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-slate-700'}>{profile.status === 'ACTIVE' ? 'Disponible' : profile.status === 'PAUSED' ? 'Pausado' : 'Suspendido'}</Badge>}
             </div>
             <div className="mt-5 space-y-4 px-4">
               {profile ? (
                 <>
                   <dl className="grid divide-y divide-border border-y border-border text-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                    <div className="py-3 sm:px-4"><dt className="text-slate-500">Zona y radio</dt><dd className="mt-1 font-medium text-slate-900">{profile.location} · {profile.radiusKm} km</dd></div>
-                    <div className="py-3 sm:px-4"><dt className="text-slate-500">Capacidad</dt><dd className="mt-1 font-medium text-slate-900">{profile.occupiedSlots}/{profile.capacity} lugares ocupados</dd></div>
-                    <div className="py-3 sm:px-4"><dt className="text-slate-500">Duración máxima</dt><dd className="mt-1 font-medium text-slate-900">{profile.maxDurationDays} días</dd></div>
+                    <div className="py-3 sm:px-4"><dt className="text-muted-foreground">Zona y radio</dt><dd className="mt-1 font-medium text-foreground">{profile.location} · {profile.radiusKm} km</dd></div>
+                    <div className="py-3 sm:px-4"><dt className="text-muted-foreground">Capacidad</dt><dd className="mt-1 font-medium text-foreground">{profile.occupiedSlots}/{profile.capacity} lugares ocupados</dd></div>
+                    <div className="py-3 sm:px-4"><dt className="text-muted-foreground">Duración máxima</dt><dd className="mt-1 font-medium text-foreground">{profile.maxDurationDays} días</dd></div>
                   </dl>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button onClick={() => setProfileDialogOpen(true)}>Editar perfil</Button>

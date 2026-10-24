@@ -70,14 +70,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-row">
-      <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-12 lg:px-20 xl:px-24 bg-slate-50 relative">
+      <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-12 lg:px-20 xl:px-24 bg-background relative">
         <header className="absolute top-0 left-0 w-full p-6 sm:p-8 lg:p-10">
           <BrandLink priority logoClassName="h-11" />
         </header>
 
         <div className="w-full max-w-[420px] mx-auto mt-16 sm:mt-0">
           <div className="mb-8 space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
               Iniciá sesión
             </h1>
             <p className="text-slate-600 text-base leading-relaxed">
@@ -87,7 +87,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700" htmlFor="email">
+              <label className="text-sm font-medium text-foreground" htmlFor="email">
                 Correo electrónico
               </label>
               <Input
@@ -98,12 +98,12 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-teal-600/30"
+                className="w-full rounded-lg bg-surface border border-border-control h-12 px-4 text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/30"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700" htmlFor="password">
+              <label className="text-sm font-medium text-foreground" htmlFor="password">
                 Contraseña
               </label>
               <div className="relative">
@@ -115,11 +115,11 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-14 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-teal-600/30"
+                  className="w-full rounded-lg bg-surface border border-border-control h-12 px-4 pr-14 text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/30"
                 />
                 <button
                   type="button"
-                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
-                className="inline-flex min-h-11 items-center text-sm font-medium text-teal-700 hover:text-teal-800"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-primary hover:text-primary"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -156,7 +156,7 @@ export default function LoginPage() {
           <p className="mt-8 text-center text-sm text-slate-600">
             ¿No tenés una cuenta?{' '}
             <ReturnLink
-              className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
+              className="inline-flex min-h-11 items-center text-primary font-semibold hover:text-primary"
               href="/register"
             >
               Registrate

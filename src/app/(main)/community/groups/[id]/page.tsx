@@ -136,17 +136,17 @@ export default function SingleGroupPage() {
 
                 <Tabs defaultValue="feed" className="min-w-0 w-full">
                     <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
-                        <TabsList className="inline-flex h-auto min-w-max justify-start rounded-none border-b border-slate-200 bg-white p-0">
-                            <TabsTrigger value="feed" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                        <TabsList className="inline-flex h-auto min-w-max justify-start rounded-none border-b border-border bg-transparent p-0">
+                            <TabsTrigger value="feed" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-primary sm:px-6">
                                 Publicaciones
                             </TabsTrigger>
-                            <TabsTrigger value="chat" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                            <TabsTrigger value="chat" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-primary sm:px-6">
                                 Chat grupal
                             </TabsTrigger>
-                            <TabsTrigger value="events" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                            <TabsTrigger value="events" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-primary sm:px-6">
                                 Eventos
                             </TabsTrigger>
-                            <TabsTrigger value="members" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-teal-600 sm:px-6">
+                            <TabsTrigger value="members" className="shrink-0 rounded-none px-3 py-3 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:text-primary sm:px-6">
                                 Miembros
                             </TabsTrigger>
                         </TabsList>

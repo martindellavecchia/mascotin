@@ -235,12 +235,12 @@ export default function ProviderPage() {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-                    <Card className="text-center" role="alert">
+                    <Card className="gap-0 py-0 text-center" role="alert">
                         <CardContent className="p-8">
                             <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-red-100">
                                 <AlertTriangle className="size-8 text-red-600" aria-hidden="true" />
                             </div>
-                            <h1 className="mb-2 text-2xl font-bold text-slate-800">No pudimos cargar tu panel</h1>
+                            <h1 className="mb-2 text-2xl font-bold text-foreground">No pudimos cargar tu panel</h1>
                             <p className="mb-6 text-slate-600">
                                 Revisá tu conexión e intentá de nuevo. Tus datos de proveedor no se perdieron.
                             </p>
@@ -273,30 +273,30 @@ export default function ProviderPage() {
                     <PageHeader title="Panel de proveedor" description="Gestioná tu negocio, servicios y citas desde un solo lugar." />
                     <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-3">
                         <div className="xl:col-span-1">
-                            <Card>
+                            <Card className="gap-0 py-0">
                                 <CardContent className="p-6">
                                     <div className="text-center mb-4">
                                         <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-lg bg-primary-soft">
                                             <Store className="size-7 text-primary" aria-hidden="true" />
                                         </div>
-                                        <h2 className="text-xl font-bold text-slate-800">{provider.businessName}</h2>
-                                        <p className="text-sm text-slate-500 flex items-center justify-center gap-1">
+                                        <h2 className="text-xl font-bold text-foreground">{provider.businessName}</h2>
+                                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                                             <MapPin className="size-3.5" aria-hidden="true" />
                                             {provider.location}
                                         </p>
                                     </div>
                                     <dl className="mb-4 grid grid-cols-3 divide-x divide-border border-y border-border py-3">
                                         <div className="text-center">
-                                            <p className="text-2xl font-bold text-teal-600">{provider.rating.toFixed(1)}</p>
-                                            <p className="text-xs text-slate-500">Calificación</p>
+                                            <p className="text-2xl font-bold text-primary">{provider.rating.toFixed(1)}</p>
+                                            <p className="text-xs text-muted-foreground">Calificación</p>
                                         </div>
                                         <div className="text-center">
                                             <p className="text-2xl font-bold text-slate-700">{provider.reviewCount}</p>
-                                            <p className="text-xs text-slate-500">Reseñas</p>
+                                            <p className="text-xs text-muted-foreground">Reseñas</p>
                                         </div>
                                         <div className="text-center">
                                             <p className="text-2xl font-bold text-slate-700">{services.length}</p>
-                                            <p className="text-xs text-slate-500">Servicios</p>
+                                            <p className="text-xs text-muted-foreground">Servicios</p>
                                         </div>
                                     </dl>
                                     {provider.description && (
@@ -318,7 +318,7 @@ export default function ProviderPage() {
                                 </TabsContent>
                                 <TabsContent value="services">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-xl font-bold text-slate-800">Mis servicios</h2>
+                                        <h2 className="text-xl font-bold text-foreground">Mis servicios</h2>
                                         <Button onClick={openAddService}>
                                             <Plus className="mr-2 size-5" aria-hidden="true" />
                                             Agregar servicio
@@ -337,14 +337,14 @@ export default function ProviderPage() {
                                                 return (
                                                     <div key={service.id} className="p-4">
                                                         <div className="flex justify-between items-start mb-2">
-                                                            <h3 className="font-semibold text-slate-800">{service.name}</h3>
+                                                            <h3 className="font-semibold text-foreground">{service.name}</h3>
                                                             <Badge variant="outline">{service.duration} min</Badge>
                                                         </div>
-                                                        <p className="text-sm text-slate-500 mb-3 line-clamp-2">{service.description}</p>
+                                                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{service.description}</p>
                                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                                             <div className="flex items-baseline gap-3">
-                                                                <span className="text-lg font-bold text-teal-600">${service.price.toLocaleString('es-AR')}</span>
-                                                                <span className="text-xs text-slate-400">{bookings} {bookings === 1 ? 'reserva' : 'reservas'}</span>
+                                                                <span className="text-lg font-bold text-primary">${service.price.toLocaleString('es-AR')}</span>
+                                                                <span className="text-xs text-muted-foreground">{bookings} {bookings === 1 ? 'reserva' : 'reservas'}</span>
                                                             </div>
                                                             <div className="flex gap-1">
                                                                 <Button
@@ -379,7 +379,7 @@ export default function ProviderPage() {
                                                             </div>
                                                         </div>
                                                         {bookings > 0 && (
-                                                            <p className="mt-2 text-xs text-slate-500">
+                                                            <p className="mt-2 text-xs text-muted-foreground">
                                                                 Tiene turnos registrados, así que no se puede eliminar para conservar el historial. Podés editarlo cuando quieras.
                                                             </p>
                                                         )}
@@ -409,21 +409,21 @@ export default function ProviderPage() {
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div>
-                                <label className="text-sm font-medium text-slate-700">Nombre del servicio *</label>
-                                <Input placeholder="Ej: Consulta veterinaria" value={serviceName} onChange={(e) => setServiceName(e.target.value)} />
+                                <label htmlFor="provider-nombre-del-servicio" className="text-sm font-medium text-slate-700">Nombre del servicio *</label>
+                                <Input id="provider-nombre-del-servicio" placeholder="Ej: Consulta veterinaria" value={serviceName} onChange={(e) => setServiceName(e.target.value)} />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-slate-700">Descripción *</label>
-                                <Textarea placeholder="Describe el servicio..." value={serviceDesc} onChange={(e) => setServiceDesc(e.target.value)} rows={3} />
+                                <label htmlFor="provider-descripcion" className="text-sm font-medium text-slate-700">Descripción *</label>
+                                <Textarea id="provider-descripcion" placeholder="Describe el servicio..." value={serviceDesc} onChange={(e) => setServiceDesc(e.target.value)} rows={3} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Precio ($) *</label>
-                                    <Input type="number" placeholder="1500" value={servicePrice} onChange={(e) => setServicePrice(e.target.value)} />
+                                    <label htmlFor="provider-precio" className="text-sm font-medium text-slate-700">Precio ($) *</label>
+                                    <Input id="provider-precio" type="number" placeholder="1500" value={servicePrice} onChange={(e) => setServicePrice(e.target.value)} />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Duración (min) *</label>
-                                    <Input type="number" placeholder="60" value={serviceDuration} onChange={(e) => setServiceDuration(e.target.value)} />
+                                    <label htmlFor="provider-duracion-min" className="text-sm font-medium text-slate-700">Duración (min) *</label>
+                                    <Input id="provider-duracion-min" type="number" placeholder="60" value={serviceDuration} onChange={(e) => setServiceDuration(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -461,20 +461,20 @@ export default function ProviderPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium text-slate-700">Nombre del negocio *</label>
-                                <Input placeholder="Ej: Veterinaria San Roque" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
+                                <label htmlFor="provider-nombre-del-negocio" className="text-sm font-medium text-slate-700">Nombre del negocio *</label>
+                                <Input id="provider-nombre-del-negocio" placeholder="Ej: Veterinaria San Roque" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-slate-700">Ubicación *</label>
-                                <Input placeholder="Ej: Palermo, Buenos Aires" value={location} onChange={(e) => setLocation(e.target.value)} />
+                                <label htmlFor="provider-ubicacion" className="text-sm font-medium text-slate-700">Ubicación *</label>
+                                <Input id="provider-ubicacion" placeholder="Ej: Palermo, Buenos Aires" value={location} onChange={(e) => setLocation(e.target.value)} />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-slate-700">Descripción</label>
-                                <Textarea placeholder="Contanos sobre tu negocio" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                                <label htmlFor="provider-descripcion-2" className="text-sm font-medium text-slate-700">Descripción</label>
+                                <Textarea id="provider-descripcion-2" placeholder="Contanos sobre tu negocio" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-slate-700">¿Por qué querés ser proveedor? *</label>
-                                <Textarea
+                                <label htmlFor="provider-por-que-queres-ser-proveedor" className="text-sm font-medium text-slate-700">¿Por qué querés ser proveedor? *</label>
+                                <Textarea id="provider-por-que-queres-ser-proveedor"
                                     placeholder="Contanos tu experiencia y motivación"
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
@@ -501,12 +501,12 @@ export default function ProviderPage() {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-                    <Card className="text-center">
+                    <Card className="gap-0 py-0 text-center">
                         <CardContent className="p-8">
                             <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-amber-100">
                                 <Clock className="size-8 text-amber-600" aria-hidden="true" />
                             </div>
-                            <h1 className="text-2xl font-bold text-slate-800 mb-2">Tu solicitud está en revisión</h1>
+                            <h1 className="text-2xl font-bold text-foreground mb-2">Tu solicitud está en revisión</h1>
                             <p className="text-slate-600 mb-4">
                                 Enviaste una solicitud para <strong>{providerRequest.businessName}</strong>.
                                 Un administrador la revisará pronto.
@@ -526,15 +526,15 @@ export default function ProviderPage() {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-                    <Card className="text-center">
+                    <Card className="gap-0 py-0 text-center">
                         <CardContent className="p-8">
                             <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-red-100">
                                 <CircleX className="size-8 text-red-600" aria-hidden="true" />
                             </div>
-                            <h1 className="text-2xl font-bold text-slate-800 mb-2">Tu solicitud fue rechazada</h1>
+                            <h1 className="text-2xl font-bold text-foreground mb-2">Tu solicitud fue rechazada</h1>
                             {providerRequest.adminNote && (
-                                <div className="bg-slate-50 rounded-lg p-4 mb-4 text-left">
-                                    <p className="text-sm text-slate-500 mb-1">Nota del administrador:</p>
+                                <div className="bg-background rounded-lg p-4 mb-4 text-left">
+                                    <p className="text-sm text-muted-foreground mb-1">Nota del administrador:</p>
                                     <p className="text-slate-700">{providerRequest.adminNote}</p>
                                 </div>
                             )}
@@ -562,10 +562,10 @@ export default function ProviderPage() {
     return (
         <div className="min-h-screen bg-background">
             <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-                <Card className="text-center">
+                <Card className="gap-0 py-0 text-center">
                     <CardContent className="p-8">
                         <Store className="mb-4 size-16 text-teal-500" aria-hidden="true" />
-                        <h1 className="mb-2 text-2xl font-bold text-slate-800">¿Ofrecés servicios para mascotas?</h1>
+                        <h1 className="mb-2 text-2xl font-bold text-foreground">¿Ofrecés servicios para mascotas?</h1>
                         <p className="text-slate-600 mb-6">
                             Publicá tus servicios, recibí consultas y administrá las citas desde Huella.
                         </p>

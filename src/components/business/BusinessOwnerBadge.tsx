@@ -16,7 +16,7 @@ export default function BusinessOwnerBadge({ className, compact = false }: Busin
         <TooltipTrigger asChild>
           <span
             className={cn(
-              'absolute -bottom-1 -right-1 z-10 flex size-5 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-teal-600 text-white shadow-sm',
+              'absolute -bottom-1 -right-1 z-10 flex size-5 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-primary text-white shadow-sm',
               className
             )}
             role="img"

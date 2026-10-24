@@ -192,7 +192,7 @@ function ProfileContent() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
-          <p className="text-slate-500">Cargando perfil...</p>
+          <p className="text-muted-foreground">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -214,7 +214,7 @@ function ProfileContent() {
         <main className="container mx-auto flex-1 px-4 py-4 sm:py-8">
           <Card className="mx-auto w-full max-w-2xl">
             <CardHeader className="pb-0">
-              <h1 className="text-2xl font-bold text-slate-900">Completá tu perfil</h1>
+              <h1 className="text-2xl font-bold text-foreground">Completá tu perfil</h1>
               <p className="text-sm leading-6 text-muted-foreground">Tu nombre y zona para presentarte. El resto es opcional.</p>
             </CardHeader>
             <CardContent>
@@ -262,7 +262,7 @@ function ProfileContent() {
             <div className="min-w-0 space-y-6 xl:col-span-2">
               <div className="space-y-4 xl:col-span-2">
                 <div className="flex min-w-0 items-center justify-between gap-3">
-                  <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-slate-900">
+                  <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-foreground">
                     <PawPrint className="size-5 text-teal-500" aria-hidden="true" />
                     Mis mascotas
                   </h2>
@@ -400,17 +400,17 @@ function ProfileContent() {
 
       {/* Delete Confirmation Alert */}
       <AlertDialog open={!!deletingPet} onOpenChange={(open) => !open && setDeletingPet(null)}>
-        <AlertDialogContent className="bg-white">
+        <AlertDialogContent className="bg-surface">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900">¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-500">
+            <AlertDialogTitle className="text-foreground">¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Esta acción no se puede deshacer. Se eliminará permanentemente a
-              <span className="font-bold text-slate-900"> {deletingPet?.name} </span>
+              <span className="font-bold text-foreground"> {deletingPet?.name} </span>
               y toda su información.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-0">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="bg-muted hover:bg-muted text-slate-700 border-0">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeletePet}
               disabled={isDeleting}
@@ -431,7 +431,7 @@ export default function ProfilePage() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
-          <p className="text-slate-500">Cargando...</p>
+          <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
     }>

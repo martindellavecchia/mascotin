@@ -3,6 +3,7 @@ import { useEffect, useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { scheduleSchema, type BookingSchedule } from '@/lib/booking-schedule';
 import { COMMON_TIME_ZONES, DEFAULT_TIME_ZONE } from '@/lib/timezone-label';
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -36,7 +37,7 @@ export default function ProviderSchedule() {
       })
       .finally(() => setLoading(false));
   }, []);
-  if (loading) return <p>Cargando agenda...</p>;
+  if (loading) return <StateFeedback status="loading" title="Cargando agenda" className="mb-6" />;
   return (
     <section className="mb-6 space-y-4 rounded-xl border bg-surface p-5">
       <h2 className="text-xl font-bold">Disponibilidad del prestador</h2>
@@ -90,11 +91,11 @@ export default function ProviderSchedule() {
           </Select>
         </div>
         {schedule.weekly.map((row, index) => (
-          <div key={index} className="grid grid-cols-2 items-end gap-2 sm:grid-cols-4">
-            <label className="text-sm">
+          <div key={index} className="grid grid-cols-2 items-end gap-2 border-b border-border pb-3 last-of-type:border-b-0 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:border-b-0 sm:pb-0">
+            <label className="col-span-2 grid gap-1 text-sm font-medium sm:col-span-1">
               Día
               <select
-                className="h-11 w-full rounded-md border border-border-control bg-surface"
+                className="h-11 w-full rounded-md border border-border-control bg-surface px-3 text-base font-normal text-foreground md:text-sm"
                 value={row.day}
                 onChange={(e) =>
                   setSchedule({
@@ -113,7 +114,7 @@ export default function ProviderSchedule() {
               </select>
             </label>
             {(['start', 'end'] as const).map((key) => (
-              <label key={key} className="text-sm">
+              <label key={key} className="grid gap-1 text-sm font-medium">
                 {key === 'start' ? 'Desde' : 'Hasta'}
                 <Input
                   type="time"
@@ -134,6 +135,7 @@ export default function ProviderSchedule() {
             <Button
               type="button"
               variant="ghost"
+              className="col-span-2 justify-self-end text-muted-foreground hover:bg-destructive/5 hover:text-destructive sm:col-span-1"
               onClick={() =>
                 setSchedule({ ...schedule, weekly: schedule.weekly.filter((_, i) => i !== index) })
               }

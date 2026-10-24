@@ -8,8 +8,9 @@ import { ChevronDown, Loader2, MapPin, MessagesSquare } from 'lucide-react';
 import CreatePostCard from '@/components/community/CreatePostCard';
 import EditPostModal from '@/components/community/EditPostModal';
 import PostCard from '@/components/feed/PostCard';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { FilterChip } from '@/components/ui/filter-chip';
+import { EmptyState } from '@/components/ui/empty-state';
 import { StateFeedback } from '@/components/ui/state-feedback';
 import { useMyPets, useOwnerProfile, viewerQueryKeys } from '@/hooks/useViewerData';
 
@@ -110,7 +111,7 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="max-w-3xl space-y-4">
             <div className="min-h-11">
             {ownerLoaded ? <Link
                 href="/profile?edit=true"
@@ -127,23 +128,17 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                     { value: 'recommendation', label: 'Recomendaciones' },
                     { value: 'event', label: 'Eventos' },
                 ].map((filter) => (
-                    <button
+                    <FilterChip
                         key={filter.value || 'all'}
-                        type="button"
+                        active={activeFilter === filter.value}
                         onClick={() => {
                             const url = filter.value ? `/community?filter=${filter.value}` : '/community';
                             window.history.replaceState(null, '', url);
                             setActiveFilter(filter.value);
                         }}
-                        aria-pressed={activeFilter === filter.value}
-                        className={`min-h-11 shrink-0 rounded-full border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus ${
-                            activeFilter === filter.value
-                                ? 'border-primary bg-primary-soft text-primary'
-                                : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
-                        }`}
                     >
                         {filter.label}
-                    </button>
+                    </FilterChip>
                 ))}
             </div>
             <CreatePostCard
@@ -163,13 +158,12 @@ export default function EventsFeed({ refreshKey = 0 }: EventsFeedProps) {
                     action={<Button variant="outline" onClick={() => void postsQuery.refetch()}>Reintentar</Button>}
                 />
             ) : posts.length === 0 ? (
-                <Card className="gap-0 py-0">
-                    <CardContent className="py-8 text-center">
-                        <MessagesSquare className="mx-auto mb-3 size-8 text-muted-foreground" aria-hidden="true" />
-                        <h2 className="mb-2 font-semibold text-foreground">{activeFilter ? 'Todavía no hay publicaciones de este tipo' : 'No hay publicaciones aún'}</h2>
-                        <p className="text-sm text-muted-foreground">{activeFilter ? 'Probá con otro filtro o iniciá una conversación.' : '¡Sé el primero en compartir algo!'}</p>
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    compact
+                    icon={<MessagesSquare className="size-8" aria-hidden="true" />}
+                    title={activeFilter ? 'Todavía no hay publicaciones de este tipo' : 'No hay publicaciones aún'}
+                    description={activeFilter ? 'Probá con otro filtro o iniciá una conversación.' : 'Compartí una novedad, una pregunta o un evento con tu zona.'}
+                />
             ) : (
                 posts.map(post => (
                     <PostCard

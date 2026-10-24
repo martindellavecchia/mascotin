@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { FilterChip } from '@/components/ui/filter-chip';
 import { PageHeader } from '@/components/ui/page-header';
 import { STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
 import 'leaflet/dist/leaflet.css';
@@ -216,32 +217,13 @@ export default function MapPage() {
       <PageHeader title="Mapa pet-friendly" description="Veterinarias, plazas y restaurantes con información de la comunidad." />
 
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
-        <button
-          type="button"
-          onClick={() => setCategoryId('_all')}
-          className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm transition-colors ${
-            categoryId === '_all'
-              ? 'border-teal-500 bg-teal-50 text-teal-800'
-              : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200'
-          }`}
-          aria-pressed={categoryId === '_all'}
-        >
+        <FilterChip active={categoryId === '_all'} onClick={() => setCategoryId('_all')}>
           Todas
-        </button>
+        </FilterChip>
         {categories.map((category) => (
-          <button
-            key={category.id}
-            type="button"
-            onClick={() => setCategoryId(category.id)}
-            className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm transition-colors ${
-              categoryId === category.id
-                ? 'border-teal-500 bg-teal-50 text-teal-800'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200'
-            }`}
-            aria-pressed={categoryId === category.id}
-          >
+          <FilterChip key={category.id} active={categoryId === category.id} onClick={() => setCategoryId(category.id)}>
             {category.name}
-          </button>
+          </FilterChip>
         ))}
       </div>
 
@@ -253,7 +235,7 @@ export default function MapPage() {
           action={<Button variant="outline" onClick={() => setRefreshKey((current) => current + 1)}>Intentar de nuevo</Button>}
         />
       ) : loading ? (
-        <div className="h-[clamp(20rem,60svh,30rem)] animate-pulse rounded-xl border border-border bg-slate-100" aria-label="Cargando mapa" />
+        <div className="h-[clamp(20rem,60svh,30rem)] animate-pulse rounded-xl border border-border bg-muted" aria-label="Cargando mapa" />
       ) : stores.length === 0 ? (
         <EmptyState
           icon={<MapPinned className="size-11" aria-hidden="true" />}
@@ -278,7 +260,7 @@ export default function MapPage() {
             className="h-[clamp(20rem,60svh,30rem)] overflow-hidden rounded-xl border border-border sm:h-[clamp(24rem,65svh,36rem)] lg:h-[clamp(28rem,70svh,42rem)]"
           />
           {withCoords.length === 0 && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Ningún negocio filtrado tiene coordenadas todavía. Mostramos Buenos Aires como referencia.
             </p>
           )}
@@ -287,10 +269,10 @@ export default function MapPage() {
               <Card key={store.id} className={`min-w-0 p-4 ${selected?.id === store.id ? 'ring-2 ring-teal-500' : ''}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <Link href={`/shop/${store.slug}`} className="inline-flex min-h-11 items-center break-words font-semibold text-slate-900 hover:text-teal-700">
+                    <Link href={`/shop/${store.slug}`} className="inline-flex min-h-11 items-center break-words font-semibold text-foreground hover:text-primary">
                       {store.name}
                     </Link>
-                    <p className="text-sm text-slate-500">{store.category.name}</p>
+                    <p className="text-sm text-muted-foreground">{store.category.name}</p>
                   </div>
                   {store.featured && <Badge className="bg-amber-100 text-amber-800">Destacado</Badge>}
                 </div>
@@ -305,7 +287,7 @@ export default function MapPage() {
                   {store.tags.length > 3 && <Badge variant="neutral">+{store.tags.length - 3}</Badge>}
                 </div>
                 {store.promotions[0] && (
-                  <p className="mt-2 text-sm text-teal-700">{store.promotions[0].title}</p>
+                  <p className="mt-2 text-sm text-primary">{store.promotions[0].title}</p>
                 )}
               </Card>
             ))}
@@ -314,7 +296,7 @@ export default function MapPage() {
             )}
           </div>
           {withoutCoords.length > 0 && withCoords.length > 0 && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               {withoutCoords.length} negocio{withoutCoords.length === 1 ? '' : 's'} sin ubicación en el mapa.
             </p>
           )}

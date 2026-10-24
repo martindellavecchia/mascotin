@@ -348,25 +348,25 @@ export default function ChatWindow({
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <MeetupPanel key={matchId} matchId={matchId} userId={currentUserId} />
-      <div className="flex min-w-0 shrink-0 items-center gap-3 border-b border-slate-100 p-3 sm:p-4">
+      <div className="flex min-w-0 shrink-0 items-center gap-3 border-b border-border p-3 sm:p-4">
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage
             src={otherPet?.primaryImageUrl || getPrimaryImageUrl(otherPet?.images, otherPet?.thumbnailIndex ?? 0) || undefined}
             alt={otherPet?.name ? `Foto de ${otherPet.name}` : ''}
           />
-          <AvatarFallback className="bg-teal-100 text-teal-700">
+          <AvatarFallback className="bg-teal-100 text-primary">
             {otherPet?.name?.[0] || '?'}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-900">{petName}</p>
-          {otherPet?.breed && <p className="truncate text-xs text-teal-600">{otherPet.breed}</p>}
+          <p className="truncate font-semibold text-foreground">{petName}</p>
+          {otherPet?.breed && <p className="truncate text-xs text-primary">{otherPet.breed}</p>}
         </div>
       </div>
 
       <div
         ref={scrollContainerRef}
-        className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-slate-50/50 p-3 sm:p-4"
+        className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-background/50 p-3 sm:p-4"
         aria-live="polite"
       >
         {hasMoreBefore && (
@@ -384,7 +384,7 @@ export default function ChatWindow({
           </div>
         )}
         {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-slate-400">
+          <div className="h-full flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <Hand className="mx-auto mb-2 size-10" aria-hidden="true" />
               <p className="text-sm">Enviá el primer mensaje</p>
@@ -404,12 +404,12 @@ export default function ChatWindow({
                   className={`min-w-0 max-w-[85%] rounded-xl px-4 py-2 sm:max-w-[70%] ${
                     isOwn
                       ? `rounded-br-md bg-primary text-primary-foreground ${failed ? 'opacity-70' : ''}`
-                      : 'rounded-bl-md border border-border bg-surface text-slate-800'
+                      : 'rounded-bl-md border border-border bg-surface text-foreground'
                   }`}
                 >
                   <p className="text-sm [overflow-wrap:anywhere]">{message.content}</p>
                   <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : ''}`}>
-                    <span className={`text-[10px] ${isOwn ? 'text-teal-100' : 'text-slate-400'}`}>
+                    <span className={`text-[10px] ${isOwn ? 'text-teal-100' : 'text-muted-foreground'}`}>
                       {formatTime(message.createdAt)}
                     </span>
                     {isOwn && !message.status && (
@@ -458,7 +458,7 @@ export default function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="shrink-0 border-t border-slate-100 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+      <div className="shrink-0 border-t border-border bg-surface p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
         <form
           onSubmit={(event) => {
             event.preventDefault();

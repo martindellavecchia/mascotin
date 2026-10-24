@@ -55,14 +55,14 @@ export default function IntentEntry({ navigate = true }: { navigate?: boolean })
   return (
     <section
       aria-label="Tu intención en Huella"
-      className="mb-6 space-y-4 rounded-xl border border-border bg-surface p-5"
+      className="space-y-3 rounded-lg border border-border bg-surface p-4 sm:p-5"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h2 className="text-base font-semibold text-foreground">
           {intent ? 'Tu camino en Huella' : '¿Qué te gustaría hacer?'}
         </h2>
         {intent && (
-          <Button variant="ghost" onClick={() => setEditing(!editing)} disabled={busy}>
+          <Button variant="ghost" size="sm" className="-mr-2 text-primary" onClick={() => setEditing(!editing)} disabled={busy}>
             {editing ? 'Cerrar opciones' : 'Cambiar intención'}
           </Button>
         )}
@@ -72,16 +72,16 @@ export default function IntentEntry({ navigate = true }: { navigate?: boolean })
           {error}
         </p>
       )}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-2 sm:grid-cols-2">
         {(intent && !editing ? [intent] : [...PRODUCT_INTENTS]).map((value) => (
           <Button
             key={value}
             variant="outline"
             disabled={busy}
             onClick={() => void choose(value)}
-            className="h-auto min-h-24 flex-col items-start whitespace-normal px-4 py-3 text-left"
+            className="h-auto min-h-0 flex-col items-start gap-0.5 whitespace-normal px-4 py-3 text-left"
           >
-            <span className="font-semibold">{INTENT_OPTIONS[value].title}</span>
+            <span className="font-semibold text-foreground">{INTENT_OPTIONS[value].title}</span>
             <span className="text-sm font-normal text-muted-foreground">
               {INTENT_OPTIONS[value].description}
             </span>

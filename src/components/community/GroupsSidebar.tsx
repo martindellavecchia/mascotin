@@ -35,12 +35,12 @@ export default function GroupsSidebar() {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
+        <div className="bg-surface rounded-xl shadow-sm border border-border p-4">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-slate-800">Mis Grupos</h3>
+                <h3 className="font-semibold text-foreground">Mis grupos</h3>
                 <Link
                     href="/community/groups"
-                    className="-my-2 inline-flex min-h-11 items-center rounded-md px-2 text-xs text-teal-600 hover:bg-teal-50 hover:underline"
+                    className="-my-2 inline-flex min-h-11 items-center rounded-md px-2 text-xs text-primary hover:bg-teal-50 hover:underline"
                 >
                     Ver todos
                 </Link>
@@ -48,11 +48,11 @@ export default function GroupsSidebar() {
 
             <div className="space-y-3">
                 {myGroups.length === 0 ? (
-                    <p className="text-sm text-slate-500">Todavía no te sumaste a ningún grupo.</p>
+                    <p className="text-sm text-muted-foreground">Todavía no te sumaste a ningún grupo.</p>
                 ) : (
                     myGroups.map(group => (
-                        <Link key={group.id} href={`/community/groups/${group.id}`} className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-lg transition-colors">
-                            <div className="w-10 h-10 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                        <Link key={group.id} href={`/community/groups/${group.id}`} className="flex items-center gap-3 hover:bg-background p-2 rounded-lg transition-colors">
+                            <div className="w-10 h-10 rounded-lg bg-muted overflow-hidden shrink-0">
                                 {group.image ? (
                                     <img src={group.image} alt={group.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -62,7 +62,7 @@ export default function GroupsSidebar() {
                                 )}
                             </div>
                             <div className="min-w-0">
-                                <p className="font-medium text-slate-900 text-sm truncate">{group.name}</p>
+                                <p className="font-medium text-foreground text-sm truncate">{group.name}</p>
                             </div>
                         </Link>
                     ))

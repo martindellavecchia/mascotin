@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { CloudOff, MapPin, PawPrint, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { CloudOff, PawPrint, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import PetCard from '@/components/PetCard';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading';
 import type { Pet } from '@/types';
 
 interface ExploreTabProps {
@@ -110,29 +111,29 @@ export default function ExploreTab({
 
   return (
     <section aria-labelledby="discover-title">
-      <div className="mb-7 flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-start">
-        <div>
-          <h1 id="discover-title" className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">
+      <div className="mb-6 flex flex-col justify-between gap-3 border-b border-border pb-5 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 id="discover-title" className="text-2xl font-bold tracking-[-0.035em] text-foreground sm:text-3xl">
             Descubrir
           </h1>
-          <p className="mt-2 text-muted-foreground">Conocé mascotas compatibles con {activePet?.name || 'tu mascota'}.</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">Conocé mascotas compatibles con {activePet?.name || 'tu mascota'}.</p>
         </div>
-        <Link
-          href={'/settings?' + new URLSearchParams({ tab: 'mascotas', from: 'discover', ...(activePet ? { petId: activePet.id } : {}) }).toString() + '#preferencias-matching'}
-          className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-white"
-          aria-label="Preferencias de búsqueda"
-        >
-          <MapPin className="size-6" aria-hidden="true" />
-          Preferencias de búsqueda
-          <SlidersHorizontal className="size-5" aria-hidden="true" />
-        </Link>
+        <Button asChild variant="outline" className="w-fit shrink-0">
+          <Link
+            href={'/settings?' + new URLSearchParams({ tab: 'mascotas', from: 'discover', ...(activePet ? { petId: activePet.id } : {}) }).toString() + '#preferencias-matching'}
+            aria-label="Preferencias de búsqueda"
+          >
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            Preferencias de búsqueda
+          </Link>
+        </Button>
       </div>
 
       {loading ? (
-        <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface">
+        <div role="status" className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface">
           <div className="text-center">
-            <div className="mx-auto mb-4 size-11 animate-spin rounded-full border-4 border-teal-100 border-t-teal-600" />
-            <p className="text-sm font-medium text-slate-600">Buscando mascotas cercanas...</p>
+            <LoadingSpinner className="mb-3" />
+            <p className="text-sm text-muted-foreground">Buscando mascotas cercanas…</p>
           </div>
         </div>
       ) : error ? (
@@ -141,10 +142,10 @@ export default function ExploreTab({
           className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface p-8 text-center"
         >
           <div className="max-w-sm">
-            <CloudOff className="mx-auto size-14 text-muted-foreground" aria-hidden="true" />
-            <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground">No pudimos cargar mascotas</h2>
-            <p className="mt-2 text-muted-foreground">Revisá tu conexión y reintentá. Tus decisiones anteriores siguen guardadas.</p>
-            <Button onClick={onReload} className="mt-6 px-6">
+            <CloudOff className="mx-auto size-10 text-muted-foreground" aria-hidden="true" />
+            <h2 className="mt-3 text-lg font-semibold text-foreground">No pudimos cargar mascotas</h2>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">Revisá tu conexión y reintentá. Tus decisiones anteriores siguen guardadas.</p>
+            <Button onClick={onReload} variant="outline" className="mt-5">
               Reintentar
             </Button>
           </div>
@@ -152,10 +153,10 @@ export default function ExploreTab({
       ) : !currentPet ? (
         <div className="flex min-h-[min(420px,calc(100dvh-14rem))] items-center justify-center rounded-lg border border-border bg-surface p-8 text-center">
           <div className="max-w-sm">
-            <PawPrint className="size-16 text-teal-200" fill="currentColor" aria-hidden="true" />
-            <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Ya conociste a todos por aquí</h2>
-            <p className="mt-2 text-slate-500">Actualizá la búsqueda para descubrir nuevas mascotas cerca tuyo.</p>
-            <Button onClick={onReload} className="mt-6 px-6">
+            <PawPrint className="mx-auto size-10 text-primary/35" aria-hidden="true" />
+            <h2 className="mt-3 text-lg font-semibold text-foreground">Ya conociste a todos por aquí</h2>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">Actualizá la búsqueda para descubrir nuevas mascotas cerca tuyo.</p>
+            <Button onClick={onReload} variant="outline" className="mt-5">
               Buscar de nuevo
             </Button>
           </div>
@@ -179,8 +180,8 @@ export default function ExploreTab({
         </>
       )}
 
-      <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-        <ShieldCheck className="size-5" aria-hidden="true" />
+      <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+        <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
         Coordiná el primer encuentro en un espacio público y compartí el plan con alguien de confianza.
       </p>
     </section>

@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     if (!verificationToken || !verificationToken.identifier.startsWith('reset:')) {
       return NextResponse.json(
-        { success: false, error: 'Token inválido o ya utilizado' },
+        { success: false, error: 'El enlace no es válido o ya se usó' },
         { status: 400 }
       );
     }

@@ -8,6 +8,7 @@ import CreatePostCard from '@/components/community/CreatePostCard';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingCard, LoadingSpinner } from '@/components/ui/loading';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import type { RescueNeedType } from '@prisma/client';
@@ -40,6 +41,7 @@ interface ExtendedPost extends Post {
 interface FeedProps {
     currentUserId?: string;
     currentUserImage?: string | null;
+    currentUserName?: string | null;
     pets: Pet[];
     selectedPetId?: string;
     initialPosts?: ExtendedPost[];
@@ -50,6 +52,7 @@ interface FeedProps {
 export default function Feed({
     currentUserId,
     currentUserImage,
+    currentUserName,
     pets,
     selectedPetId,
     initialPosts = [],
@@ -142,7 +145,7 @@ export default function Feed({
     const composer = (
         <CreatePostCard
             userImage={currentUserImage || undefined}
-            userName="Tu perfil"
+            userName={currentUserName || undefined}
             pets={pets}
             initialPetId={selectedPetId}
             onPostCreated={() => void fetchPosts()}
@@ -154,18 +157,7 @@ export default function Feed({
             <div>
                 {composer}
                 <div className="space-y-4">
-                  {[1, 2].map(i => (
-                    <div key={i} className="h-40 animate-pulse rounded-lg border border-border bg-surface p-4">
-                        <div className="flex gap-3 mb-4">
-                            <div className="w-10 h-10 bg-slate-200 rounded-full" />
-                            <div className="space-y-2 flex-1">
-                                <div className="h-4 bg-slate-200 rounded w-1/3" />
-                                <div className="h-3 bg-slate-200 rounded w-1/4" />
-                            </div>
-                        </div>
-                        <div className="h-16 bg-slate-200 rounded" />
-                    </div>
-                  ))}
+                  {[1, 2].map(i => <LoadingCard key={i} />)}
                 </div>
             </div>
         );
@@ -210,8 +202,8 @@ export default function Feed({
                     >
                         {loadingMore ? (
                             <>
-                                <div className="w-4 h-4 border-2 border-teal-200 border-t-teal-500 rounded-full animate-spin mr-2"></div>
-                                Cargando...
+                                <LoadingSpinner size="sm" />
+                                Cargando…
                             </>
                         ) : (
                             <>

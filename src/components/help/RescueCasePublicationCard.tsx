@@ -75,7 +75,7 @@ export default function RescueCasePublicationCard({
           <CardTitle className="text-base">Difundir en Comunidad</CardTitle>
           {publication?.isVisible && <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">Publicado</span>}
         </div>
-        <p className="text-sm text-slate-500">Confirmá el texto y una zona general. La ubicación exacta nunca se comparte.</p>
+        <p className="text-sm text-muted-foreground">Confirmá el texto y una zona general. La ubicación exacta nunca se comparte.</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -88,10 +88,10 @@ export default function RescueCasePublicationCard({
         </div>
         {images.length > 1 && (
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-slate-800">Foto pública</legend>
+            <legend className="text-sm font-medium text-foreground">Foto pública</legend>
             <div className="flex gap-2">
               {images.map((image, index) => (
-                <button key={image} type="button" onClick={() => setImageIndex(index)} className={`relative size-20 overflow-hidden rounded-xl border-2 ${imageIndex === index ? 'border-teal-600' : 'border-transparent'}`} aria-label={`Usar foto ${index + 1}`} aria-pressed={imageIndex === index}>
+                <button key={image} type="button" onClick={() => setImageIndex(index)} className={`relative size-20 overflow-hidden rounded-xl border-2 ${imageIndex === index ? 'border-primary' : 'border-transparent'}`} aria-label={`Usar foto ${index + 1}`} aria-pressed={imageIndex === index}>
                   <Image src={image} alt={`Foto ${index + 1} del caso`} fill sizes="80px" unoptimized={shouldUnoptimizeImage(image)} className="object-cover" />
                 </button>
               ))}
@@ -100,7 +100,7 @@ export default function RescueCasePublicationCard({
         )}
         <div className="overflow-hidden rounded-xl border border-orange-200 bg-orange-50/60">
           {images[imageIndex] && <div className="relative h-36"><Image src={images[imageIndex]} alt="Vista previa pública" fill sizes="420px" unoptimized={shouldUnoptimizeImage(images[imageIndex])} className="object-cover" /></div>}
-          <div className="space-y-1 p-3"><p className="text-xs font-bold text-orange-800">HOGAR DE TRÁNSITO</p><p className="text-sm text-slate-700">{summary || 'Tu resumen aparecerá acá.'}</p><p className="text-xs text-slate-500">{publicZone || 'Zona general pendiente'}</p></div>
+          <div className="space-y-1 p-3"><p className="text-xs font-semibold text-orange-800">Hogar de tránsito</p><p className="text-sm text-foreground">{summary || 'Tu resumen aparecerá acá.'}</p><p className="text-xs text-muted-foreground">{publicZone || 'Zona general pendiente'}</p></div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button disabled={saving} onClick={() => void publish()}>{saving ? 'Guardando…' : publication?.isVisible ? 'Actualizar publicación' : 'Publicar en Comunidad'}</Button>

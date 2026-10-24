@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getHomeTab, navigateHome, type HomeTab } from '@/lib/home-navigation';
-import { Compass, Heart, MessageCircle, PawPrint, X } from 'lucide-react';
+import { ChevronRight, Compass, Heart, MessageCircle, PawPrint, X } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import Feed from '@/components/feed/Feed';
 import TodayActions from '@/components/home/TodayActions';
@@ -13,6 +13,8 @@ import UndoPassButton from '@/components/home/UndoPassButton';
 import PendingActions from '@/components/home/PendingActions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
@@ -67,12 +69,13 @@ function PanelSkeleton({
 }) {
   return (
     <Card
+      role="status"
       className={`flex items-center justify-center ${
         tall ? 'h-96' : 'h-64'
       }`}
     >
-      <div className="text-center text-slate-500">
-        <div className="w-10 h-10 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <div className="text-center text-sm text-muted-foreground">
+        <LoadingSpinner className="mb-3" />
         <p>{label}</p>
       </div>
     </Card>
@@ -273,45 +276,41 @@ export default function HomeClientShell({
             }}
             className="w-full"
           >
-            <TabsContent value="home" className="min-w-0 space-y-6 mt-0">
-              <IntentEntry />
+            <TabsContent value="home" className="mx-auto mt-0 w-full min-w-0 max-w-3xl space-y-6">
+              <PageHeader
+                title="Inicio"
+                className="pb-5"
+                action={activePet && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Hoy con</span>
+                    <Select value={selectedPetId} onValueChange={(petId) => syncHomeState(activeTab, petId)}>
+                      <SelectTrigger aria-label="Mascota activa" className="w-[min(13rem,55vw)]">
+                        <PawPrint className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {myPets.map((pet) => <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              />
               <PendingActions />
-              <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
-                <div className="min-w-0">
-                  <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">Inicio</h1>
-                  <p className="mt-2 text-muted-foreground">Un plan claro para hoy con {activePet?.name}.</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  {activePet && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-muted-foreground">Hoy con</span>
-                      <Select value={selectedPetId} onValueChange={(petId) => syncHomeState(activeTab, petId)}>
-                        <SelectTrigger aria-label="Mascota activa" className="w-[min(13rem,55vw)]">
-                          <PawPrint className="size-5 shrink-0 text-primary" aria-hidden="true" />
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {myPets.map((pet) => <SelectItem key={pet.id} value={pet.id}>{pet.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <IntentEntry />
               <TodayActions
                 activePet={activePet}
                 suggestion={suggestionsByPet[selectedPetId ?? '']}
               />
               {showCommunityFeed && (
                 <section aria-labelledby="circle-feed-title" className="space-y-4 border-t border-border pt-6">
-                  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-                    <div>
-                      <h2 id="circle-feed-title" className="text-2xl font-bold tracking-[-0.03em] text-foreground">En tu círculo</h2>
-                      <p className="mt-1 text-sm text-muted-foreground">Publicaciones de personas y mascotas con las que ya conectaste.</p>
+                  <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+                    <div className="min-w-0">
+                      <h2 id="circle-feed-title" className="text-lg font-semibold text-foreground">En tu círculo</h2>
+                      <p className="mt-0.5 text-sm text-muted-foreground">Publicaciones de personas y mascotas con las que ya conectaste.</p>
                     </div>
-                    <Button variant="tonal" onClick={() => syncHomeState('matches', selectedPetId)}>
-                      <Heart className="size-4" aria-hidden="true" />
+                    <Button variant="ghost" size="sm" className="-ml-3 text-primary sm:-mr-2 sm:ml-0" onClick={() => syncHomeState('matches', selectedPetId)}>
                       Ver tu círculo
+                      <ChevronRight className="size-4" aria-hidden="true" />
                     </Button>
                   </div>
                   <Feed
@@ -319,6 +318,7 @@ export default function HomeClientShell({
                     currentUserImage={
                       session?.user?.headerImage || session?.user?.image || null
                     }
+                    currentUserName={session?.user?.name}
                     pets={myPets}
                     selectedPetId={selectedPetId}
                     initialPosts={initialFeedPosts}
@@ -347,16 +347,17 @@ export default function HomeClientShell({
             </TabsContent>
 
             <TabsContent value="matches" className="min-w-0 mt-0">
-              <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
-                <div>
-                  <h1 className="text-3xl font-bold tracking-[-0.04em] text-foreground sm:text-4xl">Tu círculo</h1>
-                  <p className="mt-2 text-muted-foreground">Mascotas con las que hubo interés mutuo.</p>
-                </div>
-                <Button variant="tonal" onClick={() => syncHomeState('explore', selectedPetId)}>
-                  <Compass className="size-4" aria-hidden="true" />
-                  Seguir descubriendo
-                </Button>
-              </div>
+              <PageHeader
+                title="Tu círculo"
+                description="Mascotas con las que hubo interés mutuo."
+                className="mb-7"
+                action={
+                  <Button variant="outline" onClick={() => syncHomeState('explore', selectedPetId)}>
+                    <Compass className="size-4" aria-hidden="true" />
+                    Seguir descubriendo
+                  </Button>
+                }
+              />
               {!hasLoadedMatches && (matchesLoading || !matchesError) ? (
                 <PanelSkeleton label="Cargando tu círculo..." />
               ) : (
@@ -378,12 +379,12 @@ export default function HomeClientShell({
           aria-live="polite"
           className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-match-in"
         >
-          <div className="rounded-lg border border-teal-600 bg-teal-700 px-5 py-3.5 text-white shadow-lg sm:px-6">
+          <div className="rounded-lg bg-primary px-5 py-3.5 text-primary-foreground shadow-lg sm:px-6">
             <div className="flex items-start gap-3">
               <Heart className="mt-0.5 size-7 shrink-0" fill="currentColor" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold">¡Es una coincidencia!</p>
-                <p className="text-sm text-teal-100">
+                <p className="text-sm text-primary-foreground/80">
                   Conectaste con {matchCelebration.petName}
                 </p>
                 {matchCelebration.matchId && (
@@ -407,7 +408,7 @@ export default function HomeClientShell({
                 type="button"
                 onClick={dismissCelebration}
                 aria-label="Cerrar aviso"
-                className="-mr-2 -mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-teal-100 hover:bg-teal-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="-mr-2 -mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-primary-foreground/80 hover:bg-surface/10 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <X className="size-4" aria-hidden="true" />
               </button>

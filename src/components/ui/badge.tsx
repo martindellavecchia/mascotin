@@ -16,7 +16,7 @@ const badgeVariants = cva(
         verified:
           "border-info/20 bg-info/10 text-info",
         success:
-          "border-success/20 bg-success/10 text-success",
+          "border-success/20 bg-success/10 text-green-700",
         warning:
           "border-warning/20 bg-warning/10 text-warning",
         info:

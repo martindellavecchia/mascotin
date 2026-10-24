@@ -27,11 +27,11 @@ function ResetPasswordForm() {
         <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-red-100 text-red-600">
           <CircleAlert className="size-8" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-800">Enlace inválido</h1>
+        <h1 className="text-2xl font-bold text-foreground">Enlace inválido</h1>
         <p className="text-slate-600">
           Este enlace no es válido o ya venció.
         </p>
-        <Link href="/forgot-password" className="inline-block mt-4 text-teal-600 font-bold hover:text-teal-700 transition-colors">
+        <Link href="/forgot-password" className="inline-block mt-4 text-primary font-bold hover:text-primary transition-colors">
           Solicitar nuevo enlace
         </Link>
       </div>
@@ -83,7 +83,7 @@ function ResetPasswordForm() {
         <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
           <CircleCheck className="size-8" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-800">Contraseña actualizada</h1>
+        <h1 className="text-2xl font-bold text-foreground">Contraseña actualizada</h1>
         <p className="text-slate-600">
           Tu contraseña se actualizó correctamente. Te estamos llevando al inicio de sesión.
         </p>
@@ -94,17 +94,17 @@ function ResetPasswordForm() {
   return (
     <>
       <div className="mb-8 space-y-3">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">
-          Nueva <span className="text-teal-500">contraseña</span>
+        <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
+          Nueva contraseña
         </h1>
-        <p className="text-slate-600 text-base font-medium">
+        <p className="text-base leading-relaxed text-muted-foreground">
           Ingresá una nueva contraseña para tu cuenta.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="password">Nueva contraseña</label>
+          <label className="text-sm font-medium text-foreground" htmlFor="password">Nueva contraseña</label>
           <div className="relative">
             <Input
               id="password"
@@ -118,20 +118,20 @@ function ResetPasswordForm() {
             />
             <button
               type="button"
-              className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
               {showPassword ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
             </button>
           </div>
-          <p className="ml-1 text-xs leading-relaxed text-slate-500">
+          <p className="text-xs leading-relaxed text-muted-foreground">
             Usá al menos 8 caracteres, una mayúscula, una minúscula y un número.
           </p>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700 ml-1" htmlFor="confirmPassword">Confirmar contraseña</label>
+          <label className="text-sm font-medium text-foreground" htmlFor="confirmPassword">Confirmar contraseña</label>
           <Input
             id="confirmPassword"
             type="password"
@@ -172,7 +172,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-[440px]">
         <BrandLink priority className="mb-10 flex w-full justify-center" logoClassName="h-12" />
 
-        <Suspense fallback={<div className="text-center text-slate-500">Cargando...</div>}>
+        <Suspense fallback={<div className="text-center text-muted-foreground">Cargando...</div>}>
           <ResetPasswordForm />
         </Suspense>
       </div>

@@ -106,23 +106,23 @@ export default function RegisterPage() {
   const passwordStrength = getPasswordStrength(formData.password);
   const strengthLabels = ['', 'Débil', 'Media', 'Fuerte', 'Muy fuerte'];
   const strengthColors = [
-    'bg-slate-200',
+    'bg-muted',
     'bg-red-500',
     'bg-amber-500',
-    'bg-teal-600',
-    'bg-teal-700',
+    'bg-primary',
+    'bg-primary-hover',
   ];
 
   return (
     <div className="flex min-h-screen w-full flex-row">
-      <div className="flex flex-1 flex-col overflow-y-auto bg-slate-50 px-6 py-8 sm:px-12 lg:px-20 lg:py-10 xl:px-24">
+      <div className="flex flex-1 flex-col overflow-y-auto bg-background px-6 py-8 sm:px-12 lg:px-20 lg:py-10 xl:px-24">
         <header className="w-full shrink-0 pb-8 lg:pb-10">
           <BrandLink priority className="w-fit" logoClassName="h-11" />
         </header>
 
         <div className="mx-auto w-full max-w-[420px] pb-4">
           <div className="mb-8 space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
               Creá tu cuenta
             </h1>
             <p className="text-slate-600 text-base leading-relaxed">
@@ -132,7 +132,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700" htmlFor="name">
+              <label className="text-sm font-medium text-foreground" htmlFor="name">
                 Nombre completo
               </label>
               <Input
@@ -143,12 +143,12 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 disabled={loading}
-                className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 text-base focus-visible:ring-teal-600/30"
+                className="w-full rounded-lg bg-surface border border-border-control h-12 px-4 text-base focus-visible:ring-ring/30"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700" htmlFor="email">
+              <label className="text-sm font-medium text-foreground" htmlFor="email">
                 Correo electrónico
               </label>
               <Input
@@ -162,27 +162,27 @@ export default function RegisterPage() {
                 }}
                 required
                 disabled={loading}
-                className={`w-full rounded-lg bg-white border h-12 px-4 text-base focus-visible:ring-teal-600/30 ${
+                className={`w-full rounded-lg bg-surface border h-12 px-4 text-base focus-visible:ring-ring/30 ${
                   emailAvailable === false
                     ? 'border-red-500'
                     : emailAvailable === true
-                      ? 'border-teal-600'
-                      : 'border-slate-200'
+                      ? 'border-primary'
+                      : 'border-border'
                 }`}
               />
               {checkingEmail && (
-                <p className="text-xs text-slate-500">Verificando email...</p>
+                <p className="text-xs text-muted-foreground">Verificando email...</p>
               )}
               {emailAvailable === false && (
                 <p className="text-xs text-red-600">Este email ya está registrado</p>
               )}
               {emailAvailable === true && (
-                <p className="text-xs text-teal-700">Email disponible</p>
+                <p className="text-xs text-primary">Email disponible</p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700" htmlFor="password">
+              <label className="text-sm font-medium text-foreground" htmlFor="password">
                 Contraseña
               </label>
               <div className="relative">
@@ -196,11 +196,11 @@ export default function RegisterPage() {
                   }
                   required
                   disabled={loading}
-                  className="w-full rounded-lg bg-white border border-slate-200 h-12 px-4 pr-14 text-base focus-visible:ring-teal-600/30"
+                  className="w-full rounded-lg bg-surface border border-border-control h-12 px-4 pr-14 text-base focus-visible:ring-ring/30"
                 />
                 <button
                   type="button"
-                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
@@ -214,22 +214,22 @@ export default function RegisterPage() {
                     className={`h-1.5 flex-1 rounded-full transition-colors ${
                       level <= passwordStrength
                         ? strengthColors[passwordStrength]
-                        : 'bg-slate-200'
+                        : 'bg-muted'
                     }`}
                   />
                 ))}
-                <span className="text-xs text-slate-500 ml-2">
+                <span className="text-xs text-muted-foreground ml-2">
                   {strengthLabels[passwordStrength] || ''}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Mínimo 8 caracteres, con mayúscula, minúscula y número.
               </p>
             </div>
 
             <div className="space-y-1.5">
               <label
-                className="text-sm font-medium text-slate-700"
+                className="text-sm font-medium text-foreground"
                 htmlFor="confirmPassword"
               >
                 Confirmar contraseña
@@ -245,19 +245,19 @@ export default function RegisterPage() {
                   }
                   required
                   disabled={loading}
-                  className={`w-full rounded-lg bg-white border h-12 px-4 pr-14 text-base focus-visible:ring-teal-600/30 ${
+                  className={`w-full rounded-lg bg-surface border h-12 px-4 pr-14 text-base focus-visible:ring-ring/30 ${
                     formData.confirmPassword &&
                     formData.password !== formData.confirmPassword
                       ? 'border-red-500'
                       : formData.confirmPassword &&
                           formData.password === formData.confirmPassword
-                        ? 'border-teal-600'
-                        : 'border-slate-200'
+                        ? 'border-primary'
+                        : 'border-border'
                   }`}
                 />
                 <button
                   type="button"
-                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
+                  className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label={
                     showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
@@ -284,7 +284,7 @@ export default function RegisterPage() {
           <p className="mt-8 text-center text-sm text-slate-600">
             ¿Ya tenés una cuenta?{' '}
             <ReturnLink
-              className="inline-flex min-h-11 items-center text-teal-700 font-semibold hover:text-teal-800"
+              className="inline-flex min-h-11 items-center text-primary font-semibold hover:text-primary"
               href="/login"
             >
               Iniciá sesión

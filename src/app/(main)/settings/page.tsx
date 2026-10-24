@@ -299,7 +299,7 @@ function SettingsContent() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <Eye className="size-5 text-slate-400" aria-hidden="true" />
+                                    <Eye className="size-5 text-muted-foreground" aria-hidden="true" />
                                     Visibilidad del perfil
                                 </CardTitle>
                             </CardHeader>
@@ -307,7 +307,7 @@ function SettingsContent() {
                                 <div className="flex min-w-0 items-center justify-between gap-4">
                                     <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Perfil visible</p>
-                                        <p className="text-sm text-slate-500">Si lo desactivás, tus mascotas no aparecen en Explorar, sugerencias ni tendencias. Tus matches y chats siguen activos.</p>
+                                        <p className="text-sm text-muted-foreground">Si lo desactivás, tus mascotas no aparecen en Explorar, sugerencias ni tendencias. Tus matches y chats siguen activos.</p>
                                     </div>
                                     <Switch
                                         aria-label="Hacer visible mi perfil"
@@ -321,7 +321,7 @@ function SettingsContent() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <Key className="size-5 text-slate-400" aria-hidden="true" />
+                                    <Key className="size-5 text-muted-foreground" aria-hidden="true" />
                                     Cambiar contraseña
                                 </CardTitle>
                             </CardHeader>
@@ -390,6 +390,7 @@ function SettingsContent() {
                                         </AlertDialogHeader>
                                         <Input
                                             type="password"
+                                            aria-label="Contraseña actual"
                                             placeholder="Tu contraseña"
                                             value={deletePassword}
                                             onChange={(e) => setDeletePassword(e.target.value)}
@@ -415,7 +416,7 @@ function SettingsContent() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <PawPrint className="size-5 text-slate-400" aria-hidden="true" />
+                                    <PawPrint className="size-5 text-muted-foreground" aria-hidden="true" />
                                     Mascotas activas para matching
                                 </CardTitle>
                             </CardHeader>
@@ -425,28 +426,28 @@ function SettingsContent() {
                                 ) : petsQuery.isError && !petsQuery.data ? (
                                     <StateFeedback status="error" title="No pudimos cargar tus mascotas" action={<Button variant="outline" onClick={() => void petsQuery.refetch()}>Reintentar</Button>} />
                                 ) : pets.length === 0 ? (
-                                    <p className="text-sm text-slate-400">Todavía no tenés mascotas registradas</p>
+                                    <p className="text-sm text-muted-foreground">Todavía no tenés mascotas registradas</p>
                                 ) : (
                                     <div className="space-y-3">
                                         {pets.map(pet => {
                                             const img = getPetImage(pet);
                                             return (
-                                                <div key={pet.id} className="flex min-w-0 items-center justify-between gap-3 rounded-lg bg-slate-50 p-3">
+                                                <div key={pet.id} className="flex min-w-0 items-center justify-between gap-3 rounded-lg bg-background p-3">
                                                     <div className="flex min-w-0 items-center gap-3">
                                                         {img ? (
                                                             <img src={img} alt={pet.name} className="h-10 w-10 shrink-0 rounded-full object-cover" />
                                                         ) : (
                                                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100">
-                                                                <PawPrint className="size-5 text-teal-600" aria-hidden="true" />
+                                                                <PawPrint className="size-5 text-primary" aria-hidden="true" />
                                                             </div>
                                                         )}
                                                         <div className="min-w-0">
-                                                            <p className="truncate font-medium text-slate-800">{pet.name}</p>
-                                                            <p className="truncate text-xs text-slate-500">{pet.breed || getOptionLabel(PET_TYPE_LABELS, pet.petType) || 'Mascota'}</p>
+                                                            <p className="truncate font-medium text-foreground">{pet.name}</p>
+                                                            <p className="truncate text-xs text-muted-foreground">{pet.breed || getOptionLabel(PET_TYPE_LABELS, pet.petType) || 'Mascota'}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex shrink-0 items-center gap-2">
-                                                        <Badge className={pet.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}>
+                                                        <Badge className={pet.isActive ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}>
                                                             {pet.isActive ? 'Activa' : 'Pausada'}
                                                         </Badge>
                                                         <Switch
@@ -466,7 +467,7 @@ function SettingsContent() {
                         <Card id="preferencias-matching" ref={matchingSectionRef} tabIndex={-1}>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <SlidersHorizontal className="size-5 text-slate-400" aria-hidden="true" />
+                                    <SlidersHorizontal className="size-5 text-muted-foreground" aria-hidden="true" />
                                     Preferencias de búsqueda
                                 </CardTitle>
                                 <p className="text-sm text-muted-foreground">Estos ajustes se aplican a todas tus mascotas. Usamos la ubicación de la mascota activa o, si falta, la de tu perfil. Si no hay ubicación disponible, no se aplica el límite de distancia.</p>
@@ -475,7 +476,7 @@ function SettingsContent() {
                                 <div className="flex min-w-0 items-center justify-between gap-4">
                                     <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Pausar matching</p>
-                                        <p className="text-sm text-slate-500">No aparecer en las búsquedas de otros usuarios</p>
+                                        <p className="text-sm text-muted-foreground">No aparecer en las búsquedas de otros usuarios</p>
                                     </div>
                                     <Switch
                                         aria-label="Pausar matching"
@@ -487,7 +488,7 @@ function SettingsContent() {
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <p id="match-distance-label" className="font-medium text-slate-700">Distancia máxima</p>
-                                        <span className="text-sm font-medium tabular-nums text-teal-600" aria-live="polite">
+                                        <span className="text-sm font-medium tabular-nums text-primary" aria-live="polite">
                                             {distanceFormatter.format(matchDistance)} km
                                         </span>
                                     </div>
@@ -543,12 +544,12 @@ function SettingsContent() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <Bell className="size-5 text-slate-400" aria-hidden="true" />
+                                    <Bell className="size-5 text-muted-foreground" aria-hidden="true" />
                                     Notificaciones
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">
+                                <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg">
                                     Configurá qué notificaciones querés recibir. Los cambios se aplican de inmediato.
                                 </p>
                                 {([
@@ -561,10 +562,10 @@ function SettingsContent() {
                                 ] as Array<{ key: keyof Settings; label: string; desc: string; icon: LucideIcon }>).map(item => (
                                     <div key={item.key} className="flex min-w-0 items-center justify-between gap-4 py-2">
                                         <div className="flex min-w-0 items-center gap-3">
-                                            <item.icon className="size-5 shrink-0 text-slate-400" aria-hidden="true" />
+                                            <item.icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                                             <div className="min-w-0">
                                                 <p className="font-medium text-slate-700">{item.label}</p>
-                                                <p className="text-sm text-slate-500">{item.desc}</p>
+                                                <p className="text-sm text-muted-foreground">{item.desc}</p>
                                             </div>
                                         </div>
                                         <Switch
@@ -583,7 +584,7 @@ function SettingsContent() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center gap-2">
-                                    <Newspaper className="size-5 text-slate-400" aria-hidden="true" />
+                                    <Newspaper className="size-5 text-muted-foreground" aria-hidden="true" />
                                     Preferencias del feed
                                 </CardTitle>
                             </CardHeader>
@@ -591,7 +592,7 @@ function SettingsContent() {
                                 <div className="flex min-w-0 items-center justify-between gap-4">
                                     <div className="min-w-0">
                                         <p className="font-medium text-slate-700">Ocultar mascotas perdidas resueltas</p>
-                                        <p className="text-sm text-slate-500">No mostrar publicaciones de mascotas que ya fueron encontradas</p>
+                                        <p className="text-sm text-muted-foreground">No mostrar publicaciones de mascotas que ya fueron encontradas</p>
                                     </div>
                                     <Switch
                                         aria-label="Ocultar mascotas perdidas resueltas"

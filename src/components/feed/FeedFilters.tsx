@@ -26,12 +26,12 @@ export default function FeedFilters({ activeFilter, onFilterChange }: FeedFilter
                     variant={activeFilter === filter.id ? 'default' : 'outline'}
                     size="sm"
                     className={`rounded-full px-4 h-9 flex items-center gap-2 whitespace-nowrap ${activeFilter === filter.id
-                            ? 'bg-teal-500 hover:bg-teal-600 text-white border-transparent'
-                            : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200'
+                            ? 'bg-teal-500 hover:bg-primary text-white border-transparent'
+                            : 'bg-surface hover:bg-background text-slate-600 border-border'
                         }`}
                     onClick={() => onFilterChange(filter.id)}
                 >
-                    <Icon className={`size-5 ${activeFilter === filter.id ? '' : 'text-slate-400'}`} aria-hidden="true" />
+                    <Icon className={`size-5 ${activeFilter === filter.id ? '' : 'text-muted-foreground'}`} aria-hidden="true" />
                     {filter.label}
                 </Button>
                 );

@@ -78,19 +78,19 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
   return (
     <form onSubmit={submit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Tu hogar de tránsito</h2>
-        <p className="mt-1 text-sm text-slate-500">Definí qué animales podés recibir y cuándo estás disponible.</p>
+        <h2 className="text-xl font-bold text-foreground">Tu hogar de tránsito</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Definí qué animales podés recibir y cuándo estás disponible.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-slate-800">Animales que aceptás</legend>
+          <legend className="text-sm font-medium text-foreground">Animales que aceptás</legend>
           {[
             ['dog', 'Perros'],
             ['cat', 'Gatos'],
             ['other', 'Otros animales'],
           ].map(([value, label]) => (
-            <label key={value} className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 px-3">
+            <label key={value} className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3">
               <Checkbox
                 checked={form.acceptsSpecies.includes(value)}
                 onCheckedChange={() => toggleList('acceptsSpecies', value)}
@@ -101,14 +101,14 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-slate-800">Tamaños que aceptás</legend>
+          <legend className="text-sm font-medium text-foreground">Tamaños que aceptás</legend>
           {[
             ['small', 'Pequeño'],
             ['medium', 'Mediano'],
             ['large', 'Grande'],
             ['any', 'Cualquier tamaño'],
           ].map(([value, label]) => (
-            <label key={value} className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 px-3">
+            <label key={value} className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3">
               <Checkbox
                 checked={form.acceptsSizes.includes(value)}
                 onCheckedChange={() => toggleList('acceptsSizes', value)}
@@ -151,7 +151,7 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
               onChange={(event) => setForm((current) => ({ ...current, maxDurationDays: Number(event.target.value) }))}
               className="pr-14"
             />
-            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">días</span>
+            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-muted-foreground">días</span>
           </div>
         </div>
         <div className="space-y-2">
@@ -166,7 +166,7 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
               onChange={(event) => setForm((current) => ({ ...current, radiusKm: Number(event.target.value) }))}
               className="pr-10"
             />
-            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">km</span>
+            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-muted-foreground">km</span>
           </div>
         </div>
         <div className="space-y-2 sm:col-span-2 lg:col-span-1">
@@ -207,7 +207,7 @@ export default function FosterProfileForm({ profile, onSaved }: FosterProfileFor
           ['hasKids', 'Viven niños'],
           ['hasOtherPets', 'Hay otras mascotas'],
         ].map(([key, label]) => (
-          <label key={key} className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 px-3">
+          <label key={key} className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3">
             <Checkbox
               checked={form[key as 'hasYard' | 'hasKids' | 'hasOtherPets']}
               onCheckedChange={(checked) => setForm((current) => ({ ...current, [key]: checked === true }))}

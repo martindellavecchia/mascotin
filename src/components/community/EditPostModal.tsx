@@ -127,7 +127,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>Editar Publicación</DialogTitle>
+                    <DialogTitle>Editar publicación</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
@@ -206,7 +206,7 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading || images.length >= 4}
                             >
-                                <ImagePlus className="mr-1 size-5 text-teal-600" aria-hidden="true" />
+                                <ImagePlus className="mr-1 size-5 text-primary" aria-hidden="true" />
                                 Agregar
                             </Button>
                         </div>
@@ -235,9 +235,9 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                     <Button
                         onClick={handleSave}
                         disabled={saving || !content.trim()}
-                        className="bg-teal-500 hover:bg-teal-600"
+                        variant="brand"
                     >
-                        {saving ? 'Guardando...' : 'Guardar Cambios'}
+                        {saving ? 'Guardando...' : 'Guardar cambios'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

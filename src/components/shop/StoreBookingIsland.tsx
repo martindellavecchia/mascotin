@@ -103,7 +103,7 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
 
   return (
     <>
-      <Button className="bg-teal-600 hover:bg-teal-700" onClick={openBooking}>
+      <Button variant="brand" onClick={openBooking}>
         Reservar
       </Button>
       <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && setOpen(false)}>
@@ -111,7 +111,7 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
           {result ? (
             <>
               <DialogHeader>
-                <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+                <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-teal-50 text-primary">
                   {isConfirmed ? <CalendarCheck className="size-6" aria-hidden="true" /> : <Clock className="size-6" aria-hidden="true" />}
                 </div>
                 <DialogTitle>{isConfirmed ? 'Turno confirmado' : 'Solicitud enviada'}</DialogTitle>
@@ -121,14 +121,14 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
                     : 'El comercio debe confirmarla. Te vamos a avisar cuando responda.'}
                 </DialogDescription>
               </DialogHeader>
-              <div role="status" className="rounded-xl bg-slate-50 p-4">
-                <p className="font-semibold text-slate-900">{service.name}{result.petName ? ` · ${result.petName}` : ''}</p>
+              <div role="status" className="rounded-xl bg-background p-4">
+                <p className="font-semibold text-foreground">{service.name}{result.petName ? ` · ${result.petName}` : ''}</p>
                 <p className="mt-1 text-sm text-slate-700 first-letter:uppercase">{formatSlot(result.date, timeZone)}</p>
-                <p className="mt-1 text-xs text-slate-500">Horario en {getTimeZoneLabel(timeZone)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Horario en {getTimeZoneLabel(timeZone)}</p>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cerrar</Button>
-                <Button asChild className="bg-teal-600 hover:bg-teal-700">
+                <Button asChild variant="brand">
                   <Link href="/appointments">Ver mis turnos</Link>
                 </Button>
               </DialogFooter>
@@ -143,9 +143,9 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
                 {petsLoading && <p role="status">Cargando mascotas...</p>}
                 {petsError && <p role="alert" className="text-destructive">{petsError}</p>}
                 {!petsLoading && !petsError && !pets.length && <Button asChild variant="outline"><Link href={`/create-pet?returnTo=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/shop')}`}>Crear perfil de mi mascota</Link></Button>}
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="font-semibold text-slate-900">{service.name}</p>
-                  <p className="mt-1 text-lg font-bold text-teal-700">${service.price.toLocaleString('es-AR')}</p>
+                <div className="rounded-xl bg-background p-4">
+                  <p className="font-semibold text-foreground">{service.name}</p>
+                  <p className="mt-1 text-lg font-bold text-primary">${service.price.toLocaleString('es-AR')}</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Mascota</label>
@@ -168,7 +168,7 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
                 <Button
-                  className="bg-teal-600 hover:bg-teal-700"
+                  variant="brand"
                   onClick={() => void bookService()}
                   disabled={!petId || !date || bookingLoading || petsLoading || Boolean(petsError)}
                 >

@@ -238,7 +238,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                       value={field.value || ''}
                     />
                   </FormControl>
-                  <p className="text-xs text-gray-500">Máximo 500 caracteres</p>
+                  <p className="text-xs text-muted-foreground">Máximo 500 caracteres</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -253,7 +253,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                   render={({ field }) => (
                     <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
                       ? 'bg-teal-50 border-emerald-300'
-                      : 'bg-white border-gray-200 hover:border-gray-300'
+                      : 'bg-surface border-border hover:border-gray-300'
                       }`}>
                       <input
                         type="checkbox"
@@ -261,8 +261,8 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                         onChange={field.onChange}
                         className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                       />
-                      <Trees className="size-5 text-teal-700" aria-hidden="true" />
-                      <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo patio/jardín</span>
+                      <Trees className="size-5 text-primary" aria-hidden="true" />
+                      <span className={`text-sm font-medium ${field.value ? 'text-primary' : 'text-gray-700'}`}>Tengo patio/jardín</span>
                     </label>
                   )}
                 />
@@ -273,7 +273,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                   render={({ field }) => (
                     <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all ${field.value
                       ? 'bg-teal-50 border-emerald-300'
-                      : 'bg-white border-gray-200 hover:border-gray-300'
+                      : 'bg-surface border-border hover:border-gray-300'
                       }`}>
                       <input
                         type="checkbox"
@@ -281,8 +281,8 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                         onChange={field.onChange}
                         className="w-5 h-5 rounded border-gray-300 accent-teal-500"
                       />
-                      <PawPrint className="size-5 text-teal-700" aria-hidden="true" />
-                      <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-gray-700'}`}>Tengo otras mascotas</span>
+                      <PawPrint className="size-5 text-primary" aria-hidden="true" />
+                      <span className={`text-sm font-medium ${field.value ? 'text-primary' : 'text-gray-700'}`}>Tengo otras mascotas</span>
                     </label>
                   )}
                 />

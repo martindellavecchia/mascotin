@@ -6,12 +6,13 @@ import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarX, Check, Clock, Loader2, MapPin, Users } from 'lucide-react';
 import CommunityLayout from '@/components/community/CommunityLayout';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { FilterChip } from '@/components/ui/filter-chip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -30,6 +31,7 @@ const EMPTY_FORM = { title: '', description: '', date: '', location: '', categor
 
 type Timeframe = 'upcoming' | 'past';
 import { APP_TIME_ZONE, EVENT_TIME_ZONE_LABEL, eventInputToIso, getEventCalendarDate, getEventDateParts } from '@/lib/date-format';
+import { countLabel } from '@/lib/utils';
 
 interface CommunityEvent {
     id: string;
@@ -165,31 +167,27 @@ export default function CommunityEventsPage() {
                             { value: 'upcoming', label: 'Próximos' },
                             { value: 'past', label: 'Pasados' },
                         ] as const).map((item) => (
-                            <Button
+                            <FilterChip
                                 key={item.value}
-                                size="sm"
-                                variant={timeframe === item.value ? 'default' : 'outline'}
-                                aria-pressed={timeframe === item.value}
+                                active={timeframe === item.value}
                                 onClick={() => {
                                     setTimeframe(item.value);
                                     setSelectedDate(undefined);
                                 }}
                             >
                                 {item.label}
-                            </Button>
+                            </FilterChip>
                         ))}
                     </div>
                     <div role="group" aria-label="Categoría" className="flex flex-wrap gap-2">
                         {EVENT_CATEGORIES.map((item) => (
-                            <Button
+                            <FilterChip
                                 key={item.value}
-                                size="sm"
-                                variant={category === item.value ? 'default' : 'outline'}
-                                aria-pressed={category === item.value}
+                                active={category === item.value}
                                 onClick={() => setCategory(item.value)}
                             >
                                 {item.label}
-                            </Button>
+                            </FilterChip>
                         ))}
                     </div>
                     {showCreate && (
@@ -227,6 +225,7 @@ export default function CommunityEventsPage() {
                             </Button>
                         </section>
                     )}
+                    <div className="grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start">
                     <Calendar
                         mode="single"
                         selected={selectedDate}
@@ -234,8 +233,10 @@ export default function CommunityEventsPage() {
                         locale={es}
                         modifiers={{ hasEvent: eventDays }}
                         modifiersClassNames={{ hasEvent: 'font-bold text-primary' }}
-                        className="rounded-xl border border-slate-200 bg-white p-3"
+                        className="mx-auto w-fit rounded-lg border border-border bg-surface p-3 lg:sticky lg:top-8 lg:mx-0"
                     />
+
+                    <div className="min-w-0 space-y-4">
 
                     {selectedDate && (
                         <div className="flex flex-wrap items-center justify-between gap-2" aria-live="polite">
@@ -255,7 +256,7 @@ export default function CommunityEventsPage() {
                             action={<Button variant="outline" onClick={() => void fetchEvents()}>Intentar de nuevo</Button>}
                         />
                     ) : loading ? (
-                        <div className="text-center py-12">Cargando calendario...</div>
+                        <StateFeedback status="loading" title="Cargando eventos" />
                     ) : events.length === 0 ? (
                         timeframe === 'past' ? (
                             <EmptyState
@@ -284,26 +285,23 @@ export default function CommunityEventsPage() {
                                 const date = new Date(event.date);
                                 const ended = date.getTime() <= Date.now();
                                 return (
-                                    <article key={event.id} className="flex flex-col gap-4 px-4 py-5 md:flex-row">
-                                        <div className="flex shrink-0 flex-row items-center justify-center gap-2 rounded-lg bg-primary-soft px-4 py-3 text-primary md:w-24 md:flex-col md:gap-0 md:text-center">
-                                            <span className="block text-sm font-bold uppercase">{getEventDateParts(date).month}</span>
-                                            <span className="block text-3xl font-bold">{getEventDateParts(date).day}</span>
-                                            <span className="block text-xs uppercase opacity-75">{date.toLocaleDateString('es-AR', { weekday: 'short', timeZone: APP_TIME_ZONE })}</span>
+                                    <article key={event.id} className="flex gap-4 px-4 py-5">
+                                        <div className="flex w-14 shrink-0 flex-col items-center self-start rounded-lg bg-primary-soft py-2 text-primary sm:w-16" aria-hidden="true">
+                                            <span className="text-xs font-semibold uppercase">{getEventDateParts(date).month}</span>
+                                            <span className="text-2xl font-bold leading-tight">{getEventDateParts(date).day}</span>
+                                            <span className="text-[11px] uppercase opacity-75">{date.toLocaleDateString('es-AR', { weekday: 'short', timeZone: APP_TIME_ZONE })}</span>
                                         </div>
 
-                                        <div className="flex-1 space-y-2">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="font-bold text-lg text-slate-800">{event.title}</h3>
-                                                    {event.group && (
-                                                        <Badge variant="neutral">Grupo: {event.group.name}</Badge>
-                                                    )}
-                                                </div>
-                                            </div>
+                                        <div className="min-w-0 flex-1 md:flex md:items-start md:justify-between md:gap-6">
+                                        <div className="min-w-0 space-y-1.5">
+                                            <h2 className="text-base font-semibold text-foreground sm:text-lg">{event.title}</h2>
+                                            {event.group && (
+                                                <p className="text-xs font-medium text-muted-foreground">Grupo: {event.group.name}</p>
+                                            )}
 
-                                            <p className="text-slate-600 text-sm line-clamp-2">{event.description}</p>
+                                            {event.description && <p className="line-clamp-2 text-sm text-foreground">{event.description}</p>}
 
-                                            <div className="flex flex-wrap gap-4 text-sm text-slate-500 pt-2">
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="size-4" aria-hidden="true" />
                                                     {getEventDateParts(date).time + ' (' + EVENT_TIME_ZONE_LABEL + ')'}
@@ -314,16 +312,15 @@ export default function CommunityEventsPage() {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="size-4" aria-hidden="true" />
-                                                    {event.attendeesCount} asistentes
+                                                    {countLabel(event.attendeesCount, 'asistente', 'asistentes')}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col justify-center min-w-[140px]">
                                             <Button
                                                 onClick={() => void handleAttend(event.id, event.isAttending)}
-                                                variant={event.isAttending ? "outline" : "default"}
-                                                className={event.isAttending ? 'border-primary text-primary' : undefined}
+                                                variant={event.isAttending ? 'tonal' : 'outline'}
+                                                className="mt-3 w-full sm:w-auto md:mt-0 md:min-w-32 md:shrink-0"
                                                 disabled={pendingAttendId === event.id || ended}
                                             >
                                                 {event.isAttending && <Check className="size-4" aria-hidden="true" />}
@@ -337,6 +334,8 @@ export default function CommunityEventsPage() {
                             })}
                         </div>
                     )}
+                    </div>
+                    </div>
                 </div>
             </CommunityLayout>
         </div>

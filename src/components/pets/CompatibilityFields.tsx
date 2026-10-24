@@ -96,8 +96,8 @@ export default function CompatibilityFields({ data, onChange }: CompatibilityFie
               onClick={() => toggleList('temperament', option.id)}
               className={`rounded-lg border px-3 py-1.5 text-sm ${
                 data.temperament?.includes(option.id)
-                  ? 'border-teal-600 bg-teal-50 text-teal-700'
-                  : 'border-slate-200 text-slate-600'
+                  ? 'border-primary bg-teal-50 text-primary'
+                  : 'border-border text-slate-600'
               }`}
             >
               {option.label}
@@ -116,8 +116,8 @@ export default function CompatibilityFields({ data, onChange }: CompatibilityFie
               onClick={() => toggleList('matchIntent', option.id)}
               className={`rounded-lg border px-3 py-2 text-sm ${
                 data.matchIntent?.includes(option.id)
-                  ? 'border-teal-600 bg-teal-50 text-teal-700'
-                  : 'border-slate-200 text-slate-600'
+                  ? 'border-primary bg-teal-50 text-primary'
+                  : 'border-border text-slate-600'
               }`}
             >
               {option.label}

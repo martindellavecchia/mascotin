@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { countLabel } from '@/lib/utils';
 
 interface User {
     id: string;
@@ -378,11 +379,11 @@ export default function AdminPage() {
     const getRoleBadge = (role: string) => {
         switch (role) {
             case 'ADMIN':
-                return <Badge className="bg-teal-50 text-teal-800">Admin</Badge>;
+                return <Badge className="bg-teal-50 text-primary">Admin</Badge>;
             case 'PROVIDER':
-                return <Badge className="bg-teal-100 text-teal-700">Proveedor</Badge>;
+                return <Badge className="bg-teal-100 text-primary">Proveedor</Badge>;
             default:
-                return <Badge className="bg-slate-100 text-slate-700">Usuario</Badge>;
+                return <Badge className="bg-muted text-slate-700">Usuario</Badge>;
         }
     };
 
@@ -420,11 +421,12 @@ export default function AdminPage() {
 
                     <TabsContent value="users">
                         {/* Filters */}
-                        <Card className="mb-4">
+                        <Card className="gap-0 py-0 mb-4">
                             <CardContent className="p-4">
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                                     <div className="min-w-0 flex-1 sm:min-w-[200px]">
                                         <Input
+                                            aria-label="Buscar usuarios por nombre o email"
                                             placeholder="Buscar por nombre o email..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -432,7 +434,7 @@ export default function AdminPage() {
                                         />
                                     </div>
                                     <Select value={roleFilter} onValueChange={setRoleFilter}>
-                                        <SelectTrigger className="w-full sm:w-[150px]">
+                                        <SelectTrigger aria-label="Filtrar por rol" className="w-full sm:w-[150px]">
                                             <SelectValue placeholder="Todos los roles" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -451,11 +453,11 @@ export default function AdminPage() {
                         </Card>
 
                         {/* Users Table */}
-                        <Card>
+                        <Card className="gap-0 py-0">
                             <CardContent className="p-0">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
-                                        <thead className="bg-slate-50 border-b">
+                                        <thead className="bg-background border-b">
                                             <tr>
                                                 <th className="text-left p-4 font-medium text-slate-600">Usuario</th>
                                                 <th className="text-left p-4 font-medium text-slate-600">Rol</th>
@@ -466,7 +468,7 @@ export default function AdminPage() {
                                         </thead>
                                         <tbody>
                                             {users.map((user) => (
-                                                <tr key={user.id} className="border-b hover:bg-slate-50">
+                                                <tr key={user.id} className="border-b hover:bg-background">
                                                     <td className="p-4">
                                                         <div className="flex items-center gap-3">
                                                             <Avatar className="h-10 w-10">
@@ -477,8 +479,8 @@ export default function AdminPage() {
                                                                 )}
                                                             </Avatar>
                                                             <div className="min-w-0">
-                                                                <p className="font-medium text-slate-800">{user.name || 'Sin nombre'}</p>
-                                                                <p className="break-words text-sm text-slate-500 [overflow-wrap:anywhere]">{user.email}</p>
+                                                                <p className="font-medium text-foreground">{user.name || 'Sin nombre'}</p>
+                                                                <p className="break-words text-sm text-muted-foreground [overflow-wrap:anywhere]">{user.email}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -490,9 +492,9 @@ export default function AdminPage() {
                                                             <Badge className="bg-green-100 text-green-700">Activo</Badge>
                                                         )}
                                                     </td>
-                                                    <td className="p-4 text-sm text-slate-500">
-                                                        {user.owner && <span>{user.owner._count.pets} mascotas</span>}
-                                                        {user.providerProfile && <span>{user.providerProfile.businessName}</span>}
+                                                    <td className="space-y-0.5 p-4 text-sm text-muted-foreground">
+                                                        {user.owner && <span className="block">{countLabel(user.owner._count.pets, 'mascota', 'mascotas')}</span>}
+                                                        {user.providerProfile && <span className="block">{user.providerProfile.businessName}</span>}
                                                         {!user.owner && !user.providerProfile && <span>-</span>}
                                                     </td>
                                                     <td className="p-4 text-right">
@@ -504,19 +506,19 @@ export default function AdminPage() {
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'role')}>
-                                                                    <IdCard className="mr-2 size-5 text-slate-500" aria-hidden="true" />
+                                                                    <IdCard className="mr-2 size-5 text-muted-foreground" aria-hidden="true" />
                                                                     Cambiar Rol
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'block')}>
                                                                     {user.isBlocked ? (
-                                                                        <LockOpen className="mr-2 size-5 text-slate-500" aria-hidden="true" />
+                                                                        <LockOpen className="mr-2 size-5 text-muted-foreground" aria-hidden="true" />
                                                                     ) : (
-                                                                        <Ban className="mr-2 size-5 text-slate-500" aria-hidden="true" />
+                                                                        <Ban className="mr-2 size-5 text-muted-foreground" aria-hidden="true" />
                                                                     )}
                                                                     {user.isBlocked ? 'Desbloquear' : 'Bloquear'}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'password')}>
-                                                                    <Key className="mr-2 size-5 text-slate-500" aria-hidden="true" />
+                                                                    <Key className="mr-2 size-5 text-muted-foreground" aria-hidden="true" />
                                                                     Resetear Contraseña
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuSeparator />
@@ -538,7 +540,7 @@ export default function AdminPage() {
 
                                 {/* Pagination */}
                                 <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <p className="text-sm text-slate-500">
+                                    <p className="text-sm text-muted-foreground">
                                         Mostrando {users.length} de {pagination.total} usuarios
                                     </p>
                                     <div className="grid grid-cols-2 gap-2 sm:flex">
@@ -565,7 +567,7 @@ export default function AdminPage() {
                     </TabsContent>
 
                     <TabsContent value="requests">
-                        <Card className="mb-4">
+                        <Card className="gap-0 py-0 mb-4">
                             <CardContent className="p-4">
                                 <div className="flex gap-2 overflow-x-auto pb-1">
                                     {(['PENDING', 'APPROVED', 'REJECTED'] as const).map((s) => (
@@ -584,7 +586,7 @@ export default function AdminPage() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="gap-0 py-0">
                             <CardContent className="p-0">
                                 {loadingRequests ? (
                                     <div className="p-8 text-center">
@@ -598,14 +600,14 @@ export default function AdminPage() {
                                         </Button>
                                     </div>
                                 ) : providerRequests.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">
+                                    <div className="p-8 text-center text-muted-foreground">
                                         <Inbox className="mb-2 size-10" aria-hidden="true" />
                                         <p>No hay solicitudes {requestFilter === 'PENDING' ? 'pendientes' : requestFilter === 'APPROVED' ? 'aprobadas' : 'rechazadas'}</p>
                                     </div>
                                 ) : (
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
-                                            <thead className="bg-slate-50 border-b">
+                                            <thead className="bg-background border-b">
                                                 <tr>
                                                     <th className="text-left p-4 font-medium text-slate-600">Solicitante</th>
                                                     <th className="text-left p-4 font-medium text-slate-600">Negocio</th>
@@ -616,7 +618,7 @@ export default function AdminPage() {
                                             </thead>
                                             <tbody>
                                                 {providerRequests.map((req) => (
-                                                    <tr key={req.id} className="border-b hover:bg-slate-50">
+                                                    <tr key={req.id} className="border-b hover:bg-background">
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-3">
                                                                 <Avatar className="h-10 w-10">
@@ -627,19 +629,19 @@ export default function AdminPage() {
                                                                     )}
                                                                 </Avatar>
                                                                 <div>
-                                                                    <p className="font-medium text-slate-800">{req.user.name || 'Sin nombre'}</p>
-                                                                    <p className="text-sm text-slate-500">{req.user.email}</p>
+                                                                    <p className="font-medium text-foreground">{req.user.name || 'Sin nombre'}</p>
+                                                                    <p className="text-sm text-muted-foreground">{req.user.email}</p>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                         <td className="p-4">
-                                                            <p className="font-medium text-slate-800">{req.businessName}</p>
-                                                            <p className="text-sm text-slate-500">{req.location}</p>
+                                                            <p className="font-medium text-foreground">{req.businessName}</p>
+                                                            <p className="text-sm text-muted-foreground">{req.location}</p>
                                                         </td>
                                                         <td className="p-4">
                                                             <p className="text-sm text-slate-600 max-w-[200px] truncate">{req.reason}</p>
                                                         </td>
-                                                        <td className="p-4 text-sm text-slate-500">
+                                                        <td className="p-4 text-sm text-muted-foreground">
                                                             {new Date(req.createdAt).toLocaleDateString('es-AR')}
                                                         </td>
                                                         <td className="p-4 text-right">
@@ -672,31 +674,31 @@ export default function AdminPage() {
 
                     <TabsContent value="stats">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card>
+                            <Card className="gap-0 py-0">
                                 <CardContent className="p-6 text-center">
-                                    <Users className="mb-2 size-10 text-slate-400" aria-hidden="true" />
-                                    <p className="text-3xl font-bold text-slate-800">
+                                    <Users className="mb-2 size-10 text-muted-foreground" aria-hidden="true" />
+                                    <p className="text-3xl font-bold text-foreground">
                                         {userStats ? userStats.totalUsers.toLocaleString('es-AR') : '—'}
                                     </p>
-                                    <p className="text-slate-500">Usuarios totales</p>
+                                    <p className="text-muted-foreground">Usuarios totales</p>
                                 </CardContent>
                             </Card>
-                            <Card>
+                            <Card className="gap-0 py-0">
                                 <CardContent className="p-6 text-center">
                                     <Store className="mb-2 size-10 text-teal-400" aria-hidden="true" />
-                                    <p className="text-3xl font-bold text-slate-800">
+                                    <p className="text-3xl font-bold text-foreground">
                                         {userStats ? userStats.byRole.PROVIDER.toLocaleString('es-AR') : '—'}
                                     </p>
-                                    <p className="text-slate-500">Proveedores</p>
+                                    <p className="text-muted-foreground">Proveedores</p>
                                 </CardContent>
                             </Card>
-                            <Card>
+                            <Card className="gap-0 py-0">
                                 <CardContent className="p-6 text-center">
                                     <ShieldUser className="mb-2 size-10 text-teal-500" aria-hidden="true" />
-                                    <p className="text-3xl font-bold text-slate-800">
+                                    <p className="text-3xl font-bold text-foreground">
                                         {userStats ? userStats.byRole.ADMIN.toLocaleString('es-AR') : '—'}
                                     </p>
-                                    <p className="text-slate-500">Administradores</p>
+                                    <p className="text-muted-foreground">Administradores</p>
                                 </CardContent>
                             </Card>
                         </div>
@@ -707,7 +709,7 @@ export default function AdminPage() {
                             <CardHeader className="gap-3">
                                 <CardTitle className="text-lg">Proveedores registrados</CardTitle>
                                 <div className="relative max-w-md">
-                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                                     <Input
                                         value={providerSearch}
                                         onChange={(e) => setProviderSearch(e.target.value)}
@@ -730,7 +732,7 @@ export default function AdminPage() {
                                         </Button>
                                     </div>
                                 ) : providers.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">
+                                    <div className="p-8 text-center text-muted-foreground">
                                         <Store className="mb-2 size-10" aria-hidden="true" />
                                         <p>
                                             {debouncedProviderSearch
@@ -741,7 +743,7 @@ export default function AdminPage() {
                                 ) : (
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
-                                            <thead className="bg-slate-50 border-b">
+                                            <thead className="bg-background border-b">
                                                 <tr>
                                                     <th className="text-left p-4 font-medium text-slate-600">Negocio</th>
                                                     <th className="text-left p-4 font-medium text-slate-600">Ubicación</th>
@@ -752,7 +754,7 @@ export default function AdminPage() {
                                             </thead>
                                             <tbody>
                                                 {providers.map((provider) => (
-                                                    <tr key={provider.id} className="border-b hover:bg-slate-50">
+                                                    <tr key={provider.id} className="border-b hover:bg-background">
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-3">
                                                                 <Avatar className="h-10 w-10">
@@ -763,8 +765,8 @@ export default function AdminPage() {
                                                                     )}
                                                                 </Avatar>
                                                                 <div>
-                                                                    <p className="font-medium text-slate-800">{provider.businessName}</p>
-                                                                    <p className="text-sm text-slate-500">{provider.user.email}</p>
+                                                                    <p className="font-medium text-foreground">{provider.businessName}</p>
+                                                                    <p className="text-sm text-muted-foreground">{provider.user.email}</p>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -777,11 +779,11 @@ export default function AdminPage() {
                                                                         ? provider.rating.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
                                                                         : 'Sin datos'}
                                                                 </span>
-                                                                <span className="text-slate-400 text-sm">({provider.reviewCount || 0})</span>
+                                                                <span className="text-muted-foreground text-sm">({provider.reviewCount || 0})</span>
                                                             </div>
                                                         </td>
                                                         <td className="p-4">
-                                                            <Badge className="bg-teal-100 text-teal-700">{provider._count.services} servicios</Badge>
+                                                            <Badge className="bg-teal-100 text-primary">{countLabel(provider._count.services, 'servicio', 'servicios')}</Badge>
                                                         </td>
                                                         <td className="p-4 text-right">
                                                             <Button
@@ -802,7 +804,7 @@ export default function AdminPage() {
                                 )}
                                 {!providersError && providerPagination.total > 0 && (
                                     <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
-                                        <p className="text-sm text-slate-500">
+                                        <p className="text-sm text-muted-foreground">
                                             Página {providerPagination.page} de {Math.max(providerPagination.totalPages, 1)} · {providerPagination.total.toLocaleString('es-AR')} proveedores
                                         </p>
                                         <div className="grid grid-cols-2 gap-2 sm:flex">
@@ -849,11 +851,11 @@ export default function AdminPage() {
                     <div className="py-4">
                         {actionType === 'role' && (
                             <div>
-                                <p className="text-sm text-slate-500 mb-3">
+                                <p className="text-sm text-muted-foreground mb-3">
                                     Cambiar rol de <strong>{selectedUser?.name || selectedUser?.email}</strong>
                                 </p>
                                 <Select value={newRole} onValueChange={setNewRole}>
-                                    <SelectTrigger>
+                                    <SelectTrigger aria-label="Nuevo rol">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -943,30 +945,30 @@ export default function AdminPage() {
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div>
-                            <p className="text-sm text-slate-500">Solicitante</p>
+                            <p className="text-sm text-muted-foreground">Solicitante</p>
                             <p className="font-medium">{selectedRequest?.user.name || selectedRequest?.user.email}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-500">Negocio</p>
+                            <p className="text-sm text-muted-foreground">Negocio</p>
                             <p className="font-medium">{selectedRequest?.businessName}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-500">Ubicación</p>
+                            <p className="text-sm text-muted-foreground">Ubicación</p>
                             <p>{selectedRequest?.location}</p>
                         </div>
                         {selectedRequest?.description && (
                             <div>
-                                <p className="text-sm text-slate-500">Descripción</p>
+                                <p className="text-sm text-muted-foreground">Descripción</p>
                                 <p>{selectedRequest.description}</p>
                             </div>
                         )}
                         <div>
-                            <p className="text-sm text-slate-500">Motivo</p>
+                            <p className="text-sm text-muted-foreground">Motivo</p>
                             <p>{selectedRequest?.reason}</p>
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-slate-700">Nota del admin (opcional)</label>
-                            <Textarea
+                            <label htmlFor="admin-nota-del-admin-opcional" className="text-sm font-medium text-slate-700">Nota del admin (opcional)</label>
+                            <Textarea id="admin-nota-del-admin-opcional"
                                 placeholder="Agregar nota..."
                                 value={adminNote}
                                 onChange={(e) => setAdminNote(e.target.value)}

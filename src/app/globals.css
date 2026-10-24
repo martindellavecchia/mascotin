@@ -14,11 +14,16 @@
   --color-background: #fff8ef;
   --color-surface: #ffffff;
   --color-foreground: #271e27;
+  --color-card: #ffffff;
+  --color-card-foreground: #271e27;
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-muted: #f0eaf3;
   --color-muted-foreground: #6a5d69;
   --color-border: #dccfd8;
+  --color-border-control: #9b8192;
+  --color-surface-soft: #f0eaf3;
+  --color-focus: #6d3a67;
   --color-input: #ffffff;
   --color-ring: #6d3a67;
   --color-destructive: #b5413a;
@@ -239,6 +244,17 @@
   width: 2.5rem !important;
   height: 2.5rem !important;
   line-height: 2.5rem !important;
+}
+
+/* Tailwind v4 defaults borders to currentColor; keep unqualified borders and dividers on the Huella border token. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
 }
 
 body {

@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function countLabel(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export function safeJsonParse<T>(jsonString: string | null | undefined, defaultValue: T): T {
   if (!jsonString) return defaultValue;
   try {

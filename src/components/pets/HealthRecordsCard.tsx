@@ -137,7 +137,7 @@ export default function HealthRecordsCard({ petId, records, onChange }: HealthRe
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-900">Vacunas y recordatorios</h3>
+        <h3 className="text-sm font-semibold text-foreground">Vacunas y recordatorios</h3>
         {!adding && (
           <Button type="button" size="sm" variant="outline" onClick={() => setAdding(true)}>
             <Plus className="size-4" aria-hidden="true" />
@@ -188,7 +188,7 @@ export default function HealthRecordsCard({ petId, records, onChange }: HealthRe
       )}
 
       {records.length === 0 && !adding ? (
-        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-slate-500">
+        <p className="rounded-lg border border-dashed border-border bg-background px-3 py-4 text-center text-muted-foreground">
           Anotá vacunas, desparasitaciones y controles para tener las fechas a mano.
         </p>
       ) : (
@@ -200,8 +200,8 @@ export default function HealthRecordsCard({ petId, records, onChange }: HealthRe
               <li key={record.id} className="flex items-center gap-3 px-3 py-2.5">
                 <Syringe className={cn('size-4 shrink-0', done ? 'text-slate-300' : 'text-primary')} aria-hidden="true" />
                 <div className="min-w-0 flex-1">
-                  <p className={cn('truncate font-medium', done && 'text-slate-400 line-through')}>{record.name}</p>
-                  <p className="flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
+                  <p className={cn('truncate font-medium', done && 'text-muted-foreground line-through')}>{record.name}</p>
+                  <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
                     <span>{HEALTH_RECORD_TYPE_LABELS[record.type] ?? record.type}</span>
                     {record.dueDate && (
                       <span className="inline-flex items-center gap-1">
@@ -240,7 +240,7 @@ export default function HealthRecordsCard({ petId, records, onChange }: HealthRe
                       type="button"
                       size="icon"
                       variant="ghost"
-                      className="size-9 text-slate-500 hover:text-destructive"
+                      className="size-9 text-muted-foreground hover:text-destructive"
                       aria-label={`Eliminar ${record.name}`}
                     >
                       <Trash2 className="size-4" aria-hidden="true" />

@@ -196,7 +196,7 @@ describe('HomeClientShell', () => {
   it('shows today actions without the feed for a pet without community', () => {
     renderShell({ showCommunityFeed: false });
 
-    expect(screen.getByRole('heading', { name: /elegí una acción con max/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /para hoy con max/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /conocé una mascota/i })).toHaveAttribute('href', '/inicio?tab=explore&petId=pet-1');
     expect(screen.queryByText('Feed')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /círculo/i })).not.toBeInTheDocument();

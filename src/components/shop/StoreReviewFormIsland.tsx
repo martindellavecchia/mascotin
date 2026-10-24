@@ -80,13 +80,13 @@ export default function StoreReviewFormIsland() {
   };
 
   return (
-    <Card className="border-slate-200 xl:sticky xl:top-24">
+    <Card className="border-border xl:sticky xl:top-24">
       <CardHeader>
         <CardTitle className="text-lg">Tu experiencia</CardTitle>
       </CardHeader>
       <CardContent>
         {viewer.isOwner ? (
-          <div className="rounded-xl bg-teal-50 p-4 text-sm text-teal-800">
+          <div className="rounded-xl bg-teal-50 p-4 text-sm text-primary">
             <p className="font-semibold">Sos dueño/a de este negocio</p>
             <p className="mt-1">Podés responder reseñas, pero no calificar tu propio perfil.</p>
           </div>
@@ -105,10 +105,10 @@ export default function StoreReviewFormIsland() {
                   key={star}
                   onClick={() => setRating(star)}
                   aria-label={`${star} estrellas`}
-                  className="flex size-10 items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  className="flex size-10 items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Star
-                    className={`size-8 ${star <= rating ? 'text-amber-500' : 'text-slate-200 hover:text-amber-300'}`}
+                    className={`size-8 ${star <= rating ? 'text-highlight' : 'text-border-control hover:text-highlight/60'}`}
                     aria-hidden="true"
                     fill={star <= rating ? 'currentColor' : 'none'}
                   />
@@ -116,6 +116,7 @@ export default function StoreReviewFormIsland() {
               ))}
             </div>
             <Textarea
+              aria-label="Tu reseña"
               className="mt-3"
               value={comment}
               onChange={(event) => setComment(event.target.value)}
@@ -123,7 +124,8 @@ export default function StoreReviewFormIsland() {
               rows={5}
             />
             <Button
-              className="mt-3 w-full bg-teal-600 hover:bg-teal-700"
+              variant="brand"
+              className="mt-3 w-full"
               onClick={() => void saveReview()}
               disabled={reviewLoading}
             >
@@ -139,7 +141,7 @@ export default function StoreReviewFormIsland() {
                 trigger={
                   <Button
                     variant="ghost"
-                    className="mt-1 w-full text-rose-600 hover:text-rose-700"
+                    className="mt-1 w-full text-destructive hover:bg-destructive/5 hover:text-destructive"
                     disabled={reviewLoading}
                   >
                     Eliminar mi reseña
@@ -150,21 +152,21 @@ export default function StoreReviewFormIsland() {
           </div>
         ) : viewer.reviewEligibility === 'unauthenticated' ? (
           <div className="text-sm text-slate-600">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
-              <Lock className="size-5 text-slate-500" aria-hidden="true" />
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+              <Lock className="size-5 text-muted-foreground" aria-hidden="true" />
             </div>
-            <p className="font-semibold text-slate-800">Iniciá sesión para reservar o reseñar</p>
+            <p className="font-semibold text-foreground">Iniciá sesión para reservar o reseñar</p>
             <p className="mt-1">Las reseñas verificadas aparecen después de una cita completada.</p>
-            <Button asChild className="mt-4 w-full bg-teal-600 hover:bg-teal-700">
+            <Button asChild variant="brand" className="mt-4 w-full">
               <Link href={loginHref}>Iniciar sesión</Link>
             </Button>
           </div>
         ) : (
           <div className="text-sm text-slate-600">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
-              <Lock className="size-5 text-slate-500" aria-hidden="true" />
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+              <Lock className="size-5 text-muted-foreground" aria-hidden="true" />
             </div>
-            <p className="font-semibold text-slate-800">Reseñas verificadas</p>
+            <p className="font-semibold text-foreground">Reseñas verificadas</p>
             <p className="mt-1">Podrás calificar cuando el negocio marque una cita tuya como completada.</p>
           </div>
         )}

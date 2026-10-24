@@ -113,7 +113,7 @@ export default function PetOnboardingWizard({ onSuccess, onCancel }: PetOnboardi
   };
 
   return (
-    <Card className="my-auto w-full max-w-xl overflow-hidden">
+    <Card className="my-auto w-full max-w-xl gap-0 overflow-hidden py-0">
       <CardHeader className="space-y-3 border-b border-border bg-surface px-5 py-5 text-center sm:space-y-4 sm:px-8 sm:py-8">
         <div className="mx-auto flex w-fit items-center gap-2 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary">
           <Clock3 className="size-4" aria-hidden="true" />

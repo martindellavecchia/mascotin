@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import LostPetForm from '@/components/community/LostPetForm';
 import { getPrimaryImageUrl } from '@/lib/media';
-import { cn } from '@/lib/utils';
+import { cn, countLabel } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface AlertPost {
@@ -43,7 +43,7 @@ function parseTab(value: string | null): AlertTab | null {
 
 export default function AlertsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-500">Cargando alertas...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Cargando alertas...</div>}>
       <AlertsPageContent />
     </Suspense>
   );
@@ -198,17 +198,16 @@ function AlertsPageContent() {
       <PageHeader
         title="Alertas"
         description="Mascotas perdidas, encontradas y avistamientos de la comunidad."
-        action={<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        action={<div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            className="w-full sm:w-auto"
             onClick={() => openForm('found')}
           >
             Encontré una mascota
           </Button>
           <Button
             variant="outline"
-            className="w-full border-red-200 text-red-700 hover:bg-red-50 sm:w-auto"
+            className="border-destructive/35 text-destructive hover:border-destructive/50 hover:bg-destructive/5 hover:text-destructive"
             onClick={() => openForm('lost')}
           >
             Reportar perdida
@@ -236,13 +235,13 @@ function AlertsPageContent() {
 
       <div className="space-y-4" aria-live="polite">
         {loading && [0, 1].map((item) => (
-          <Card key={item} className="overflow-hidden" aria-label="Cargando alerta">
+          <Card key={item} className="gap-0 py-0 overflow-hidden" aria-label="Cargando alerta">
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row">
-              <div className="h-32 w-full animate-pulse rounded-xl bg-slate-200 sm:w-40" />
+              <div className="h-32 w-full animate-pulse rounded-xl bg-muted sm:w-40" />
               <div className="flex-1 space-y-3 py-1">
-                <div className="h-5 w-24 animate-pulse rounded bg-slate-200" />
-                <div className="h-5 w-2/5 animate-pulse rounded bg-slate-200" />
-                <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
+                <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+                <div className="h-5 w-2/5 animate-pulse rounded bg-muted" />
+                <div className="h-4 w-full animate-pulse rounded bg-muted" />
               </div>
             </CardContent>
           </Card>
@@ -266,32 +265,33 @@ function AlertsPageContent() {
             <Card
               id={`alert-${alert.id}`}
               key={alert.id}
-              className={isSelected ? 'border-teal-300 ring-2 ring-teal-100' : undefined}
+              className={cn('gap-0 py-0', isSelected && 'border-primary/40 ring-2 ring-primary/15')}
             >
-              <CardContent className="flex flex-col gap-4 p-5 sm:flex-row">
-                <div className="h-32 w-full overflow-hidden rounded-xl bg-slate-100 sm:w-40">
-                  {image ? (
+              <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:p-5">
+                {image ? (
+                  <div className="h-44 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-32 sm:w-40">
                     <img src={image} alt={alert.pet?.name || 'Mascota reportada'} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-slate-300">
-                      <PawPrint className="size-10" aria-hidden="true" />
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="hidden size-16 shrink-0 items-center justify-center rounded-lg bg-primary-soft sm:flex">
+                    <PawPrint className="size-7 text-primary/30" aria-hidden="true" />
+                  </div>
+                )}
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge className={alert.postType === 'found_pet' ? 'bg-teal-100 text-teal-800' : 'bg-red-100 text-red-700'}>
+                    <Badge variant={alert.postType === 'found_pet' ? 'default' : 'destructive'}>
                       {alert.postType === 'found_pet' ? 'Encontrada' : 'Perdida'}
                     </Badge>
-                    {alert.isResolved && <Badge className="bg-green-100 text-green-700">Resuelta</Badge>}
+                    {alert.isResolved && <Badge variant="success">Resuelta</Badge>}
+                    <span className="text-xs text-muted-foreground">Publicada por {alert.author?.name || 'la comunidad'}</span>
                   </div>
-                  <p className="font-semibold text-slate-900">{alert.pet?.name || alert.author?.name}</p>
-                  <p className="break-words text-sm text-slate-600 [overflow-wrap:anywhere]">{alert.content}</p>
+                  {alert.pet?.name && <p className="font-semibold text-foreground">{alert.pet.name}</p>}
+                  <p className="break-words text-sm text-foreground [overflow-wrap:anywhere]">{alert.content}</p>
                   {alert.lastSeenLocation && (
-                    <p className="text-sm text-slate-500">Zona: {alert.lastSeenLocation}</p>
+                    <p className="text-sm text-muted-foreground">Zona: {alert.lastSeenLocation}</p>
                   )}
-                  <p className="text-xs text-slate-400">
-                    {alert._count?.sightings || 0} avistamientos
+                  <p className="text-xs text-muted-foreground">
+                    {countLabel(alert._count?.sightings || 0, 'avistamiento', 'avistamientos')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {isOwner && (
@@ -304,7 +304,7 @@ function AlertsPageContent() {
                         {isResolving && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
                         {alert.isResolved
                           ? 'Reactivar alerta'
-                          : alert.postType === 'found_pet' ? 'Marcar como resuelta' : '¡Lo encontré!'}
+                          : alert.postType === 'found_pet' ? 'Marcar como resuelta' : 'Marcar como encontrada'}
                       </Button>
                     )}
                     {!alert.isResolved && (

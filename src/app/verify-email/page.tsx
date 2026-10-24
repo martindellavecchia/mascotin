@@ -49,7 +49,7 @@ function VerifyEmailContent() {
           <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
             <div className="w-8 h-8 border-[3px] border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Verificando correo...</h1>
+          <h1 className="text-2xl font-bold text-foreground">Verificando correo...</h1>
           <p className="text-slate-600">Esperá un momento mientras verificamos tu correo.</p>
         </>
       )}
@@ -59,7 +59,7 @@ function VerifyEmailContent() {
           <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
             <CircleCheck className="size-8" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Correo verificado</h1>
+          <h1 className="text-2xl font-bold text-foreground">Correo verificado</h1>
           <p className="text-slate-600">{message}</p>
           <Button asChild className="mt-4">
             <Link href="/login">Iniciar sesión<ArrowRight className="ml-2 size-5" aria-hidden="true" /></Link>
@@ -72,11 +72,11 @@ function VerifyEmailContent() {
           <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-red-100 text-red-600">
             <CircleAlert className="size-8" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Error de verificación</h1>
+          <h1 className="text-2xl font-bold text-foreground">Error de verificación</h1>
           <p className="text-slate-600">{message}</p>
           <Link
             href="/login"
-            className="mt-4 inline-flex min-h-11 items-center text-teal-600 font-bold hover:text-teal-700 transition-colors"
+            className="mt-4 inline-flex min-h-11 items-center text-primary font-bold hover:text-primary transition-colors"
           >
             Volver al inicio de sesión
           </Link>
@@ -92,7 +92,7 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-[440px]">
         <BrandLink priority className="mb-10 flex w-full justify-center" logoClassName="h-12" />
 
-        <Suspense fallback={<div className="text-center text-slate-500">Cargando...</div>}>
+        <Suspense fallback={<div className="text-center text-muted-foreground">Cargando...</div>}>
           <VerifyEmailContent />
         </Suspense>
       </div>

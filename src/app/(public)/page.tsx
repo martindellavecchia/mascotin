@@ -10,7 +10,7 @@ export default function GuestHomePage() {
     <main className="min-h-screen bg-background text-foreground">
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-14 lg:px-8 lg:py-20">
         <div className="max-w-2xl">
-          <p className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-primary">
+          <p className="mb-4 text-sm font-semibold text-primary">
             Comunidad para personas y mascotas
           </p>
           <h1 className="text-4xl font-bold leading-[1.05] tracking-[-0.045em] text-foreground sm:text-5xl lg:text-6xl">
@@ -47,10 +47,6 @@ export default function GuestHomePage() {
             className="object-cover object-center"
             priority
           />
-          <div className="absolute inset-x-4 bottom-4 rounded-lg border border-white/60 bg-white/92 p-4 backdrop-blur sm:inset-x-6 sm:bottom-6 sm:p-5">
-            <p className="font-semibold text-foreground">Una red local para cada etapa</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Desde conocer un compañero de paseo hasta coordinar un tránsito responsable.</p>
-          </div>
         </div>
       </section>
 
@@ -86,10 +82,9 @@ export default function GuestHomePage() {
           />
         </div>
         <div className="max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-highlight">Cerca y con contexto</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.035em] sm:text-4xl">Menos ruido. Más información útil para decidir.</h2>
+          <h2 className="text-3xl font-bold tracking-[-0.035em] sm:text-4xl">Reseñas de citas reales y datos que siguen siendo tuyos.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-            Cada recorrido prioriza datos reales, acciones claras y privacidad. Sin puntajes inventados, recomendaciones vacías ni pantallas llenas de tarjetas.
+            Las calificaciones de cada comercio salen de turnos completados. Las ubicaciones exactas de los rescates no se publican y vos elegís qué muestra el pasaporte de emergencia de tu mascota.
           </p>
           <Button asChild variant="link" className="mt-5 h-auto p-0 text-base">
             <Link href="/shop">Explorar servicios <ArrowRight className="size-4" aria-hidden="true" /></Link>

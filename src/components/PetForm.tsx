@@ -78,7 +78,7 @@ function pickOptions<T extends string>(options: readonly T[], value: unknown): T
 function checkableClassName(checked: boolean) {
   return cn(
     'flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-teal-500/40',
-    checked ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:border-slate-300'
+    checked ? 'border-teal-300 bg-teal-50' : 'border-border bg-surface hover:border-slate-300'
   );
 }
 
@@ -353,7 +353,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                     }}
                   />
                 </FormControl>
-                <p className="text-xs text-slate-500">Si tiene menos de 1 año, poné 0.</p>
+                <p className="text-xs text-muted-foreground">Si tiene menos de 1 año, poné 0.</p>
                 <FormMessage />
               </FormItem>
             )}
@@ -469,8 +469,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                     onChange={(e) => field.onChange(e.target.checked)}
                     className="sr-only"
                   />
-                  <Syringe className={`size-5 ${field.value ? 'text-teal-600' : 'text-slate-400'}`} aria-hidden="true" />
-                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
+                  <Syringe className={`size-5 ${field.value ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                  <span className={`text-sm font-medium ${field.value ? 'text-primary' : 'text-slate-700'}`}>
                     {gender === 'female' ? 'Vacunada' : 'Vacunado'}
                   </span>
                 </label>
@@ -488,8 +488,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                     onChange={(e) => field.onChange(e.target.checked)}
                     className="sr-only"
                   />
-                  <Stethoscope className={`size-5 ${field.value ? 'text-teal-600' : 'text-slate-400'}`} aria-hidden="true" />
-                  <span className={`text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
+                  <Stethoscope className={`size-5 ${field.value ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                  <span className={`text-sm font-medium ${field.value ? 'text-primary' : 'text-slate-700'}`}>
                     {gender === 'female' ? 'Castrada' : 'Castrado'}
                   </span>
                 </label>
@@ -552,8 +552,8 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                           className={cn(
                             'flex cursor-pointer items-center gap-2 rounded-lg border p-3 transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-teal-500/40',
                             checked
-                              ? 'border-teal-300 bg-teal-50 text-teal-700'
-                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                              ? 'border-teal-300 bg-teal-50 text-primary'
+                              : 'border-border bg-surface text-slate-700 hover:border-slate-300'
                           )}
                         >
                           <input
@@ -568,14 +568,14 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                             onBlur={field.onBlur}
                             className="sr-only"
                           />
-                          <ActivityIcon className="size-5 text-teal-700" aria-hidden="true" />
+                          <ActivityIcon className="size-5 text-primary" aria-hidden="true" />
                           <span className="text-sm font-medium">{activity.label}</span>
                         </label>
                       );
                     })}
                   </div>
                 </fieldset>
-                <p className="text-xs text-slate-500">Seleccioná al menos una actividad</p>
+                <p className="text-xs text-muted-foreground">Seleccioná al menos una actividad</p>
                 <FormMessage />
               </FormItem>
             );
@@ -654,7 +654,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
 
         <div className="space-y-3">
           <Label className="font-medium text-slate-700">Privacidad al escanear QR</Label>
-          <p className="text-xs text-slate-500">Controlá qué datos se muestran en el pasaporte público</p>
+          <p className="text-xs text-muted-foreground">Controlá qué datos se muestran en el pasaporte público</p>
           <div className="flex flex-col gap-3">
             <FormField
               control={form.control}
@@ -667,12 +667,12 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                     onChange={(e) => field.onChange(e.target.checked)}
                     className="sr-only"
                   />
-                  <Phone className="size-5 text-teal-600" aria-hidden="true" />
+                  <Phone className="size-5 text-primary" aria-hidden="true" />
                   <div>
-                    <span className={`block text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
+                    <span className={`block text-sm font-medium ${field.value ? 'text-primary' : 'text-slate-700'}`}>
                       Compartir teléfono
                     </span>
-                    <span className="text-xs text-slate-500">Mostrar tu número al escanear el pasaporte</span>
+                    <span className="text-xs text-muted-foreground">Mostrar tu número al escanear el pasaporte</span>
                   </div>
                 </label>
               )}
@@ -688,12 +688,12 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                     onChange={(e) => field.onChange(e.target.checked)}
                     className="sr-only"
                   />
-                  <Hospital className="size-5 text-teal-600" aria-hidden="true" />
+                  <Hospital className="size-5 text-primary" aria-hidden="true" />
                   <div>
-                    <span className={`block text-sm font-medium ${field.value ? 'text-teal-700' : 'text-slate-700'}`}>
+                    <span className={`block text-sm font-medium ${field.value ? 'text-primary' : 'text-slate-700'}`}>
                       Compartir veterinaria
                     </span>
-                    <span className="text-xs text-slate-500">Mostrar la clínica de cabecera al escanear</span>
+                    <span className="text-xs text-muted-foreground">Mostrar la clínica de cabecera al escanear</span>
                   </div>
                 </label>
               )}
@@ -709,7 +709,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
               <Label className={cn(fieldState.invalid && 'text-destructive')}>
                 Fotos ({images.length}/{MAX_PET_IMAGES})
               </Label>
-              <p className="mb-2 text-xs text-slate-500">
+              <p className="mb-2 text-xs text-muted-foreground">
                 Elegí una estrella para definir la foto principal. Los cambios en las fotos se guardan al tocar{' '}
                 {isEditing ? '“Actualizar mascota”' : '“Guardar mascota”'}.
               </p>
@@ -736,7 +736,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                           className="object-cover"
                         />
                       ) : (
-                        <ImageOff className="size-10 text-teal-700" aria-hidden="true" />
+                        <ImageOff className="size-10 text-primary" aria-hidden="true" />
                       )}
                       <Button
                         type="button"
@@ -744,7 +744,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                         size="icon"
                         className={cn(
                           'absolute left-2 top-2 size-8 gap-0 rounded-lg p-0',
-                          isThumbnail ? 'bg-primary hover:bg-primary-hover' : 'bg-white/80 hover:bg-primary-soft'
+                          isThumbnail ? 'bg-primary hover:bg-primary-hover' : 'bg-surface/80 hover:bg-primary-soft'
                         )}
                         onClick={() => setThumbnailIndex(index)}
                         disabled={busy}
@@ -753,7 +753,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                         aria-pressed={isThumbnail}
                       >
                         <Star
-                          className={`size-4 ${isThumbnail ? 'text-white' : 'text-slate-500'}`}
+                          className={`size-4 ${isThumbnail ? 'text-white' : 'text-muted-foreground'}`}
                           fill={isThumbnail ? 'currentColor' : undefined}
                           aria-hidden="true"
                         />
@@ -804,7 +804,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
                   </label>
                 )}
               </div>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 Máximo {MAX_PET_IMAGES} fotos. Formatos: JPG, PNG o WebP. Hasta 5 MB por foto.
               </p>
               <FormMessage className="mt-2" />

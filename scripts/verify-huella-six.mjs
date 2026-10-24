@@ -182,9 +182,9 @@ try {
 
     await page.goto(base + '/community/groups');
     await page.getByRole('button', { name: 'Crear grupo', exact: true }).click();
-    dialog = page.getByRole('dialog', { name: 'Crear Nuevo Grupo' });
-    await dialog.getByLabel('Nombre del Grupo').fill('Sólo borrador local');
-    await contrast(dialog.getByRole('button', { name: 'Crear Grupo', exact: true }), variant.name + '-create-group');
+    dialog = page.getByRole('dialog', { name: 'Crear nuevo grupo' });
+    await dialog.getByLabel('Nombre del grupo').fill('Sólo borrador local');
+    await contrast(dialog.getByRole('button', { name: 'Crear grupo', exact: true }), variant.name + '-create-group');
     await capture(variant.name + '-create-group', dialog);
     await page.keyboard.press('Escape');
     await page.goto(base + '/pets/' + mine.id);

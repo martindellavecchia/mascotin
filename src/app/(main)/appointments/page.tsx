@@ -1,7 +1,11 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
+import { StateFeedback } from '@/components/ui/state-feedback';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import SlotPicker from '@/components/appointments/SlotPicker';
@@ -11,6 +15,12 @@ const LABELS: Record<string, string> = {
   CONFIRMED: 'Confirmado',
   CANCELLED: 'Cancelado',
   COMPLETED: 'Completado',
+};
+const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'neutral' | 'destructive'> = {
+  PENDING: 'warning',
+  CONFIRMED: 'success',
+  COMPLETED: 'neutral',
+  CANCELLED: 'destructive',
 };
 type Appointment = {
   id: string;
@@ -95,38 +105,53 @@ export default function AppointmentsPage() {
         }
       />
       {error && (
-        <div role="alert">
-          <p className="text-destructive">{error}</p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setError('');
-              void load();
-            }}
-          >
-            Actualizar
-          </Button>
-        </div>
+        <StateFeedback
+          status="error"
+          title={error}
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setError('');
+                void load();
+              }}
+            >
+              Actualizar
+            </Button>
+          }
+        />
       )}
       {loading ? (
-        <p role="status">Cargando turnos...</p>
+        <StateFeedback status="loading" title="Cargando turnos" />
       ) : !rows.length && !error ? (
-        <p>Todavía no solicitaste turnos.</p>
+        <EmptyState
+          icon={<CalendarClock className="size-10" aria-hidden="true" />}
+          title="Todavía no solicitaste turnos"
+          description="Cuando reserves un servicio, vas a ver acá la confirmación y el historial."
+          action={<Button asChild variant="outline"><Link href="/shop">Buscar servicios</Link></Button>}
+        />
       ) : (
         rows.map((row) => (
-          <section key={row.id} className="space-y-3 rounded-xl border bg-surface p-5">
-            <h2 className="text-lg font-bold">
-              {row.service.name} · {row.pet.name}
-            </h2>
-            <p>{row.service.provider.businessName}</p>
-            <p>
-              {formatAppointmentDate(row.date, row)}{' '}
-              · {row.durationMinutes ?? row.service.duration} min
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Horario en {getTimeZoneLabel(row.service.provider.schedule?.timeZone)}
-            </p>
-            <p className="font-medium text-primary">{LABELS[row.status] || row.status}</p>
+          <section key={row.id} className="space-y-3 rounded-lg border border-border bg-surface p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-foreground sm:text-lg">
+                  {row.service.name} · {row.pet.name}
+                </h2>
+                <p className="text-sm text-muted-foreground">{row.service.provider.businessName}</p>
+              </div>
+              <Badge variant={STATUS_VARIANTS[row.status] || 'neutral'}>{LABELS[row.status] || row.status}</Badge>
+            </div>
+            <div>
+              <p className="font-medium text-foreground">
+                {formatAppointmentDate(row.date, row)}{' '}
+                · {row.durationMinutes ?? row.service.duration} min
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Horario en {getTimeZoneLabel(row.service.provider.schedule?.timeZone)}
+              </p>
+            </div>
             {new Date(row.date) > new Date() && ['PENDING', 'CONFIRMED'].includes(row.status) && (
               <div className="flex flex-wrap gap-2">
                 <Button

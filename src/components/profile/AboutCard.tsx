@@ -33,14 +33,14 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-slate-500 text-sm mb-3">
+                    <p className="text-muted-foreground text-sm mb-3">
                         Todavía no escribiste tu biografía. Contale a la comunidad un poco sobre vos.
                     </p>
                     {onEdit && (
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 p-0 h-auto font-medium"
+                            className="text-primary hover:text-primary hover:bg-teal-50 p-0 h-auto font-medium"
                             onClick={onEdit}
                         >
                             <Pencil className="size-4 mr-1" aria-hidden="true" />
@@ -63,7 +63,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                     {isLongText ? (
                         <button
                             type="button"
-                            className="flex w-full items-center gap-2 rounded-md text-left transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40"
+                            className="flex w-full items-center gap-2 rounded-md text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40"
                             onClick={() => setExpanded(!expanded)}
                             aria-expanded={expanded}
                             aria-controls={contentId}
@@ -71,9 +71,9 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                             <Info className="size-5 text-teal-500" aria-hidden="true" />
                             Sobre mí
                             {expanded ? (
-                                <ChevronUp className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
+                                <ChevronUp className="size-4 text-muted-foreground ml-auto" aria-hidden="true" />
                             ) : (
-                                <ChevronDown className="size-4 text-slate-400 ml-auto" aria-hidden="true" />
+                                <ChevronDown className="size-4 text-muted-foreground ml-auto" aria-hidden="true" />
                             )}
                         </button>
                     ) : (
@@ -93,7 +93,7 @@ export function AboutCard({ bio, onEdit }: AboutCardProps) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="mt-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 p-0 h-auto font-medium"
+                        className="mt-2 text-primary hover:text-primary hover:bg-teal-50 p-0 h-auto font-medium"
                         onClick={() => setExpanded(!expanded)}
                         aria-expanded={expanded}
                         aria-controls={contentId}

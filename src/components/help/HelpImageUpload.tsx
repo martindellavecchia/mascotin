@@ -49,7 +49,7 @@ export default function HelpImageUpload({ images, onChange }: HelpImageUploadPro
       <Label>Fotos del animal ({images.length}/3)</Label>
       <div className="grid grid-cols-3 gap-2">
         {images.map((source, index) => (
-          <div key={`${source.slice(0, 32)}-${index}`} className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
+          <div key={`${source.slice(0, 32)}-${index}`} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
             <Image
               src={source}
               alt={`Foto del animal ${index + 1}`}
@@ -73,7 +73,7 @@ export default function HelpImageUpload({ images, onChange }: HelpImageUploadPro
         {images.length < 3 && (
           <label
             htmlFor={inputId}
-            className="flex aspect-square min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-teal-200 bg-teal-50 text-center text-teal-700 transition-colors hover:border-teal-400"
+            className="flex aspect-square min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-teal-200 bg-teal-50 text-center text-primary transition-colors hover:border-teal-400"
           >
             {uploading ? (
               <LoaderCircle className="size-8 animate-spin" aria-hidden="true" />
@@ -96,7 +96,7 @@ export default function HelpImageUpload({ images, onChange }: HelpImageUploadPro
           </label>
         )}
       </div>
-      <p className="text-xs text-slate-500">La primera foto será la portada del caso.</p>
+      <p className="text-xs text-muted-foreground">La primera foto será la portada del caso.</p>
     </div>
   );
 }

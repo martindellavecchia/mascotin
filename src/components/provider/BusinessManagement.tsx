@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { STORE_PLACE_TAGS, STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
 import { getTimeZoneLabel } from '@/lib/timezone-label';
+import { countLabel } from '@/lib/utils';
 
 interface Category { id: string; name: string }
 interface Store {
@@ -125,48 +126,48 @@ export default function BusinessManagement() {
     }
   };
 
-  if (loading) return <div className="h-72 animate-pulse rounded-2xl bg-slate-200" />;
+  if (loading) return <div className="h-72 animate-pulse rounded-2xl bg-muted" />;
 
   return (
     <div className="space-y-5">
       {store ? (
-        <Card className="overflow-hidden border-teal-200 bg-primary-soft">
+        <Card className="gap-0 py-0 overflow-hidden border-teal-200 bg-primary-soft">
           <CardContent className="flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-teal-600 hover:bg-teal-600">Negocio publicado</Badge>
-                <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">{store.trust.label}</Badge>
+                <Badge className="bg-primary hover:bg-primary">Negocio publicado</Badge>
+                <Badge variant="outline" className="border-border bg-surface text-slate-600">{store.trust.label}</Badge>
               </div>
-              <h2 className="mt-3 text-xl font-bold text-slate-900">{store.name}</h2>
+              <h2 className="mt-3 text-xl font-bold text-foreground">{store.name}</h2>
               <p className="mt-1 text-sm text-slate-600">
-                {store.reviewCount ? `${store.ratingAverage.toFixed(1)} · ${store.reviewCount} reseñas verificadas` : 'Todavía sin reseñas verificadas'}
+                {store.reviewCount ? `${store.ratingAverage.toFixed(1)} · ${countLabel(store.reviewCount, 'reseña verificada', 'reseñas verificadas')}` : 'Todavía sin reseñas verificadas'}
               </p>
             </div>
-            <Button asChild variant="outline" className="border-teal-200 bg-white text-teal-700">
+            <Button asChild variant="outline" className="border-teal-200 bg-surface text-primary">
               <Link href={`/shop/${store.slug}`}><ExternalLink className="mr-2 size-5" aria-hidden="true" />Ver perfil público</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-dashed border-teal-300 bg-teal-50/60">
+        <Card className="gap-0 py-0 border-dashed border-teal-300 bg-teal-50/60">
           <CardContent className="p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-700"><Store className="size-7" aria-hidden="true" /></div>
-            <h2 className="mt-4 text-xl font-bold text-slate-900">Publicá tu negocio</h2>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-primary"><Store className="size-7" aria-hidden="true" /></div>
+            <h2 className="mt-4 text-xl font-bold text-foreground">Publicá tu negocio</h2>
             <p className="mt-1 max-w-2xl text-sm text-slate-600">Al publicarlo, tus servicios aparecerán agrupados en un perfil con reseñas y tu avatar mostrará la insignia de dueño/a del negocio.</p>
           </CardContent>
         </Card>
       )}
 
-      <Card className="border-slate-200">
+      <Card className="border-border">
         <CardHeader><CardTitle className="text-lg">{store ? 'Información pública' : 'Datos del negocio'}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div><label className="mb-1.5 block text-sm font-medium text-slate-700">Nombre *</label><Input value={form.name} onChange={(event) => setField('name', event.target.value)} placeholder="Ej: Huellitas Grooming" /></div>
-            <div><label className="mb-1.5 block text-sm font-medium text-slate-700">Categoría *</label><Select value={form.categoryId} onValueChange={(value) => setField('categoryId', value)}><SelectTrigger><SelectValue placeholder="Elegí una categoría" /></SelectTrigger><SelectContent>{categories.map((category) => <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>)}</SelectContent></Select></div>
+            <div><label htmlFor="business-nombre" className="mb-1.5 block text-sm font-medium text-slate-700">Nombre *</label><Input id="business-nombre" value={form.name} onChange={(event) => setField('name', event.target.value)} placeholder="Ej: Huellitas Grooming" /></div>
+            <div><label htmlFor="business-category" className="mb-1.5 block text-sm font-medium text-slate-700">Categoría *</label><Select value={form.categoryId} onValueChange={(value) => setField('categoryId', value)}><SelectTrigger id="business-category"><SelectValue placeholder="Elegí una categoría" /></SelectTrigger><SelectContent>{categories.map((category) => <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>)}</SelectContent></Select></div>
           </div>
-          <div><label className="mb-1.5 block text-sm font-medium text-slate-700">Descripción *</label><Textarea value={form.description} onChange={(event) => setField('description', event.target.value)} placeholder="Contá qué hacen, su experiencia y qué los diferencia..." rows={4} /><p className="mt-1 text-xs text-slate-400">Mínimo 20 caracteres al crear el negocio.</p></div>
-          <div className="grid gap-4 sm:grid-cols-2"><div><label className="mb-1.5 block text-sm font-medium text-slate-700">Teléfono</label><Input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="+54 11..." /></div><div><label className="mb-1.5 block text-sm font-medium text-slate-700">Email</label><Input type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} placeholder="contacto@negocio.com" /></div></div>
-          <div><label className="mb-1.5 block text-sm font-medium text-slate-700">Dirección o zona</label><Input value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Palermo, Buenos Aires" /></div>
+          <div><label htmlFor="business-descripcion" className="mb-1.5 block text-sm font-medium text-slate-700">Descripción *</label><Textarea id="business-descripcion" value={form.description} onChange={(event) => setField('description', event.target.value)} placeholder="Contá qué hacen, su experiencia y qué los diferencia..." rows={4} /><p className="mt-1 text-xs text-muted-foreground">Mínimo 20 caracteres al crear el negocio.</p></div>
+          <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="business-telefono" className="mb-1.5 block text-sm font-medium text-slate-700">Teléfono</label><Input id="business-telefono" value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="+54 11..." /></div><div><label htmlFor="business-email" className="mb-1.5 block text-sm font-medium text-slate-700">Email</label><Input id="business-email" type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} placeholder="contacto@negocio.com" /></div></div>
+          <div><label htmlFor="business-direccion-o-zona" className="mb-1.5 block text-sm font-medium text-slate-700">Dirección o zona</label><Input id="business-direccion-o-zona" value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Palermo, Buenos Aires" /></div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Etiquetas pet-friendly</label>
             <div className="flex flex-wrap gap-2">
@@ -179,8 +180,8 @@ export default function BusinessManagement() {
                     onClick={() => toggleTag(tag)}
                     className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                       selected
-                        ? 'border-teal-500 bg-teal-50 text-teal-800'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-teal-200'
+                        ? 'border-teal-500 bg-teal-50 text-primary'
+                        : 'border-border bg-surface text-slate-600 hover:border-teal-200'
                     }`}
                   >
                     {STORE_PLACE_TAG_LABELS[tag]}
@@ -189,8 +190,8 @@ export default function BusinessManagement() {
               })}
             </div>
           </div>
-          <div><label className="mb-1.5 block text-sm font-medium text-slate-700">URL de imagen</label><Input value={form.image} onChange={(event) => setField('image', event.target.value)} placeholder="https://..." /></div>
-          <div className="flex justify-end border-t border-slate-100 pt-4"><Button className="bg-teal-600 hover:bg-teal-700" onClick={() => void save()} disabled={saving || !form.categoryId || !form.name.trim() || !form.description.trim()}>{saving ? 'Guardando...' : store ? 'Guardar cambios' : 'Publicar negocio'}</Button></div>
+          <div><label htmlFor="business-url-de-imagen" className="mb-1.5 block text-sm font-medium text-slate-700">URL de imagen</label><Input id="business-url-de-imagen" value={form.image} onChange={(event) => setField('image', event.target.value)} placeholder="https://..." /></div>
+          <div className="flex justify-end border-t border-border pt-4"><Button variant="brand" onClick={() => void save()} disabled={saving || !form.categoryId || !form.name.trim() || !form.description.trim()}>{saving ? 'Guardando...' : store ? 'Guardar cambios' : 'Publicar negocio'}</Button></div>
         </CardContent>
       </Card>
 
@@ -262,7 +263,7 @@ function PromotionCard({ storeId }: { storeId: string }) {
             <Input id={`${fieldId}-end`} type="datetime-local" value={endsAt} min={startsAt || undefined} onChange={(event) => setEndsAt(event.target.value)} aria-describedby={`${fieldId}-tz`} />
           </div>
         </div>
-        <p id={`${fieldId}-tz`} className="text-xs text-slate-500">
+        <p id={`${fieldId}-tz`} className="text-xs text-muted-foreground">
           Las fechas usan la hora de tu dispositivo ({getTimeZoneLabel(deviceTimeZone)}). La promoción se muestra en tu perfil público mientras esté vigente.
         </p>
         <Button variant="outline" onClick={() => void publish()} disabled={publishing || !title.trim() || !body.trim() || !startsAt || !endsAt}>

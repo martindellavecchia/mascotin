@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Search, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -86,18 +86,22 @@ export default function GroupsDirectoryPage() {
                         action={<Button
                             onClick={() => setShowCreateModal(true)}
                         >
-                            <Plus className="mr-2 size-5" aria-hidden="true" />
+                            <Plus className="size-5" aria-hidden="true" />
                             Crear grupo
                         </Button>}
                     />
 
-                    <form onSubmit={handleSearch} className="flex gap-2 border-y border-border bg-surface py-4">
-                        <Input
-                            aria-label="Buscar grupos"
-                            placeholder="Buscar grupos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    <form onSubmit={handleSearch} className="flex max-w-xl gap-2">
+                        <div className="relative min-w-0 flex-1">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                            <Input
+                                aria-label="Buscar grupos"
+                                placeholder="Buscar grupos"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
                         <Button type="submit" variant="outline">Buscar</Button>
                     </form>
 

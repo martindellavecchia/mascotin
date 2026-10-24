@@ -16,7 +16,7 @@ export function EmptyState({ onAddPet }: EmptyStateProps) {
             <h3 className="text-lg font-semibold text-slate-700 mb-2">
                 Todavía no tenés mascotas
             </h3>
-            <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
                 Registrá tu primera mascota para empezar a conocer otras personas de la comunidad.
             </p>
             <Button onClick={onAddPet}>

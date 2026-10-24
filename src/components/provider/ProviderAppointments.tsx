@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PetTypeIcon } from '@/components/PetTypeIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { FilterChip } from '@/components/ui/filter-chip';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
@@ -151,11 +152,11 @@ export default function ProviderAppointments() {
       case 'PENDING':
         return <Badge className="whitespace-nowrap bg-amber-100 text-amber-700">Pendiente</Badge>;
       case 'CONFIRMED':
-        return <Badge className="whitespace-nowrap bg-teal-100 text-teal-700">Confirmada</Badge>;
+        return <Badge className="whitespace-nowrap bg-teal-100 text-primary">Confirmada</Badge>;
       case 'CANCELLED':
         return <Badge className="whitespace-nowrap bg-red-100 text-red-700">Cancelada</Badge>;
       case 'COMPLETED':
-        return <Badge className="whitespace-nowrap bg-slate-100 text-slate-700">Completada</Badge>;
+        return <Badge className="whitespace-nowrap bg-muted text-slate-700">Completada</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -178,44 +179,17 @@ export default function ProviderAppointments() {
       {/* Status Tabs */}
       <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         <div className="flex min-w-max gap-2">
-          <Button
-            variant={filter === '' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => chooseFilter('')}
-            className={`min-h-10 shrink-0 ${filter === '' ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
-          >
-            Todas ({counts.PENDING + counts.CONFIRMED + counts.CANCELLED + counts.COMPLETED})
-          </Button>
-          <Button
-            variant={filter === 'PENDING' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => chooseFilter('PENDING')}
-            className={`min-h-10 shrink-0 ${filter === 'PENDING' ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
-          >
-            Pendientes ({counts.PENDING})
-          </Button>
-          <Button
-            variant={filter === 'CONFIRMED' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => chooseFilter('CONFIRMED')}
-            className={`min-h-10 shrink-0 ${filter === 'CONFIRMED' ? 'bg-teal-500 hover:bg-teal-600' : ''}`}
-          >
-            Confirmadas ({counts.CONFIRMED})
-          </Button>
-          <Button
-            variant={filter === 'COMPLETED' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => chooseFilter('COMPLETED')}
-          >
-            Completadas ({counts.COMPLETED})
-          </Button>
-          <Button
-            variant={filter === 'CANCELLED' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => chooseFilter('CANCELLED')}
-          >
-            Canceladas ({counts.CANCELLED})
-          </Button>
+          {([
+            ['', 'Todas', counts.PENDING + counts.CONFIRMED + counts.CANCELLED + counts.COMPLETED],
+            ['PENDING', 'Pendientes', counts.PENDING],
+            ['CONFIRMED', 'Confirmadas', counts.CONFIRMED],
+            ['COMPLETED', 'Completadas', counts.COMPLETED],
+            ['CANCELLED', 'Canceladas', counts.CANCELLED],
+          ] as const).map(([value, label, count]) => (
+            <FilterChip key={value || 'all'} active={filter === value} onClick={() => chooseFilter(value)}>
+              {label} ({count})
+            </FilterChip>
+          ))}
         </div>
       </div>
 
@@ -228,10 +202,10 @@ export default function ProviderAppointments() {
           </Button>
         </div>
       ) : appointments.length === 0 ? (
-        <Card>
+        <Card className="gap-0 py-0">
           <CardContent className="p-8 text-center">
-            <CalendarCheck className="mx-auto mb-2 size-12 text-slate-300" aria-hidden="true" />
-            <p className="text-slate-500">
+            <CalendarCheck className="mx-auto mb-2 size-12 text-primary/35" aria-hidden="true" />
+            <p className="text-muted-foreground">
               {filter
                 ? 'No hay citas con este estado'
                 : 'Todavía no recibiste solicitudes de turno'}
@@ -244,20 +218,20 @@ export default function ProviderAppointments() {
             const isPast = new Date(apt.date) <= new Date();
             const pastHintId = `past-slot-${apt.id}`;
             return (
-            <Card key={apt.id} className="min-w-0 transition-colors hover:border-primary/35">
+            <Card key={apt.id} className="gap-0 py-0 min-w-0 transition-colors hover:border-primary/35">
               <CardContent className="min-w-0 p-4">
                 <div className="min-w-0 space-y-4">
                   <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 items-start gap-3">
                       <div className="flex min-w-[50px] shrink-0 flex-col items-center rounded-lg bg-teal-50 px-3 py-2">
-                        <span className="text-[10px] font-bold uppercase text-teal-600">
+                        <span className="text-[10px] font-bold uppercase text-primary">
                           {new Date(apt.date).toLocaleDateString('es-AR', {
                             timeZone,
                             month: 'short',
                             year: 'numeric',
                           })}
                         </span>
-                        <span className="text-xl font-bold text-teal-700">
+                        <span className="text-xl font-bold text-primary">
                           {new Date(apt.date).toLocaleDateString('es-AR', {
                             timeZone,
                             day: 'numeric',
@@ -265,7 +239,7 @@ export default function ProviderAppointments() {
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-800">
+                        <p className="font-semibold text-foreground">
                           {new Date(apt.date).toLocaleTimeString('es-AR', {
                             timeZone,
                             hour: '2-digit',
@@ -273,10 +247,10 @@ export default function ProviderAppointments() {
                             hourCycle: 'h23',
                           })}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           {apt.durationMinutes ?? apt.service.duration} min
                         </p>
-                        <p className="mt-2 font-semibold text-slate-800 [overflow-wrap:anywhere]">
+                        <p className="mt-2 font-semibold text-foreground [overflow-wrap:anywhere]">
                           {apt.service.name}
                         </p>
                         <div className="mt-1 flex min-w-0 items-start gap-2">
@@ -287,7 +261,7 @@ export default function ProviderAppointments() {
                               <AvatarFallback className="text-xs">
                                 <PetTypeIcon
                                   petType={apt.pet.petType}
-                                  className="size-4 text-teal-700"
+                                  className="size-4 text-primary"
                                 />
                               </AvatarFallback>
                             )}
@@ -303,7 +277,7 @@ export default function ProviderAppointments() {
                   </div>
 
                   {/* Client */}
-                  <div className="flex min-w-0 items-center gap-3 border-t border-slate-100 pt-3">
+                  <div className="flex min-w-0 items-center gap-3 border-t border-border pt-3">
                     <Avatar className="h-9 w-9 shrink-0">
                       {apt.user.image ? (
                         <AvatarImage src={apt.user.image} />
@@ -315,7 +289,7 @@ export default function ProviderAppointments() {
                       <p className="text-sm font-medium text-slate-700 [overflow-wrap:anywhere]">
                         {apt.user.name || 'Cliente'}
                       </p>
-                      <p className="text-xs text-slate-500 [overflow-wrap:anywhere]">
+                      <p className="text-xs text-muted-foreground [overflow-wrap:anywhere]">
                         {apt.user.email}
                       </p>
                     </div>
@@ -323,11 +297,12 @@ export default function ProviderAppointments() {
 
                   {/* Action Buttons */}
                   {apt.status === 'PENDING' && (
-                      <div className="space-y-2 border-t border-slate-100 pt-3">
+                      <div className="space-y-2 border-t border-border pt-3">
                         <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
                           <Button
                             size="sm"
-                            className="min-h-10 w-full bg-teal-500 hover:bg-teal-600 sm:w-auto"
+                            variant="brand"
+                            className="min-h-10 w-full sm:w-auto"
                             disabled={updating === apt.id || isPast}
                             aria-describedby={isPast ? pastHintId : undefined}
                             onClick={() => void updateStatus(apt.id, 'CONFIRMED')}
@@ -362,7 +337,7 @@ export default function ProviderAppointments() {
                   )}
 
                   {apt.status === 'CONFIRMED' && (
-                    <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3 sm:justify-end">
+                    <div className="flex flex-wrap gap-2 border-t border-border pt-3 sm:justify-end">
                       <ConfirmDialog
                         title="¿Cancelar este turno confirmado?"
                         description={describeAppointment(apt)}

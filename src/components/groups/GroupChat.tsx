@@ -306,7 +306,7 @@ export default function GroupChat({
           </div>
         )}
         {messages.length === 0 && (
-          <div className="text-center text-slate-400 py-10">
+          <div className="text-center text-muted-foreground py-10">
             <p>No hay mensajes aún.</p>
             <p className="text-xs">Iniciá la conversación.</p>
           </div>
@@ -321,7 +321,7 @@ export default function GroupChat({
             >
               <div
                 className={`min-w-0 max-w-[85%] rounded-lg p-3 sm:max-w-[70%] ${
-                  isMine ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-800'
+                  isMine ? 'bg-teal-500 text-white' : 'bg-muted text-foreground'
                 }`}
               >
                 {!isMine && (
@@ -339,7 +339,7 @@ export default function GroupChat({
         })}
         <div ref={messagesEndRef} />
       </div>
-      <div className="shrink-0 border-t border-slate-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+      <div className="shrink-0 border-t border-border bg-surface p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
         <form onSubmit={handleSend} className="flex min-w-0 gap-2">
           <Input
             value={newMessage}
@@ -355,7 +355,7 @@ export default function GroupChat({
             size="icon"
             aria-label="Enviar mensaje"
             variant="brand"
-            className="h-11 w-11 shrink-0 bg-teal-500 hover:bg-teal-600"
+            className="h-11 w-11 shrink-0 bg-teal-500 hover:bg-primary"
             disabled={sending}
           >
             {sending ? (

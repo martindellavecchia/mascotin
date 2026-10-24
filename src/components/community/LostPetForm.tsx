@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useId } from 'react';
 import { useSession } from 'next-auth/react';
-import { CircleAlert, ImagePlus, Lightbulb, MapPin, Megaphone, Phone } from 'lucide-react';
+import { CircleAlert, ImagePlus, Lightbulb, LoaderCircle, MapPin, Megaphone, Phone } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -137,7 +137,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle className={`flex items-center gap-2 ${mode === 'found' ? 'text-teal-700' : 'text-red-600'}`}>
+                    <DialogTitle className={`flex items-center gap-2 ${mode === 'found' ? 'text-primary' : 'text-red-600'}`}>
                         <CircleAlert className="size-5" aria-hidden="true" />
                         {mode === 'found' ? 'Reportar mascota encontrada' : 'Reportar mascota perdida'}
                     </DialogTitle>
@@ -171,7 +171,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                     {/* Image Upload - Always show */}
                     <div className="space-y-2">
                         <Label htmlFor={formId + '-image'}>
-                            Foto de la mascota {selectedPetId && <span className="text-slate-400 font-normal">(opcional - usará foto del perfil)</span>}
+                            Foto de la mascota {selectedPetId && <span className="text-muted-foreground font-normal">(opcional - usará foto del perfil)</span>}
                         </Label>
                         <div
                             role="button"
@@ -227,8 +227,8 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                                 </div>
                             ) : (
                                 <>
-                                    <ImagePlus className="size-8 text-slate-400" aria-hidden="true" />
-                                    <p className="text-sm text-slate-500 mt-1">Arrastrá una imagen o hacé clic para seleccionar</p>
+                                    <ImagePlus className="size-8 text-muted-foreground" aria-hidden="true" />
+                                    <p className="text-sm text-muted-foreground mt-1">Arrastrá una imagen o hacé clic para seleccionar</p>
                                 </>
                             )}
                         </div>
@@ -300,12 +300,13 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                         </Button>
                         <Button
                             type="submit"
-                            className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                            variant="destructive"
+                            className="flex-1"
                             disabled={loading}
                         >
                             {loading ? (
                                 <>
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                                    <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                     Publicando…
                                 </>
                             ) : (

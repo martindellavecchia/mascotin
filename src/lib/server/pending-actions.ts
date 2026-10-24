@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { countLabel } from '@/lib/utils';
 export interface PendingAction {
   id: string;
   title: string;
@@ -127,7 +128,7 @@ export async function getPendingActions(userId: string): Promise<PendingAction[]
       rows.push({
         id: `case:${c.id}`,
         title: 'Revisar hogares interesados',
-        detail: `${c._count.offers} propuestas para tu caso`,
+        detail: `${countLabel(c._count.offers, 'propuesta', 'propuestas')} para tu caso`,
         href: `/hogares-de-transito/casos/${c.id}`,
         priority: c.urgency !== 'NORMAL' ? 0 : 2,
         createdAt: c.createdAt.toISOString(),

@@ -187,11 +187,11 @@ try {
     const postCard = page.locator('[data-slot="card"]').filter({ has: page.getByText('Encuentro QA ' + variant.name, { exact: true }) });
     await postCard.getByRole('button', { name: 'Más opciones' }).click();
     await page.getByRole('menuitem', { name: 'Editar', exact: true }).click();
-    const postEditor = page.getByRole('dialog', { name: 'Editar Publicación' });
+    const postEditor = page.getByRole('dialog', { name: 'Editar publicación' });
     await expect(postEditor.getByLabel('Fecha y hora (Argentina)')).toHaveValue('2026-12-06T18:11');
     await postEditor.getByLabel('Ubicación', { exact: true }).fill('Parque QA actualizado');
     const postSave = page.waitForResponse((response) => response.url().endsWith('/api/posts/' + created.post.id) && response.request().method() === 'PUT');
-    await postEditor.getByRole('button', { name: 'Guardar Cambios' }).click();
+    await postEditor.getByRole('button', { name: 'Guardar cambios' }).click();
     assert.equal((await postSave).status(), 200);
     assert.equal((await db.event.findUniqueOrThrow({ where: { id: created.post.eventId } })).date.toISOString(), created.post.eventDate);
 

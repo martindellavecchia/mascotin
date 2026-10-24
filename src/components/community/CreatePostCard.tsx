@@ -143,7 +143,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                         {userImage ? (
                             <AvatarImage src={userImage} />
                         ) : (
-                            <AvatarFallback className="bg-teal-500 text-white">
+                            <AvatarFallback className="bg-primary text-primary-foreground">
                                 {userName?.[0] || 'U'}
                             </AvatarFallback>
                         )}
@@ -238,7 +238,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                 )}
 
                                 {/* Actions */}
-                                <div className="flex flex-col gap-3 border-t border-slate-100 pt-2 sm:flex-row sm:items-end sm:justify-between">
+                                <div className="flex flex-col gap-3 border-t border-border pt-2 sm:flex-row sm:items-end sm:justify-between">
                                     <div className="flex min-w-0 items-end gap-2">
                                         <input
                                             ref={fileInputRef}
@@ -256,7 +256,7 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                             disabled={uploading || images.length >= 4}
                                             aria-label="Agregar foto"
                                         >
-                                            <ImagePlus className="size-5 text-teal-600" aria-hidden="true" />
+                                            <ImagePlus className="size-5 text-primary" aria-hidden="true" />
                                         </Button>
 
                                         {pets && pets.length > 0 && (

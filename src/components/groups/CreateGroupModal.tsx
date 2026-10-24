@@ -91,11 +91,11 @@ export default function CreateGroupModal({ open, onOpenChange, onSuccess }: Crea
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Crear Nuevo Grupo</DialogTitle>
+                    <DialogTitle>Crear nuevo grupo</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Nombre del Grupo</Label>
+                        <Label htmlFor="name">Nombre del grupo</Label>
                         <Input
                             id="name"
                             value={name}
@@ -115,19 +115,19 @@ export default function CreateGroupModal({ open, onOpenChange, onSuccess }: Crea
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="image">Imagen de Portada</Label>
+                        <Label htmlFor="image">Imagen de portada</Label>
                         <div className="flex gap-4 items-start">
                             {image && (
-                                <div className="w-16 h-16 rounded-md bg-slate-100 overflow-hidden shrink-0">
+                                <div className="w-16 h-16 rounded-md bg-muted overflow-hidden shrink-0">
                                     <img src={image} alt="Vista previa de la imagen" className="w-full h-full object-cover" />
                                 </div>
                             )}
                             <div className="flex-1">
                                 <label
                                     htmlFor="image-upload"
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-slate-300 rounded-lg hover:bg-background cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <Upload className="size-5 text-slate-400" aria-hidden="true" />
+                                    <Upload className="size-5 text-muted-foreground" aria-hidden="true" />
                                     <span className="text-sm text-slate-600">
                                         {image ? 'Cambiar imagen' : 'Subir imagen de portada'}
                                     </span>
@@ -140,7 +140,7 @@ export default function CreateGroupModal({ open, onOpenChange, onSuccess }: Crea
                                         disabled={uploading}
                                     />
                                 </label>
-                                {uploading && <p className="text-xs text-teal-600 mt-1 animate-pulse text-center">Subiendo...</p>}
+                                {uploading && <p className="text-xs text-primary mt-1 animate-pulse text-center">Subiendo...</p>}
                             </div>
                         </div>
                     </div>
@@ -148,8 +148,8 @@ export default function CreateGroupModal({ open, onOpenChange, onSuccess }: Crea
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancelar
                         </Button>
-                        <Button type="submit" variant="brand" className="bg-teal-500 hover:bg-teal-600" disabled={loading || uploading}>
-                            {loading ? 'Creando...' : 'Crear Grupo'}
+                        <Button type="submit" variant="brand" disabled={loading || uploading}>
+                            {loading ? 'Creando...' : 'Crear grupo'}
                         </Button>
                     </DialogFooter>
                 </form>

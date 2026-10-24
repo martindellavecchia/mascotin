@@ -14,7 +14,7 @@ export default function NoPetsHome() {
   const isDiscover = getHomeTab(params.get('tab')) === 'explore';
 
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-3xl flex-1 flex-col justify-center px-4 py-6">
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-3xl flex-1 flex-col justify-center gap-6 px-4 py-6">
       {!isDiscover && <IntentEntry />}
       {!isDiscover && <PendingActions />}
       <EmptyState

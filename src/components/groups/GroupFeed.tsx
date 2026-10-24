@@ -156,28 +156,28 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
     };
 
     return (
-        <div className="min-w-0 space-y-6">
-            <Card className="min-w-0 overflow-hidden border-slate-100 bg-white shadow-sm">
+        <div className="min-w-0 max-w-3xl space-y-6">
+            <Card className="min-w-0 gap-0 overflow-hidden border-border bg-surface py-0">
                 <Tabs defaultValue="post" value={activeTab} onValueChange={setActiveTab} className="min-w-0 w-full">
-                    <div className="border-b border-slate-200 bg-slate-50 px-3 pt-2 sm:px-4">
+                    <div className="border-b border-border px-3 pt-1 sm:px-4">
                         <TabsList className="grid h-auto w-full min-w-0 grid-cols-3 gap-0 bg-transparent p-0">
                             <TabsTrigger
                                 value="post"
-                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
+                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-muted-foreground transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
                                 <Pencil className="mr-1 size-5" aria-hidden="true" />
                                 Publicación
                             </TabsTrigger>
                             <TabsTrigger
                                 value="event"
-                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
+                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-muted-foreground transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
                                 <CalendarDays className="mr-1 size-5" aria-hidden="true" />
                                 Evento
                             </TabsTrigger>
                             <TabsTrigger
                                 value="question"
-                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-slate-500 transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-teal-600 data-[state=active]:shadow-none sm:px-2 sm:text-sm"
+                                className="min-w-0 rounded-none border-b-2 border-transparent bg-transparent px-1 pb-2 text-xs text-muted-foreground transition-none data-[state=active]:border-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:px-2 sm:text-sm"
                             >
                                 <CircleHelp className="mr-1 size-5" aria-hidden="true" />
                                 Pregunta
@@ -198,7 +198,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Textarea
                                         id={formId + '-post'} aria-required="true"
                                         placeholder="¿Qué querés compartir con el grupo?"
-                                        className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px]"
+                                        className="bg-background border-0 focus-visible:ring-1 focus-visible:ring-ring resize-none min-h-[80px]"
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
                                     />
@@ -209,7 +209,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Textarea
                                         id={formId + '-question'} aria-required="true"
                                         placeholder="Hacé una pregunta al grupo..."
-                                        className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[80px] text-lg font-medium placeholder:font-normal"
+                                        className="bg-background border-0 focus-visible:ring-1 focus-visible:ring-ring resize-none min-h-[80px] text-lg font-medium placeholder:font-normal"
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
                                     />
@@ -238,7 +238,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Textarea
                                         id={formId + '-description'} aria-required="true"
                                         placeholder="Descripción del evento..."
-                                        className="bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-teal-500 resize-none min-h-[60px]"
+                                        className="bg-background border-0 focus-visible:ring-1 focus-visible:ring-ring resize-none min-h-[60px]"
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
                                     />
@@ -246,7 +246,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
 
                                 {/* Image Preview */}
                                 {image && (
-                                    <div className="relative w-full h-48 bg-slate-100 rounded-lg overflow-hidden">
+                                    <div className="relative w-full h-48 bg-muted rounded-lg overflow-hidden">
                                         <img src={image} alt="Vista previa de la imagen" className="w-full h-full object-cover" />
                                         <button
                                             onClick={() => setImage('')}
@@ -259,7 +259,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                 )}
 
                                 <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <label className={`flex min-h-11 cursor-pointer items-center gap-2 text-sm text-slate-500 transition-colors hover:text-teal-600 ${uploading ? 'cursor-not-allowed opacity-50' : ''}`}>
+                                    <label className={`flex min-h-11 cursor-pointer items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary ${uploading ? 'cursor-not-allowed opacity-50' : ''}`}>
                                         <ImageIcon className="size-5" aria-hidden="true" />
                                         {uploading ? 'Subiendo...' : 'Agregar foto'}
                                         <input
@@ -274,7 +274,8 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Button
                                         onClick={handleCreatePost}
                                         disabled={!content.trim() || creating || uploading}
-                                        className="min-h-11 w-full rounded-md bg-teal-500 px-6 text-white hover:bg-teal-600 sm:w-auto"
+                                        variant="brand"
+                                        className="min-h-11 w-full px-6 sm:w-auto"
                                     >
                                         {creating ? 'Publicando...' : 'Publicar'}
                                     </Button>
@@ -287,7 +288,7 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
 
             {/* Post List */}
             {loading ? (
-                <div className="text-center py-8 text-slate-500 animate-pulse">Cargando publicaciones...</div>
+                <div className="text-center py-8 text-muted-foreground animate-pulse">Cargando publicaciones...</div>
             ) : loadError ? (
                 <StateFeedback
                     status="error"
@@ -296,9 +297,9 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                     action={<Button variant="outline" onClick={retryFetch}>Reintentar</Button>}
                 />
             ) : posts.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-12 text-center">
-                    <MessageCircle className="mx-auto mb-2 size-10 text-slate-300" aria-hidden="true" />
-                    <p className="text-slate-500 [overflow-wrap:anywhere]">Aún no hay publicaciones. ¡Empezá la conversación!</p>
+                <div className="rounded-lg border border-dashed border-border bg-surface px-4 py-12 text-center">
+                    <MessageCircle className="mx-auto mb-2 size-10 text-primary/35" aria-hidden="true" />
+                    <p className="text-muted-foreground [overflow-wrap:anywhere]">Aún no hay publicaciones. ¡Empezá la conversación!</p>
                 </div>
             ) : (
                 <div className="min-w-0 space-y-4">

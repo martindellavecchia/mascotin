@@ -22,14 +22,14 @@ export async function GET(request: Request) {
 
     if (!verificationToken) {
       return NextResponse.json(
-        { success: false, error: 'Token inválido o ya utilizado' },
+        { success: false, error: 'El enlace no es válido o ya se usó' },
         { status: 400 }
       );
     }
 
     if (verificationToken.identifier.startsWith('reset:')) {
       return NextResponse.json(
-        { success: false, error: 'Token inválido para verificación de email' },
+        { success: false, error: 'Este enlace no sirve para verificar el correo' },
         { status: 400 }
       );
     }

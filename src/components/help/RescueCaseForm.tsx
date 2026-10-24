@@ -66,8 +66,8 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
   return (
     <form onSubmit={submit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Encontré una mascota</h2>
-        <p className="mt-1 text-sm text-slate-500">Creá una solicitud para buscar un hogar temporal cercano.</p>
+        <h2 className="text-xl font-bold text-foreground">Encontré una mascota</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Creá una solicitud para buscar un hogar temporal cercano.</p>
       </div>
 
       <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
@@ -114,7 +114,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
 
       <fieldset className="space-y-4 rounded-xl border border-teal-100 bg-teal-50/40 p-4">
         <div>
-          <legend className="font-semibold text-slate-900">¿Qué ayuda necesita?</legend>
+          <legend className="font-semibold text-foreground">¿Qué ayuda necesita?</legend>
           <p className="mt-1 text-sm text-slate-600">Elegí una necesidad principal y hasta cuatro complementarias.</p>
         </div>
         <div className="space-y-2">
@@ -129,10 +129,10 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <p className="text-sm font-medium text-slate-800">Ayudas complementarias</p>
+          <p className="text-sm font-medium text-foreground">Ayudas complementarias</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {NEED_TYPES.filter((type) => type !== form.primaryNeed).map((type) => (
-              <label key={type} className="flex min-h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3">
+              <label key={type} className="flex min-h-11 items-center gap-3 rounded-lg border border-border bg-surface px-3">
                 <Checkbox
                   checked={form.additionalNeeds.includes(type)}
                   onCheckedChange={(checked) => setForm((current) => ({
@@ -149,7 +149,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
         </div>
         {[form.primaryNeed, ...form.additionalNeeds].map((type) => (
           <div key={type} className="space-y-2">
-            <Label htmlFor={`need-detail-${type}`}>Detalle de {RESCUE_NEED_LABELS[type].toLowerCase()} <span className="font-normal text-slate-400">(opcional)</span></Label>
+            <Label htmlFor={`need-detail-${type}`}>Detalle de {RESCUE_NEED_LABELS[type].toLowerCase()} <span className="font-normal text-muted-foreground">(opcional)</span></Label>
             <Input
               id={`need-detail-${type}`}
               maxLength={500}
@@ -208,7 +208,7 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-slate-500">Empezá en 5 km y después podés ampliarlo o reducirlo.</p>
+          <p className="text-xs text-muted-foreground">Empezá en 5 km y después podés ampliarlo o reducirlo.</p>
         </div>}
         <div className="space-y-2">
           <Label htmlFor="requested-days">Tiempo estimado</Label>
@@ -222,12 +222,12 @@ export default function RescueCaseForm({ onCreated }: RescueCaseFormProps) {
               onChange={(event) => setForm((current) => ({ ...current, requestedDays: Number(event.target.value) }))}
               className="pr-14"
             />
-            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-slate-400">días</span>
+            <span className="pointer-events-none absolute right-3 top-2.5 text-sm text-muted-foreground">días</span>
           </div>
         </div>
       </div>
 
-      <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+      <label className="flex items-start gap-3 rounded-xl border border-border bg-background p-4 text-sm text-slate-700">
         <Checkbox
           checked={form.consentAccepted}
           onCheckedChange={(checked) => setForm((current) => ({ ...current, consentAccepted: checked === true }))}

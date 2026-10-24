@@ -58,7 +58,7 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
               {displayImage ? (
                 <AvatarImage src={displayImage} alt={session?.user?.name || 'Avatar del usuario'} />
               ) : (
-                <AvatarFallback className="bg-teal-700 text-white font-semibold">
+                <AvatarFallback className="bg-primary text-primary-foreground">
                   {userInitials}
                 </AvatarFallback>
               )}
@@ -67,10 +67,9 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
           </span>
           {showLabel && (
             <span className="hidden min-w-0 text-left lg:block">
-              <span className="block truncate text-sm font-semibold text-slate-900">
+              <span className="block truncate text-sm font-semibold text-foreground">
                 {session?.user?.name || 'Mi perfil'}
               </span>
-              <span className="block text-xs font-normal text-teal-700">Cuenta activa</span>
             </span>
           )}
         </Button>
@@ -82,7 +81,7 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
               {displayImage ? (
                 <AvatarImage src={displayImage} alt={session?.user?.name || 'Avatar del usuario'} />
               ) : (
-                <AvatarFallback className="bg-teal-700 text-white font-semibold">
+                <AvatarFallback className="bg-primary text-primary-foreground">
                   {userInitials}
                 </AvatarFallback>
               )}
@@ -91,35 +90,35 @@ export default function HeaderUserMenu({ session, showLabel = false }: HeaderUse
           </span>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{session?.user?.name || 'Mi perfil'}</p>
-            <p className="truncate text-xs text-slate-500">{session?.user?.email}</p>
+            <p className="truncate text-xs text-muted-foreground">{session?.user?.email}</p>
           </div>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="min-h-11" onClick={() => router.push('/profile')}>
-          <UserRound className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+          <UserRound className="mr-2 size-[18px] text-muted-foreground" aria-hidden="true" />
           Ver perfil
         </DropdownMenuItem>
         {userRole === 'PROVIDER' && (
           <DropdownMenuItem className="min-h-11" onClick={() => router.push('/provider')}>
-            <Store className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+            <Store className="mr-2 size-[18px] text-muted-foreground" aria-hidden="true" />
             Panel de proveedor
           </DropdownMenuItem>
         )}
         {userRole === 'OWNER' && (
           <DropdownMenuItem className="min-h-11" onClick={() => router.push('/provider')}>
-            <BadgePlus className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+            <BadgePlus className="mr-2 size-[18px] text-muted-foreground" aria-hidden="true" />
             Solicitar ser proveedor
           </DropdownMenuItem>
         )}
         <DropdownMenuItem className="min-h-11" onClick={() => router.push('/settings')}>
-          <Settings className="mr-2 size-[18px] text-slate-500" aria-hidden="true" />
+          <Settings className="mr-2 size-[18px] text-muted-foreground" aria-hidden="true" />
           Configuración
         </DropdownMenuItem>
         {userRole === 'ADMIN' && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="min-h-11" onClick={() => router.push('/admin')}>
-              <LayoutDashboard className="mr-2 size-[18px] text-teal-600" aria-hidden="true" />
+              <LayoutDashboard className="mr-2 size-[18px] text-primary" aria-hidden="true" />
               Panel de administración
             </DropdownMenuItem>
           </>
