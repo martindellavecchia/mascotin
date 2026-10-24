@@ -42,7 +42,17 @@ let provider: string,
   strangerPet: string,
   matchId: string,
   category: string;
-const future = () => availableSlots(schedule, 60, [], new Date(Date.now() + 86400000))[0];
+const localTime = new Intl.DateTimeFormat('en-GB', {
+  timeZone: schedule.timeZone,
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+// A 09:00 local base keeps the +2 h and +4 h reschedules inside 08:00–20:00 at any run time.
+const future = () =>
+  availableSlots(schedule, 60, [], new Date(Date.now() + 86400000)).find(
+    (slot) => localTime.format(new Date(slot)) === '09:00'
+  )!;
 beforeAll(async () => {
   featureFlags.forEach((key) => {
     process.env[key] = 'true';
