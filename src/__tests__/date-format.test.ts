@@ -1,4 +1,4 @@
-import { getEventDateParts, eventInputToIso, toEventDateInput, getEventDayKey, getEventCalendarDate } from '@/lib/date-format';
+import { getEventDateParts, eventInputToIso, toEventDateInput, getEventDayKey, getEventCalendarDate, formatTimeOfDay } from '@/lib/date-format';
 
 describe('getEventDateParts', () => {
   it('muestra la hora de Argentina sin depender de la zona del servidor', () => {
@@ -34,4 +34,11 @@ describe('event form round trip', () => {
   it.each(['2026-02-30T10:00', '2026-01-01T25:00', 'invalid', '2026-01-01', '2026-01-01T10:00Z'])(
     'rejects invalid local input %s', (input) => expect(() => eventInputToIso(input)).toThrow(),
   );
+});
+
+describe('formatTimeOfDay', () => {
+  it('usa 24 horas y la hora de Argentina', () => {
+    expect(formatTimeOfDay('2026-01-06T21:11:00.000Z')).toBe('18:11');
+    expect(formatTimeOfDay('2026-01-16T03:05:00.000Z')).toBe('00:05');
+  });
 });

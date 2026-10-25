@@ -124,7 +124,6 @@ export default function StoreReviewFormIsland() {
               rows={5}
             />
             <Button
-              variant="brand"
               className="mt-3 w-full"
               onClick={() => void saveReview()}
               disabled={reviewLoading}
@@ -157,7 +156,7 @@ export default function StoreReviewFormIsland() {
             </div>
             <p className="font-semibold text-foreground">Iniciá sesión para reservar o reseñar</p>
             <p className="mt-1">Las reseñas verificadas aparecen después de una cita completada.</p>
-            <Button asChild variant="brand" className="mt-4 w-full">
+            <Button asChild className="mt-4 w-full">
               <Link href={loginHref}>Iniciar sesión</Link>
             </Button>
           </div>

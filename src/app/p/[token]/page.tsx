@@ -54,7 +54,7 @@ export default async function EmergencyPassportPage({
             </p>
           )}
           {canCall ? (
-            <Button asChild variant="brand" size="lg" className="w-full">
+            <Button asChild size="lg" className="w-full">
               <a href={`tel:${pet.owner.phone}`}>
                 <Phone className="size-5" aria-hidden="true" />
                 Llamar a {pet.owner.name}

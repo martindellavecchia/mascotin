@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { formatTimeOfDay } from '@/lib/date-format';
 
 interface FosterMessage {
   id: string;
@@ -114,7 +115,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
               <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${own ? 'bg-primary-hover text-white' : 'border border-border bg-surface text-slate-700'}`}>
                 <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{message.content}</p>
                 <p className={`mt-1 text-[10px] ${own ? 'text-teal-100' : 'text-slate-600'}`}>
-                  {new Date(message.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                  {formatTimeOfDay(message.createdAt)}
                 </p>
               </div>
             </div>

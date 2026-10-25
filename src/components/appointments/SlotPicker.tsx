@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { NativeSelect } from '@/components/ui/native-select';
 import { DEFAULT_TIME_ZONE, getTimeZoneLabel } from '@/lib/timezone-label';
 export default function SlotPicker({
   serviceId,
@@ -61,19 +62,19 @@ export default function SlotPicker({
     });
   const days = [...new Set(slots.map(dateLabel))];
   const selectedDay = days.includes(day) ? day : days[0];
-  if (loading) return <p role="status">Buscando horarios disponibles...</p>;
+  if (loading) return <p role="status" className="text-sm text-muted-foreground">Buscando horarios disponibles…</p>;
   if (error)
     return (
-      <div role="alert">
-        <p>{error}</p>
-        <Button type="button" variant="outline" onClick={() => setRetry((n) => n + 1)}>
+      <div role="alert" className="space-y-2">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => setRetry((n) => n + 1)}>
           Reintentar
         </Button>
       </div>
     );
   if (!slots.length)
     return (
-      <p>
+      <p className="text-sm text-muted-foreground">
         {configured
           ? 'No hay horarios disponibles en los próximos 30 días.'
           : 'El prestador todavía no habilitó su agenda.'}
@@ -85,9 +86,8 @@ export default function SlotPicker({
       <label htmlFor={`${id}-day`} className="block text-sm font-medium">
         Día
       </label>
-      <select
+      <NativeSelect
         id={`${id}-day`}
-        className="h-11 w-full rounded-md border border-border-control bg-surface px-3"
         value={selectedDay}
         onChange={(e) => {
           setDay(e.target.value);
@@ -97,14 +97,13 @@ export default function SlotPicker({
         {days.map((d) => (
           <option key={d}>{d}</option>
         ))}
-      </select>
+      </NativeSelect>
       <label htmlFor={`${id}-time`} className="block text-sm font-medium">
         Horario disponible
       </label>
-      <select
+      <NativeSelect
         id={`${id}-time`}
         required
-        className="h-11 w-full rounded-md border border-border-control bg-surface px-3"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -121,7 +120,7 @@ export default function SlotPicker({
               })}
             </option>
           ))}
-      </select>
+      </NativeSelect>
     </div>
   );
 }

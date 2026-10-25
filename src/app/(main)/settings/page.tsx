@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import IntentEntry from '@/components/home/IntentEntry';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { StateFeedback } from '@/components/ui/state-feedback';
@@ -383,7 +383,7 @@ function SettingsContent() {
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                            <AlertDialogTitle>¿Eliminar tu cuenta?</AlertDialogTitle>
                                             <AlertDialogDescription>
                                                 Ingresá tu contraseña para confirmar la eliminación de tu cuenta.
                                             </AlertDialogDescription>
@@ -400,9 +400,9 @@ function SettingsContent() {
                                             <AlertDialogAction
                                                 onClick={handleDeleteAccount}
                                                 disabled={deleting || !deletePassword}
-                                                className="bg-red-500 hover:bg-red-600"
+                                                className={buttonVariants({ variant: 'destructive' })}
                                             >
-                                                {deleting ? 'Eliminando...' : 'Eliminar cuenta'}
+                                                {deleting ? 'Eliminando…' : 'Eliminar cuenta'}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>

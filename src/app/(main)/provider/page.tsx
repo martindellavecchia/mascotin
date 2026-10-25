@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LoadingSpinner } from '@/components/ui/loading';
 import { toast } from 'sonner';
 import ProviderAppointments from '@/components/provider/ProviderAppointments';
 import ProviderSchedule from '@/components/provider/ProviderSchedule';
@@ -259,7 +260,7 @@ export default function ProviderPage() {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto flex max-w-6xl justify-center px-4 py-8">
-                    <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
+                    <LoadingSpinner />
                 </div>
             </div>
         );

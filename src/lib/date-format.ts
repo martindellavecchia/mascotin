@@ -39,6 +39,18 @@ export function eventInputToIso(value: string, original?: string | Date | null) 
   return result;
 }
 
+const timeFormatter = new Intl.DateTimeFormat('es-AR', {
+  timeZone: APP_TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** 24-hour time in Argentina, shared by the chats so every surface reads the same. */
+export function formatTimeOfDay(value: string | Date) {
+  return timeFormatter.format(new Date(value));
+}
+
 export function getEventCalendarDate(value: string | Date) {
   return new Date(getEventDayKey(value) + 'T12:00:00');
 }

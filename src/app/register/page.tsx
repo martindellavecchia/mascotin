@@ -57,7 +57,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Las contraseñas no coinciden');
+      document.getElementById('confirmPassword')?.focus();
       return;
     }
 
@@ -70,7 +70,7 @@ export default function RegisterPage() {
     }
 
     if (emailAvailable === false) {
-      toast.error('Este email ya está registrado');
+      document.getElementById('email')?.focus();
       return;
     }
 
@@ -154,6 +154,8 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
+                aria-invalid={emailAvailable === false}
+                aria-describedby={emailAvailable === false ? 'email-status' : undefined}
                 placeholder="hola@huella.app"
                 value={formData.email}
                 onChange={(e) => {
@@ -167,14 +169,14 @@ export default function RegisterPage() {
                     ? 'border-red-500'
                     : emailAvailable === true
                       ? 'border-primary'
-                      : 'border-border'
+                      : 'border-border-control'
                 }`}
               />
               {checkingEmail && (
                 <p className="text-xs text-muted-foreground">Verificando email...</p>
               )}
               {emailAvailable === false && (
-                <p className="text-xs text-red-600">Este email ya está registrado</p>
+                <p id="email-status" className="text-xs text-destructive">Este email ya está registrado</p>
               )}
               {emailAvailable === true && (
                 <p className="text-xs text-primary">Email disponible</p>
@@ -238,6 +240,8 @@ export default function RegisterPage() {
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
+                  aria-invalid={Boolean(formData.confirmPassword) && formData.password !== formData.confirmPassword}
+                  aria-describedby={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'confirm-password-error' : undefined}
                   placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={(e) =>
@@ -252,7 +256,7 @@ export default function RegisterPage() {
                       : formData.confirmPassword &&
                           formData.password === formData.confirmPassword
                         ? 'border-primary'
-                        : 'border-border'
+                        : 'border-border-control'
                   }`}
                 />
                 <button
@@ -268,7 +272,7 @@ export default function RegisterPage() {
               </div>
               {formData.confirmPassword &&
                 formData.password !== formData.confirmPassword && (
-                  <p className="text-xs text-red-600">Las contraseñas no coinciden</p>
+                  <p id="confirm-password-error" className="text-xs text-destructive">Las contraseñas no coinciden</p>
                 )}
             </div>
 

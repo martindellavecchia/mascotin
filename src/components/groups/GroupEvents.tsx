@@ -251,7 +251,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
 
     return (
         <div className="min-w-0 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground [overflow-wrap:anywhere]">Eventos del grupo ({events.length})</h3>
+            <h2 className="text-lg font-semibold text-foreground [overflow-wrap:anywhere]">Eventos del grupo ({events.length})</h2>
 
             {events.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-background px-4 py-10 text-center">
@@ -281,7 +281,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                             <div className="min-w-0 flex-1">
                                 <div className="flex min-w-0 items-start justify-between gap-2">
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-foreground [overflow-wrap:anywhere]">{event.title}</h4>
+                                        <h3 className="font-bold text-foreground [overflow-wrap:anywhere]">{event.title}</h3>
                                         <div className="mb-2 mt-1 space-y-1 text-sm text-muted-foreground">
                                             <p className="flex items-start gap-1">
                                                 <CalendarDays className="size-3 shrink-0" aria-hidden="true" />

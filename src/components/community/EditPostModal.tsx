@@ -235,7 +235,6 @@ export default function EditPostModal({ post, open, onClose, onSave }: EditPostM
                     <Button
                         onClick={handleSave}
                         disabled={saving || !content.trim()}
-                        variant="brand"
                     >
                         {saving ? 'Guardando...' : 'Guardar cambios'}
                     </Button>

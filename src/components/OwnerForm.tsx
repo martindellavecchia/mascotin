@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { LoadingSpinner } from '@/components/ui/loading';
 import { ownerSchema, type OwnerFormData } from '@/lib/schemas';
 import { useInvalidateViewerData } from '@/hooks/useViewerData';
 import type { Owner } from '@/types';
@@ -297,7 +298,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
           <Button type="submit" className="flex-1" disabled={loading || uploading}>
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <LoadingSpinner size="sm" variant="white" />
                 Guardando...
               </>
             ) : (

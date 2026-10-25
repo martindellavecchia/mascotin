@@ -115,3 +115,84 @@ Base: `a6fe3fc` en `codex/huella-six-findings`. Se respetan las reglas de `AUDIT
 - `GroupsSidebar` y `UpcomingEventsWidget` no se usan en ninguna ruta.
 - El test de reprogramación de turnos depende de la hora del día (ver Verificación).
 - No se revisó con contenido real de producción ni en Safari o dispositivos físicos; las capturas usan Chromium con viewport y touch emulados.
+
+## Segunda vuelta
+
+Base: `004a2ee` (refinamiento `e0e4b10`, arreglo del test `ced112d` y docs). Mismas restricciones: identidad Huella, sin lógica de negocio ni dependencias, base local `product_visual`.
+
+### Método
+
+- Rutas: las 96 capturas del build actual (32 rutas × 390, 768 y 1440) se revisaron de nuevo.
+- Estados: script Playwright con 72 estados × 390/1440 (118 capturas) sobre el build de producción local, con axe por estado. Cubre menús del header, notificaciones, navegación móvil, diálogos y confirmaciones, formularios con validación, composer, comentarios, toasts, reserva y reprogramación de turnos, chat, onboarding, vacíos con un usuario sin mascotas ni actividad (`vq-empty`), carga y error simulados con `page.route` (feed, Descubrir, Tu círculo, pendientes, tienda), foco con teclado y hover.
+
+### Hallazgos priorizados
+
+| # | Prioridad | Hallazgo | Dónde |
+| --- | --- | --- | --- |
+| R01 | P0 | Los toasts usan la fuente del sistema y variables inexistentes (`--popover`, `--border`): no se ven como Huella | Global |
+| R02 | P0 | Los ítems de `DropdownMenu`, `ContextMenu` y `Menubar` se resaltan en lima (`focus:bg-accent`) al pasar el mouse | Menú de usuario, menú de publicación, Admin |
+| R03 | P0 | El «hoy» del calendario en lima sólido se confunde con la fecha seleccionada | Eventos |
+| R04 | P0 | La hora de los chats sale en 12 h («05:09 a. m.») y en la zona del navegador, contra la regla de 24 h en hora de Argentina | Mensajes, chat grupal, chat de tránsito |
+| R05 | P0 | Los avatares de «Tu círculo» nunca cargan la foto: `AvatarImage asChild` sin `src` deja siempre la inicial | Tu círculo |
+| R06 | P0 | «Negocio publicado» invisible: texto aubergine sobre fondo aubergine | Proveedor › Mi negocio |
+| R07 | P0 | El panel de notificaciones es un `dialog` sin nombre accesible (axe `aria-dialog-name`); título `h3` sin `h2` previo | Header |
+| R08 | P0 | Saltos de encabezado (`h1` → `h3`) en pestañas de grupo y Tu círculo | Grupo, Inicio |
+| R09 | P1 | «Perfil adoptante» y «Publicar ficha» abren el formulario debajo de los filtros: en móvil queda fuera de pantalla y el botón parece no hacer nada | Adopciones |
+| R10 | P1 | Tarjetas con padding propio conservan el `gap-5` del primitivo: espacios dobles en formularios de adopción, tarjetas del mapa y chat grupal | Adopciones, Mapa, Grupo |
+| R11 | P1 | Un input con foco muestra tres indicadores apilados (borde, anillo de 3 px y outline de 2 px con separación): se ve como doble borde | Todos los formularios |
+| R12 | P1 | Acción primaria en dos colores sin regla: «Publicar» lima en Comunidad y violeta en Grupo; «Iniciar sesión» lima en login y violeta en la ficha del comercio | Composer, tienda |
+| R13 | P1 | Filtros de solicitudes de Admin con botones lima/outline en lugar de `FilterChip` | Admin |
+| R14 | P1 | El selector de horario usa `<select>` nativo al lado del `Select` del sistema en el mismo diálogo | Reserva, reprogramación |
+| R15 | P1 | «Coordinar un encuentro» usa el triángulo nativo de `<summary>` | Chat |
+| R16 | P1 | El registro muestra el mismo error dos veces (inline y toast) | Registro |
+| R17 | P1 | Búsquedas guardadas vacías: una oración suelta, sin estado vacío | Búsquedas guardadas |
+| R18 | P1 | Textos en *Title Case* («Cambiar Rol», «Resetear Contraseña») y confirmaciones genéricas «¿Estás seguro?» | Admin, Perfil, Configuración |
+| R19 | P1 | «Reportar mascota encontrada» usa el rojo de alerta de la mascota perdida | Alertas |
+| R20 | P1 | Con error de red, la tienda sigue mostrando «4 negocios» encima del mensaje de error | Servicios |
+| R21 | P1 | La confirmación de borrar mascota usa un «Cancelar» lavanda sólido distinto al resto de las confirmaciones | Perfil |
+| R22 | P1 | El contador de no leídas usa blanco sobre `orange-500` (3,5:1) | Header, Admin |
+| R23 | P2 | Spinners ad hoc en Admin, Perfil, Proveedor y verificación de correo | Varias |
+| R24 | P2 | Las pestañas del composer son sólo íconos en móvil | Comunidad |
+
+### Implementación
+
+| Hallazgo | Cambio |
+| --- | --- |
+| R01 | `Toaster` con `--color-surface`, `--color-foreground`, `--color-border`, radio `lg`, sombra `md` y `font-family: var(--font-sans)` |
+| R02 | Ítems de `DropdownMenu`, `ContextMenu` y `Menubar` con `focus:bg-primary-soft`/`text-primary` |
+| R03 | Calendario: «hoy» en `primary-soft` con texto `primary` y semibold; el seleccionado sigue en `primary` sólido; rangos en `primary-soft` |
+| R04 | Nuevo `formatTimeOfDay()` en `lib/date-format.ts` (`es-AR`, `America/Argentina/Buenos_Aires`, `h23`) en Mensajes, chat grupal y chat de tránsito |
+| R05 | `MatchAvatar` usa `next/image` dentro del `Avatar` y la inicial sólo cuando no hay foto |
+| R06 | «Negocio publicado» con `Badge success` y la confianza con `neutral`; tarjeta sin borde ni fondo propios |
+| R07 | Panel de notificaciones con `aria-labelledby` y título `h2`; trigger, contador y acciones con tokens; contador en `orange-600` (4,8:1) |
+| R08 | `h2`/`h3` correlativos en eventos y miembros del grupo y en Tu círculo |
+| R09 | Los formularios de perfil adoptante y nueva ficha quedan arriba de los filtros, con título propio |
+| R10 | `gap-0` en tarjetas con padding propio (adopciones, mapa, chat grupal) |
+| R11 | Campos con foco: un solo borde de 2 px (`outline-offset: 0`, sin halo); menús, listbox, diálogos y popovers no dibujan outline sobre el contenedor y conservan su sombra (`revert-layer`) |
+| R12 | Regla: lima (`default`) para acciones primarias de formularios y navegación; violeta (`brand`) para transacciones del marketplace (Reservar, Solicitar reserva, Confirmar turno) y lo fijado en N03 (grupo, CSV, chat, compartir pasaporte). Pasan a lima: «Publicar» del grupo, «Guardar cambios» de la publicación, «Publicar/Actualizar reseña», «Iniciar sesión» de la ficha, «Guardar» del negocio y «Llamar» del pasaporte público |
+| R13 | Filtros de solicitudes de Admin con `FilterChip` |
+| R14 | Nuevo `NativeSelect` (select nativo con borde, alto, radio y chevron de `SelectTrigger`) en el selector de turnos, filtros de adopciones, búsquedas guardadas, composer y agenda del proveedor; estados del selector con estilos de texto |
+| R15 | `summary` sin triángulo nativo: ícono de calendario, texto y chevron que rota al abrir |
+| R16 | Registro: sin toasts duplicados para contraseñas distintas o email registrado; foco al campo, `aria-invalid` y `aria-describedby` al error; borde base `border-control` |
+| R17 | Búsquedas guardadas: `EmptyState` con acciones a Adopciones y Servicios y carga con `StateFeedback` |
+| R18 | «Cambiar rol», «Restablecer contraseña», «¿Eliminar a Nina?», «¿Eliminar tu cuenta?» |
+| R19 | «Publicar alerta» de mascota encontrada en lima; la perdida sigue en `destructive` |
+| R20 | La tienda muestra «Negocios» sin cantidad mientras carga o falla |
+| R21 | Confirmación de borrar mascota con `AlertDialogCancel` estándar y acción `destructive`; también la de eliminar cuenta y la de cancelar un caso, que tenían texto oscuro sobre rojo |
+| R23 | `LoadingSpinner` en Admin, Perfil, Proveedor, verificación de correo, formulario de dueño y turnos del proveedor |
+| R24 | Pestañas del composer con ícono y texto en móvil, sin `gap` de la lista |
+| — | `[aria-invalid="true"]` con foco usa el color `destructive`. Se probó subir los toasts en móvil por encima de la navegación inferior y se descartó: tapaban acciones del contenido (la regresión N05 no podía volver a tocar «Asistir»); quedan sobre la navegación, como antes |
+| — | `jest.config.js` y `jest.product.config.cjs` ignoran `.claude/`: la app crea worktrees de sesiones dentro del repo y Jest ejecutaba sus copias de los tests |
+
+### Verificación
+
+- `npm run lint` y `npx tsc --noEmit`: sin errores.
+- `npm test`: 93 suites, 509 pruebas (nueva prueba de `formatTimeOfDay`). Antes del ajuste de Jest, el worktree de otra sesión en `.claude/worktrees/` sumaba 96 suites duplicadas y 3 fallaban.
+- `npm run build` con `DATABASE_URL` local: correcto.
+- Integración (`jest.product.config.cjs`, base `product_huella_six`): 3 suites, 28 de 28.
+- Rutas sobre el build final: 96 capturas sin overflow horizontal ni violaciones axe; el único error de consola sigue siendo el 400 esperado de `/verify-email` con token inválido.
+- Estados sobre el build final: 114 capturas, todos los pasos completos, sin overflow, sin errores de JavaScript y sin violaciones axe. Antes: 9 estados con violaciones (`aria-dialog-name`, `heading-order`) y un paso que no se podía completar (selección de horario en la reserva).
+- Interacciones (390 y 1440): 15 de 15, igual que en la primera vuelta.
+- `scripts/verify-huella-six.mjs`: 12 de 12 sobre el build final (con el evento pasado del seed borrado, como en la primera vuelta).
+- Evidencia local: `artifacts/visual-refinement-2026-10-24/round2/{before,after}/{routes,states}` y `round2/compare.html` con cada estado y ruta antes y después. Las rutas «antes» son las capturas del build `e0e4b10`, que es el mismo código de `004a2ee` en `src/`.
+- Límites: Chromium con viewport y touch emulados; las pruebas de carga y error simulan la red con `page.route`; la reserva confirmada y el recupero de contraseña escriben sólo en la base local.

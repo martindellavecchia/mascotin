@@ -254,7 +254,7 @@ export default function AdoptionDetailPage() {
       )}
 
       {!isOwner && (
-        <Card className="space-y-3 p-4">
+        <Card className="gap-0 space-y-3 p-4">
           {currentApplication ? (
             <>
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -303,7 +303,7 @@ export default function AdoptionDetailPage() {
       )}
 
       {isOwner && (listing.applications || []).length > 0 && (
-        <Card className="space-y-3 p-4">
+        <Card className="gap-0 space-y-3 p-4">
           <h2 className="font-semibold">Postulaciones</h2>
           <div className="divide-y divide-border border-y border-border">
           {listing.applications?.map((application) => (

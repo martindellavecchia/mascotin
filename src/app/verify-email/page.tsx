@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowRight, CircleAlert, CircleCheck } from 'lucide-react';
 import BrandLink from '@/components/brand/BrandLink';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -47,7 +48,7 @@ function VerifyEmailContent() {
       {status === 'loading' && (
         <>
           <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary">
-            <div className="w-8 h-8 border-[3px] border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
+            <LoadingSpinner />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Verificando correo...</h1>
           <p className="text-slate-600">Esperá un momento mientras verificamos tu correo.</p>

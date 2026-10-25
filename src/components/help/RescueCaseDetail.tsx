@@ -11,7 +11,7 @@ import RescueContactSheet, { type ContactOption, type ContactReference } from '@
 import RescueCasePublicationCard from '@/components/help/RescueCasePublicationCard';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -493,7 +493,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
           <Card><CardHeader><CardTitle className="text-base">Actividad</CardTitle></CardHeader><CardContent>{rescueCase.events.length === 0 ? <p className="text-sm text-muted-foreground">Sin actividad registrada.</p> : <ol className="space-y-4">{rescueCase.events.map((event) => <li key={event.id} className="relative border-l border-border pl-4"><span className="absolute -left-1.5 top-1 size-3 rounded-full border-2 border-white bg-teal-500" /><p className="text-sm font-medium text-foreground">{EVENT_LABELS[event.type] || event.type}</p><p className="mt-0.5 text-xs text-slate-600">{new Date(event.createdAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</p></li>)}</ol>}</CardContent></Card>
 
           {data.viewerRole === 'CREATOR' && rescueCase.needs.some((need) => ['OPEN', 'INTERESTED'].includes(need.status)) && (
-            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" className="w-full text-red-600 hover:bg-red-50 hover:text-red-700">Cancelar caso</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Cancelar la solicitud?</AlertDialogTitle><AlertDialogDescription>Se cerrarán las solicitudes enviadas a los hogares. Esta acción no puede deshacerse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={async () => { const ok = await mutate(`/api/rescue-cases/${caseId}/cancel`, { method: 'POST' }, 'Caso cancelado'); if (ok) router.push('/hogares-de-transito'); }}>Cancelar caso</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" className="w-full text-red-600 hover:bg-red-50 hover:text-red-700">Cancelar caso</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Cancelar la solicitud?</AlertDialogTitle><AlertDialogDescription>Se cerrarán las solicitudes enviadas a los hogares. Esta acción no puede deshacerse.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Volver</AlertDialogCancel><AlertDialogAction className={buttonVariants({ variant: 'destructive' })} onClick={async () => { const ok = await mutate(`/api/rescue-cases/${caseId}/cancel`, { method: 'POST' }, 'Caso cancelado'); if (ok) router.push('/hogares-de-transito'); }}>Cancelar caso</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
           )}
         </aside>
       </div>

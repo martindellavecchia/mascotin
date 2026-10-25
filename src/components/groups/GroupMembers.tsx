@@ -71,7 +71,7 @@ export default function GroupMembers({ groupId, isCreator, currentUserId }: Grou
 
     return (
         <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-foreground">Miembros del grupo ({members.length})</h3>
+            <h2 className="font-semibold text-lg text-foreground">Miembros del grupo ({members.length})</h2>
             <div className="grid gap-4">
                 {members.map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">

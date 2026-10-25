@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { NativeSelect } from '@/components/ui/native-select';
 import { getPrimaryImageUrl } from '@/lib/media';
 import { toast } from 'sonner';
 import SaveSearchButton from '@/components/searches/SaveSearchButton';
@@ -124,15 +125,9 @@ function AdoptionsContent() {
         </div>}
       />
 
-      <form className="space-y-4 rounded-lg border border-border bg-surface p-4" onSubmit={e => { e.preventDefault(); const params = new URLSearchParams(); Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, String(v)); }); setQuery(params.toString()); }}>
-        <div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">Buscar<Input value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} maxLength={100} /></label><label className="grid gap-1.5 text-sm font-medium">Zona<Input placeholder="Barrio o ciudad (opcional)" value={filters.zone} onChange={e => setFilters({ ...filters, zone: e.target.value })} maxLength={100} /></label>
-        <label className="grid gap-1.5 text-sm font-medium">Especie<select className="h-11 w-full rounded-md border border-border-control bg-surface px-3 text-base font-normal text-foreground md:text-sm" value={filters.species} onChange={e => setFilters({ ...filters, species: e.target.value as typeof filters.species })}><option value="">Todas</option><option value="dog">Perro</option><option value="cat">Gato</option><option value="bird">Ave</option><option value="other">Otra</option></select></label>
-        <label className="grid gap-1.5 text-sm font-medium">Tamaño<select className="h-11 w-full rounded-md border border-border-control bg-surface px-3 text-base font-normal text-foreground md:text-sm" value={filters.size} onChange={e => setFilters({ ...filters, size: e.target.value as typeof filters.size })}><option value="">Todos</option><option value="small">Pequeño</option><option value="medium">Mediano</option><option value="large">Grande</option></select></label></div>
-        <div className="flex flex-wrap gap-2"><Button>Buscar</Button><Button variant="outline" type="button" onClick={() => { setFilters(searchFiltersSchema.parse({})); setQuery(''); }}>Limpiar filtros</Button><SaveSearchButton kind="ADOPTION" filters={filters} /></div>
-      </form>
-
       {showProfile && (
-        <Card className="space-y-3 p-4">
+        <Card className="gap-0 space-y-3 p-4">
+          <h2 id="adopter-profile-title" className="text-base font-semibold text-foreground">Tu perfil adoptante</h2>
           {profileError && <p role="alert" className="text-sm text-destructive">{profileError}</p>}
           <Label htmlFor="adopter-housing">Tipo de vivienda</Label>
           <Select
@@ -201,7 +196,8 @@ function AdoptionsContent() {
       )}
 
       {showCreate && (
-        <Card className="space-y-3 p-4">
+        <Card className="gap-0 space-y-3 p-4">
+          <h2 id="adoption-listing-title" className="text-base font-semibold text-foreground">Nueva ficha de adopción</h2>
           <Label htmlFor="listing-pet">Mascota</Label>
           <Select
             value={listingForm.petId || undefined}
@@ -239,6 +235,13 @@ function AdoptionsContent() {
           }}>Publicar</Button>
         </Card>
       )}
+
+      <form className="space-y-4 rounded-lg border border-border bg-surface p-4" onSubmit={e => { e.preventDefault(); const params = new URLSearchParams(); Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, String(v)); }); setQuery(params.toString()); }}>
+        <div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">Buscar<Input value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} maxLength={100} /></label><label className="grid gap-1.5 text-sm font-medium">Zona<Input placeholder="Barrio o ciudad (opcional)" value={filters.zone} onChange={e => setFilters({ ...filters, zone: e.target.value })} maxLength={100} /></label>
+        <label className="grid gap-1.5 text-sm font-medium">Especie<NativeSelect value={filters.species} onChange={e => setFilters({ ...filters, species: e.target.value as typeof filters.species })}><option value="">Todas</option><option value="dog">Perro</option><option value="cat">Gato</option><option value="bird">Ave</option><option value="other">Otra</option></NativeSelect></label>
+        <label className="grid gap-1.5 text-sm font-medium">Tamaño<NativeSelect value={filters.size} onChange={e => setFilters({ ...filters, size: e.target.value as typeof filters.size })}><option value="">Todos</option><option value="small">Pequeño</option><option value="medium">Mediano</option><option value="large">Grande</option></NativeSelect></label></div>
+        <div className="flex flex-wrap gap-2"><Button>Buscar</Button><Button variant="outline" type="button" onClick={() => { setFilters(searchFiltersSchema.parse({})); setQuery(''); }}>Limpiar filtros</Button><SaveSearchButton kind="ADOPTION" filters={filters} /></div>
+      </form>
 
       <div className="grid gap-4 md:grid-cols-2" aria-live="polite">
         {loading ? (

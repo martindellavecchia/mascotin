@@ -183,7 +183,7 @@ export default function ShopDirectory({
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">{stores.length} {stores.length === 1 ? 'negocio' : 'negocios'}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{error || loading ? 'Negocios' : countLabel(stores.length, 'negocio', 'negocios')}</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">Ordenados por calificación y cantidad de reseñas.</p>
           </div>
           <SaveSearchButton kind="SERVICES" filters={{ search, zone: zone.trim(), categoryId: categoryId === '_all' ? '' : categoryId, minRating: minRating === '_all' ? 0 : Number(minRating) }} />

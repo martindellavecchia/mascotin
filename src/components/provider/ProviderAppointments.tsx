@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { LoadingSpinner } from '@/components/ui/loading';
 import { toast } from 'sonner';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { getPrimaryImageUrl } from '@/lib/media';
@@ -168,7 +169,7 @@ export default function ProviderAppointments() {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
+        <LoadingSpinner />
       </div>
     );
   }

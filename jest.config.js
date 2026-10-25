@@ -14,7 +14,9 @@ module.exports = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/temp-plugin-analysis/',
+    '<rootDir>/.claude/',
   ],
+  modulePathIgnorePatterns: ['<rootDir>/.claude/', '<rootDir>/.local-product-db/'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx,js,jsx}',
     '!src/**/*.d.ts',

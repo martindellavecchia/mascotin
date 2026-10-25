@@ -294,6 +294,22 @@ body {
   box-shadow: var(--state-focus-ring);
 }
 
+/* Fields show one focus edge on the border instead of border + ring + offset outline. */
+:is(input, textarea, select, [role="combobox"]):focus-visible {
+  outline-offset: 0;
+  box-shadow: none;
+}
+
+:is(input, textarea, select, [role="combobox"])[aria-invalid="true"]:focus-visible {
+  outline-color: var(--color-destructive);
+}
+
+/* Popovers, menus and dialogs move focus into their items; the container itself keeps its own shadow. */
+:is([role="menu"], [role="listbox"], [role="dialog"], [role="alertdialog"], [data-slot="popover-content"]):focus-visible {
+  outline: none;
+  box-shadow: revert-layer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;

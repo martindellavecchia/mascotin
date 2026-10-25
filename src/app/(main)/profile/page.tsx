@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, PawPrint, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { StateFeedback } from '@/components/ui/state-feedback';
+import { LoadingSpinner } from '@/components/ui/loading';
 import { useInvalidateViewerData, useMatchCount, useMyPets, useOwnerProfile, viewerQueryKeys } from '@/hooks/useViewerData';
 import {
   AlertDialog,
@@ -191,7 +192,7 @@ function ProfileContent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
+          <LoadingSpinner size="lg" />
           <p className="text-muted-foreground">Cargando perfil...</p>
         </div>
       </div>
@@ -400,23 +401,21 @@ function ProfileContent() {
 
       {/* Delete Confirmation Alert */}
       <AlertDialog open={!!deletingPet} onOpenChange={(open) => !open && setDeletingPet(null)}>
-        <AlertDialogContent className="bg-surface">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              Esta acción no se puede deshacer. Se eliminará permanentemente a
-              <span className="font-bold text-foreground"> {deletingPet?.name} </span>
-              y toda su información.
+            <AlertDialogTitle>¿Eliminar a {deletingPet?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se van a borrar su perfil, su pasaporte y su historial. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-muted hover:bg-muted text-slate-700 border-0">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeletePet}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 text-white border-0"
+              className={buttonVariants({ variant: 'destructive' })}
             >
-              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+              {isDeleting ? 'Eliminando…' : 'Eliminar mascota'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -430,7 +429,7 @@ export default function ProfilePage() {
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
+          <LoadingSpinner size="lg" />
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>

@@ -1,5 +1,7 @@
 'use client';
+
 import { useCallback, useEffect, useState } from 'react';
+import { CalendarClock, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
@@ -67,10 +69,17 @@ export default function MeetupPanel({ matchId, userId }: { matchId: string; user
   }
   if (!enabled && !error) return null;
   return (
-    <details className="max-h-[50dvh] shrink-0 overflow-y-auto border-b bg-surface px-4 py-2">
-      <summary className="cursor-pointer py-2 text-sm font-semibold" onClick={() => void load()}>
-        Coordinar un encuentro
-        {rows.some((r) => r.status === 'PROPOSED') ? ' · propuesta pendiente' : ''}
+    <details className="group max-h-[50dvh] shrink-0 overflow-y-auto border-b border-border bg-surface px-4 py-1">
+      <summary
+        className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden"
+        onClick={() => void load()}
+      >
+        <CalendarClock className="size-4 shrink-0 text-primary" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          Coordinar un encuentro
+          {rows.some((r) => r.status === 'PROPOSED') && <span className="font-normal text-muted-foreground"> · propuesta pendiente</span>}
+        </span>
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
       </summary>
       <div className="space-y-3 py-2">
         {error && (

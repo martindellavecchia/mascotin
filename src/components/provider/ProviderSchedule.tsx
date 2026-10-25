@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StateFeedback } from '@/components/ui/state-feedback';
+import { NativeSelect } from '@/components/ui/native-select';
 import { scheduleSchema, type BookingSchedule } from '@/lib/booking-schedule';
 import { COMMON_TIME_ZONES, DEFAULT_TIME_ZONE } from '@/lib/timezone-label';
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -94,8 +95,7 @@ export default function ProviderSchedule() {
           <div key={index} className="grid grid-cols-2 items-end gap-2 border-b border-border pb-3 last-of-type:border-b-0 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:border-b-0 sm:pb-0">
             <label className="col-span-2 grid gap-1 text-sm font-medium sm:col-span-1">
               Día
-              <select
-                className="h-11 w-full rounded-md border border-border-control bg-surface px-3 text-base font-normal text-foreground md:text-sm"
+              <NativeSelect
                 value={row.day}
                 onChange={(e) =>
                   setSchedule({
@@ -111,7 +111,7 @@ export default function ProviderSchedule() {
                     {d}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </label>
             {(['start', 'end'] as const).map((key) => (
               <label key={key} className="grid gap-1 text-sm font-medium">

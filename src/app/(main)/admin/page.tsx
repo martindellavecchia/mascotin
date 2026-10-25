@@ -49,6 +49,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { FilterChip } from '@/components/ui/filter-chip';
+import { LoadingSpinner } from '@/components/ui/loading';
 import { countLabel } from '@/lib/utils';
 
 interface User {
@@ -391,7 +393,7 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto flex max-w-7xl justify-center px-4 py-8">
-                    <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
+                    <LoadingSpinner />
                 </div>
             </div>
         );
@@ -410,7 +412,7 @@ export default function AdminPage() {
                             <TabsTrigger value="requests" className="relative min-h-10 shrink-0">
                                 Solicitudes
                                 {requestCounts.PENDING > 0 && (
-                                    <span className="ml-1.5 min-w-[20px] rounded-full bg-orange-500 px-1.5 py-0.5 text-center text-xs text-white">
+                                    <span className="ml-1.5 min-w-[20px] rounded-full bg-orange-600 px-1.5 py-0.5 text-center text-xs font-semibold text-white">
                                         {requestCounts.PENDING}
                                     </span>
                                 )}
@@ -507,7 +509,7 @@ export default function AdminPage() {
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'role')}>
                                                                     <IdCard className="mr-2 size-5 text-muted-foreground" aria-hidden="true" />
-                                                                    Cambiar Rol
+                                                                    Cambiar rol
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'block')}>
                                                                     {user.isBlocked ? (
@@ -519,7 +521,7 @@ export default function AdminPage() {
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem onClick={() => openAction(user, 'password')}>
                                                                     <Key className="mr-2 size-5 text-muted-foreground" aria-hidden="true" />
-                                                                    Resetear Contraseña
+                                                                    Restablecer contraseña
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuSeparator />
                                                                 <DropdownMenuItem
@@ -571,16 +573,14 @@ export default function AdminPage() {
                             <CardContent className="p-4">
                                 <div className="flex gap-2 overflow-x-auto pb-1">
                                     {(['PENDING', 'APPROVED', 'REJECTED'] as const).map((s) => (
-                                        <Button
+                                        <FilterChip
                                             key={s}
-                                            variant={requestFilter === s ? 'default' : 'outline'}
-                                            size="sm"
+                                            active={requestFilter === s}
                                             onClick={() => setRequestFilter(s)}
-                                            className="shrink-0"
                                         >
                                             {s === 'PENDING' ? 'Pendientes' : s === 'APPROVED' ? 'Aprobadas' : 'Rechazadas'}
                                             {' '}({requestCounts[s]})
-                                        </Button>
+                                        </FilterChip>
                                     ))}
                                 </div>
                             </CardContent>
@@ -590,7 +590,7 @@ export default function AdminPage() {
                             <CardContent className="p-0">
                                 {loadingRequests ? (
                                     <div className="p-8 text-center">
-                                        <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
+                                        <LoadingSpinner />
                                     </div>
                                 ) : requestsError ? (
                                     <div role="alert" className="p-8 text-center">
@@ -722,7 +722,7 @@ export default function AdminPage() {
                             <CardContent className="p-0">
                                 {loadingProviders ? (
                                     <div className="p-8 text-center">
-                                        <div className="w-8 h-8 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mx-auto" />
+                                        <LoadingSpinner />
                                     </div>
                                 ) : providersError ? (
                                     <div role="alert" className="p-8 text-center">

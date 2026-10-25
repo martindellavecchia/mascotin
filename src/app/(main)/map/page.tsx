@@ -266,7 +266,7 @@ export default function MapPage() {
           )}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredStores.map((store) => (
-              <Card key={store.id} className={`min-w-0 p-4 ${selected?.id === store.id ? 'ring-2 ring-teal-500' : ''}`}>
+              <Card key={store.id} className={`min-w-0 gap-0 p-4 ${selected?.id === store.id ? "ring-2 ring-primary/40" : ""}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <Link href={`/shop/${store.slug}`} className="inline-flex min-h-11 items-center break-words font-semibold text-foreground hover:text-primary">

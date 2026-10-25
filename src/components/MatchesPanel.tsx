@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight, CloudOff, Heart } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Pet } from '@/types';
@@ -26,23 +26,21 @@ function MatchAvatar({
   const src = isRenderableImage(primary) ? primary : null;
 
   return (
-    <Avatar className="h-16 w-16">
+    <Avatar className="size-16">
       {src ? (
-        <AvatarImage asChild>
-          <div className="relative h-full w-full">
-            <Image
-              src={src}
-              alt={name}
-              fill
-              className="rounded-full object-cover"
-              unoptimized={shouldUnoptimizeImage(src)}
-            />
-          </div>
-        </AvatarImage>
-      ) : null}
-      <AvatarFallback className="text-lg">
-        {name?.[0] || '?'}
-      </AvatarFallback>
+        <Image
+          src={src}
+          alt={name}
+          fill
+          sizes="64px"
+          className="object-cover"
+          unoptimized={shouldUnoptimizeImage(src)}
+        />
+      ) : (
+        <AvatarFallback className="text-lg">
+          {name?.[0] || '?'}
+        </AvatarFallback>
+      )}
     </Avatar>
   );
 }
@@ -62,7 +60,7 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
         className="flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-border bg-surface px-6 py-12 text-center"
       >
         <CloudOff className="size-12 text-muted-foreground" aria-hidden="true" />
-        <h3 className="mt-4 text-lg font-semibold text-foreground">No pudimos cargar tu círculo</h3>
+        <h2 className="mt-4 text-lg font-semibold text-foreground">No pudimos cargar tu círculo</h2>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
           Revisá tu conexión y reintentá. Tus coincidencias siguen guardadas.
         </p>
@@ -78,7 +76,7 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
       {matches.length === 0 ? (
         <div className="flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-surface px-6 py-12 text-center">
           <Heart className="size-12 text-primary/35" aria-hidden="true" />
-          <h3 className="mt-4 text-lg font-semibold text-foreground">Todavía no hay coincidencias</h3>
+          <h2 className="mt-4 text-lg font-semibold text-foreground">Todavía no hay coincidencias</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Cuando haya interés mutuo, las mascotas van a aparecer acá para chatear en Mensajes.
           </p>
@@ -99,7 +97,7 @@ export default function MatchesPanel({ matches, onRefresh, loadError = false }: 
                     name={match.name}
                   />
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-foreground">{match.name}</h3>
+                    <h2 className="truncate font-semibold text-foreground">{match.name}</h2>
                     <p className="truncate text-sm text-muted-foreground">
                       {(match.bio || 'Nueva conexión').substring(0, 50)}
                     </p>

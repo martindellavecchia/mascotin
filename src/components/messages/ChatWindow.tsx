@@ -12,6 +12,7 @@ import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { mergeMessagesById } from '@/lib/messages';
 import { getPrimaryImageUrl } from '@/lib/media';
 import type { MatchWithPet, Message } from '@/types/messages';
+import { formatTimeOfDay } from '@/lib/date-format';
 
 interface MessagePageResponse {
   messages: Message[];
@@ -311,13 +312,7 @@ export default function ChatWindow({
     setMessages((previous) => previous.filter((message) => message.id !== id));
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const formatTime = (dateStr: string) => formatTimeOfDay(dateStr);
 
   if (loading) {
     return (

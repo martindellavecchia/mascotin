@@ -11,6 +11,7 @@ import { useFetchWithError } from '@/hooks/useFetchWithError';
 import { mergeMessagesById } from '@/lib/messages';
 import { LoadingSpinner } from '@/components/ui/loading';
 import type { GroupMessage } from '@/types/messages';
+import { formatTimeOfDay } from '@/lib/date-format';
 
 interface GroupMessagePageResponse {
   messages: GroupMessage[];
@@ -255,12 +256,7 @@ export default function GroupChat({
     setSending(false);
   };
 
-  const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const formatTime = (dateStr: string) => formatTimeOfDay(dateStr);
 
   if (loading) {
     return (
@@ -284,7 +280,7 @@ export default function GroupChat({
   }
 
   return (
-    <Card className={`flex h-full min-h-0 min-w-0 flex-col overflow-hidden ${className || ''}`}>
+    <Card className={`flex h-full min-h-0 min-w-0 flex-col gap-0 overflow-hidden py-0 ${className || ''}`}>
       <div
         ref={scrollContainerRef}
         className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-4"

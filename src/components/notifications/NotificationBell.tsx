@@ -74,13 +74,13 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         <Button
           variant="ghost"
           size="icon"
-          className="relative rounded-xl text-slate-500 hover:text-teal-600 hover:bg-teal-50"
+          className="relative rounded-md text-muted-foreground hover:bg-primary-soft hover:text-primary"
           aria-label={triggerLabel}
         >
           <Bell className="size-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <span
-              className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1"
+              className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-orange-600 px-1 text-[10px] font-bold text-white"
               aria-hidden="true"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -93,16 +93,17 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         side={hasDesktopSidebar ? 'right' : 'bottom'}
         collisionPadding={16}
         className="w-[min(360px,calc(100vw-2rem))] border-border shadow-xl p-0"
+        aria-labelledby="notifications-title"
         sideOffset={hasDesktopSidebar ? DESKTOP_SIDEBAR_POPOVER_OFFSET : 12}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-800">Notificaciones</h3>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2 id="notifications-title" className="text-sm font-semibold text-foreground">Notificaciones</h2>
           {unreadCount > 0 && (
             <button
               type="button"
               onClick={handleMarkAllRead}
               disabled={markAsRead.isPending}
-              className="inline-flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700 font-medium disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-9 items-center gap-1 text-xs font-medium text-primary hover:text-primary-hover hover:underline disabled:cursor-not-allowed disabled:opacity-60"
             >
               {markAsRead.isPending && <LoaderCircle className="size-3 animate-spin" aria-hidden="true" />}
               Marcar todo como leído
@@ -113,7 +114,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         <ScrollArea className="max-h-[400px]">
           {isLoading && notifications.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <LoaderCircle className="size-5 animate-spin text-slate-400" aria-hidden="true" />
+              <LoaderCircle className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none" aria-hidden="true" />
             </div>
           ) : notificationsError && notifications.length === 0 ? (
             <div role="alert" className="flex flex-col items-center justify-center gap-3 px-4 py-8 text-center">
@@ -124,11 +125,11 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-slate-600">
-              <BellOff className="mb-2 size-8" aria-hidden="true" />
+              <BellOff className="mb-2 size-8 text-primary/35" aria-hidden="true" />
               <p className="text-sm">Todavía no tenés notificaciones</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-border">
               {notifications.map((n) => (
                 <NotificationItem
                   key={n.id}

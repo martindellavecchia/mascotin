@@ -131,12 +131,12 @@ export default function BusinessManagement() {
   return (
     <div className="space-y-5">
       {store ? (
-        <Card className="gap-0 py-0 overflow-hidden border-teal-200 bg-primary-soft">
+        <Card className="gap-0 overflow-hidden py-0">
           <CardContent className="flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-primary hover:bg-primary">Negocio publicado</Badge>
-                <Badge variant="outline" className="border-border bg-surface text-slate-600">{store.trust.label}</Badge>
+                <Badge variant="success">Negocio publicado</Badge>
+                <Badge variant="neutral">{store.trust.label}</Badge>
               </div>
               <h2 className="mt-3 text-xl font-bold text-foreground">{store.name}</h2>
               <p className="mt-1 text-sm text-slate-600">
@@ -191,7 +191,7 @@ export default function BusinessManagement() {
             </div>
           </div>
           <div><label htmlFor="business-url-de-imagen" className="mb-1.5 block text-sm font-medium text-slate-700">URL de imagen</label><Input id="business-url-de-imagen" value={form.image} onChange={(event) => setField('image', event.target.value)} placeholder="https://..." /></div>
-          <div className="flex justify-end border-t border-border pt-4"><Button variant="brand" onClick={() => void save()} disabled={saving || !form.categoryId || !form.name.trim() || !form.description.trim()}>{saving ? 'Guardando...' : store ? 'Guardar cambios' : 'Publicar negocio'}</Button></div>
+          <div className="flex justify-end border-t border-border pt-4"><Button onClick={() => void save()} disabled={saving || !form.categoryId || !form.name.trim() || !form.description.trim()}>{saving ? 'Guardando...' : store ? 'Guardar cambios' : 'Publicar negocio'}</Button></div>
         </CardContent>
       </Card>
 

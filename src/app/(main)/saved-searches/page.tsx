@@ -1,10 +1,14 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
+import { StateFeedback } from '@/components/ui/state-feedback';
+import { NativeSelect } from '@/components/ui/native-select';
 import { searchHref, type SearchFilters } from '@/lib/product-search';
 
 type Search = {
@@ -88,22 +92,22 @@ export default function SavedSearchesPage() {
         </p>
       )}
       {loading ? (
-        <p role="status">Cargando búsquedas...</p>
+        <StateFeedback status="loading" title="Cargando búsquedas" />
       ) : !searches.length ? (
-        <p>
-          Guardá una búsqueda desde{' '}
-          <Link className="underline" href="/adoptions">
-            Adopciones
-          </Link>{' '}
-          o{' '}
-          <Link className="underline" href="/shop">
-            Servicios
-          </Link>
-          .
-        </p>
+        <EmptyState
+          icon={<BellRing className="size-10" aria-hidden="true" />}
+          title="Todavía no guardaste búsquedas"
+          description="Guardá los filtros de Adopciones o Servicios y te avisamos una vez por día cuando haya resultados nuevos."
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button asChild variant="outline"><Link href="/adoptions">Buscar adopciones</Link></Button>
+              <Button asChild variant="outline"><Link href="/shop">Buscar servicios</Link></Button>
+            </div>
+          }
+        />
       ) : (
         searches.map((search) => (
-          <section key={search.id} className="space-y-3 rounded-xl border bg-surface p-5">
+          <section key={search.id} className="space-y-3 rounded-lg border border-border bg-surface p-4 sm:p-5">
             <h2 className="text-lg font-semibold">{search.name}</h2>
             <p className="text-sm text-muted-foreground">
               {search.kind === 'ADOPTION' ? 'Adopciones' : 'Servicios'} ·{' '}
@@ -160,10 +164,9 @@ export default function SavedSearchesPage() {
                 </label>
                 {search.kind === 'ADOPTION' ? (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label>
+                    <label className="grid gap-1.5 text-sm font-medium">
                       Especie
-                      <select
-                        className="h-11 w-full rounded-md border bg-surface px-2"
+                      <NativeSelect
                         value={edit.filters.species}
                         onChange={(e) =>
                           setEdit({
@@ -180,12 +183,11 @@ export default function SavedSearchesPage() {
                         <option value="cat">Gato</option>
                         <option value="bird">Ave</option>
                         <option value="other">Otra</option>
-                      </select>
+                      </NativeSelect>
                     </label>
-                    <label>
+                    <label className="grid gap-1.5 text-sm font-medium">
                       Tamaño
-                      <select
-                        className="h-11 w-full rounded-md border bg-surface px-2"
+                      <NativeSelect
                         value={edit.filters.size}
                         onChange={(e) =>
                           setEdit({
@@ -201,15 +203,14 @@ export default function SavedSearchesPage() {
                         <option value="small">Pequeño</option>
                         <option value="medium">Mediano</option>
                         <option value="large">Grande</option>
-                      </select>
+                      </NativeSelect>
                     </label>
                   </div>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label>
+                    <label className="grid gap-1.5 text-sm font-medium">
                       Categoría
-                      <select
-                        className="h-11 w-full rounded-md border bg-surface px-2"
+                      <NativeSelect
                         value={edit.filters.categoryId}
                         onChange={(e) =>
                           setEdit({
@@ -224,9 +225,9 @@ export default function SavedSearchesPage() {
                             {c.name}
                           </option>
                         ))}
-                      </select>
+                      </NativeSelect>
                     </label>
-                    <label>
+                    <label className="grid gap-1.5 text-sm font-medium">
                       Calificación mínima
                       <Input
                         type="number"

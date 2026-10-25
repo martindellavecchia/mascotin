@@ -300,7 +300,7 @@ export default function LostPetForm({ open, onOpenChange, onSuccess, mode = 'los
                         </Button>
                         <Button
                             type="submit"
-                            variant="destructive"
+                            variant={mode === 'found' ? 'default' : 'destructive'}
                             className="flex-1"
                             disabled={loading}
                         >

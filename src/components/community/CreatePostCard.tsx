@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NativeSelect } from '@/components/ui/native-select';
 import { toast } from 'sonner';
 import { eventInputToIso } from '@/lib/date-format';
 
@@ -160,26 +161,26 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                             <div className="space-y-4">
                                 {/* Post Type Tabs */}
                                 <Tabs value={postType} onValueChange={(v) => setPostType(v as PostType)}>
-                                    <TabsList className="grid w-full grid-cols-5">
-                                        <TabsTrigger value="post" className="gap-1 px-1 text-xs sm:px-3" aria-label="Texto">
+                                    <TabsList className="grid w-full grid-cols-5 gap-0">
+                                        <TabsTrigger value="post" className="min-w-0 flex-1 flex-col gap-0.5 px-1 text-[11px] sm:flex-row sm:gap-1 sm:px-3 sm:text-xs" aria-label="Texto">
                                             <Pencil className="size-4" aria-hidden="true" />
-                                            <span className="hidden sm:inline">Texto</span>
+                                            <span>Texto</span>
                                         </TabsTrigger>
-                                        <TabsTrigger value="photo" className="gap-1 px-1 text-xs sm:px-3" aria-label="Foto">
+                                        <TabsTrigger value="photo" className="min-w-0 flex-1 flex-col gap-0.5 px-1 text-[11px] sm:flex-row sm:gap-1 sm:px-3 sm:text-xs" aria-label="Foto">
                                             <Camera className="size-4" aria-hidden="true" />
-                                            <span className="hidden sm:inline">Foto</span>
+                                            <span>Foto</span>
                                         </TabsTrigger>
-                                        <TabsTrigger value="event" className="gap-1 px-1 text-xs sm:px-3" aria-label="Evento">
+                                        <TabsTrigger value="event" className="min-w-0 flex-1 flex-col gap-0.5 px-1 text-[11px] sm:flex-row sm:gap-1 sm:px-3 sm:text-xs" aria-label="Evento">
                                             <CalendarDays className="size-4" aria-hidden="true" />
-                                            <span className="hidden sm:inline">Evento</span>
+                                            <span>Evento</span>
                                         </TabsTrigger>
-                                        <TabsTrigger value="question" className="gap-1 px-1 text-xs sm:px-3" aria-label="Pregunta">
+                                        <TabsTrigger value="question" className="min-w-0 flex-1 flex-col gap-0.5 px-1 text-[11px] sm:flex-row sm:gap-1 sm:px-3 sm:text-xs" aria-label="Pregunta">
                                             <CircleHelp className="size-4" aria-hidden="true" />
-                                            <span className="hidden sm:inline">Pregunta</span>
+                                            <span>Pregunta</span>
                                         </TabsTrigger>
-                                        <TabsTrigger value="recommendation" className="gap-1 px-1 text-xs sm:px-3" aria-label="Tip">
+                                        <TabsTrigger value="recommendation" className="min-w-0 flex-1 flex-col gap-0.5 px-1 text-[11px] sm:flex-row sm:gap-1 sm:px-3 sm:text-xs" aria-label="Tip">
                                             <Star className="size-4" aria-hidden="true" />
-                                            <span className="hidden sm:inline">Tip</span>
+                                            <span>Tip</span>
                                         </TabsTrigger>
                                     </TabsList>
                                 </Tabs>
@@ -262,17 +263,18 @@ export default function CreatePostCard({ userImage, userName, pets, initialPetId
                                         {pets && pets.length > 0 && (
                                             <div className="min-w-0 space-y-1">
                                             <Label htmlFor={formId + '-pet'}>Mascota de la publicación</Label>
-                                            <select
+                                            <NativeSelect
                                                 id={formId + '-pet'}
                                                 value={selectedPetId}
                                                 onChange={(e) => setSelectedPetId(e.target.value)}
-                                                className="min-h-10 max-w-full rounded-md border border-slate-300 bg-surface px-2 py-1 text-sm text-slate-600"
+                                                className="h-10"
+                                                wrapperClassName="w-fit max-w-full"
                                             >
                                                 <option value="">Sin mascota</option>
                                                 {pets.map(pet => (
                                                     <option key={pet.id} value={pet.id}>{pet.name}</option>
                                                 ))}
-                                            </select>
+                                            </NativeSelect>
                                             </div>
                                         )}
                                     </div>

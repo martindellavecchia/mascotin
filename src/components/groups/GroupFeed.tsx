@@ -274,7 +274,6 @@ export default function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                                     <Button
                                         onClick={handleCreatePost}
                                         disabled={!content.trim() || creating || uploading}
-                                        variant="brand"
                                         className="min-h-11 w-full px-6 sm:w-auto"
                                     >
                                         {creating ? 'Publicando...' : 'Publicar'}
