@@ -45,6 +45,25 @@ describe('ShopDirectory', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
+  it('shows only the empty state when the directory has no stores', () => {
+    render(<ShopDirectory initialCategories={[{ id: 'cat-1', name: 'Peluquería' }]} initialStores={[]} />);
+
+    expect(screen.getByText('Todavía no hay negocios publicados')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/Buscar negocio/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Ordenar negocios' })).not.toBeInTheDocument();
+    expect(screen.queryByText('0 negocios')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Ver en el mapa' })).not.toBeInTheDocument();
+    expect(screen.getByText('Administrar un negocio')).toBeInTheDocument();
+  });
+
+  it('offers appointments only to signed-in visitors', () => {
+    const { rerender } = render(<ShopDirectory initialCategories={[]} initialStores={[store]} />);
+    expect(screen.queryByRole('link', { name: 'Mis turnos' })).not.toBeInTheDocument();
+
+    rerender(<ShopDirectory initialCategories={[]} initialStores={[store]} signedIn />);
+    expect(screen.getByRole('link', { name: 'Mis turnos' })).toHaveAttribute('href', '/appointments');
+  });
+
   it('debounces search text and aborts stale requests', async () => {
     const fetchMock = global.fetch as jest.Mock;
     fetchMock.mockImplementation((_url: string, init?: RequestInit) => {

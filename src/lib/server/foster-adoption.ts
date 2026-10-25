@@ -78,7 +78,7 @@ export async function updateFosterAdoptionDraft(caseId: string, userId: string, 
     include: { listing: true },
   });
   if (!draft) throw new FosterAdoptionError('Borrador no encontrado', 404);
-  if (draft.managedByUserId !== userId) throw new FosterAdoptionError('Sólo el hogar responsable puede editar la ficha', 403);
+  if (draft.managedByUserId !== userId) throw new FosterAdoptionError('Solo el hogar responsable puede editar la ficha', 403);
   if (['MATCHED', 'COMPLETED'].includes(draft.status)) {
     throw new FosterAdoptionError('La ficha ya no puede editarse en este estado', 409);
   }
@@ -153,7 +153,7 @@ export async function publishFosterAdoption(caseId: string, userId: string) {
     },
   });
   if (!draft) throw new FosterAdoptionError('Borrador no encontrado', 404);
-  if (draft.managedByUserId !== userId) throw new FosterAdoptionError('Sólo el hogar responsable puede publicar', 403);
+  if (draft.managedByUserId !== userId) throw new FosterAdoptionError('Solo el hogar responsable puede publicar', 403);
   if (draft.placement.status !== 'AWAITING_ADOPTION') throw new FosterAdoptionError('El animal ya no está bajo este tránsito', 409);
   if (!draft.name || draft.estimatedAge === null || !draft.gender || !draft.energy || !draft.character || !draft.bio || !draft.publicZone) {
     throw new FosterAdoptionError('Completá todos los datos obligatorios antes de publicar', 400);
@@ -459,7 +459,7 @@ export async function cancelFosterAdoptionHandoff(listingId: string, userId: str
   });
   const draft = listing?.fosterDraft;
   if (!listing || !draft) throw new FosterAdoptionError('Ficha no encontrada', 404);
-  if (draft.managedByUserId !== userId) throw new FosterAdoptionError('Sólo el hogar puede cancelar la coordinación', 403);
+  if (draft.managedByUserId !== userId) throw new FosterAdoptionError('Solo el hogar puede cancelar la coordinación', 403);
   if (draft.status !== 'MATCHED' || !draft.selectedApplication) {
     throw new FosterAdoptionError('No hay una entrega en coordinación', 409);
   }

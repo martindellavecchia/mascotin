@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { eventInputToIso, toEventDateInput, formatEventDate } from '@/lib/date-format';
+import { useShowEventTimeZone } from '@/hooks/useShowEventTimeZone';
 import { countLabel } from '@/lib/utils';
 
 interface GroupEventsProps {
@@ -62,6 +63,7 @@ interface Attendee {
 }
 
 export default function GroupEvents({ groupId, isCreator, isMember = false, currentUserId }: GroupEventsProps) {
+    const showEventTimeZone = useShowEventTimeZone();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
@@ -285,7 +287,7 @@ export default function GroupEvents({ groupId, isCreator, isMember = false, curr
                                         <div className="mb-2 mt-1 space-y-1 text-sm text-muted-foreground">
                                             <p className="flex items-start gap-1">
                                                 <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
-                                                <span>{formatEventDate(event.date)}</span>
+                                                <span>{formatEventDate(event.date, showEventTimeZone)}</span>
                                             </p>
                                             <p className="flex min-w-0 items-start gap-1 [overflow-wrap:anywhere]">
                                                 <MapPin className="size-3 shrink-0" aria-hidden="true" />

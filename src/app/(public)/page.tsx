@@ -82,7 +82,7 @@ export default function GuestHomePage() {
           />
         </div>
         <div className="max-w-xl">
-          <h2 className="text-3xl font-bold tracking-[-0.035em] sm:text-4xl">Reseñas de citas reales y datos que siguen siendo tuyos.</h2>
+          <h2 className="text-3xl font-bold tracking-[-0.035em] sm:text-4xl">Reseñas de turnos reales y datos que siguen siendo tuyos.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
             Las calificaciones de cada comercio salen de turnos completados. Las ubicaciones exactas de los rescates no se publican y vos elegís qué muestra el pasaporte de emergencia de tu mascota.
           </p>

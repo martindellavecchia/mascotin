@@ -186,7 +186,7 @@ export default function StoreDetailView({ store }: { store: PublicStoreDetail })
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Experiencias de la comunidad</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">Sólo cuentan citas marcadas como completadas.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Solo cuentan turnos completados.</p>
                 </div>
                 <Badge variant="outline">{countLabel(store.reviewCount, 'reseña', 'reseñas')}</Badge>
               </div>
@@ -228,7 +228,7 @@ export default function StoreDetailView({ store }: { store: PublicStoreDetail })
                           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
                             <Badge variant="verified">
                               <BadgeCheck className="mr-1 size-3.5" aria-hidden="true" />
-                              Cita verificada
+                              Turno verificado
                             </Badge>
                             <StoreReviewActionsIsland
                               review={{ id: review.id, helpfulCount: review.helpfulCount }}
@@ -251,7 +251,7 @@ export default function StoreDetailView({ store }: { store: PublicStoreDetail })
                     className="border-0"
                     icon={<MessageSquareText className="size-11" aria-hidden="true" />}
                     title="Todavía no hay reseñas"
-                    description="La primera aparecerá después de una cita completada."
+                    description="La primera aparecerá después de un turno completado."
                   />
                 )}
               </div>

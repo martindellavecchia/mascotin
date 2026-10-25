@@ -136,7 +136,7 @@ export function BookServiceButton({ service }: { service: ServiceBookProps }) {
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle>Reservar cita</DialogTitle>
+                <DialogTitle>Reservar turno</DialogTitle>
                 <DialogDescription>Elegí la mascota y una fecha para solicitar la reserva. El prestador debe confirmarla.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-3">

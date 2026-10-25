@@ -84,7 +84,7 @@ export default function StoreReviewActionsIsland({
             onClick={() => void toggleHelpful()}
             className={`min-h-10 px-2 font-medium ${isHelpful ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
           >
-            Útil ({helpfulCount})
+            {helpfulCount > 0 ? `Útil (${helpfulCount})` : 'Útil'}
           </button>
           <button
             onClick={() => (viewer.isAuthenticated ? setReportOpen(true) : requireAuth())}

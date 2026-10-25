@@ -217,8 +217,8 @@ export default function AdoptionDetailPage() {
             </div>
             {listing.handoff.role === 'ADOPTER' && !listing.handoff.adopterConfirmedAt && (
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2"><Label htmlFor="adopter-owner-name">Nombre del responsable</Label><Input id="adopter-owner-name" value={ownerName} onChange={(event) => setOwnerName(event.target.value)} placeholder="Sólo si todavía no tenés perfil" /></div>
-                <div className="space-y-2"><Label htmlFor="adopter-owner-location">Zona</Label><Input id="adopter-owner-location" value={ownerLocation} onChange={(event) => setOwnerLocation(event.target.value)} placeholder="Sólo si todavía no tenés perfil" /></div>
+                <div className="space-y-2"><Label htmlFor="adopter-owner-name">Nombre del responsable</Label><Input id="adopter-owner-name" value={ownerName} onChange={(event) => setOwnerName(event.target.value)} placeholder="Solo si todavía no tenés perfil" /></div>
+                <div className="space-y-2"><Label htmlFor="adopter-owner-location">Zona</Label><Input id="adopter-owner-location" value={ownerLocation} onChange={(event) => setOwnerLocation(event.target.value)} placeholder="Solo si todavía no tenés perfil" /></div>
               </div>
             )}
             <div className="flex flex-col gap-2 sm:flex-row">

@@ -191,7 +191,6 @@ export default function RegisterPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -242,7 +241,6 @@ export default function RegisterPage() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   aria-invalid={Boolean(formData.confirmPassword) && formData.password !== formData.confirmPassword}
                   aria-describedby={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'confirm-password-error' : undefined}
-                  placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={(e) =>
                     setFormData({ ...formData, confirmPassword: e.target.value })

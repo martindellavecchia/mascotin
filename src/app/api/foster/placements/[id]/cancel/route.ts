@@ -36,7 +36,7 @@ export async function POST(
     );
   }
   if (awaitingAdoption && !isFoster) {
-    return NextResponse.json({ success: false, error: 'Sólo el hogar puede indicar que ya no puede continuar' }, { status: 403 });
+    return NextResponse.json({ success: false, error: 'Solo el hogar puede indicar que ya no puede continuar' }, { status: 403 });
   }
   if (awaitingAdoption && placement.adoptionDraft?.status === 'MATCHED') {
     return NextResponse.json({ success: false, error: 'Cancelá primero la coordinación de adopción' }, { status: 409 });

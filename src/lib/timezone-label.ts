@@ -34,6 +34,20 @@ const FRIENDLY_LABELS: Record<string, string> = {
   'Europe/Madrid': 'hora de España (Madrid)',
 };
 
+const LEGACY_ARGENTINE_ZONES = new Set([
+  'America/Buenos_Aires',
+  'America/Catamarca',
+  'America/Cordoba',
+  'America/Jujuy',
+  'America/Mendoza',
+  'America/Rosario',
+]);
+
+export function isArgentineTimeZone(timeZone?: string | null): boolean {
+  const zone = timeZone?.trim() || '';
+  return zone.startsWith('America/Argentina/') || LEGACY_ARGENTINE_ZONES.has(zone);
+}
+
 export function getTimeZoneLabel(timeZone?: string | null): string {
   const zone = timeZone?.trim() || DEFAULT_TIME_ZONE;
   if (zone.startsWith('America/Argentina/')) return 'hora de Argentina';

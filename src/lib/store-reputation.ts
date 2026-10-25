@@ -54,7 +54,7 @@ export function getStoreTrustSummary(
     return {
       level: 'HIGHLY_RECOMMENDED',
       label: 'Muy recomendado',
-      description: 'Mantiene una valoración excelente con experiencia verificada.',
+      description: 'Promedio de 4,5 o más con al menos 5 reseñas verificadas.',
     };
   }
 
@@ -62,7 +62,7 @@ export function getStoreTrustSummary(
     return {
       level: 'TRUSTED',
       label: 'Confiable',
-      description: 'La comunidad reporta experiencias mayormente positivas.',
+      description: 'Promedio de 4 o más en reseñas verificadas.',
     };
   }
 

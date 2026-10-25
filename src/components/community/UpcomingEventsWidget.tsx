@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { APP_TIME_ZONE, EVENT_TIME_ZONE_LABEL, getEventDateParts } from '@/lib/date-format';
+import { useShowEventTimeZone } from '@/hooks/useShowEventTimeZone';
 
 interface Event {
     id: string;
@@ -21,6 +22,7 @@ interface Event {
 }
 
 export default function UpcomingEventsWidget() {
+    const showEventTimeZone = useShowEventTimeZone();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -79,7 +81,7 @@ export default function UpcomingEventsWidget() {
         return {
             day: date.toLocaleDateString('es-AR', { weekday: 'short', timeZone: APP_TIME_ZONE }),
             dayNum: getEventDateParts(date).day,
-            time: getEventDateParts(date).time + ' (' + EVENT_TIME_ZONE_LABEL + ')',
+            time: getEventDateParts(date).time + (showEventTimeZone ? ' (' + EVENT_TIME_ZONE_LABEL + ')' : ''),
         };
     };
 

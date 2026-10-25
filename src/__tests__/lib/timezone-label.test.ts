@@ -2,8 +2,24 @@ import {
   COMMON_TIME_ZONES,
   DEFAULT_TIME_ZONE,
   getTimeZoneLabel,
+  isArgentineTimeZone,
   isValidTimeZone,
 } from '@/lib/timezone-label';
+
+describe('isArgentineTimeZone', () => {
+  it('recognizes current and legacy Argentine zones', () => {
+    expect(isArgentineTimeZone('America/Argentina/Buenos_Aires')).toBe(true);
+    expect(isArgentineTimeZone('America/Argentina/Ushuaia')).toBe(true);
+    expect(isArgentineTimeZone('America/Buenos_Aires')).toBe(true);
+    expect(isArgentineTimeZone('America/Cordoba')).toBe(true);
+  });
+
+  it('rejects other or missing zones', () => {
+    expect(isArgentineTimeZone('America/Montevideo')).toBe(false);
+    expect(isArgentineTimeZone('UTC')).toBe(false);
+    expect(isArgentineTimeZone(undefined)).toBe(false);
+  });
+});
 
 describe('getTimeZoneLabel', () => {
   it('labels every Argentine zone as hora de Argentina', () => {

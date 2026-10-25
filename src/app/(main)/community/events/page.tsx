@@ -31,6 +31,7 @@ const EMPTY_FORM = { title: '', description: '', date: '', location: '', categor
 
 type Timeframe = 'upcoming' | 'past';
 import { APP_TIME_ZONE, EVENT_TIME_ZONE_LABEL, eventInputToIso, getEventCalendarDate, getEventDateParts } from '@/lib/date-format';
+import { useShowEventTimeZone } from '@/hooks/useShowEventTimeZone';
 import { countLabel } from '@/lib/utils';
 
 interface CommunityEvent {
@@ -48,6 +49,7 @@ interface CommunityEvent {
 }
 
 export default function CommunityEventsPage() {
+    const showEventTimeZone = useShowEventTimeZone();
     const { data: session } = useSession();
     const [events, setEvents] = useState<CommunityEvent[]>([]);
     const [loading, setLoading] = useState(true);
@@ -304,7 +306,7 @@ export default function CommunityEventsPage() {
                                             <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="size-4" aria-hidden="true" />
-                                                    {getEventDateParts(date).time + ' (' + EVENT_TIME_ZONE_LABEL + ')'}
+                                                    {getEventDateParts(date).time + (showEventTimeZone ? ' (' + EVENT_TIME_ZONE_LABEL + ')' : '')}
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <MapPin className="size-4" aria-hidden="true" />

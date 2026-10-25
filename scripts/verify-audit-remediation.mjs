@@ -225,13 +225,14 @@ try {
     await editor.getByRole('button', { name: 'Guardar cambios' }).click();
     assert.equal((await update).status(), 200);
     assert.equal((await db.event.findUniqueOrThrow({ where: { id: post.eventId } })).date.toISOString(), instant);
-    await expect(page.getByText('6 dic 2026 · 18:11 (hora de Argentina)').first()).toBeVisible();
+    const zoneNote = variant.zone.startsWith('America/Argentina/') ? '' : ' (hora de Argentina)';
+    await expect(page.getByText('6 dic 2026 · 18:11' + zoneNote, { exact: true }).first()).toBeVisible();
     await checkPage(page, variant.name + '-group-events');
     const midnightTitle = 'Medianoche QA ' + variant.name;
     await db.event.create({ data: { authorId: viewer, title: midnightTitle, date: new Date('2026-12-07T01:30:00.000Z'), location: 'Parque QA' } });
     await page.goto(base + '/community/events');
     const midnightCard = page.getByRole('article').filter({ has: page.getByRole('heading', { name: midnightTitle, exact: true }) });
-    await expect(midnightCard.getByText('22:30 (hora de Argentina)', { exact: true })).toBeVisible();
+    await expect(midnightCard.getByText('22:30' + zoneNote, { exact: true })).toBeVisible();
     await expect(midnightCard.getByText('6', { exact: true })).toBeVisible();
     const dayLabel = await page.evaluate(() => new Date('2026-12-06T12:00:00').toLocaleDateString());
     const calendarDay = page.locator('button[data-day="' + dayLabel + '"]');

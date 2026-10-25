@@ -70,7 +70,7 @@ export async function POST(
         });
     if (!completedAppointment && !allowWithoutAppointment) {
       return NextResponse.json(
-        { success: false, error: 'Sólo podés reseñar después de completar una cita con este negocio' },
+        { success: false, error: 'Solo podés reseñar después de completar un turno con este negocio' },
         { status: 403 }
       );
     }

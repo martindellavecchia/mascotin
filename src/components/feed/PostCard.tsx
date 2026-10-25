@@ -43,6 +43,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getEventDateParts, EVENT_TIME_ZONE_LABEL } from '@/lib/date-format';
+import { useShowEventTimeZone } from '@/hooks/useShowEventTimeZone';
 import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -99,6 +100,7 @@ interface PostCardProps {
 function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onEdit }: PostCardProps) {
     const primaryImageUrl = post.primaryImageUrl || getPrimaryImageUrl(post.images);
     const isFosterCase = post.postType === 'foster_case' && Boolean(post.rescueCase);
+    const showEventTimeZone = useShowEventTimeZone();
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [deleting, setDeleting] = useState(false);
@@ -485,7 +487,7 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                             </p>
                             <p className="mt-0.5 flex items-center gap-1 text-muted-foreground">
                                 <Clock className="size-4 shrink-0" aria-hidden="true" />
-                                {eventDateParts.time} <span className="text-xs">({EVENT_TIME_ZONE_LABEL})</span>
+                                {eventDateParts.time}{showEventTimeZone && <span className="text-xs"> ({EVENT_TIME_ZONE_LABEL})</span>}
                             </p>
                             {post.eventLocation && (
                                 <p className="mt-0.5 flex min-w-0 items-start gap-1 text-muted-foreground [overflow-wrap:anywhere]">

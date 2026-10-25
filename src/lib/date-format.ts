@@ -55,9 +55,9 @@ export function getEventCalendarDate(value: string | Date) {
   return new Date(getEventDayKey(value) + 'T12:00:00');
 }
 
-export function formatEventDate(value: string | Date) {
+export function formatEventDate(value: string | Date, withTimeZone = true) {
   const parts = getEventDateParts(value);
-  return parts.label + ' · ' + parts.time + ' (' + EVENT_TIME_ZONE_LABEL + ')';
+  return parts.label + ' · ' + parts.time + (withTimeZone ? ' (' + EVENT_TIME_ZONE_LABEL + ')' : '');
 }
 
 const eventPartsFormatter = new Intl.DateTimeFormat('es-AR', {

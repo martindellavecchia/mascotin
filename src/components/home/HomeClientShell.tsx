@@ -8,7 +8,6 @@ import { ChevronRight, Compass, Heart, MessageCircle, PawPrint, X } from 'lucide
 import DashboardLayout from '@/components/DashboardLayout';
 import Feed from '@/components/feed/Feed';
 import TodayActions from '@/components/home/TodayActions';
-import IntentEntry from '@/components/home/IntentEntry';
 import UndoPassButton from '@/components/home/UndoPassButton';
 import PendingActions from '@/components/home/PendingActions';
 import { Card } from '@/components/ui/card';
@@ -296,7 +295,6 @@ export default function HomeClientShell({
                 )}
               />
               <PendingActions />
-              <IntentEntry />
               <TodayActions
                 activePet={activePet}
                 suggestion={suggestionsByPet[selectedPetId ?? '']}

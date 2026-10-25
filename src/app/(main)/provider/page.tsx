@@ -271,7 +271,7 @@ export default function ProviderPage() {
         return (
             <div className="min-h-screen bg-background">
                 <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-                    <PageHeader title="Panel de proveedor" description="Gestioná tu negocio, servicios y citas desde un solo lugar." />
+                    <PageHeader title="Panel de proveedor" description="Gestioná tu negocio, servicios y turnos desde un solo lugar." />
                     <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-3">
                         <div className="xl:col-span-1">
                             <Card className="gap-0 py-0">
@@ -309,7 +309,7 @@ export default function ProviderPage() {
                         <div className="xl:col-span-2">
                             <Tabs defaultValue="appointments" className="w-full">
                                 <TabsList className="mb-4">
-                                    <TabsTrigger value="appointments">Citas</TabsTrigger>
+                                    <TabsTrigger value="appointments">Turnos</TabsTrigger>
                                     <TabsTrigger value="services">Servicios</TabsTrigger>
                                     <TabsTrigger value="business">Mi negocio</TabsTrigger>
                                 </TabsList>
@@ -568,7 +568,7 @@ export default function ProviderPage() {
                         <Store className="mb-4 size-16 text-teal-500" aria-hidden="true" />
                         <h1 className="mb-2 text-2xl font-bold text-foreground">¿Ofrecés servicios para mascotas?</h1>
                         <p className="text-slate-600 mb-6">
-                            Publicá tus servicios, recibí consultas y administrá las citas desde Huella.
+                            Publicá tus servicios, recibí consultas y administrá los turnos desde Huella.
                         </p>
                         <Button size="lg" onClick={() => setIsRegistering(true)}>
                             <Store className="mr-2 size-5" aria-hidden="true" />

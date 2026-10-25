@@ -86,7 +86,7 @@ export default function ProviderAppointments() {
       setLoadError(false);
     } else {
       setLoadError(true);
-      toast.error('Error al cargar citas');
+      toast.error('No se pudieron cargar los turnos');
     }
     setLoading(false);
   }, [filter, page, fetchWithError]);
@@ -113,11 +113,11 @@ export default function ProviderAppointments() {
       if (data.success) {
         toast.success(
           newStatus === 'CONFIRMED'
-            ? '¡Cita confirmada!'
+            ? 'Turno confirmado'
             : newStatus === 'CANCELLED'
-              ? 'Cita cancelada'
+              ? 'Turno cancelado'
               : newStatus === 'COMPLETED'
-                ? 'Cita marcada como completada'
+                ? 'Turno marcado como completado'
                 : 'Estado actualizado'
         );
         fetchAppointments();
@@ -208,7 +208,7 @@ export default function ProviderAppointments() {
             <CalendarCheck className="mx-auto mb-2 size-12 text-primary/35" aria-hidden="true" />
             <p className="text-muted-foreground">
               {filter
-                ? 'No hay citas con este estado'
+                ? 'No hay turnos con este estado'
                 : 'Todavía no recibiste solicitudes de turno'}
             </p>
           </CardContent>

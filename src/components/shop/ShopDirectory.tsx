@@ -30,10 +30,13 @@ const trustVariants: Record<string, 'success' | 'default' | 'warning' | 'destruc
 export default function ShopDirectory({
   initialCategories,
   initialStores,
+  signedIn = false,
 }: {
   initialCategories: Category[];
   initialStores: PublicStoreCard[];
+  signedIn?: boolean;
 }) {
+  const directoryEmpty = initialStores.length === 0;
   const [stores, setStores] = useState(initialStores);
   const [categories] = useState(initialCategories);
   const [search, setSearch] = useState('');
@@ -133,16 +136,18 @@ export default function ShopDirectory({
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <PageHeader
             title="Servicios para tu mascota"
-            description="Buscá por categoría, zona y experiencias verificadas de la comunidad."
-            action={
+            description={directoryEmpty
+              ? 'Veterinarias, peluquerías, paseadores y comercios de cercanía con reseñas verificadas.'
+              : 'Buscá por categoría, zona y experiencias verificadas de la comunidad.'}
+            action={(signedIn || !directoryEmpty) && (
               <div className="flex flex-wrap gap-2">
-                <Button asChild variant="ghost" className="text-primary"><Link href="/appointments">Mis turnos</Link></Button>
-                <Button asChild variant="outline"><Link href="/map" prefetch={false}>Ver en el mapa</Link></Button>
+                {signedIn && <Button asChild variant="ghost" className="text-primary"><Link href="/appointments">Mis turnos</Link></Button>}
+                {!directoryEmpty && <Button asChild variant="outline"><Link href="/map" prefetch={false}>Ver en el mapa</Link></Button>}
               </div>
-            }
+            )}
           />
 
-          <div className="mt-6 space-y-3">
+          {!directoryEmpty && <div className="mt-6 space-y-3">
             <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -176,18 +181,20 @@ export default function ShopDirectory({
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </div>}
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">{error || loading ? 'Negocios' : countLabel(stores.length, 'negocio', 'negocios')}</h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">Ordenados por calificación y cantidad de reseñas.</p>
+        {!directoryEmpty && (
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">{error || loading ? 'Negocios' : countLabel(stores.length, 'negocio', 'negocios')}</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">Ordenados por calificación y cantidad de reseñas.</p>
+            </div>
+            {signedIn && <SaveSearchButton kind="SERVICES" filters={{ search, zone: zone.trim(), categoryId: categoryId === '_all' ? '' : categoryId, minRating: minRating === '_all' ? 0 : Number(minRating) }} />}
           </div>
-          <SaveSearchButton kind="SERVICES" filters={{ search, zone: zone.trim(), categoryId: categoryId === '_all' ? '' : categoryId, minRating: minRating === '_all' ? 0 : Number(minRating) }} />
-        </div>
+        )}
 
         {error ? (
           <StateFeedback

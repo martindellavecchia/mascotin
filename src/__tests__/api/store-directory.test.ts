@@ -38,10 +38,13 @@ describe('public store APIs', () => {
 
   it('server-renders /shop with cached categories and stores', () => {
     const shopPage = readSource('src/app/(public)/shop/page.tsx');
+    const directoryPage = readSource('src/components/shop/ShopDirectoryPage.tsx');
     expect(shopPage).not.toContain("'use client'");
-    expect(shopPage).toContain('initialStores');
-    expect(shopPage).toContain('getCachedPublicStoreDirectory');
     expect(shopPage).toContain('revalidate = 300');
+    expect(shopPage).toContain('<ShopDirectoryPage signedIn={false} />');
+    expect(directoryPage).not.toContain("'use client'");
+    expect(directoryPage).toContain('initialStores');
+    expect(directoryPage).toContain('getCachedPublicStoreDirectory');
   });
 
   it('caches the unfiltered directory and bypasses cache for high-cardinality filters', () => {

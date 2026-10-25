@@ -344,7 +344,7 @@ export async function completeVolunteerAssignment(assignmentId: string, userId: 
     include: { volunteerProfile: true, need: { include: { rescueCase: true } } },
   });
   if (!assignment) throw new VolunteerNetworkError('Tarea no encontrada', 404);
-  if (assignment.need.rescueCase.createdByUserId !== userId) throw new VolunteerNetworkError('Sólo quien creó el caso puede completar la tarea', 403);
+  if (assignment.need.rescueCase.createdByUserId !== userId) throw new VolunteerNetworkError('Solo quien creó el caso puede completar la tarea', 403);
   if (assignment.status !== 'ACTIVE') throw new VolunteerNetworkError('La tarea ya no está activa', 409);
 
   await db.$transaction(async (tx) => {

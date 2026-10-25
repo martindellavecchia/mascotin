@@ -196,3 +196,19 @@ Base: `004a2ee` (refinamiento `e0e4b10`, arreglo del test `ced112d` y docs). Mis
 - `scripts/verify-huella-six.mjs`: 12 de 12 sobre el build final (con el evento pasado del seed borrado, como en la primera vuelta).
 - Evidencia local: `artifacts/visual-refinement-2026-10-24/round2/{before,after}/{routes,states}` y `round2/compare.html` con cada estado y ruta antes y después. Las rutas «antes» son las capturas del build `e0e4b10`, que es el mismo código de `004a2ee` en `src/`.
 - Límites: Chromium con viewport y touch emulados; las pruebas de carga y error simulan la red con `page.route`; la reserva confirmada y el recupero de contraseña escriben sólo en la base local.
+
+## Tercera vuelta
+
+Base: `38aa18c`, publicado en producción. Revisión de producción (landing, login y tienda en 390 y 1440) y de las capturas finales de la segunda vuelta.
+
+| # | Hallazgo | Cambio |
+| --- | --- | --- |
+| T01 | La tienda pública de producción no tiene negocios y aun así muestra cinco filtros, «0 negocios», el orden y «Guardar búsqueda»; a visitantes sin sesión también les muestra «Mis turnos» | Con el directorio vacío sólo queda el estado vacío y «Administrar un negocio». «Mis turnos» y «Guardar búsqueda» sólo con sesión: `ShopDirectoryPage` comparte la carga entre `/shop` (`signedIn={false}`) y `/account/shop` (`signedIn`) |
+| T02 | Inicio con mascotas repite la intención («¿Qué te gustaría hacer?») arriba de «Para hoy» | La intención queda en Inicio sin mascotas y en Configuración › Cuenta |
+| T03 | «Cita» y «turno» mezclados; «La comunidad reporta experiencias mayormente positivas»; «Útil (0)» | Todo pasa a «turno» (landing, ficha, reseñas, panel del proveedor y API). La descripción de reputación explica el criterio («Promedio de 4 o más en reseñas verificadas»). «Útil» sin contador en cero. «Sólo» → «Solo» |
+| T04 | «••••••••» como placeholder de contraseña parece un valor cargado | Sin placeholder en login y registro |
+| T05 | «(hora de Argentina)» en cada evento para un público argentino | `useShowEventTimeZone()` lo agrega después del montaje sólo si el navegador está fuera de Argentina; el HTML del servidor y la hidratación no cambian. Los formularios conservan «Fecha y hora (Argentina)». `verify-audit-remediation.mjs` espera la nota según la zona de cada variante |
+
+Verificación: `npx tsc --noEmit`, `npm run lint`, `npm test` (93 suites, 513 pruebas; nuevas para el directorio vacío, «Mis turnos» con sesión e `isArgentineTimeZone`) y `npm run build` con base local. Sobre `next start` local con `product_visual`: tienda sin sesión y con sesión, ficha del comercio, login, Inicio y eventos en Argentina y Los Ángeles, sin overflow ni errores de JavaScript (`artifacts/visual-refinement-2026-10-24/round3/`). El estado vacío de la tienda se cubre con la prueba de componente; la base local tiene comercios.
+
+La ficha del comercio guarda la reputación en `unstable_cache` durante 300 s: en producción el texto nuevo de reputación aparece cuando vence esa caché.

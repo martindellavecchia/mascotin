@@ -225,6 +225,6 @@ describe('StoreDetailView islands', () => {
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/pet/mine');
     });
-    expect(await screen.findByText('Reservar cita')).toBeInTheDocument();
+    expect(await screen.findByText('Reservar turno')).toBeInTheDocument();
   });
 });

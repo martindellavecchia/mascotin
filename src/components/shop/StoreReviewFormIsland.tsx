@@ -94,7 +94,7 @@ export default function StoreReviewFormIsland() {
           <div>
             <Badge className="mb-3 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
               <BadgeCheck className="mr-1 size-3.5" aria-hidden="true" />
-              Cita verificada
+              Turno verificado
             </Badge>
             <p className="text-sm font-medium text-slate-700">
               {viewer.ownReview ? 'Editá tu calificación' : '¿Cómo fue el servicio?'}
@@ -155,7 +155,7 @@ export default function StoreReviewFormIsland() {
               <Lock className="size-5 text-muted-foreground" aria-hidden="true" />
             </div>
             <p className="font-semibold text-foreground">Iniciá sesión para reservar o reseñar</p>
-            <p className="mt-1">Las reseñas verificadas aparecen después de una cita completada.</p>
+            <p className="mt-1">Las reseñas verificadas aparecen después de un turno completado.</p>
             <Button asChild className="mt-4 w-full">
               <Link href={loginHref}>Iniciar sesión</Link>
             </Button>
@@ -166,7 +166,7 @@ export default function StoreReviewFormIsland() {
               <Lock className="size-5 text-muted-foreground" aria-hidden="true" />
             </div>
             <p className="font-semibold text-foreground">Reseñas verificadas</p>
-            <p className="mt-1">Podrás calificar cuando el negocio marque una cita tuya como completada.</p>
+            <p className="mt-1">Podrás calificar cuando el negocio marque un turno tuyo como completado.</p>
           </div>
         )}
       </CardContent>
