@@ -68,7 +68,7 @@ npm run db:reset              # Reset database
 
 **Crons** (`vercel.json`): `/api/cron/search-digests` runs daily at 12:00 UTC (09:00 Argentina) and `/api/cron/maintenance` at 03:17 UTC. Both require `Authorization: Bearer $CRON_SECRET`. The digest returns `hasMore: true` when it must be invoked again to continue.
 
-**Data fetching**: React Query (client in `PrivateSessionProvider`, hooks in `src/hooks/useViewerData.ts` and `src/hooks/useReactQuery.ts`) and `useFetchWithError` (retry/timeout). Polling uses `useAdaptivePolling`, `usePageActivity`, and `useVisibilityActivation` so it pauses while the tab is hidden. Prefer server rendering and caching for public pages. Zustand is installed but unused.
+**Data fetching**: React Query (client in `PrivateSessionProvider`, hooks in `src/hooks/useViewerData.ts`) and `useFetchWithError` (retry/timeout). Polling uses `useAdaptivePolling`, `usePageActivity`, and `useVisibilityActivation` so it pauses while the tab is hidden. Prefer server rendering and caching for public pages. There is no global client store.
 
 **Media and notifications**: uploads go through `src/lib/media.ts`. They use Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set, otherwise validated base64 data URLs stored in the DB. Notifications combine the in-app `Notification` model with native Web Push over VAPID (`src/lib/push.ts`, `src/lib/server/push.ts`). Email through Resend is optional: `sendEmail()` logs in dev and skips when `RESEND_API_KEY` is missing.
 
@@ -78,7 +78,7 @@ npm run db:reset              # Reset database
 
 - Tokens live in `src/app/globals.css` (Tailwind v4 `@theme`): primary aubergine `#4b244a`, accent lime `#b8d35a`, cream background `#fff8ef`, plus semantic success/warning/info/highlight colors. Use semantic utilities (`bg-primary`, `text-muted-foreground`, `border-border`). Legacy `teal-*` utilities are aliased to the Huella palette for compatibility; don't add new hardcoded teal/slate colors.
 - The font is Plus Jakarta Sans. The theme is forced to light in `src/components/providers.tsx`.
-- Use `lucide-react` for icons; Material Symbols were removed. Use `cn()` from `src/lib/utils.ts` for class names and Framer Motion for animations.
+- Use `lucide-react` for icons; Material Symbols were removed. Use `cn()` from `src/lib/utils.ts` for class names; animations are CSS/Tailwind (`tailwindcss-animate`), respecting `motion-reduce`.
 - Primitives live in `src/components/ui/`: shadcn plus app-specific ones (`page-header`, `empty-state`, `state-feedback`, `list-row`, `confirm-dialog`, `loading`). Use Button `variant="brand"` for violet buttons so the foreground keeps proper contrast. Brand assets are in `src/components/brand/`.
 - Feature components are grouped by domain in `src/components/<domain>/` (community, feed, groups, help, home, messages, pets, profile, provider, searches, shop, …). A few legacy components (`Header`, `PetForm`, `PetCard`, `OwnerForm`, …) sit at the root of `src/components/`.
 - Accessibility is checked in every QA round:
@@ -128,5 +128,5 @@ See `.env.example`. Never commit `.env*` files or put production secrets in QA c
 - Feature and audit work happens on `codex/<topic>` branches. Releases are pushed to `main` and deployed automatically by Vercel. Only push, merge, or deploy when the user asks. After a release, check that the local, remote, and deployment SHAs match, that the deployment is READY, that the alias is correct, and that runtime logs are clean.
 - Plans and implementation reports are in `PLANS/` (Spanish, often dated `NAME_YYYY-MM-DD.md`). Read the relevant one before changing a feature: `PRODUCT_WORKFLOWS.md`, `PRODUCT_IMPLEMENTATION_STATUS.md`, `AUDIT_IMPLEMENTATION_2026-09-30.md`, `HUELLA_SIX_FINDINGS_2026-09-30.md`, `PERFORMANCE_REMEDIATION_PLAN.md`, `SHOP_REPUTATION_IMPLEMENTATION_PLAN.md`.
 - `artifacts/`, `projects/`, `worker.lock`, and untracked `PLANS/AUDIT_*` files are local working material. Don't commit, move, or delete them unless asked.
-- These root files are historical and don't describe the current state: `CORRECCIONES.md`, `IMPLEMENTACION_PROGRESO.md`, `REPORTE_COMPLETO_CORRECCIONES.*`, `VERCEL_PREPARACION_COMPLETADA.md`, `worklog.md`, and `design-qa.md`. The same goes for the scaffold leftovers `examples/`, `skills/`, and `mini-services/`.
+- These root files are historical and don't describe the current state: `CORRECCIONES.md`, `IMPLEMENTACION_PROGRESO.md`, `REPORTE_COMPLETO_CORRECCIONES.*`, `VERCEL_PREPARACION_COMPLETADA.md`, `worklog.md`, and `design-qa.md`.
 - Usual bar before a release: `npm run lint`, `npm test`, `npm run build`, the relevant integration tests, and browser QA on the three viewports for UI changes.

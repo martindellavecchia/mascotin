@@ -135,6 +135,7 @@ export default function ShopDirectory({
       <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <PageHeader
+            className={directoryEmpty ? 'border-b-0 pb-0' : undefined}
             title="Servicios para tu mascota"
             description={directoryEmpty
               ? 'Veterinarias, peluquerías, paseadores y comercios de cercanía con reseñas verificadas.'
