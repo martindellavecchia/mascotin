@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { updateRescueCaseRadiusSchema } from '@/lib/schemas';
 import { createOffersForCase } from '@/lib/server/foster';
 import { createVolunteerOffersForCase } from '@/lib/server/volunteer-network';
@@ -13,6 +14,14 @@ export async function PATCH(
   const auth = await requireAuth();
   if (auth.error) return auth.error;
   const { id } = await params;
+
+  const limit = await rateLimit(`rescue-case-update:${auth.session.user.id}`, RATE_LIMITS.rescueCaseUpdate);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { success: false, error: 'Hiciste muchos cambios seguidos. Esperá unos minutos.' },
+      { status: 429 }
+    );
+  }
 
   const parsed = updateRescueCaseRadiusSchema.safeParse(await request.json());
   if (!parsed.success) {

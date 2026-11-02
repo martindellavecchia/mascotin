@@ -7,7 +7,7 @@ interface RateLimitEntry {
 const memoryStore = new Map<string, RateLimitEntry>();
 
 // Clean up old entries every 5 minutes to prevent memory leaks
-setInterval(() => {
+const memoryCleanup = setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of memoryStore.entries()) {
     entry.timestamps = entry.timestamps.filter((t) => now - t < 600000);
@@ -16,6 +16,7 @@ setInterval(() => {
     }
   }
 }, 300000);
+memoryCleanup.unref?.();
 
 interface RateLimitConfig {
   /** Maximum number of requests allowed in the window */
@@ -23,6 +24,8 @@ interface RateLimitConfig {
   /** Time window in milliseconds */
   windowMs: number;
   distributed?: boolean;
+  /** When the shared store fails, use the per-instance limit instead of rejecting everyone. */
+  memoryFallback?: boolean;
 }
 
 interface RateLimitResult {
@@ -169,6 +172,10 @@ export async function rateLimit(
     try {
       return await rateLimitWithDatabase(key, config);
     } catch (error) {
+      if (config.memoryFallback) {
+        console.error('Distributed database rate limit fell back to memory:', error);
+        return rateLimitInMemory(key, config);
+      }
       console.error('Distributed database rate limit failed closed:', error);
       return { allowed: false, remaining: 0, retryAfterMs: config.windowMs };
     }
@@ -204,4 +211,8 @@ export const RATE_LIMITS = {
   rescueContact: { maxRequests: 10, windowMs: 600000, distributed: true },
   /** Rescue coordination messages: 30 per minute */
   rescueMessage: { maxRequests: 30, windowMs: 60000, distributed: true },
+  /** New rescue cases: 5 per hour */
+  rescueCaseCreate: { maxRequests: 5, windowMs: 3600000, distributed: true, memoryFallback: true },
+  /** Rescue case radius and publication changes: 10 per 10 minutes */
+  rescueCaseUpdate: { maxRequests: 10, windowMs: 600000, distributed: true, memoryFallback: true },
 } as const;

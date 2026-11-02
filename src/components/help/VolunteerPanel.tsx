@@ -19,7 +19,7 @@ interface VolunteerOfferView {
   id: string;
   status: string;
   role: keyof typeof VOLUNTEER_ROLE_LABELS;
-  distanceKm: number;
+  distanceRangeKm: number;
   score: number;
   reasons: string[];
   expiresAt: string;
@@ -119,7 +119,7 @@ export default function VolunteerPanel({ returnTo, initialProfileOpen = false }:
           <div className="grid gap-4 md:grid-cols-2">
             {offers.map((offer) => (
               <Card key={offer.id} className="gap-0 py-0"><CardContent className="space-y-3 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-foreground">{RESCUE_NEED_LABELS[offer.need.type]}</p><p className="text-sm text-muted-foreground">{offer.rescueCase.location} · {offer.distanceKm.toFixed(1)} km</p></div><Badge variant="outline">{offer.score}%</Badge></div>
+                <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-semibold text-foreground">{RESCUE_NEED_LABELS[offer.need.type]}</p><p className="text-sm text-muted-foreground">{offer.rescueCase.location} · Hasta {offer.distanceRangeKm} km</p></div><Badge variant="outline">{offer.score}%</Badge></div>
                 <p className="text-sm text-slate-600">{VOLUNTEER_ROLE_LABELS[offer.role]}{offer.need.details ? ` · ${offer.need.details}` : ''}</p>
                 {offer.status === 'PENDING' ? <div className="grid grid-cols-2 gap-2"><Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'INTERESTED' }) }, 'Avisamos que podés ayudar')}>Me interesa</Button><Button variant="outline" disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/respond`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ response: 'DECLINED' }) }, 'Respuesta guardada')}>Esta vez no</Button></div> : <Button asChild variant="outline" className="w-full"><Link href={`/hogares-de-transito/casos/${offer.rescueCase.id}`}>{offer.assignment ? 'Abrir tarea' : 'Ver caso'}</Link></Button>}
               </CardContent></Card>

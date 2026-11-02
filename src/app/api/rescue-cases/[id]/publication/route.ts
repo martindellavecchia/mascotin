@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-helpers';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { rescueCasePublicationSchema } from '@/lib/schemas';
 import { FosterNetworkError, publishRescueCase, unpublishRescueCase } from '@/lib/server/foster-network';
 import { notifySolidaritySubscribersForCase } from '@/lib/server/solidarity-alerts';
@@ -16,6 +17,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const auth = await requireAuth();
   if (auth.error) return auth.error;
   const { id } = await params;
+  const limit = await rateLimit(`rescue-case-update:${auth.session.user.id}`, RATE_LIMITS.rescueCaseUpdate);
+  if (!limit.allowed) {
+    return NextResponse.json({ success: false, error: 'Hiciste muchos cambios seguidos. Esperá unos minutos.' }, { status: 429 });
+  }
   const parsed = rescueCasePublicationSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: 'Revisá el resumen y la zona pública', details: parsed.error.issues }, { status: 400 });

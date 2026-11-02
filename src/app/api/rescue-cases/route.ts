@@ -3,7 +3,9 @@ import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { parseFosterList, RESCUE_CONSENT_VERSION } from '@/lib/foster';
 import { parseImageUrls } from '@/lib/media';
+import { coarsenOfferReasons, coarsenOfferScore, toDistanceRangeKm } from '@/lib/offer-distance';
 import { resolveCoordinates } from '@/lib/pet-payload';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { createRescueCaseSchema } from '@/lib/schemas';
 import { createOffersForCase, expireFosterOffers } from '@/lib/server/foster';
 import { createRescueNeeds, serializeRescueNeeds } from '@/lib/server/rescue-needs';
@@ -96,9 +98,9 @@ export async function GET() {
     offers: offers.map((offer) => ({
       id: offer.id,
       status: offer.status,
-      distanceKm: offer.distanceKm,
-      score: offer.score,
-      reasons: parseFosterList(offer.reasons),
+      distanceRangeKm: toDistanceRangeKm(offer.distanceKm),
+      score: coarsenOfferScore(offer.score),
+      reasons: coarsenOfferReasons(parseFosterList(offer.reasons)),
       expiresAt: offer.expiresAt,
       placement: offer.placement,
       rescueCase: {
@@ -131,6 +133,14 @@ export async function GET() {
 export async function POST(request: Request) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
+
+  const limit = await rateLimit(`rescue-case-create:${auth.session.user.id}`, RATE_LIMITS.rescueCaseCreate);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { success: false, error: 'Creaste muchos casos seguidos. Esperá un rato antes de crear otro.' },
+      { status: 429 }
+    );
+  }
 
   try {
     const parsed = createRescueCaseSchema.safeParse(await request.json());

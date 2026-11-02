@@ -1,6 +1,7 @@
 import type { RescueNeedType, VolunteerProfileStatus, VolunteerRole } from '@prisma/client';
 import { haversineKm, toGeoPoint } from '@/lib/geo';
 import { parseFosterList } from '@/lib/foster';
+import { formatDistanceReason } from '@/lib/offer-distance';
 import { normalizeSolidarityRadius } from '@/lib/rescue';
 
 export const VOLUNTEER_TERMS_VERSION = '2026-08-16';
@@ -81,7 +82,7 @@ export function scoreVolunteerCandidate(
     distanceKm: Number(distanceKm.toFixed(2)),
     score: Math.max(1, Math.min(100, distanceScore + capacityScore)),
     reasons: [
-      `${distanceKm.toFixed(1)} km de distancia`,
+      formatDistanceReason(distanceKm),
       VOLUNTEER_ROLE_LABELS[requiredRole],
       `${candidate.maxConcurrentTasks - candidate.occupiedTasks} cupo${candidate.maxConcurrentTasks - candidate.occupiedTasks === 1 ? '' : 's'} disponible${candidate.maxConcurrentTasks - candidate.occupiedTasks === 1 ? '' : 's'}`,
     ],

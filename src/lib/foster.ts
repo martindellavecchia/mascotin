@@ -1,4 +1,5 @@
 import { haversineKm, toGeoPoint } from '@/lib/geo';
+import { formatDistanceReason } from '@/lib/offer-distance';
 
 export const DEFAULT_FOSTER_RADIUS_KM = 5;
 export const MAX_FOSTER_RADIUS_KM = 50;
@@ -144,7 +145,7 @@ export function scoreFosterCandidate(
   const durationScore = Math.min(15, Math.round((candidate.maxDurationDays / need.requestedDays) * 5));
   const experienceScore = candidate.experience === 'experienced' ? 15 : candidate.experience === 'some' ? 10 : 5;
   const reasons = [
-    `${distanceKm.toFixed(1)} km de distancia`,
+    formatDistanceReason(distanceKm),
     `Acepta ${need.species === 'dog' ? 'perros' : need.species === 'cat' ? 'gatos' : 'otros animales'}`,
     `${candidate.capacity - candidate.occupiedSlots} lugar${candidate.capacity - candidate.occupiedSlots === 1 ? '' : 'es'} disponible${candidate.capacity - candidate.occupiedSlots === 1 ? '' : 's'}`,
   ];

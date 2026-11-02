@@ -133,7 +133,7 @@ function OfferCard({
             <p className="font-semibold text-foreground">
               {SPECIES_LABELS[offer.rescueCase.species]} · {SIZE_LABELS[offer.rescueCase.size]}
             </p>
-            <p className="text-sm text-muted-foreground">{offer.rescueCase.location} · {offer.distanceKm.toFixed(1)} km</p>
+            <p className="text-sm text-muted-foreground">{offer.rescueCase.location} · Hasta {offer.distanceRangeKm} km</p>
           </div>
           <Badge variant="outline">{offer.score}% compatible</Badge>
         </div>

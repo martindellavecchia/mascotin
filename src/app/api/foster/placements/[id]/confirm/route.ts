@@ -1,10 +1,25 @@
 import { NextResponse } from 'next/server';
+import type { FosterPlacement } from '@prisma/client';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { createNotification } from '@/lib/notifications';
 import { recalculateRescueCaseStatus, setCaseNeedStatus } from '@/lib/server/rescue-needs';
 
 class PlacementConflict extends Error {}
+
+function placementSummary(placement: FosterPlacement) {
+  return {
+    id: placement.id,
+    offerId: placement.offerId,
+    status: placement.status,
+    requesterConfirmedAt: placement.requesterConfirmedAt,
+    fosterConfirmedAt: placement.fosterConfirmedAt,
+    startedAt: placement.startedAt,
+    expectedEndAt: placement.expectedEndAt,
+    endedAt: placement.endedAt,
+    outcome: placement.outcome,
+  };
+}
 
 export async function POST(
   _request: Request,
@@ -28,7 +43,7 @@ export async function POST(
     return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 403 });
   }
   if (placement.status === 'ACTIVE') {
-    return NextResponse.json({ success: true, placement });
+    return NextResponse.json({ success: true, placement: placementSummary(placement) });
   }
   if (placement.status !== 'COORDINATING') {
     return NextResponse.json({ success: false, error: 'El tránsito ya no está coordinándose' }, { status: 409 });
@@ -118,5 +133,5 @@ export async function POST(
     entityId: placement.id,
   });
 
-  return NextResponse.json({ success: true, placement: updated });
+  return NextResponse.json({ success: true, placement: placementSummary(updated) });
 }

@@ -74,7 +74,7 @@ export interface VolunteerProfileView {
 export interface FosterOfferSummary {
   id: string;
   status: string;
-  distanceKm: number;
+  distanceRangeKm: number;
   score: number;
   reasons: string[];
   expiresAt: string;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-helpers';
 import { db } from '@/lib/db';
 import { parseFosterList } from '@/lib/foster';
+import { coarsenOfferReasons, coarsenOfferScore, toDistanceRangeKm } from '@/lib/offer-distance';
 import { expireVolunteerOffers } from '@/lib/server/volunteer-network';
 import { toGeneralZone } from '@/lib/rescue';
 
@@ -30,9 +31,9 @@ export async function GET() {
       id: offer.id,
       status: offer.status,
       role: offer.role,
-      distanceKm: offer.distanceKm,
-      score: offer.score,
-      reasons: parseFosterList(offer.reasons),
+      distanceRangeKm: toDistanceRangeKm(offer.distanceKm),
+      score: coarsenOfferScore(offer.score),
+      reasons: coarsenOfferReasons(parseFosterList(offer.reasons)),
       expiresAt: offer.expiresAt,
       assignment: offer.assignment,
       need: {

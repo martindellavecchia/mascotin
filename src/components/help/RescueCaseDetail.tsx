@@ -29,9 +29,7 @@ interface OfferDetail {
   status: string;
   source: string;
   unreadCount: number;
-  score: number;
-  distanceKm: number;
-  reasons: string[];
+  distanceRangeKm: number;
   expiresAt: string;
   fosterProfile?: {
     id: string;
@@ -99,9 +97,7 @@ interface CaseDetail {
     status: string;
     source: string;
     unreadCount: number;
-    distanceKm: number;
-    score: number;
-    reasons: string[];
+    distanceRangeKm: number;
     expiresAt: string;
     volunteer?: { id: string; name: string | null; image: string | null };
   }>;
@@ -442,7 +438,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
                 {rescueCase.offers.length === 0 ? <p className="py-6 text-center text-sm text-muted-foreground">Todavía no encontramos hogares compatibles. Podés ampliar el radio.</p> : rescueCase.offers.map((offer) => (
                   <div key={offer.id} className="rounded-xl border border-border p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div><p className="font-medium text-foreground">{offer.fosterProfile?.user.name || 'Hogar de tránsito'}</p><p className="text-sm text-muted-foreground">{offer.fosterProfile?.location} · {offer.distanceKm.toFixed(1)} km</p></div>
+                      <div><p className="font-medium text-foreground">{offer.fosterProfile?.user.name || 'Hogar de tránsito'}</p><p className="text-sm text-muted-foreground">{offer.fosterProfile ? `${offer.fosterProfile.location} · ` : ''}Hasta {offer.distanceRangeKm} km</p></div>
                       <div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionado' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrado'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-primary">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div>
                     </div>
                     {['INTERESTED', 'SELECTED'].includes(offer.status) && <div className="mt-3 flex flex-col gap-2 sm:flex-row"><Button variant="outline" onClick={() => showContact({ kind: 'FOSTER', offerId: offer.id, status: offer.status, expiresAt: offer.expiresAt })}>Conversar</Button>{offer.status === 'INTERESTED' && !placement && <Button disabled={acting} onClick={() => void mutate(`/api/foster/offers/${offer.id}/select`, { method: 'POST' }, 'Hogar seleccionado. Ya pueden coordinar.')}>Elegir este hogar</Button>}</div>}
@@ -458,7 +454,7 @@ export default function RescueCaseDetail({ caseId, initialContactOpen = false, i
               <CardContent className="space-y-3">
                 {rescueCase.volunteerOffers!.map((offer) => (
                   <div key={offer.id} className="rounded-xl border border-border p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-medium text-foreground">{offer.volunteer?.name || 'Persona voluntaria'}</p><p className="text-sm text-muted-foreground">{VOLUNTEER_ROLE_LABELS[offer.role]} · {offer.distanceKm.toFixed(1)} km</p></div><div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionada' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrada'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-primary">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div></div>
+                    <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-medium text-foreground">{offer.volunteer?.name || 'Persona voluntaria'}</p><p className="text-sm text-muted-foreground">{VOLUNTEER_ROLE_LABELS[offer.role]} · Hasta {offer.distanceRangeKm} km</p></div><div className="flex items-center gap-2"><Badge variant="outline">{offer.status === 'INTERESTED' ? 'Puede ayudar' : offer.status === 'SELECTED' ? 'Seleccionada' : offer.status === 'PENDING' ? 'Sin responder' : offer.status === 'DECLINED' ? 'No disponible' : 'Cerrada'}</Badge>{offer.unreadCount > 0 && <Badge className="bg-teal-100 text-primary">{offer.unreadCount} nuevo{offer.unreadCount === 1 ? '' : 's'}</Badge>}</div></div>
                     {['INTERESTED', 'SELECTED'].includes(offer.status) && <div className="mt-3 flex flex-col gap-2 sm:flex-row"><Button variant="outline" onClick={() => showContact({ kind: 'VOLUNTEER', offerId: offer.id, status: offer.status, expiresAt: offer.expiresAt })}>Conversar</Button>{offer.status === 'INTERESTED' && !rescueCase.volunteerAssignments?.some((assignment) => assignment.needId === offer.needId && assignment.status === 'ACTIVE') && <Button disabled={acting} onClick={() => void mutate(`/api/volunteer/offers/${offer.id}/select`, { method: 'POST' }, 'Tarea asignada. Ya pueden conversar.')}>Elegir responsable</Button>}</div>}
                   </div>
                 ))}

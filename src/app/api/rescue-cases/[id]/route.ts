@@ -7,9 +7,12 @@ import {
   scoreFosterCandidate,
 } from '@/lib/foster';
 import { parseImageUrls } from '@/lib/media';
+import { coarsenOfferReasons, coarsenOfferScore, toDistanceRangeKm } from '@/lib/offer-distance';
 import { matchesSolidaritySubscription, toGeneralZone } from '@/lib/rescue';
 import { getRescueContactOptions } from '@/lib/server/rescue-contact';
 import { serializeRescueNeeds } from '@/lib/server/rescue-needs';
+
+const RESPONDED_OFFER_STATUSES: string[] = ['INTERESTED', 'SELECTED'];
 
 export async function GET(
   _request: Request,
@@ -197,27 +200,27 @@ export async function GET(
         status: offer.status,
         source: offer.source,
         unreadCount: offer._count.messages + (offer.placement?._count.messages || 0),
-        score: offer.score,
-        distanceKm: offer.distanceKm,
-        reasons: parseFosterList(offer.reasons),
+        distanceRangeKm: toDistanceRangeKm(offer.distanceKm),
         expiresAt: offer.expiresAt,
-        fosterProfile: {
-          id: offer.fosterProfile.id,
-          status: offer.fosterProfile.status,
-          acceptsSpecies: parseFosterList(offer.fosterProfile.acceptsSpecies),
-          acceptsSizes: parseFosterList(offer.fosterProfile.acceptsSizes),
-          capacity: offer.fosterProfile.capacity,
-          occupiedSlots: offer.fosterProfile.occupiedSlots,
-          location: toGeneralZone(offer.fosterProfile.location),
-          maxDurationDays: offer.fosterProfile.maxDurationDays,
-          housingType: offer.fosterProfile.housingType,
-          hasYard: offer.fosterProfile.hasYard,
-          hasKids: offer.fosterProfile.hasKids,
-          hasOtherPets: offer.fosterProfile.hasOtherPets,
-          experience: offer.fosterProfile.experience,
-          notes: offer.fosterProfile.notes,
-          user: offer.fosterProfile.user,
-        },
+        ...(RESPONDED_OFFER_STATUSES.includes(offer.status) && {
+          fosterProfile: {
+            id: offer.fosterProfile.id,
+            status: offer.fosterProfile.status,
+            acceptsSpecies: parseFosterList(offer.fosterProfile.acceptsSpecies),
+            acceptsSizes: parseFosterList(offer.fosterProfile.acceptsSizes),
+            capacity: offer.fosterProfile.capacity,
+            occupiedSlots: offer.fosterProfile.occupiedSlots,
+            location: toGeneralZone(offer.fosterProfile.location),
+            maxDurationDays: offer.fosterProfile.maxDurationDays,
+            housingType: offer.fosterProfile.housingType,
+            hasYard: offer.fosterProfile.hasYard,
+            hasKids: offer.fosterProfile.hasKids,
+            hasOtherPets: offer.fosterProfile.hasOtherPets,
+            experience: offer.fosterProfile.experience,
+            notes: offer.fosterProfile.notes,
+            user: offer.fosterProfile.user,
+          },
+        }),
       }))
     : viewerOffer
       ? [{
@@ -225,9 +228,9 @@ export async function GET(
           status: viewerOffer.status,
           source: viewerOffer.source,
           unreadCount: viewerOffer._count.messages + (viewerOffer.placement?._count.messages || 0),
-          score: viewerOffer.score,
-          distanceKm: viewerOffer.distanceKm,
-          reasons: parseFosterList(viewerOffer.reasons),
+          score: coarsenOfferScore(viewerOffer.score),
+          distanceRangeKm: toDistanceRangeKm(viewerOffer.distanceKm),
+          reasons: coarsenOfferReasons(parseFosterList(viewerOffer.reasons)),
           expiresAt: viewerOffer.expiresAt,
         }]
       : [];
@@ -269,7 +272,12 @@ export async function GET(
       needs: serializeRescueNeeds(rescueCase.needs),
       offers: visibleOffers,
       placements,
-      events: rescueCase.events,
+      events: rescueCase.events.map((event) => ({
+        id: event.id,
+        type: event.type,
+        createdAt: event.createdAt,
+        actor: event.actor,
+      })),
       publication: rescueCase.communityPost ? {
         summary: rescueCase.communityPost.content,
         publicZone: rescueCase.communityPost.location,
@@ -289,11 +297,9 @@ export async function GET(
             status: offer.status,
             source: offer.source,
             unreadCount: offer._count.messages + (offer.assignment?._count.messages || 0),
-            distanceKm: offer.distanceKm,
-            score: offer.score,
-            reasons: parseFosterList(offer.reasons),
+            distanceRangeKm: toDistanceRangeKm(offer.distanceKm),
             expiresAt: offer.expiresAt,
-            volunteer: offer.volunteerProfile.user,
+            ...(RESPONDED_OFFER_STATUSES.includes(offer.status) && { volunteer: offer.volunteerProfile.user }),
           })))
         : viewerVolunteerOffers.map((offer) => ({
             id: offer.id,
@@ -303,9 +309,9 @@ export async function GET(
             status: offer.status,
             source: offer.source,
             unreadCount: offer._count.messages + (offer.assignment?._count.messages || 0),
-            distanceKm: offer.distanceKm,
-            score: offer.score,
-            reasons: parseFosterList(offer.reasons),
+            distanceRangeKm: toDistanceRangeKm(offer.distanceKm),
+            score: coarsenOfferScore(offer.score),
+            reasons: coarsenOfferReasons(parseFosterList(offer.reasons)),
             expiresAt: offer.expiresAt,
           })),
       volunteerAssignments: rescueCase.needs.flatMap((need) => need.volunteerAssignments
