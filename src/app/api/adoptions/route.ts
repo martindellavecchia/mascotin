@@ -60,8 +60,6 @@ export async function GET(request: Request) {
     success: true,
     listings: listings.map((listing) => ({
       id: listing.id,
-      petId: listing.petId,
-      listedByUserId: listing.listedByUserId,
       sourceRescueCaseId: listing.sourceRescueCaseId,
       status: listing.status,
       character: listing.character,
@@ -70,7 +68,7 @@ export async function GET(request: Request) {
       location: listing.location,
       createdAt: listing.createdAt,
       updatedAt: listing.updatedAt,
-      listedBy: listing.listedBy,
+      listedBy: listing.sourceRescueCaseId ? { id: 'foster-module', name: 'Hogar de tránsito' } : listing.listedBy,
       _count: listing._count,
       pet: withImageFields(listing.pet),
     })),

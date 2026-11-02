@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { passesMatchFilters, scorePetMatch } from '@/lib/matching';
 import { currentOrigin } from '@/lib/matching';
+import { toPublicPet } from '@/lib/pet-dto';
 import { DISCOVERY_CANDIDATE_LIMIT, DISCOVERY_CANDIDATE_ORDER, getPetDiscoveryQuery } from '@/lib/server/pet-discovery';
 
 export async function GET(request: Request) {
@@ -109,7 +110,7 @@ export async function GET(request: Request) {
           currentPet.owner.location,
           currentPet.owner.bio
         );
-        return { ...pet, matchScore: scored.matchScore, matchReason: scored.matchReason };
+        return { ...toPublicPet(pet), matchScore: scored.matchScore, matchReason: scored.matchReason };
       })
       .sort((left, right) => right.matchScore - left.matchScore);
 

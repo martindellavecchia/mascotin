@@ -3,7 +3,9 @@ import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { withImageFields } from '@/lib/media';
+import { PUBLIC_PET_SELECT, toPublicPet } from '@/lib/pet-dto';
 import { ensurePetIdentity } from '@/lib/pet-payload';
+import { canViewPublicPet } from '@/lib/server/pet-access';
 
 export async function GET(
   _request: Request,
@@ -16,8 +18,8 @@ export async function GET(
     }
 
     const { id } = await params;
-    const pet = await db.pet.findUnique({
-      where: { id },
+    const ownPet = await db.pet.findFirst({
+      where: { id, owner: { userId: session.user.id } },
       include: {
         owner: {
           select: {
@@ -25,7 +27,6 @@ export async function GET(
             name: true,
             location: true,
             image: true,
-            userId: true,
           },
         },
         healthRecords: {
@@ -35,20 +36,25 @@ export async function GET(
       },
     });
 
+    if (ownPet) {
+      const identified = await ensurePetIdentity(ownPet);
+      return NextResponse.json({
+        success: true,
+        pet: { ...withImageFields({ ...ownPet, ...identified }), isOwner: true },
+      });
+    }
+
+    const pet = (await canViewPublicPet(session.user.id, id))
+      ? await db.pet.findUnique({ where: { id }, select: PUBLIC_PET_SELECT })
+      : null;
+
     if (!pet) {
       return NextResponse.json({ success: false, error: 'Mascota no encontrada' }, { status: 404 });
     }
 
-    const identified = await ensurePetIdentity(pet);
-    const isOwner = pet.owner.userId === session.user.id;
-    const { userId: _ownerUserId, ...owner } = pet.owner;
-    const payload = withImageFields({ ...pet, ...identified, owner });
-
     return NextResponse.json({
       success: true,
-      pet: isOwner
-        ? { ...payload, isOwner }
-        : { ...payload, isOwner, healthRecords: [], microchipId: null, emergencyToken: null },
+      pet: { ...toPublicPet(pet), isOwner: false, healthRecords: [] },
     });
   } catch {
     return NextResponse.json(

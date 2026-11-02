@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { PUBLIC_PET_SELECT, toPublicPet } from '@/lib/pet-dto';
 import { VISIBLE_PROFILE_USER_FILTER } from '@/lib/server/profile-visibility';
 
 export async function GET() {
@@ -30,7 +31,13 @@ export async function GET() {
                 isActive: true,
                 id: { notIn: ownPetIds },
                 owner: {
-                    user: { syntheticRunId: viewer?.syntheticRunId || null, ...VISIBLE_PROFILE_USER_FILTER },
+                    user: {
+                        syntheticRunId: viewer?.syntheticRunId || null,
+                        isBlocked: false,
+                        blockedUsers: { none: { blockedId: session.user.id } },
+                        blockedByUsers: { none: { blockerId: session.user.id } },
+                        ...VISIBLE_PROFILE_USER_FILTER,
+                    },
                 },
             },
             orderBy: [
@@ -38,12 +45,12 @@ export async function GET() {
                 { level: 'desc' },
             ],
             take: 6,
-            include: { owner: true },
+            select: PUBLIC_PET_SELECT,
         });
 
         return NextResponse.json({
             success: true,
-            pets: trendingPets,
+            pets: trendingPets.map(toPublicPet),
         }, {
             headers: {
                 'Cache-Control': 'private, max-age=300',

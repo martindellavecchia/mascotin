@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { extractPassportFields, resolveCoordinates } from '@/lib/pet-payload';
 import { normalizePetImageSelection } from '@/lib/media';
+import { PUBLIC_PET_SELECT, toPublicPet } from '@/lib/pet-dto';
+import { canViewPublicPet } from '@/lib/server/pet-access';
 
 // GET - Get pet by ID
 export async function GET(
@@ -20,23 +22,26 @@ export async function GET(
         }
 
         const { id } = await params;
-        const [pet, viewer] = await Promise.all([
-            db.pet.findUnique({
-                where: { id },
-                include: { owner: { include: { user: { select: { syntheticRunId: true } } } } },
-            }),
-            db.user.findUnique({ where: { id: session.user.id }, select: { syntheticRunId: true } }),
-        ]);
+        const ownPet = await db.pet.findFirst({
+            where: { id, owner: { userId: session.user.id } },
+            include: { owner: { select: { name: true, location: true, image: true } } },
+        });
+        if (ownPet) {
+            return NextResponse.json({ success: true, pet: ownPet });
+        }
 
-        if (!pet || pet.owner.user.syntheticRunId !== (viewer?.syntheticRunId || null)) {
+        const pet = (await canViewPublicPet(session.user.id, id))
+            ? await db.pet.findUnique({ where: { id }, select: PUBLIC_PET_SELECT })
+            : null;
+
+        if (!pet) {
             return NextResponse.json(
                 { success: false, error: 'Mascota no encontrada' },
                 { status: 404 }
             );
         }
 
-        const { user: _ownerUser, ...owner } = pet.owner;
-        return NextResponse.json({ success: true, pet: { ...pet, owner } });
+        return NextResponse.json({ success: true, pet: toPublicPet(pet) });
     } catch (error) {
         return NextResponse.json(
             { success: false, error: 'No pudimos cargar la mascota. Intentá de nuevo.' },

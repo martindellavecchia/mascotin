@@ -24,7 +24,7 @@ interface ListingDetail {
   requirements: string | null;
   location: string | null;
   status: string;
-  listedByUserId: string;
+  isOwner: boolean;
   pet: {
     id: string;
     name: string;
@@ -60,7 +60,7 @@ const APPLICATION_STATUS_LABELS: Record<string, string> = {
 
 export default function AdoptionDetailPage() {
   const params = useParams<{ id: string }>();
-  const { data: session, status: sessionStatus } = useSession();
+  const { status: sessionStatus } = useSession();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -163,7 +163,7 @@ export default function AdoptionDetailPage() {
   }
 
   const image = getPrimaryImageUrl(listing.pet.images, listing.pet.thumbnailIndex);
-  const isOwner = listing.listedByUserId === session?.user?.id;
+  const isOwner = listing.isOwner;
   const currentApplication = !isOwner ? listing.applications?.[0] : undefined;
   const applicationStatus = APPLICATION_STATUS_LABELS[currentApplication?.status || 'PENDING'] || 'Pendiente';
 

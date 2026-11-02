@@ -79,8 +79,7 @@ export async function GET(
     success: true,
     listing: {
       id: listing.id,
-      petId: listing.petId,
-      listedByUserId: listing.listedByUserId,
+      isOwner: listing.listedByUserId === auth.session.user.id,
       sourceRescueCaseId: listing.sourceRescueCaseId,
       status: listing.status,
       character: listing.character,

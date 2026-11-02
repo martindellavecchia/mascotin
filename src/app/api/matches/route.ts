@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth } from '@/lib/api-helpers';
 import { logger } from '@/lib/logger';
-import { withImageFields } from '@/lib/media';
+import { PUBLIC_PET_SELECT, toPublicPet } from '@/lib/pet-dto';
+import { getBlockedRelationUserIds } from '@/lib/server/pet-access';
 
 const log = logger.forRoute('/api/matches', 'GET');
 
@@ -66,20 +67,25 @@ export async function GET(request: Request) {
       });
     }
 
+    const blockedIds = await getBlockedRelationUserIds(session.user.id);
+    const allowedOwner = { owner: { user: { isBlocked: false, id: { notIn: blockedIds } } } };
+
     // Get all matches for the pets (include both pets to avoid N+1 queries)
     const matches = await db.match.findMany({
       where: {
         OR: [
           { pet1Id: { in: petIds } },
           { pet2Id: { in: petIds } }
-        ]
+        ],
+        pet1: allowedOwner,
+        pet2: allowedOwner,
       },
       orderBy: {
         createdAt: 'desc'
       },
       include: {
-        pet1: { include: { owner: true } },
-        pet2: { include: { owner: true } },
+        pet1: { select: PUBLIC_PET_SELECT },
+        pet2: { select: PUBLIC_PET_SELECT },
       },
     });
 
@@ -88,10 +94,7 @@ export async function GET(request: Request) {
         const pet1Id = match.pet1Id || '';
         const otherPet = petIds.includes(pet1Id) ? match.pet2 : match.pet1;
         if (!otherPet) return null;
-        return withImageFields({
-          ...otherPet,
-          matchId: match.id
-        });
+        return { ...toPublicPet(otherPet), matchId: match.id };
       })
       .filter((pet): pet is NonNullable<typeof pet> => pet !== null);
 

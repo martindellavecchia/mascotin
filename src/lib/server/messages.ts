@@ -1,8 +1,9 @@
 import 'server-only';
 
 import type { MatchWithPet } from '@/types/messages';
-import { withImageFields } from '@/lib/media';
+import { PUBLIC_PET_SELECT, toPublicPet } from '@/lib/pet-dto';
 import { db } from '@/lib/db';
+import { getBlockedRelationUserIds } from '@/lib/server/pet-access';
 import { serializeForClient } from '@/lib/server/serialize';
 
 export interface MessageGroupListItem {
@@ -54,19 +55,23 @@ export async function getMessagesBootstrapData(
     select: { id: true },
   });
   const petIds = pets.map((pet) => pet.id);
+  const blockedIds = await getBlockedRelationUserIds(userId);
+  const allowedOwner = { owner: { user: { isBlocked: false, id: { notIn: blockedIds } } } };
 
   const matches = petIds.length === 0
     ? []
     : await db.match.findMany({
         where: {
           OR: [{ pet1Id: { in: petIds } }, { pet2Id: { in: petIds } }],
+          pet1: allowedOwner,
+          pet2: allowedOwner,
         },
         orderBy: {
           createdAt: 'desc',
         },
         include: {
-          pet1: { include: { owner: true } },
-          pet2: { include: { owner: true } },
+          pet1: { select: PUBLIC_PET_SELECT },
+          pet2: { select: PUBLIC_PET_SELECT },
         },
       });
 
@@ -78,10 +83,7 @@ export async function getMessagesBootstrapData(
         return null;
       }
 
-      return withImageFields({
-        ...otherPet,
-        matchId: match.id,
-      });
+      return { ...toPublicPet(otherPet), matchId: match.id };
     })
     .filter((match): match is NonNullable<typeof match> => match !== null);
 
