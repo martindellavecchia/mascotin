@@ -14,7 +14,7 @@ export class MeetupError extends Error {
 export async function requireActiveMatch(
   userId: string,
   matchId: string,
-  tx: Prisma.TransactionClient = db
+  tx: Prisma.TransactionClient = db as unknown as Prisma.TransactionClient
 ) {
   const match = await tx.match.findUnique({
     where: { id: matchId },

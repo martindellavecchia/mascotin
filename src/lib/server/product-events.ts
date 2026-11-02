@@ -5,7 +5,7 @@ export async function recordProductEvent(
   userId: string,
   name: string,
   entityKey: string,
-  tx: Prisma.TransactionClient = db
+  tx: Prisma.TransactionClient = db as unknown as Prisma.TransactionClient
 ) {
   const user = await tx.user.findUnique({
     where: { id: userId },

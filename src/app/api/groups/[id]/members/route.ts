@@ -21,7 +21,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         const members = await prisma.groupMember.findMany({
             where: { groupId: params.id },
-            include: { user: true },
+            select: {
+                id: true,
+                role: true,
+                joinedAt: true,
+                user: { select: { id: true, name: true, image: true } },
+            },
             orderBy: { role: 'asc' }
         });
 
