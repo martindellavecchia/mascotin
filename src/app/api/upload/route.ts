@@ -14,6 +14,14 @@ const MAX_IMAGE_DIMENSION = 1200;
 const OUTPUT_IMAGE_QUALITY = 78;
 const log = logger.forRoute('/api/upload', 'POST');
 
+function detectImageType({ format, compression }: { format?: string; compression?: string }) {
+  if (format === 'jpeg' || format === 'png' || format === 'webp' || format === 'gif') {
+    return `image/${format}`;
+  }
+  // libvips reports AVIF as an AV1-compressed HEIF container.
+  return format === 'heif' && compression === 'av1' ? 'image/avif' : null;
+}
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -46,8 +54,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Las imágenes SVG no están permitidas. Usá JPG, PNG o WebP.' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const optimizedBuffer = await sharp(Buffer.from(bytes))
+    const input = Buffer.from(await file.arrayBuffer());
+    if (detectImageType(await sharp(input).metadata()) !== file.type) {
+      return NextResponse.json(
+        { success: false, error: 'El archivo no es una imagen válida. Probá con JPG, PNG, WebP, GIF o AVIF.' },
+        { status: 400 }
+      );
+    }
+
+    const optimizedBuffer = await sharp(input)
       .rotate()
       .resize({
         width: MAX_IMAGE_DIMENSION,
