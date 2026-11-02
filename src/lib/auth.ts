@@ -1,15 +1,26 @@
 import { NextAuthOptions } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import { getClientIp } from './client-ip';
 import { db } from './db';
 import { rateLimit, RATE_LIMITS } from './rate-limit';
 import { loginSchema } from './schemas';
 import { getSessionTokenCookie, shouldUseSecureCookies } from './auth-cookies';
+import { hashToken } from './token-hash';
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
-  .split(',')
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean);
+function isListedAdminEmail(email: string) {
+  return (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((listed) => listed.trim().toLowerCase())
+    .includes(email);
+}
+
+// Accounts created later must prove they own the address before being promoted.
+const ADMIN_PROMOTION_CUTOFF = new Date('2026-11-02T00:00:00.000Z');
+
+function canPromoteToAdmin(user: { createdAt: Date; emailVerified: Date | null }) {
+  return user.createdAt < ADMIN_PROMOTION_CUTOFF || Boolean(user.emailVerified);
+}
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -30,7 +41,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         try {
           const parsed = loginSchema.safeParse({
             email: credentials?.email,
@@ -44,8 +55,12 @@ export const authOptions: NextAuthOptions = {
           const email = parsed.data.email.toLowerCase();
           const { password } = parsed.data;
 
-          const limit = await rateLimit(`auth:${email}`, RATE_LIMITS.auth);
-          if (!limit.allowed) {
+          const emailKey = hashToken(email);
+          const [attemptLimit, accountLimit] = await Promise.all([
+            rateLimit(`auth:${getClientIp(req?.headers)}:${emailKey}`, RATE_LIMITS.auth),
+            rateLimit(`auth-account:${emailKey}`, RATE_LIMITS.authAccount),
+          ]);
+          if (!attemptLimit.allowed || !accountLimit.allowed) {
             return null;
           }
 
@@ -64,6 +79,7 @@ export const authOptions: NextAuthOptions = {
               password: true,
               isBlocked: true,
               emailVerified: true,
+              createdAt: true,
               role: true,
               owner: {
                 select: {
@@ -93,14 +109,16 @@ export const authOptions: NextAuthOptions = {
 
           let role = user.role;
 
-          if (ADMIN_EMAILS.includes(email)) {
-            if (role !== 'ADMIN') {
+          if (role !== 'ADMIN' && isListedAdminEmail(email)) {
+            if (canPromoteToAdmin(user)) {
               await db.user.update({
                 where: { id: user.id },
                 data: { role: 'ADMIN' },
               });
               role = 'ADMIN';
               console.warn(`[SECURITY] Auto-promoted ${email} to ADMIN role`);
+            } else {
+              console.warn(`[SECURITY] Skipped ADMIN promotion for unverified account ${user.id}`);
             }
           }
 

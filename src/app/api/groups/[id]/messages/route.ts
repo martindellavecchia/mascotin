@@ -5,9 +5,11 @@ import { authOptions } from '@/lib/auth';
 import {
     buildMessagePage,
     clampMessageLimit,
+    MAX_MESSAGE_LENGTH,
     parseMessageCursor,
 } from '@/lib/messages';
 import { createNotificationBulk } from '@/lib/notifications';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     try {
@@ -79,7 +81,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) return NextResponse.json({ success: false, error: 'No autenticado' }, { status: 401 });
 
+        const limit = await rateLimit(`chat:${session.user.id}`, RATE_LIMITS.chatMessage);
+        if (!limit.allowed) {
+            return NextResponse.json({ success: false, error: 'Enviaste muchos mensajes seguidos. Esperá un momento.' }, { status: 429 });
+        }
+
         const { content } = await req.json();
+
+        if (typeof content !== 'string' || !content.trim()) {
+            return NextResponse.json({ success: false, error: 'Escribí un mensaje antes de enviarlo' }, { status: 400 });
+        }
+
+        if (content.length > MAX_MESSAGE_LENGTH) {
+            return NextResponse.json({ success: false, error: `El mensaje puede tener hasta ${MAX_MESSAGE_LENGTH} caracteres` }, { status: 400 });
+        }
 
         // Verify membership? For now assume valid member if allowed to post in UI
         const member = await prisma.groupMember.findUnique({

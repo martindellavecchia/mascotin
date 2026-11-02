@@ -192,9 +192,15 @@ export async function cleanupExpiredRateLimitBuckets(): Promise<number> {
 // Pre-configured rate limiters for common use cases
 export const RATE_LIMITS = {
   /** Auth endpoints: 10 attempts per minute */
-  auth: { maxRequests: 10, windowMs: 60000 },
+  auth: { maxRequests: 10, windowMs: 60000, distributed: true, memoryFallback: true },
+  /** Login attempts per account from any address: 50 per 15 minutes */
+  authAccount: { maxRequests: 50, windowMs: 900000, distributed: true, memoryFallback: true },
+  /** Password reset emails per account: 5 per hour */
+  passwordResetEmail: { maxRequests: 5, windowMs: 3600000, distributed: true, memoryFallback: true },
   /** Registration: 5 per 10 minutes */
-  register: { maxRequests: 5, windowMs: 600000 },
+  register: { maxRequests: 5, windowMs: 600000, distributed: true, memoryFallback: true },
+  /** Chat messages: 30 per minute */
+  chatMessage: { maxRequests: 30, windowMs: 60000, distributed: true, memoryFallback: true },
   /** Swipe: 60 per minute */
   swipe: { maxRequests: 60, windowMs: 60000 },
   /** Upload: 5 per minute */

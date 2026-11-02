@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { getClientIp } from '@/lib/client-ip';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { sendEmail, buildVerificationEmail } from '@/lib/email';
 import { hashToken } from '@/lib/token-hash';
@@ -9,8 +10,7 @@ import { registerSchema } from '@/lib/schemas';
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const limit = await rateLimit(`register:${ip}`, RATE_LIMITS.register);
+    const limit = await rateLimit(`register:${getClientIp(request.headers)}`, RATE_LIMITS.register);
     if (!limit.allowed) {
       return NextResponse.json(
         { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },
@@ -58,7 +58,6 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        ...(hasEmailProvider ? {} : { emailVerified: new Date() }),
       },
     });
 

@@ -1,5 +1,6 @@
 export const DEFAULT_MESSAGE_PAGE_SIZE = 50;
 export const MAX_MESSAGE_PAGE_SIZE = 50;
+export const MAX_MESSAGE_LENGTH = 2000;
 
 function toIsoString(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();

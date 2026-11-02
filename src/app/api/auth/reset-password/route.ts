@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { getClientIp } from '@/lib/client-ip';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { hashToken } from '@/lib/token-hash';
 
@@ -17,8 +18,7 @@ const resetSchema = z.object({
 export async function POST(request: Request) {
   try {
     // Rate limit by IP
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const limit = await rateLimit(`reset-password:${ip}`, RATE_LIMITS.auth);
+    const limit = await rateLimit(`reset-password:${getClientIp(request.headers)}`, RATE_LIMITS.auth);
     if (!limit.allowed) {
       return NextResponse.json(
         { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { StateFeedback } from '@/components/ui/state-feedback';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import { mergeMessagesById } from '@/lib/messages';
+import { MAX_MESSAGE_LENGTH, mergeMessagesById } from '@/lib/messages';
 import { LoadingSpinner } from '@/components/ui/loading';
 import type { GroupMessage } from '@/types/messages';
 import { formatTimeOfDay } from '@/lib/date-format';
@@ -343,6 +343,7 @@ export default function GroupChat({
             placeholder="Escribí un mensaje..."
             aria-label="Mensaje para el grupo"
             autoComplete="off"
+            maxLength={MAX_MESSAGE_LENGTH}
             className="h-11 min-w-0 flex-1"
             disabled={sending}
           />

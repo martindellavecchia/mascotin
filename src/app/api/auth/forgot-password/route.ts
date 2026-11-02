@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import crypto from 'crypto';
+import { getClientIp } from '@/lib/client-ip';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { sendEmail, buildPasswordResetEmail } from '@/lib/email';
 import { hashToken } from '@/lib/token-hash';
@@ -8,8 +9,7 @@ import { hashToken } from '@/lib/token-hash';
 export async function POST(request: Request) {
   try {
     // Rate limit by IP
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const limit = await rateLimit(`forgot-password:${ip}`, RATE_LIMITS.auth);
+    const limit = await rateLimit(`forgot-password:${getClientIp(request.headers)}`, RATE_LIMITS.auth);
     if (!limit.allowed) {
       return NextResponse.json(
         { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },
@@ -24,6 +24,17 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: 'Email requerido' },
         { status: 400 }
+      );
+    }
+
+    const emailLimit = await rateLimit(
+      `forgot-password-email:${hashToken(email.trim().toLowerCase())}`,
+      RATE_LIMITS.passwordResetEmail
+    );
+    if (!emailLimit.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Demasiados intentos. Intentá de nuevo más tarde.' },
+        { status: 429 }
       );
     }
 

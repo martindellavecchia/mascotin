@@ -5,9 +5,11 @@ import { authOptions } from '@/lib/auth';
 import {
   buildMessagePage,
   clampMessageLimit,
+  MAX_MESSAGE_LENGTH,
   parseMessageCursor,
 } from '@/lib/messages';
 import { createNotification } from '@/lib/notifications';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 async function markConversationRead(matchId: string, userId: string): Promise<number> {
   try {
@@ -143,6 +145,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const limit = await rateLimit(`chat:${session.user.id}`, RATE_LIMITS.chatMessage);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Enviaste muchos mensajes seguidos. Esperá un momento.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json().catch(() => null);
     const matchId: unknown = body?.matchId;
     const content: unknown = body?.content;
@@ -150,6 +160,13 @@ export async function POST(request: Request) {
     if (typeof matchId !== 'string' || !matchId || typeof content !== 'string' || !content.trim()) {
       return NextResponse.json(
         { success: false, error: 'Escribí un mensaje antes de enviarlo' },
+        { status: 400 }
+      );
+    }
+
+    if (content.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { success: false, error: `El mensaje puede tener hasta ${MAX_MESSAGE_LENGTH} caracteres` },
         { status: 400 }
       );
     }
@@ -189,6 +206,22 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: 'No pudimos identificar a quién enviarle el mensaje' },
         { status: 400 }
+      );
+    }
+
+    const blocked = await db.blockedUser.findFirst({
+      where: {
+        OR: [
+          { blockerId: session.user.id, blockedId: receiverId },
+          { blockerId: receiverId, blockedId: session.user.id },
+        ],
+      },
+      select: { id: true },
+    });
+    if (blocked) {
+      return NextResponse.json(
+        { success: false, error: 'No podés enviar mensajes en esta conversación' },
+        { status: 403 }
       );
     }
 

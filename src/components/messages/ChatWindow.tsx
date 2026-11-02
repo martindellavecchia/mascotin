@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import MeetupPanel from '@/components/messages/MeetupPanel';
 import { useAdaptivePolling } from '@/hooks/useAdaptivePolling';
 import { useFetchWithError } from '@/hooks/useFetchWithError';
-import { mergeMessagesById } from '@/lib/messages';
+import { MAX_MESSAGE_LENGTH, mergeMessagesById } from '@/lib/messages';
 import { getPrimaryImageUrl } from '@/lib/media';
 import type { MatchWithPet, Message } from '@/types/messages';
 import { formatTimeOfDay } from '@/lib/date-format';
@@ -467,6 +467,7 @@ export default function ChatWindow({
             onChange={(event) => setNewMessage(event.target.value)}
             aria-label="Mensaje"
             autoComplete="off"
+            maxLength={MAX_MESSAGE_LENGTH}
             className="h-11 min-w-0 flex-1 bg-background"
             disabled={sending}
           />

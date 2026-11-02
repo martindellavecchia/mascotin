@@ -7,6 +7,7 @@ const mockMessageFindFirst = jest.fn();
 const mockMessageUpdateMany = jest.fn();
 const mockNotificationUpdateMany = jest.fn();
 const mockGroupMemberFindUnique = jest.fn();
+const mockBlockedUserFindFirst = jest.fn().mockResolvedValue(null);
 
 if (typeof Response !== 'undefined' && typeof Response.json !== 'function') {
   Response.json = function json(body?: BodyInit | null, init?: ResponseInit) {
@@ -42,8 +43,16 @@ jest.mock('@/lib/notifications', () => ({
   createNotificationBulk: (...args: unknown[]) => mockCreateNotificationBulk(...args),
 }));
 
+jest.mock('@/lib/rate-limit', () => ({
+  rateLimit: jest.fn().mockResolvedValue({ allowed: true }),
+  RATE_LIMITS: { chatMessage: {} },
+}));
+
 jest.mock('@/lib/db', () => ({
   db: {
+    blockedUser: {
+      findFirst: (...args: unknown[]) => mockBlockedUserFindFirst(...args),
+    },
     match: {
       findUnique: (...args: unknown[]) => mockMatchFindUnique(...args),
     },
