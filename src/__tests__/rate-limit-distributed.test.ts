@@ -49,4 +49,15 @@ describe('distributed rescue rate limits', () => {
     await expect(cleanupExpiredRateLimitBuckets()).resolves.toBe(4);
     expect(dbMock.rateLimitBucket.deleteMany).toHaveBeenCalledWith({ where: { expiresAt: { lt: expect.any(Date) } } });
   });
+
+  it('uses the instance limit when configured and the shared store fails', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    dbMock.$queryRaw.mockRejectedValue(new Error('relation does not exist'));
+    const config = { maxRequests: 1, windowMs: 60000, distributed: true, memoryFallback: true };
+
+    await expect(rateLimit('fallback:user-1', config)).resolves.toMatchObject({ allowed: true });
+    await expect(rateLimit('fallback:user-1', config)).resolves.toMatchObject({ allowed: false });
+    expect(consoleError).toHaveBeenCalledWith('Distributed database rate limit fell back to memory:', expect.any(Error));
+    consoleError.mockRestore();
+  });
 });
