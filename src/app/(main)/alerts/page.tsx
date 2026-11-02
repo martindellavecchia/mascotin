@@ -24,7 +24,6 @@ interface AlertPost {
   content: string;
   postType: string;
   lastSeenLocation: string | null;
-  contactPhone: string | null;
   isResolved: boolean;
   createdAt: string;
   images: string;

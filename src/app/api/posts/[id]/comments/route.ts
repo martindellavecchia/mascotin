@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
+import { requireAuth } from '@/lib/api-helpers';
 import { authOptions } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
 
@@ -8,11 +9,14 @@ export async function GET(
     req: Request,
     { params }: { params: { id: string } }
 ) {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+
     try {
         const postId = params.id;
 
         const comments = await prisma.comment.findMany({
-            where: { postId },
+            where: { postId, post: { isVisible: true } },
             orderBy: { createdAt: 'asc' },
             include: {
                 author: {

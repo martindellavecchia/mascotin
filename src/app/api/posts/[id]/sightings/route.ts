@@ -9,15 +9,48 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const { id } = await params;
+  const post = await db.post.findFirst({
+    where: { id, isVisible: true, postType: { in: ['lost_pet', 'found_pet'] } },
+    select: { authorId: true },
+  });
+  if (!post) {
+    return NextResponse.json({ success: false, error: 'Alerta no encontrada' }, { status: 404 });
+  }
+
   const sightings = await db.petSighting.findMany({
     where: { postId: id },
     orderBy: { createdAt: 'desc' },
+    take: 100,
     include: {
       reporter: { select: { id: true, name: true, image: true } },
     },
   });
-  return NextResponse.json({ success: true, sightings });
+
+  const viewerId = auth.session.user.id;
+  return NextResponse.json({
+    success: true,
+    sightings: sightings.map((sighting) => {
+      const canSeeDetails = post.authorId === viewerId || sighting.reporterId === viewerId;
+      return {
+        id: sighting.id,
+        postId: sighting.postId,
+        notes: sighting.notes,
+        location: sighting.location,
+        image: sighting.image,
+        createdAt: sighting.createdAt,
+        reporter: { name: sighting.reporter.name, image: sighting.reporter.image },
+        ...(canSeeDetails && {
+          reporterId: sighting.reporterId,
+          latitude: sighting.latitude,
+          longitude: sighting.longitude,
+        }),
+      };
+    }),
+  });
 }
 
 export async function POST(
