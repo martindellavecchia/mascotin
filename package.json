@@ -20,7 +20,7 @@
     "db:reset": "prisma migrate reset"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.1.1",
+    "@hookform/resolvers": "^6.0.2",
     "@prisma/client": "^6.19.3",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
