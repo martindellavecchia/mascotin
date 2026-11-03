@@ -83,7 +83,7 @@
     "@types/web-push": "^3.6.4",
     "axe-core": "^4.13.0",
     "chrome-launcher": "^1.2.1",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "^15.5.14",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
