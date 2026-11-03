@@ -4,6 +4,11 @@
   "devCommand": "next dev -p 3000",
   "installCommand": "npm ci",
   "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "dependabot/**": false
+    }
+  },
   "crons": [
     { "path": "/api/cron/search-digests", "schedule": "0 12 * * *" },
     {
