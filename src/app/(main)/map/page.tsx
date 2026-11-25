@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { PageHeader } from '@/components/ui/page-header';
 import { STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
+import { createStorePopupContent } from '@/lib/store-map-popup';
 import 'leaflet/dist/leaflet.css';
 
 interface MapStore {
@@ -171,9 +172,7 @@ export default function MapPage() {
           color: store.featured ? '#d46a4c' : '#4b244a',
           fillOpacity: 0.85,
         }).addTo(map as never);
-        marker.bindPopup(
-          `<strong>${store.name}</strong><br/>${store.category.name}${store.featured ? '<br/>Destacado' : ''}`
-        );
+        marker.bindPopup(createStorePopupContent(store));
         marker.on('click', () => setSelected(store));
       });
     }
