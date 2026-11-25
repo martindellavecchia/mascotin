@@ -205,7 +205,7 @@ export default function ShopDirectory({
           />
         ) : loading ? (
           <div className="divide-y divide-border border-y border-border bg-surface" aria-label="Cargando negocios">
-            {[0, 1, 2].map((item) => <div key={item} className="h-28 animate-pulse bg-muted/60 motion-reduce:animate-none" />)}
+            {[0, 1, 2].map((item) => <div key={item} className="h-28 animate-pulse bg-muted/60" />)}
           </div>
         ) : stores.length === 0 ? (
           <EmptyState

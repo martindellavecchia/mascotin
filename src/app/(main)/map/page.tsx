@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { PageHeader } from '@/components/ui/page-header';
 import { STORE_PLACE_TAG_LABELS, type StorePlaceTag } from '@/lib/places';
+import { prefersReducedMotion } from '@/lib/motion';
 import { createStorePopupContent } from '@/lib/store-map-popup';
 import 'leaflet/dist/leaflet.css';
 
@@ -158,7 +159,13 @@ export default function MapPage() {
         ? [first.latitude as number, first.longitude as number]
         : BA_CENTER;
 
-      map = L.map('pet-friendly-map').setView(center, withCoords.length > 0 ? 12 : 11);
+      const animate = !prefersReducedMotion();
+      map = L.map('pet-friendly-map', {
+        zoomAnimation: animate,
+        fadeAnimation: animate,
+        markerZoomAnimation: animate,
+        inertia: animate,
+      }).setView(center, withCoords.length > 0 ? 12 : 11);
       mapRef.current = map;
       userMarkerRef.current = null;
       setMapInstanceKey((key) => key + 1);
@@ -203,7 +210,7 @@ export default function MapPage() {
       })
         .addTo(map)
         .bindPopup('Estás acá');
-      map.setView(userCoords, USER_ZOOM);
+      map.setView(userCoords, USER_ZOOM, prefersReducedMotion() ? { animate: false } : undefined);
     });
 
     return () => {

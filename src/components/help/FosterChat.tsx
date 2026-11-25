@@ -33,7 +33,8 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [serverCanWrite, setServerCanWrite] = useState(enabled);
-  const endRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const lastMessageId = messages[messages.length - 1]?.id;
   const endpoint = fosterOfferId
     ? `/api/foster/offers/${fosterOfferId}/messages`
     : volunteerOfferId
@@ -69,8 +70,10 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
   }, [enabled, load, serverCanWrite]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: preferredScrollBehavior() });
-  }, [messages]);
+    const list = listRef.current;
+    if (!list || !lastMessageId) return;
+    list.scrollTo({ top: list.scrollHeight, behavior: preferredScrollBehavior() });
+  }, [lastMessageId]);
 
   const send = async () => {
     const message = content.trim();
@@ -102,7 +105,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
         <h2 className="font-semibold text-foreground">Conversación privada</h2>
         <p className="text-xs text-muted-foreground">{context === 'volunteer' ? 'Usen este espacio para coordinar únicamente la tarea acordada.' : 'Usen este espacio para coordinar la entrega y los cuidados.'}</p>
       </div>
-      <div className="max-h-80 min-h-48 space-y-3 overflow-y-auto bg-background p-4" aria-live="polite">
+      <div ref={listRef} className="max-h-80 min-h-48 space-y-3 overflow-y-auto bg-background p-4" aria-live="polite">
         {loading ? (
           <p className="py-12 text-center text-sm text-slate-600">Cargando conversación…</p>
         ) : loadError ? (
@@ -122,7 +125,6 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
             </div>
           );
         })}
-        <div ref={endRef} />
       </div>
       {!loading && !loadError && enabled && serverCanWrite ? (
         <div className="grid gap-2 border-t border-border p-3 sm:grid-cols-[minmax(0,1fr)_auto]">

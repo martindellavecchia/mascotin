@@ -194,8 +194,10 @@
   --animate-pop-out: pop-out 120ms ease-in forwards;
   --animate-dialog-in: pop-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-dialog-out: pop-out 150ms ease-in forwards;
+  --animate-dialog-overlay-out: fade-out 150ms ease-in forwards;
   --animate-sheet-in: sheet-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
   --animate-sheet-out: sheet-out 200ms ease-in forwards;
+  --animate-sheet-overlay-out: fade-out 200ms ease-in forwards;
   --animate-card-in: card-in 200ms ease-out;
   --animate-match-in: match-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-swipe-out-left: swipe-out-left 280ms ease-in forwards;

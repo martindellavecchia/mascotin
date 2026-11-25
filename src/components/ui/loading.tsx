@@ -33,7 +33,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-    return <div className={cn('animate-pulse rounded bg-muted motion-reduce:animate-none', className)} />;
+    return <div className={cn('animate-pulse rounded bg-muted', className)} />;
 }
 
 export function LoadingCard() {
@@ -54,9 +54,9 @@ export function LoadingCard() {
 export function LoadingDots({ className }: { className?: string }) {
     return (
         <div className={cn('flex items-center gap-1', className)}>
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" style={{ animationDelay: '0ms' }} />
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" style={{ animationDelay: '150ms' }} />
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" style={{ animationDelay: '300ms' }} />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" style={{ animationDelay: '0ms' }} />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" style={{ animationDelay: '150ms' }} />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" style={{ animationDelay: '300ms' }} />
         </div>
     );
 }
