@@ -114,7 +114,7 @@ export default function NotificationBell({ enabled = true }: NotificationBellPro
         <ScrollArea className="max-h-[400px]">
           {isLoading && notifications.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <LoaderCircle className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none" aria-hidden="true" />
+              <LoaderCircle className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
             </div>
           ) : notificationsError && notifications.length === 0 ? (
             <div role="alert" className="flex flex-col items-center justify-center gap-3 px-4 py-8 text-center">

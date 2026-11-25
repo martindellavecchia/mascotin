@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import LostPetForm from '@/components/community/LostPetForm';
 import { getPrimaryImageUrl } from '@/lib/media';
+import { preferredScrollBehavior } from '@/lib/motion';
 import { cn, countLabel } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -125,7 +126,7 @@ function AlertsPageContent() {
   useEffect(() => {
     if (loading || !selectedPostId) return;
     window.requestAnimationFrame(() => {
-      document.getElementById(`alert-${selectedPostId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById(`alert-${selectedPostId}`)?.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'center' });
     });
   }, [alerts, loading, selectedPostId]);
 

@@ -291,7 +291,7 @@ export default function HelpCenter({ pending }: { pending?: ReactNode }) {
                   <span className="block font-semibold text-foreground">{item.title}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{item.description}</span>
                 </span>
-                <ChevronRight className="size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                <ChevronRight className="size-5 shrink-0 text-primary motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
               </button>
               );
             })}
@@ -336,7 +336,7 @@ export default function HelpCenter({ pending }: { pending?: ReactNode }) {
                 </span>
                 <span className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-orange-600 min-[900px]:flex">
                   {item.action}
-                  <ChevronRight className="size-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  <ChevronRight className="size-5 motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
               </Link>
               );
@@ -457,7 +457,7 @@ export default function HelpCenter({ pending }: { pending?: ReactNode }) {
       {hasParticipation && <details className="group rounded-xl border border-border bg-surface">
         <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus [&::-webkit-details-marker]:hidden">
           Ayudar de otra manera
-          <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+          <ChevronDown className="size-5 shrink-0 text-muted-foreground motion-safe:transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
         <div className="border-t border-border p-4">{entryActions}</div>
       </details>}

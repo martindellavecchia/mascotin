@@ -375,7 +375,7 @@ export default function HomeClientShell({
         <div
           role="status"
           aria-live="polite"
-          className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-match-in"
+          className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-fade-in motion-safe:animate-match-in"
         >
           <div className="rounded-lg bg-primary px-5 py-3.5 text-primary-foreground shadow-lg sm:px-6">
             <div className="flex items-start gap-3">

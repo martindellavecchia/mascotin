@@ -79,7 +79,7 @@ export default function MeetupPanel({ matchId, userId }: { matchId: string; user
           Coordinar un encuentro
           {rows.some((r) => r.status === 'PROPOSED') && <span className="font-normal text-muted-foreground"> · propuesta pendiente</span>}
         </span>
-        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground motion-safe:transition-transform group-open:rotate-180" aria-hidden="true" />
       </summary>
       <div className="space-y-3 py-2">
         {error && (

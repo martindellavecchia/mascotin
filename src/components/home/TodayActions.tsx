@@ -68,7 +68,7 @@ export default function TodayActions({ activePet, suggestion }: TodayActionsProp
                 <span className="block font-semibold text-foreground">{action.title}</span>
                 <span className="mt-0.5 block text-sm leading-5 text-muted-foreground">{action.description}</span>
               </span>
-              <ChevronRight className="mt-2.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 md:hidden" aria-hidden="true" />
+              <ChevronRight className="mt-2.5 size-4 shrink-0 text-muted-foreground motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5 md:hidden" aria-hidden="true" />
             </Link>
           );
         })}

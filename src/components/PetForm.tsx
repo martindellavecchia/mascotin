@@ -33,6 +33,7 @@ import CompatibilityFields from '@/components/pets/CompatibilityFields';
 import { useInvalidateViewerData } from '@/hooks/useViewerData';
 import { petSchema, type PetFormData } from '@/lib/schemas';
 import { parseJsonStringArray } from '@/lib/json-array';
+import { preferredScrollBehavior } from '@/lib/motion';
 import {
   isRenderableImage,
   normalizePetImageSelection,
@@ -265,7 +266,7 @@ export default function PetForm({ ownerId, initialData, onSuccess, onCancel, onD
       );
       if (!target) return;
       const scrollTarget = target.closest<HTMLElement>('[data-slot="form-item"]') ?? target;
-      scrollTarget.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      scrollTarget.scrollIntoView?.({ behavior: preferredScrollBehavior(), block: 'center' });
       target.focus({ preventScroll: true });
     });
   };

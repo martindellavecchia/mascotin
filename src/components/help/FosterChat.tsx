@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatTimeOfDay } from '@/lib/date-format';
+import { preferredScrollBehavior } from '@/lib/motion';
 
 interface FosterMessage {
   id: string;
@@ -68,7 +69,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
   }, [enabled, load, serverCanWrite]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: preferredScrollBehavior() });
   }, [messages]);
 
   const send = async () => {

@@ -40,7 +40,7 @@ export default function StoreGalleryIsland({ images, storeName }: { images: stri
                 fill
                 sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 160px"
                 unoptimized={shouldUnoptimizeImage(src)}
-                className="object-cover transition-transform hover:scale-105"
+                className="object-cover motion-safe:transition-transform motion-safe:hover:scale-105"
               />
             </button>
           </li>

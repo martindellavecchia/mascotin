@@ -163,7 +163,11 @@ export default function ExploreTab({
         </div>
       ) : (
         <>
-          <div className={exitDirection === 'left' ? 'animate-swipe-out-left' : exitDirection === 'right' ? 'animate-swipe-out-right' : 'animate-fade-in'}>
+          <div className={exitDirection === 'left'
+            ? 'animate-fade-out motion-safe:animate-swipe-out-left'
+            : exitDirection === 'right'
+              ? 'animate-fade-out motion-safe:animate-swipe-out-right'
+              : 'animate-fade-in motion-safe:animate-card-in'}>
             <PetCard
               pet={currentPet}
               activePetName={activePet?.name}

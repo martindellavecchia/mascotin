@@ -23,7 +23,7 @@ export function LoadingSpinner({ className, size = 'md', variant = 'teal' }: Loa
 
     return (
         <div className={cn('flex items-center justify-center', className)}>
-            <div className={cn('animate-spin rounded-full motion-reduce:animate-none', sizeClasses[size], variantClasses[variant])} />
+            <div className={cn('animate-spin rounded-full', sizeClasses[size], variantClasses[variant])} />
         </div>
     );
 }

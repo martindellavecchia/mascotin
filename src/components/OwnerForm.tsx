@@ -207,7 +207,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
               <span className="block text-sm font-semibold text-foreground">Más sobre vos</span>
               <span className="block text-xs text-muted-foreground">Teléfono, biografía y tu hogar · opcional</span>
             </span>
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground motion-safe:transition-transform group-open:rotate-180" aria-hidden="true" />
           </summary>
           <div className="space-y-5 border-t border-border p-4">
             <FormField

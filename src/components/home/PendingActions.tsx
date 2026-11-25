@@ -57,7 +57,7 @@ export default function PendingActions({ helpOnly = false }: { helpOnly?: boolea
                 <span className="block font-medium text-foreground">{r.title}</span>
                 <span className="block text-sm text-muted-foreground">{r.detail}</span>
               </span>
-              <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
             </Link>
           </li>
         ))}
