@@ -92,7 +92,11 @@ export default function LoginPage() {
               </label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="username"
+                spellCheck={false}
+                enterKeyHint="next"
                 placeholder="hola@huella.app"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -109,7 +113,10 @@ export default function LoginPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  enterKeyHint="done"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

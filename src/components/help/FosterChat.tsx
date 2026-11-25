@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatTimeOfDay } from '@/lib/date-format';
+import { isImeComposing } from '@/lib/keyboard';
 import { preferredScrollBehavior } from '@/lib/motion';
 
 interface FosterMessage {
@@ -139,6 +140,7 @@ export default function FosterChat({ fosterOfferId, volunteerOfferId, placementI
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
+                if (isImeComposing(event)) return;
                 void send();
               }
             }}

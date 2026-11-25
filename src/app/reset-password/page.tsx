@@ -108,7 +108,10 @@ function ResetPasswordForm() {
           <div className="relative">
             <Input
               id="password"
+              name="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              enterKeyHint="next"
               placeholder="Mínimo 8 caracteres"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -134,7 +137,10 @@ function ResetPasswordForm() {
           <label className="text-sm font-medium text-foreground" htmlFor="confirmPassword">Confirmar contraseña</label>
           <Input
             id="confirmPassword"
+            name="confirmPassword"
             type="password"
+            autoComplete="new-password"
+            enterKeyHint="done"
             placeholder="Repetí tu contraseña"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}

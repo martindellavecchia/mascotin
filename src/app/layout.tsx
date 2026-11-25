@@ -56,6 +56,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#4b244a",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
 };
@@ -66,7 +67,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <body
         className={`${plusJakartaSans.variable} bg-background font-sans text-foreground antialiased`}
       >

@@ -44,6 +44,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getEventDateParts, EVENT_TIME_ZONE_LABEL } from '@/lib/date-format';
 import { useShowEventTimeZone } from '@/hooks/useShowEventTimeZone';
+import { isImeComposing } from '@/lib/keyboard';
 import { getPrimaryImageUrl, shouldUnoptimizeImage } from '@/lib/media';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -637,8 +638,9 @@ function PostCard({ post, currentUserId, currentUserImage, onLike, onDelete, onE
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                    if (e.key === 'Enter') {
                                         e.preventDefault();
+                                        if (isImeComposing(e)) return;
                                         handleAddComment();
                                     }
                                 }}

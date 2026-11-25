@@ -74,7 +74,11 @@ export default function ForgotPasswordPage() {
                 <div className="relative">
                   <Input
                     id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
+                    spellCheck={false}
+                    enterKeyHint="send"
                     placeholder="hola@huella.app"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

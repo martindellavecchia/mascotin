@@ -51,6 +51,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { LoadingSpinner } from '@/components/ui/loading';
+import { isImeComposing } from '@/lib/keyboard';
 import { countLabel } from '@/lib/utils';
 
 interface User {
@@ -432,7 +433,11 @@ export default function AdminPage() {
                                             placeholder="Buscar por nombre o email..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
+                                            onKeyDown={(e) => {
+                                                if (e.key !== 'Enter' || isImeComposing(e)) return;
+                                                e.preventDefault();
+                                                void fetchUsers();
+                                            }}
                                         />
                                     </div>
                                     <Select value={roleFilter} onValueChange={setRoleFilter}>

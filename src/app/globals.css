@@ -354,6 +354,12 @@ body {
   color: #30172f;
 }
 
+/* Light only until dark tokens exist: "light dark" would paint native date and time pickers dark on the cream UI. */
+:root {
+  color-scheme: light;
+  accent-color: var(--color-primary);
+}
+
 /* scrollbar-color inherits, so the root value reaches every scroll container. */
 :root {
   --scrollbar-thumb: var(--color-border-control);

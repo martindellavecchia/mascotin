@@ -260,7 +260,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                        className="w-5 h-5 rounded border-gray-300"
                       />
                       <Trees className="size-5 text-primary" aria-hidden="true" />
                       <span className={`text-sm font-medium ${field.value ? 'text-primary' : 'text-gray-700'}`}>Tengo patio/jardín</span>
@@ -280,7 +280,7 @@ export default function OwnerForm({ userId, initialData, defaultName, onSuccess,
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="w-5 h-5 rounded border-gray-300 accent-teal-500"
+                        className="w-5 h-5 rounded border-gray-300"
                       />
                       <PawPrint className="size-5 text-primary" aria-hidden="true" />
                       <span className={`text-sm font-medium ${field.value ? 'text-primary' : 'text-gray-700'}`}>Tengo otras mascotas</span>

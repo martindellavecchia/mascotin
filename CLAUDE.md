@@ -77,7 +77,7 @@ npm run db:reset              # Reset database
 ## UI: Huella design system
 
 - Tokens live in `src/app/globals.css` (Tailwind v4 `@theme`): primary aubergine `#4b244a`, accent lime `#b8d35a`, cream background `#fff8ef`, plus semantic success/warning/info/highlight colors. Use semantic utilities (`bg-primary`, `text-muted-foreground`, `border-border`). Legacy `teal-*` utilities are aliased to the Huella palette for compatibility; don't add new hardcoded teal/slate colors.
-- The font is Plus Jakarta Sans. The theme is forced to light in `src/components/providers.tsx`.
+- The font is Plus Jakarta Sans. The UI is light only: `color-scheme: light` and `accent-color: var(--color-primary)` sit on `:root` in `globals.css`, and the `viewport` export in `src/app/layout.tsx` sets `colorScheme`. There is no theme provider; a dark mode needs dark tokens first.
 - Use `lucide-react` for icons; Material Symbols were removed. Use `cn()` from `src/lib/utils.ts` for class names.
 - Animations are `--animate-*` tokens with their keyframes in `@theme` (`globals.css`). Overlays use `animate-fade-in`/`animate-fade-out` as the base and add the spatial version (`pop`, `dialog`, `sheet`) with `motion-safe:`. Radix only delays unmounting for a keyframe animation, so exits must be keyframes, not transitions; a backdrop exits with the same duration as its panel (`dialog-overlay-out`, `sheet-overlay-out`), and Select only animates its entry because Radix unmounts it at once. There is no global reduced-motion override: spatial motion goes behind `motion-safe:`, spinners and pulses slow down under `reduce`, JS scrolling uses `preferredScrollBehavior()`, and JS-driven animation (such as Leaflet's) checks `prefersReducedMotion()`, both from `src/lib/motion.ts`.
 - **Browser support:** Baseline *Widely available* features need no fallback. *Newly available* features are used as progressive enhancement, without polyfills, as long as the UI stays usable and static without them. *Limited availability* features are only for decorative effects.
@@ -96,6 +96,7 @@ npm run db:reset              # Reset database
 - **Components**: PascalCase filenames matching the component name, with `'use client'` for client components
 - **Error messages and UI text**: Spanish (es-AR)
 - **Zod v4** (different API from v3) in `src/lib/schemas.ts`, integrated with React Hook Form via `@hookform/resolvers`
+- **Form inputs**: account fields carry `autoComplete` (`username` for the sign-in or sign-up email, `current-password` or `new-password`, `name`) and a stable `name`. Custom Enter handlers call `preventDefault()` and return early when `isImeComposing(event)` from `src/lib/keyboard.ts` is true, so IME users can confirm text without submitting it.
 - **No comments unless they're needed**
 - **Conventional commits**: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`
 

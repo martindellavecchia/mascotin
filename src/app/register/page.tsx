@@ -137,7 +137,10 @@ export default function RegisterPage() {
               </label>
               <Input
                 id="name"
+                name="name"
                 type="text"
+                autoComplete="name"
+                enterKeyHint="next"
                 placeholder="Ej. María Pérez"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -153,7 +156,11 @@ export default function RegisterPage() {
               </label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="username"
+                spellCheck={false}
+                enterKeyHint="next"
                 aria-invalid={emailAvailable === false}
                 aria-describedby={emailAvailable === false ? 'email-status' : undefined}
                 placeholder="hola@huella.app"
@@ -190,7 +197,10 @@ export default function RegisterPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  enterKeyHint="next"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -238,7 +248,10 @@ export default function RegisterPage() {
               <div className="relative">
                 <Input
                   id="confirmPassword"
+                  name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  enterKeyHint="done"
                   aria-invalid={Boolean(formData.confirmPassword) && formData.password !== formData.confirmPassword}
                   aria-describedby={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'confirm-password-error' : undefined}
                   value={formData.confirmPassword}

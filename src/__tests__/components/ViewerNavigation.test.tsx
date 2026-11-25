@@ -21,7 +21,6 @@ jest.mock('next/navigation', () => {
   const router = { push: jest.fn() };
   return { useRouter: () => router, useSearchParams: jest.requireActual('@/mocks/navigation').useTestSearchParams };
 });
-jest.mock('next-themes', () => ({ useTheme: () => ({ setTheme: jest.fn() }) }));
 jest.mock('@/components/community/CreatePostCard', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/community/EditPostModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/OwnerForm', () => ({ __esModule: true, default: () => null }));
